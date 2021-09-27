@@ -1,0 +1,52 @@
+$font-family:"Helvetica Neue",
+Helvetica,
+"PingFang SC",
+"Hiragino Sans GB",
+"Microsoft YaHei",
+"微软雅黑",
+Arial,
+sans-serif;
+
+$primary : #20aeff;
+$primary-hover : #20aeff; 
+$primary-active : #20aeff; 
+
+$disable:#d1d1d1;
+$submit:#68c75f;
+$cancel:#F86868;
+$success:#4DDB63;
+$info:#5bc0de;
+$warn:#f4984e;
+
+
+$disable-hover:lighten($disable, 10%);
+$submit-hover:lighten($submit, 10%);
+$cancel-hover:lighten($cancel, 10%);
+$success-hover:lighten($success, 10%);
+$info-hover:lighten($info, 10%);
+$warn-hover:lighten($warn, 10%);
+
+$disable-active:darken($disable, 10%);
+$submit-active:darken($submit, 10%);
+$cancel-active:darken($cancel, 10%);
+$success-active:darken($success, 10%);
+$info-active:darken($info, 10%);
+$warn-active:darken($warn, 10%);
+
+
+$white : #ffffff;
+$default-black : #191919;
+
+$default-color: #cccccc;
+$border-color:#d1d1d1;
+$placeholder : $default-color;
+
+$mask-bg:rgba(0, 0, 0, .4);
+$link-color:$primary;
+
+
+$font-size-xl : 18px;
+$font-size-lg : 16px;
+$font-size-md : 14px;
+$font-size-sm : 12px;
+$font-size-xs : 10px;
