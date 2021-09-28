@@ -3,13 +3,23 @@
     <i-button>我是按钮</i-button>
 
     <i-icon type="icon-add" />
+    <i-switch :value="checkSwitch" @change="change" />
   </div>
 </template>
 
 <script>
-
 export default {
-}
+  data() {
+    return {
+      checkSwitch: false,
+    };
+  },
+  methods:{
+    change(){
+      this.checkSwitch = !this.checkSwitch
+    }
+  }
+};
 </script>
 
 <style>
