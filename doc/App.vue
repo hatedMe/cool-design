@@ -3,7 +3,7 @@
     <i-button>我是按钮</i-button>
 
     <i-icon type="icon-add" />
-    <i-switch :value="checkSwitch" @change="change" />
+    <i-switch :value="checkSwitch" @change="change" :closeText="'关闭信息'" :disabled="false" :openText="'打开信息'" :width="40" />
   </div>
 </template>
 
@@ -11,7 +11,7 @@
 export default {
   data() {
     return {
-      checkSwitch: false,
+      checkSwitch: true,
     };
   },
   methods:{
