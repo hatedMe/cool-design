@@ -8,6 +8,8 @@ export default createComponent({
             type: String | Number | Boolean,
             default: false
         },
+        activeValue: String,
+        inactiveValue: String,
         width: {
             type: Number,
             default: 40
@@ -16,29 +18,31 @@ export default createComponent({
             type: Boolean,
             default: false
         },
-        activeColor: {
-            type: String
-        },
-        inactiveColor: {
-            type: String,
-        },
+        activeColor: String,
+        inactiveColor: String,
         closeText: String,
         openText: String,
     },
+    data() {
+        return {
+            currStatus: this.value
+        }
+    },
     methods: {
         change() {
-            this.$emit('change')
+            this.currStatus = !this.currStatus
+            this.$emit('change', this.currStatus ? this.activeValue || true : this.inactiveValue || false)
         }
     },
     render(h) {
         return (
             <div class={bem()}>
                 {
-                    this.closeText ? <span class={[bem('text-left', { 'active': !this.value })]}>{this.closeText}</span> : null
+                    this.closeText ? <span class={[bem('text-left', { 'active': !this.currStatus })]}>{this.closeText}</span> : null
                 }
-                <span class={[bem('beal', { active: this.value, disabled: this.disabled })]} style={{ width: this.width + 'px' }} onClick={() => this.disabled ? null : this.change()}></span>
+                <span class={[bem('beal', { active: this.currStatus, disabled: this.disabled })]} style={{ width: this.width + 'px' }} onClick={() => this.disabled ? null : this.change()}></span>
                 {
-                    this.openText ? <span class={[bem('text-right', { 'active': this.value })]}>{this.openText}</span> : null
+                    this.openText ? <span class={[bem('text-right', { 'active': this.currStatus })]}>{this.openText}</span> : null
                 }
             </div>
         )

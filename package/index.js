@@ -1,12 +1,14 @@
 import Button from "./button/index";
 import Icon from "./icon/index";
 import Switch from "./switch/index";
+import Select from "./select/index";
 
 const version = '1.0.0';
 const components = [
     Button,
     Icon,
-    Switch
+    Switch,
+    Select
 ]
 
 const install = (Vue) => {
