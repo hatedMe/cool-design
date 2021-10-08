@@ -1,10 +1,16 @@
 import Button from "./button/index";
 import Icon from "./icon/index";
+import Row from "./row/index"
+import Checkbox from "./checkbox";
+import CheckboxGroup from "./checkbox-group";
 
 const version = '1.0.0';
 const components = [
     Button,
-    Icon
+    Icon,
+    Row,
+    Checkbox,
+    CheckboxGroup
 ]
 
 const install = (Vue) => {
