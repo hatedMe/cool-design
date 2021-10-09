@@ -1,11 +1,12 @@
 {
   "name": "cool-design",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "lib": "vue-cli-service build --mode production --target lib --name index --dest lib package/index.js"
+    "lint": "vue-cli-service lint --fix",
+    "lib": "vue-cli-service build --mode production --target lib --name index --dest lib package/index.js",
+    "release": "release-it"
   },
   "files": [
     "lib",
@@ -32,8 +33,14 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^6.2.2",
+    "highlight.js": "^11.2.0",
+    "markdown-it": "^12.2.0",
+    "markdown-it-anchor": "^8.3.1",
+    "release-it": "^14.11.6",
     "sass": "^1.42.1",
     "sass-loader": "10.1.1",
+    "transliteration": "^2.2.0",
+    "vue-router": "^3.5.2",
     "vue-template-compiler": "^2.6.11"
   }
 }
