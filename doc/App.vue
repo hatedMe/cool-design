@@ -1,24 +1,18 @@
 <template>
-  <div id="app">
-    <i-button>我是按钮</i-button>
-
-    <i-icon type="icon-add" />
-  </div>
+    <div id="app">
+        <doc>
+            <router-view />
+        </doc>
+    </div>
 </template>
 
 <script>
-
+import doc from "./components";
+import "highlight.js/styles/github-dark.css";
 export default {
-}
+    components: {
+        doc
+    }
+};
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>

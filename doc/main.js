@@ -1,12 +1,11 @@
 import Vue from 'vue'
 import App from './App.vue'
-
+import router from "./router";
 Vue.config.productionTip = false
-
-import MeganUI from "../package/index";
-// import "../package/style/base.scss";
-Vue.use(MeganUI);
+import CoolDesign from "../package/index";
+Vue.use(CoolDesign);
 
 new Vue({
+  router,
   render: h => h(App)
 }).$mount('#app')

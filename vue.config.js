@@ -1,5 +1,4 @@
-
-console.log(process.env.NODE_ENV);
+const path = require("path");
 module.exports = {
     pages: {
         index: {
@@ -26,5 +25,12 @@ module.exports = {
         //     .tap(options => {
         //         return options;
         //     });
+
+    },
+    configureWebpack: config => {
+        config.module.rules.push({
+            test: /\.md$/,
+            use: ["vue-loader", path.resolve(__dirname, "./doc/loader/md-loader/index.js")]
+        });
     }
 };
