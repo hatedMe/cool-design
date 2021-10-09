@@ -1,0 +1,58 @@
+@import "@/style/base.scss";
+
+.i-switch{
+    display: inline-block;
+    .i-switch__beal {
+        position: relative;
+        width: 40px;
+        height: 20px;
+        line-height: 10px;
+        box-sizing: border-box;
+        border-radius: 10px;
+        border: 1px solid #dcdfe6;
+        background-color: $disable-hover;
+    
+        &::after {
+            content: "";
+            position: absolute;
+            left: 1px;
+            top: 1px;
+            width: 16px;
+            height: 16px;
+            border-radius: 100%;
+            background-color: $white;
+            transition: all .3s;
+        }
+    
+        &--active {
+            background-color: $primary;
+            transition: all .3s;
+        }
+    }
+    .i-switch__beal--active{
+        &::after {
+            left: 100%;
+            margin-left: -17px;
+        }
+    }
+    .i-switch__beal--disabled{
+        cursor: not-allowed;
+        background-color: lighten( $primary , 20% ) 
+    }
+    .i-switch__text-left {
+        margin-right: 6px;
+        font-size: $font-size-md;
+        color: $default-color;
+    }
+    .i-switch__text-right {
+        margin-left: 6px;
+        font-size: $font-size-md;
+        color: $default-color;
+    }
+    .i-switch__text-left--active {
+        color: $primary;
+    }
+    .i-switch__text-right--active {
+        color: $primary;
+    }
+}

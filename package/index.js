@@ -3,6 +3,8 @@ import Icon from "./icon/index";
 import Row from "./row/index"
 import Checkbox from "./checkbox";
 import CheckboxGroup from "./checkbox-group";
+import Switch from "./switch/index";
+import Select from "./select/index";
 
 const version = '1.0.0';
 const components = [
@@ -10,7 +12,9 @@ const components = [
     Icon,
     Row,
     Checkbox,
-    CheckboxGroup
+    CheckboxGroup,
+    Switch,
+    Select
 ]
 
 const install = (Vue) => {
