@@ -38,8 +38,12 @@ export default createComponent({
             this.open = !this.open
         },
         deleteValue(e) {
+            if(e && e.stopPropagation){
+                e.stopPropagation();
+            }else{
+                window.e.cancelBubble
+            }
             this.value = ""
-            console.log('deleteValue');
         }
     },
     render(h) {
@@ -49,7 +53,7 @@ export default createComponent({
                     <input class={[bem('input')]} placeholder="请选择" readonly value={this.value} />
                     {
                         this.value ?
-                            <i-icon id="clearvalue" type="icon-delete" onClick={() => this.deleteValue($event)} />
+                            <span  onClick={(e) => this.deleteValue(e)} ><i-icon type="icon-delete" /></span>
                             : <i-icon type="icon-packup" class={[bem('icon', { roter: this.open })]} />
                     }
                 </div>

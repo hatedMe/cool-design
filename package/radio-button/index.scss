@@ -1,0 +1,43 @@
+@import "@/style/base.scss";
+
+.i-radio-button {
+    display: inline-block;
+    height: 20px;
+    line-height: 20px;
+    padding: 8px 8px;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+
+    &--is-checked {
+        background-color: $primary;
+        color: $white;
+    }
+
+    &--is-disabled {
+        cursor: not-allowed;
+        color: lighten($disable, 0%);
+        background-color: lighten($primary, 0%);
+        &-not-check {
+            cursor: not-allowed;
+            color: lighten($disable, 0%);
+        }
+    }
+
+    &:last-child {
+        border-radius: 0px 5px 5px 0px;
+        border-top: 1px solid $border-color;
+        border-bottom: 1px solid $border-color;
+        border-right: 1px solid $border-color;
+    }
+
+    &:not(:last-child, :first-child) {
+        border-top: 1px solid $border-color;
+        border-bottom: 1px solid $border-color;
+        border-right: 1px solid $border-color;
+    }
+
+    &:first-child {
+        border-radius: 5px 0px 0px 5px;
+        border: 1px solid $disable;
+    }
+}
