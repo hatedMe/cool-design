@@ -1,0 +1,38 @@
+
+@mixin user-select($value) {
+    -moz-user-select: $value;
+    -webkit-user-select: $value;
+    -ms-user-select: $value;
+}
+
+@mixin clearfix {
+    $selector: &;
+    @at-root {
+        #{$selector}::before,
+        #{$selector}::after {
+            display: table;
+            content: "";
+        }
+        #{$selector}::after {
+            clear: both
+        }
+    }
+}
+
+@mixin vertical-center {
+    $selector: &;
+    @at-root {
+        #{$selector}::after {
+            display: inline-block;
+            content: "";
+            height: 100%;
+            vertical-align: middle
+        }
+    }
+}
+
+@mixin ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
