@@ -1,6 +1,7 @@
 import Button from "./button/index";
 import Icon from "./icon/index";
 import Row from "./row/index"
+import Col from "./col"
 import Checkbox from "./checkbox";
 import CheckboxGroup from "./checkbox-group";
 import Switch from "./switch/index";
@@ -11,6 +12,7 @@ const components = [
     Button,
     Icon,
     Row,
+    Col,
     Checkbox,
     CheckboxGroup,
     Switch,
