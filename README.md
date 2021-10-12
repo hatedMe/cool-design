@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-An enterprise-class UI components based on Ant Design and Vue.
+An enterprise-class UI components based on Cool Design and Vue.
 </p>
 
 ### Features
