@@ -7,8 +7,8 @@ import Components from "../views/components.vue";
 // console.log("requireComponent.keys():", requireComponent.keys());
 
 import Button from "../../package/button/README.md";
-import componentKey from "./component.router";
-console.log(componentKey);
+import { routers } from "./component.router";
+console.log(routers);
 
 Vue.use(VueRouter);
 
@@ -30,6 +30,7 @@ const routes = [
                 path: "button",
                 component: Button,
             },
+            ...routers
         ]
     },
 ];

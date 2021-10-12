@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from "./router";
 Vue.config.productionTip = false
 import CoolDesign from "../package/index";
+import "./style/github-markdown.css";
 Vue.use(CoolDesign);
 
 new Vue({

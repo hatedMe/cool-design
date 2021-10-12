@@ -1,9 +1,9 @@
 const parser = require("./parser");
 module.exports = function (source) {
-    let content = parser.render(source);
+    const content = parser.render(source);
     return `
 <template>
-    <section>
+    <section class="markdown-body">
     ${content}
     </section>
 </template>

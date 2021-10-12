@@ -1,6 +1,6 @@
 
 
-
+import Layout from "../markdown/components/layout.md"
 
 const requireComponent = require.context("../markdown/components/", true, /\.md$/);
 console.log("requireComponent.keys():",  requireComponent.keys() );
@@ -9,13 +9,13 @@ requireComponent.keys().forEach(item => {
 });
 
 const nav = [
-    {
-        title : "开发指南", 
-        children : [{
-            path : "install",
-            component : "isntall"
-        }]
-    },
+    // {
+    //     title : "开发指南", 
+    //     children : [{
+    //         path : "install",
+    //         component : "isntall"
+    //     }]
+    // },
     {
         title : "组件", 
         childrens : [{
@@ -23,18 +23,20 @@ const nav = [
             children : [
                 {
                     path : "layout",
-                    component : "layout"
+                    component : Layout
                 }
             ]
-        },{
-            subtitle : "Form",
-            children : [
-                {
-                    path : "radio",
-                    component : "radio"
-                }
-            ]
-        }]
+        },
+        // {
+        //     subtitle : "Form",
+        //     children : [
+        //         {
+        //             path : "radio",
+        //             component : "radio"
+        //         }
+        //     ]
+        // }
+    ]
     }
 ];
 
@@ -57,8 +59,7 @@ for (let i = 0; i < nav.length; i++) {
     }
 }
 
-
-export default {
+export {
     routers , 
     nav
-};
+}
