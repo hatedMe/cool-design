@@ -44,7 +44,7 @@ export default createComponent({
                     this.open && this.data.length ? <div class={[bem('data-list')]}>
                         <div class={[bem('data-list-group')]}>
                             {
-                                this.data.map((item, index) => {
+                                this.data.map((item, index) => {                                   
                                     return <p class={[bem('item', { disabled: item.disabled })]} onClick={() => this.change(index)}>
                                         {item.label}
                                     </p>

@@ -100,6 +100,9 @@ export default {
       console.log(e, "e");
     },
   },
+    components: {
+        doc
+    }
 };
 </script>
 

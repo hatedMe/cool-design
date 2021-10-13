@@ -56,7 +56,6 @@ export default {
 }
 .container {
     padding-left: 220px;
-    padding-right: 360px;
     overflow: hidden;
     box-sizing: border-box;
 }

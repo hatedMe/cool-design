@@ -1,6 +1,6 @@
 @import "config.scss";
 
-@mixin res($key, $map: $--breakpoints) {
+@mixin res($key, $map: $breakpoints) {
     @if map-has-key($map, $key) {
         @media only screen and #{inspect(map-get($map, $key))} {
             @content;
