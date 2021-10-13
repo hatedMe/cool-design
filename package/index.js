@@ -5,9 +5,12 @@ import Checkbox from "./checkbox";
 import CheckboxGroup from "./checkbox-group";
 import Switch from "./switch/index";
 import Select from "./select/index";
+import RadioGroup from "./radio-group/index";
 import Radio from "./radio/index";
-import Radiod from "./radio-default/index";
-import Radiob from "./radio-button/index";
+import RadioButton from "./radio-button/index";
+import Rate from './rate/index'
+import InputNumber from './input-number/index'
+import Cascader from './cascader/index'
 
 const version = '1.0.0';
 const components = [
@@ -19,8 +22,11 @@ const components = [
     Switch,
     Select,
     Radio,
-    Radiod,
-    Radiob,
+    RadioGroup,
+    RadioButton,
+    Rate,
+    InputNumber,
+    Cascader
 ]
 
 const install = (Vue) => {

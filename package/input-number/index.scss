@@ -1,0 +1,62 @@
+@import "@/style/base.scss";
+
+.i-input-number {
+    display: inline-flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 32px;
+    border: 1px solid $disable;
+    border-radius: 4px;
+    padding: 0px;
+
+    &:hover {
+        border: 1px solid $primary;
+    }
+
+    &--disable {
+        cursor: not-allowed;
+    }
+
+    &__action {
+        height: 32px;
+        width: 32px;
+        line-height: 32px;
+
+        text-align: center;
+        color: $disable-active;
+        font-size: $font-size-xl;
+        background-color: lighten($disable-hover, 3%);
+
+        &:first-child {
+            border-radius: 4px 0px 0px 4px;
+            border-right: 1px solid $disable;
+        }
+
+        &:last-child {
+            border-radius: 0px 4px 4px 0px;
+            border-left: 1px solid $disable;
+        }
+
+        &:hover {
+            color: $primary-active;
+        }
+
+        &--disable {
+            cursor: not-allowed;
+        }
+    }
+
+    &__input {
+        width: 80px;
+        height: 32px;
+        outline: none;
+        border: none;
+        text-align: center;
+
+        &--disable {
+            cursor: not-allowed;
+            color: $disable-active;
+            background-color: lighten($disable-hover, 3%);
+        }
+    }
+}

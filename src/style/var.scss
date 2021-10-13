@@ -8,8 +8,8 @@ Arial,
 sans-serif;
 
 $primary : #20aeff;
-$primary-hover : #20aeff; 
-$primary-active : #20aeff; 
+$primary-hover : lighten($primary, 10%);
+$primary-active : darken($primary, 10%);
 
 $disable:#d1d1d1;
 $submit:#68c75f;

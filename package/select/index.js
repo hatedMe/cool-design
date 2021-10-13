@@ -17,16 +17,6 @@ export default createComponent({
             open: false,
         }
     },
-    watch: {
-        // value: function (newVal, oldVal){
-        //     if(newVal===oldVal) return;
-        //     const _this = this
-        //     let clear = document.getElementById('clearvalue')
-        //     clear.addEventListener('click',()=>{
-        //         _this.value = ""
-        //     },true)
-        // }
-    },
     methods: {
         change(index) {
             if (this.data[index].disabled) return;
@@ -38,9 +28,9 @@ export default createComponent({
             this.open = !this.open
         },
         deleteValue(e) {
-            if(e && e.stopPropagation){
+            if (e && e.stopPropagation) {
                 e.stopPropagation();
-            }else{
+            } else {
                 window.e.cancelBubble
             }
             this.value = ""
@@ -53,7 +43,7 @@ export default createComponent({
                     <input class={[bem('input')]} placeholder="请选择" readonly value={this.value} />
                     {
                         this.value ?
-                            <span  onClick={(e) => this.deleteValue(e)} ><i-icon type="icon-delete" /></span>
+                            <span onClick={(e) => this.deleteValue(e)} ><i-icon type="icon-delete" /></span>
                             : <i-icon type="icon-packup" class={[bem('icon', { roter: this.open })]} />
                     }
                 </div>

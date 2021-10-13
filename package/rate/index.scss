@@ -1,0 +1,26 @@
+@import "@/style/base.scss";
+
+.i-rate {
+    display: block;
+    height: 20px;
+
+    &--disabled {
+        cursor: not-allowed;
+    }
+
+    &__icon {
+        font-size: 18px;
+        color: transparent;
+        -webkit-text-stroke: .5px $disable-hover;
+    }
+
+    &__item {
+        &:not(:last-child) {
+            padding-right: 8px;
+        }
+    }
+
+    // &__icon--hover {
+    //     -webkit-text-fill-color: rgb(243, 17, 130);
+    // }
+}

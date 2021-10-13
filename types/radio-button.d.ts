@@ -1,4 +1,4 @@
 import { Component } from './component'
-export declare class Radio extends Component {
+export declare class RadioButton extends Component {
     label: string | number 
 }
