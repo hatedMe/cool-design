@@ -1,0 +1,41 @@
+@import "@/style/base.scss";
+
+.i-progress {
+    display: flex;
+    align-items: center;
+    cursor: default;
+
+    &__line {
+        position: relative;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        border-radius: 10px;
+        background-color: #ebeef5;
+
+        &--full {
+            position: absolute;
+            left: 0;
+            height: 100%;
+            border-radius: 100px;
+            transition: width .6s ease;
+        }
+    }
+
+    &__describe {
+        margin-left: 8px;
+        font-size: $font-size-md;
+        &--inside{
+            position: absolute;
+            right: 3px;
+            line-height: 1;
+            white-space: nowrap;
+            font-size: $font-size-sm;
+            color: $white;
+        }
+    }
+    
+    &__circle{
+        transition: width .6s ease;
+    }
+}

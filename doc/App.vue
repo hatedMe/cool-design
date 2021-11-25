@@ -29,7 +29,7 @@
     <i-rate v-model="rate3"></i-rate> -->
     <!-- <i-button @click="change(10)">我是按钮</i-button> -->
     <!-- <i-input-number v-model="value" :max="10" :min="0" @change="change"></i-input-number> -->
-    <i-cascader :data="data"></i-cascader>
+    <i-progress :value="'60'" :formatText="formatProgressTextHandle" :color="getColor" :showText="true" status="success" :textInside="true" :strokeHeight="16"></i-progress>
   </div>
 </template>
 
@@ -96,6 +96,18 @@ export default {
     },
   },
   methods: {
+    formatProgressTextHandle(num){
+      return num + 'km' 
+    },
+    getColor(num){
+      if(num>=0 && num<=30){
+        return '#67c23a'
+      }else if(num<=60){
+        return '#20aeff'
+      }else if(num<=100){
+        return '#F86868'
+      }
+    },
     change(e) {
       console.log(e, "e");
     },

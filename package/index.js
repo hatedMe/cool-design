@@ -12,6 +12,7 @@ import RadioButton from "./radio-button/index";
 import Rate from './rate/index'
 import InputNumber from './input-number/index'
 import Cascader from './cascader/index'
+import Progress from './progress/index'
 
 const version = '1.0.0';
 const components = [
@@ -28,7 +29,8 @@ const components = [
     RadioButton,
     Rate,
     InputNumber,
-    Cascader
+    Cascader,
+    Progress
 ]
 
 const install = (Vue) => {
