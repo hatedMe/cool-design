@@ -1,2 +1,18 @@
 @import "./var.scss";
 @import "./reset.scss";
+
+.bgc-primary {
+    background-color: $primary;
+}
+.bgc-danger {
+    background-color: $cancel;
+}
+.bgc-success {
+    background-color: $success;
+}
+.bgc-warning {
+    background-color: $warning;
+}
+.bgc-info {
+    background-color: $info;
+}

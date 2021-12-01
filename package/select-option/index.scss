@@ -1,0 +1,30 @@
+@import "@/style/base.scss";
+
+.i-select-option {
+    padding: 3px;
+    border-radius: 5px;
+    box-sizing: border-box;
+    text-align: left;
+
+    &__item {
+        padding-left: 10px;
+        &--active {
+            font-weight: 600;
+            color: $primary;
+            background-color: $disable-hover;
+        }
+    }
+
+    &__item:hover {
+        background-color: $disable-hover;
+    }
+
+    &__item--disabled {
+        color: $disable;
+        cursor: not-allowed;
+    }
+
+    &__item--disabled:hover {
+        background-color: $white;
+    }
+}

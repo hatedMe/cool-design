@@ -1,0 +1,79 @@
+@import "@/style/base.scss";
+
+.i-pagination {
+    display: flex;
+    align-items: center;
+    .action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 24px;
+        height: 28px;
+        background-color: #f4f4f5;
+    }
+    &__total {
+        margin-right: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #606266;
+        background-color: none !important;
+    }
+    &__list {
+        display: flex;
+        &--item {
+            display: inline-block;
+            min-width: 32px;
+            height: 28px;
+            line-height: 28px;
+            text-align: center;
+            font-weight: 600;
+            margin-right: 6px;
+            &:first-child {
+                margin-left: 6px;
+            }
+        }
+        &--item:hover {
+            color: $primary;
+        }
+        &--active {
+            color: $primary;
+        }
+    }
+    &__list-full {
+        display: flex;
+        &--item {
+            margin-right: 5px;
+            display: inline-block;
+            min-width: 32px;
+            height: 28px;
+            line-height: 28px;
+            border-radius: 3px;
+            text-align: center;
+            font-weight: 600;
+            color: #606266;
+            background-color: #f4f4f5;
+
+            &:first-child {
+                margin-left: 6px;
+            }
+        }
+        &--hover:hover {
+            color: $primary;
+        }
+        &--active {
+            color: $white;
+            background-color: $primary;
+        }
+    }
+    &__page-size {
+        margin-right: 12px;
+        width: 120px;
+    }
+    .i-icon-hover {
+        color: $primary;
+    }
+    .disabled {
+        cursor: not-allowed;
+    }
+}

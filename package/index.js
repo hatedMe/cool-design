@@ -6,6 +6,7 @@ import Checkbox from "./checkbox";
 import CheckboxGroup from "./checkbox-group";
 import Switch from "./switch/index";
 import Select from "./select/index";
+import SelectOption from "./select-option/index";
 import RadioGroup from "./radio-group/index";
 import Radio from "./radio/index";
 import RadioButton from "./radio-button/index";
@@ -13,6 +14,9 @@ import Rate from './rate/index'
 import InputNumber from './input-number/index'
 import Cascader from './cascader/index'
 import Progress from './progress/index'
+import Tag from './tag/index'
+import Pagination from './pagination/index'
+import Badge from './badge/index'
 
 const version = '1.0.0';
 const components = [
@@ -24,13 +28,17 @@ const components = [
     CheckboxGroup,
     Switch,
     Select,
+    SelectOption,
     Radio,
     RadioGroup,
     RadioButton,
     Rate,
     InputNumber,
     Cascader,
-    Progress
+    Progress,
+    Tag,
+    Pagination,
+    Badge
 ]
 
 const install = (Vue) => {

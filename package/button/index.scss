@@ -49,10 +49,10 @@
     }
     /*警告按钮*/
     &--warn {
-        background-color: $warn;
+        background-color: $warning;
         &:active,
         &.active {
-            background-color: $warn-active;
+            background-color: $warning-active;
         }
     }
     /*完成按钮*/
@@ -111,12 +111,12 @@
 	}
 	/*线框-警告按钮*/
 	&.warn{
-		color:$warn;
+		color:$warning;
 		background-color:transparent;
-		border-color:$warn;
+		border-color:$warning;
 		&:active,&.active{
-			color:$warn-active;
-			border-color:$warn-active;
+			color:$warning-active;
+			border-color:$warning-active;
 		}
 	}
 	/*线框-完成按钮*/
