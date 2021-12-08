@@ -10,7 +10,7 @@ export default createComponent({
         value: {
             type: String | Number | Boolean
         },
-        disabled: []
+        disabled: null
     },
     data() {
         return {
@@ -24,6 +24,7 @@ export default createComponent({
     },
     methods: {
         itemClickHandle() {
+            if (this.disabled === "") return;
             this.$parent.setValueLabel(this.label)
             this.$parent.setModalVal(this.value)
             this.$parent.openSelect()

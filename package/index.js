@@ -17,6 +17,10 @@ import Progress from './progress/index'
 import Tag from './tag/index'
 import Pagination from './pagination/index'
 import Badge from './badge/index'
+import Avatar from './avatar/index'
+import Empty from './empty/index'
+import Alert from './alert/index'
+import message from './message/index'
 
 const version = '1.0.0';
 const components = [
@@ -38,7 +42,10 @@ const components = [
     Progress,
     Tag,
     Pagination,
-    Badge
+    Badge,
+    Avatar,
+    Empty,
+    Alert
 ]
 
 const install = (Vue) => {
@@ -54,4 +61,5 @@ if (typeof window !== 'undefined' && window.Vue) {
 export default {
     version,
     install,
+    message
 };

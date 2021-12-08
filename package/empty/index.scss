@@ -1,0 +1,18 @@
+@import "@/style/base.scss";
+
+.i-empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    box-sizing: border-box;
+    padding: 40px 0;
+    &__desc {
+        margin-top: 20px;
+        color: $disable-active;
+    }
+    &__action {
+        margin-top: 20px;
+    }
+}

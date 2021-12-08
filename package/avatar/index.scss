@@ -1,0 +1,15 @@
+@import "@/style/base.scss";
+
+.i-avatar {
+    display: inline-block;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-align: center;
+    color: $white;
+    vertical-align: middle;
+    background: #c0c4cc;
+    &__img {
+        height: 100%;
+        object-fit: cover;
+    }
+}

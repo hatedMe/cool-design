@@ -1,0 +1,54 @@
+@import "@/style/base.scss";
+.i-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2020;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    &__content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-width: 15%;
+        max-height: 30px;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 14px;
+        color: rgba(70, 70, 70, 1);
+        box-shadow: 2px 2px 3px rgba(161, 161, 161, 0.3);
+        animation: down8 0.3s infinite ease-out;
+        animation-iteration-count: 1; /* 执行一次 */
+        animation-fill-mode: forwards; /* 保持现样式 */
+        &--info {
+            color: #1989fa;
+            background: #c4dcf5;
+        }
+        &--success {
+            color: #67c23a;
+            background: #f0f9eb;
+        }
+        &--warning {
+            color: #e6a23c;
+            background: #fdf6ec;
+        }
+        &--fail {
+            color: #f56c6c;
+            background: #fef0f0;
+        }
+    }
+    &__content-text {
+        margin-left: 5px;
+        display: flex;
+        .i-icon {
+            margin-right: 5px;
+        }
+    }
+
+    @keyframes down8 {
+        100% {
+            transform: translateY(calc(var(--totaltop) * 1px + 70px));
+        }
+    }
+}

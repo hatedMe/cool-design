@@ -8,22 +8,32 @@
 
 <template>
     <div id="app" class="warp">
-        <i-badge :value="123" :max="99" type="danger" isDot>
-            <i-select type="cancel"></i-select>
-        </i-badge>
+        <i-button @click="openMessage">提示信息</i-button>
     </div>
 </template>
 
 <script>
 import doc from "./components";
 import "highlight.js/styles/github-dark.css";
+import CoolDesign from "../package/index";
 export default {
     components: {
         doc
     },
     data() {
-        return {};
+        return {
+            value: "111"
+        };
     },
-    methods: {}
+    methods: {
+        openMessage() {
+            CoolDesign.message({
+                text: "成功提示",
+                type: "success",
+                closeble: true,
+                icon:'icon-emoji_fill'
+            });
+        }
+    }
 };
 </script>

@@ -6,7 +6,7 @@ export default createComponent({
   props: {
     type: {
       type: String,
-      default: 'warning'
+      default: 'parimary'
     },
     effect: {
       type: String,
