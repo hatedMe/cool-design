@@ -20,7 +20,9 @@ import Badge from './badge/index'
 import Avatar from './avatar/index'
 import Empty from './empty/index'
 import Alert from './alert/index'
+import Mask from './mask/index'
 import message from './message/index'
+import alert from './message-box/index'
 
 const version = '1.0.0';
 const components = [
@@ -45,7 +47,8 @@ const components = [
     Badge,
     Avatar,
     Empty,
-    Alert
+    Alert,
+    Mask
 ]
 
 const install = (Vue) => {
@@ -61,5 +64,6 @@ if (typeof window !== 'undefined' && window.Vue) {
 export default {
     version,
     install,
-    message
+    message,
+    alert
 };

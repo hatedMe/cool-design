@@ -37,7 +37,7 @@ export default createComponent({
                     <span class={bem('title', { 'wight': !!this.desc })}>{this.title}</span>
                     <span class={bem('close')} onClick={() => this.closeAlert()}>
                         {
-                            this.closeText || <i-icon type="icon-delete"></i-icon>
+                            this.closeText || <i-icon type="icon-close"></i-icon>
                         }
                     </span>
                 </p>

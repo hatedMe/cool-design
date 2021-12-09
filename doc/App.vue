@@ -1,14 +1,16 @@
 <style lang="sass">
+
 .warp
   margin-top: 100px
   display: flex
   justify-content: center
   align-items: center
+  background: #FFF
 </style>
 
 <template>
     <div id="app" class="warp">
-        <i-button @click="openMessage">提示信息</i-button>
+        <i-button @click="openMessage">按钮</i-button>
     </div>
 </template>
 
@@ -21,17 +23,28 @@ export default {
         doc
     },
     data() {
-        return {
-            value: "111"
-        };
+        return {};
     },
     methods: {
         openMessage() {
-            CoolDesign.message({
-                text: "成功提示",
-                type: "success",
-                closeble: true,
-                icon:'icon-emoji_fill'
+            CoolDesign.alert({
+                title: "提示",
+                message: "成功提示",
+                showClose: true,
+                closeOnClickModal: true,
+                callback: function(res) {
+                    if (res === "cancel") {
+                        CoolDesign.message({
+                            text: "点击了取消！",
+                            type: "fail"
+                        });
+                    } else {
+                        CoolDesign.message({
+                            text: "点击了确定！",
+                            type: "success"
+                        });
+                    }
+                }
             });
         }
     }
