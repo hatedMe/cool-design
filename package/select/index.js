@@ -4,68 +4,59 @@ import "./index.scss";
 
 export default createComponent({
     props: {
-        data: {
-            type: Array,
-            default: function () {
-                return []
-            }
-        },
+        value: [],
+        clearable: []
     },
     data() {
         return {
-            value: "",
+            valueText: '',
             open: false,
+            randomN: 1
         }
     },
+    model: {
+        prop: 'value',
+        event: 'change'
+    },
     watch: {
-        // value: function (newVal, oldVal){
-        //     if(newVal===oldVal) return;
-        //     const _this = this
-        //     let clear = document.getElementById('clearvalue')
-        //     clear.addEventListener('click',()=>{
-        //         _this.value = ""
-        //     },true)
-        // }
+        value: function () {
+            this.randomN = Math.random()
+        }
     },
     methods: {
-        change(index) {
-            if (this.data[index].disabled) return;
-            this.value = this.data[index].label
-            this.open = false
-            this.$emit('change', this.data[index].value)
+        setModalVal(val) {
+            this.$emit('change', val)
+        },
+        setValueLabel(label) {
+            this.valueText = label
         },
         openSelect() {
             this.open = !this.open
         },
         deleteValue(e) {
-            if(e && e.stopPropagation){
+            if (e && e.stopPropagation) {
                 e.stopPropagation();
-            }else{
+            } else {
                 window.e.cancelBubble
             }
-            this.value = ""
+            this.valueText = ""
+            this.$emit('change', '')
         }
     },
     render(h) {
         return (
             <div class={bem()} >
                 <div onClick={() => this.openSelect()}>
-                    <input class={[bem('input')]} placeholder="请选择" readonly value={this.value} />
+                    <input class={[bem('input')]} placeholder="请选择" readonly value={this.valueText} />
                     {
-                        this.value ?
-                            <span  onClick={(e) => this.deleteValue(e)} ><i-icon type="icon-delete" /></span>
+                        this.valueText && this.clearable === "" ?
+                            <span onClick={(e) => this.deleteValue(e)} ><i-icon type="icon-delete" /></span>
                             : <i-icon type="icon-packup" class={[bem('icon', { roter: this.open })]} />
                     }
                 </div>
-                {
-                    this.open && this.data.length ? <div class={[bem('data')]}>
-                        {
-                            this.data.map((item, index) => {
-                                return <p class={[bem('item', { disabled: item.disabled })]} onClick={() => this.change(index)}>{item.label}</p>
-                            })
-                        }
-                    </div> : null
-                }
+                <div class={[bem('data'), { 'hide': !this.open }]} key={this.randomN}>
+                    {this.$slots.default}
+                </div>
             </div>
         )
     },

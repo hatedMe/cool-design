@@ -9,9 +9,14 @@ export default createComponent({
 			default: "primary",
 		},
 	},
+	methods: {
+		onClickHandle(){
+			this.$emit('click')
+		}
+	},
 	render(h) {
 		return (
-			<button class={[bem({ [this.type]: true, active: true })]}>
+			<button class={[bem({ [this.type]: true, active: true })]} onClick={() => this.onClickHandle()}>
 				{this.$slots.default}
 			</button>
 		)

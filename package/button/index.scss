@@ -7,24 +7,19 @@
     height: 32px;
     padding: 6px 15px;
     line-height: 0;
-    border-width: 0;
     vertical-align: middle;
     box-sizing: border-box;
     border-width: 1px;
-    border-radius: 4px;
+	border-color: $disable-hover;
+    border-radius: 4px;	
     color: $white;
     background-color: $default-color;
     cursor: pointer;
-    &:active,
-    &.active {}
-    &.block {
-        display: flex;
-    }
+	
     &--primary {
-        color: $white;
         background-color: $primary;
-        &:active,
-        &.active {
+
+        &:active{
             background-color: $primary-active;
         }
     }
@@ -54,10 +49,10 @@
     }
     /*警告按钮*/
     &--warn {
-        background-color: $warn;
+        background-color: $warning;
         &:active,
         &.active {
-            background-color: $warn-active;
+            background-color: $warning-active;
         }
     }
     /*完成按钮*/
@@ -116,12 +111,12 @@
 	}
 	/*线框-警告按钮*/
 	&.warn{
-		color:$warn;
+		color:$warning;
 		background-color:transparent;
-		border-color:$warn;
+		border-color:$warning;
 		&:active,&.active{
-			color:$warn-active;
-			border-color:$warn-active;
+			color:$warning-active;
+			border-color:$warning-active;
 		}
 	}
 	/*线框-完成按钮*/

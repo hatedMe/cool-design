@@ -8,30 +8,29 @@ Arial,
 sans-serif;
 
 $primary : #20aeff;
-$primary-hover : #20aeff; 
-$primary-active : #20aeff; 
+$primary-hover : lighten($primary, 10%);
+$primary-active : darken($primary, 10%);
 
 $disable:#d1d1d1;
 $submit:#68c75f;
 $cancel:#F86868;
 $success:#4DDB63;
 $info:#5bc0de;
-$warn:#f4984e;
-
+$warning:#f4984e;
 
 $disable-hover:lighten($disable, 10%);
 $submit-hover:lighten($submit, 10%);
 $cancel-hover:lighten($cancel, 10%);
 $success-hover:lighten($success, 10%);
 $info-hover:lighten($info, 10%);
-$warn-hover:lighten($warn, 10%);
+$warning-hover:lighten($warning, 10%);
 
 $disable-active:darken($disable, 10%);
 $submit-active:darken($submit, 10%);
 $cancel-active:darken($cancel, 10%);
 $success-active:darken($success, 10%);
 $info-active:darken($info, 10%);
-$warn-active:darken($warn, 10%);
+$warning-active:darken($warning, 10%);
 
 
 $white : #ffffff;

@@ -1,0 +1,11 @@
+@import "@/style/base.scss";
+.i-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2081;
+    width: 100%;
+    height: 100%;
+    opacity: .2;
+    background: rgb(187, 187, 187);
+}

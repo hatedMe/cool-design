@@ -1,0 +1,50 @@
+@import "@/style/base.scss";
+
+.i-alert {
+    position: relative;
+    align-items: center;
+    width: 100%;
+    padding: 8px 16px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    overflow: hidden;
+    opacity: 1;
+    background-color: #fff;
+    transition: opacity 0.2s;
+    &--hide {
+        display: none;
+    }
+    &__title {
+        &--wight {
+            font-size: 15px;
+            font-weight: 700;
+        }
+    }
+    &__close {
+        position: absolute;
+        right: 16px;
+        color: #909399;
+    }
+    &__desc {
+        margin-top: 8px;
+        width: 90%;
+        font-weight: 12px;
+    }
+    &__info {
+        color: #909399;
+        background-color: #f4f4f5;
+    }
+    &__success {
+        color: #67c23a;
+        background-color: #f0f9eb;
+    }
+    &__warning {
+        color: #e6a23c;
+        background-color: #fdf6ec;
+    }
+    &__error {
+        color: #f56c6c;
+        background-color: #fef0f0;
+    }
+}

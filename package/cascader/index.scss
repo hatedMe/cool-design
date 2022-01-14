@@ -1,0 +1,84 @@
+@import "@/style/base.scss";
+
+.i-cascader {
+    position: relative;
+    display: inline-block;
+    width: 180px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    border: 1px solid $disable;
+    border-radius: 5px;
+    cursor: pointer;
+
+    &__input {
+        width: 80%;
+        color: lighten($default-black, 20%);
+        font-size: $font-size-md;
+        outline: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    &__icon--roter {
+        transform: rotate(180deg);
+        transition: all 0.3s;
+    }
+
+    &__icon--rotel {
+        transform: rotate(-180deg);
+        transition: all 0.3s;
+    }
+
+    &__data-list {
+        position: absolute;
+        top: 38px;
+        left: 0px;
+        display: flex;
+
+        &-group {
+            width: 180px;
+            padding: 3px;
+            border-radius: 5px;
+            border: 1px solid $disable;
+            box-shadow: 0px 0px 1px lighten($default-black, 20%);
+            box-sizing: border-box;
+            text-align: left;
+            animation: fadeInDown .3s;
+        }
+    }
+
+
+    &__item {
+        padding-left: 10px;
+    }
+
+    &__item:hover {
+        background-color: $disable-hover;
+    }
+
+    &__item--disabled {
+        color: $disable;
+        cursor: not-allowed;
+    }
+
+    &__item--disabled:hover {
+        background-color: $white;
+    }
+}
+
+@keyframes fadeInDown {
+    0% {
+        -webkit-transform: translate3d(0, -20%, 0);
+        -webkit-transform: translate3d(0, -20%, 0);
+        transform: translate3d(0, -20%, 0);
+        transform: translate3d(0, -20%, 0);
+        opacity: 0;
+    }
+
+    100% {
+        -webkit-transform: none;
+        transform: none;
+        opacity: 1;
+    }
+}
