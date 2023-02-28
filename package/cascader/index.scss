@@ -52,7 +52,9 @@
     &__item {
         padding-left: 10px;
     }
-
+    &__item--active{
+        color: $primary;
+    }
     &__item:hover {
         background-color: $disable-hover;
     }

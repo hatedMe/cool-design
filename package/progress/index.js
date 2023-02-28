@@ -32,6 +32,13 @@ export default createComponent({
       lineValue: 0,
     }
   },
+  watch: {
+    value: {
+      handler(val){
+        this.lineValue = Number(val)
+      }
+    }
+  },
   computed: {
     widthText: function () {
       this.lineValue = this.lineValue > 100 ? 100 : this.lineValue
