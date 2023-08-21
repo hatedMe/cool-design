@@ -23,7 +23,7 @@ export default defineConfig({
             ]
         },
         lib: {
-            entry: "src/index.ts",
+            entry: "package/index.ts",
             name: "cool-design",
             fileName: (format) => `cool-design.${format}.js`,
             formats: ["es", "umd", "cjs"],
