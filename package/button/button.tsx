@@ -1,14 +1,14 @@
-import { createNamespace } from "../../src/utils/index";
-const [createComponent, bem] = createNamespace('button');
-import { defineComponent } from "vue"
-// import "./index.scss";
+import { defineComponent } from "vue";
+import {createNamespace} from "../../src/utils/create";
+const [name , bem] = createNamespace('button');
+
 
 
 export default defineComponent({
-	name: "Button",
-	setup(props, ctx) {
+	name,
+	setup(_props, _ctx) {
 		return (
-			<button>555</button>
+			<button class={bem()}>555</button>
 		)
 	},
 });
