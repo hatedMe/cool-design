@@ -1,6 +1,7 @@
-import { computed, defineComponent } from "vue";
+import { type CSSProperties, computed, defineComponent , inject } from "vue";
 import { createNamespace } from "../../src/utils/create";
 const [name, bem] = createNamespace("col");
+import { rowKeys } from "../row";
 
 export default defineComponent({
     name,
@@ -24,9 +25,14 @@ export default defineComponent({
     },
     setup(props, { slots }) {
         const { tag , span , offset} = props;
+        const { gutter } = inject(rowKeys, { gutter: computed(() => 0) });
         const style = computed(() => {
+            const styles : CSSProperties = {};
+            if( gutter.value ){
+                styles.paddingLeft = `${gutter.value / 2}px`;
+            }
         });
-
+        
         return () => (
             <tag class={bem({ [span] : span , [`offset-${offset}`]: offset })} style={style.value}>
                 {slots.default?.()}
