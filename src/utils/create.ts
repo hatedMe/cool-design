@@ -1,8 +1,8 @@
 
-type Mod = { [x: string]: any; };
+type Mod = string |  { [x: string]: any; };
 type Mods = Mod | Mod[];
 function bem(componentName: string) {
-    return function (elementOrMods?: string, mods?:Mods) {
+    return function (elementOrMods?: Mod, mods?:Mods) {
         if (!elementOrMods) {
             return componentName;
         }
