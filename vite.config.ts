@@ -4,6 +4,7 @@ import vitePluginJsx from '@vitejs/plugin-vue-jsx';
 
 export default defineConfig({
     plugins: [vue(), vitePluginJsx()],
+
     build: {
         rollupOptions: {
             external: ['vue'],

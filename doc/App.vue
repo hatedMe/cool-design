@@ -3,7 +3,7 @@
     555
     <Col tag="main" :span="12">123</Col>
 
-    <Avater></Avater>
+    <Avater shape="circle">江</Avater>
   </div>
 </template>
 <script setup lang="ts">

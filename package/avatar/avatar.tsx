@@ -4,6 +4,9 @@ const [name, bem] = createNamespace("avatar");
 
 export type AvatarShape = "circle" | "square";
 export type AvatarSize = "large" | "medium" | "small" | number;
+export type AvatarFit = "fill" | "contain" | "cover" | "none" | "scale-down"
+
+const isNumber = (value: unknown): boolean => typeof value === "number";
 
 export default defineComponent({
     name,
@@ -21,29 +24,33 @@ export default defineComponent({
             default: "large",
         },
         icon: String,
+        fit: {
+            type: String as PropType<AvatarFit>,
+            default: "cover",
+        }
     },
     setup(props, { slots }) {
-        const { size, url, icon } = props;
+        const { size, url, icon , shape , fit } = props;
         const style = computed(() => {
-            if (typeof size === "number") {
+            if (isNumber(size)) {
                 return {
                     width: `${size}px`,
                     height: `${size}px`,
-                    lineHeight: `${size}px`,
-                    fontSize: `${size / 2}px`,
                 };
             }
         });
 
+        const classLists = bem({ 
+            [shape] : !0 , 
+            [fit] : !0 ,
+            [size] : !isNumber(size),
+        })
+
         return () => (
-            <div class={bem()} style={style.value}>
-                {url ? (
-                    <img class={bem("img")} src={url}></img>
-                ) : icon ? (
-                    <i-icon type={icon}></i-icon>
-                ) : (
-                    slots.default?.()
-                )}
+            <div class={classLists} style={style.value}>
+                { url && <img class={bem("img")} src={url}></img> }
+                { icon && <i-icon type={icon}></i-icon> }
+                { slots.default?.() }
             </div>
         );
     },
