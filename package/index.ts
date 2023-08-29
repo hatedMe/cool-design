@@ -1,9 +1,13 @@
 import type { App } from "vue";
-import Button from "./button/index";
+import Button from "./button";
+import Row from "./row";
+import Col from "./col";
 
 const version = '1.0.0';
 const components = [
-    Button
+    Button,
+    Row,
+    Col,
 ]
 
 const install = (Vue:App) => {

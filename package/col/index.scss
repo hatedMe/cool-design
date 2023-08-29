@@ -1,19 +1,16 @@
-@charset "UTF-8";
-@import "@/style/base.scss";
-@import "@/style/mixins/utils.scss";
-@import "@/style/mixins/mixins.scss";
+@import "../../style/base.scss";
 
-[class*="i-col-"] {
+[class*="#{$namespace}-col-"] {
     float: left;
     box-sizing: border-box;
 }
 
-.i-col-0 {
+@include b ('#{$namespace}col-0') {
     display: none;
 }
 
 @for $i from 0 through 24 {
-    .i-col-#{$i} {
+    @include b ("col-#{$i}") {
         width: (1 / 24 * $i * 100) * 1%;
     }
 
