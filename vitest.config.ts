@@ -9,10 +9,7 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['src/**/*.spec.[jt]s?(x)' , "package/**/*.spec.[jt]s?(x)"],
     restoreMocks: true,
-    experimentalVmThreads: true,
-    transformMode: {
-      web: [/.[tj]sx$/]
-    }
+    experimentalVmThreads: true
   },
   plugins: [vitePluginVue(), vitePluginJsx()],
 });
