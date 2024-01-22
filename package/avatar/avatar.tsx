@@ -2,6 +2,7 @@ import { PropType, computed, defineComponent } from "vue";
 import { createNamespace } from "../../src/utils/create";
 const [name, bem] = createNamespace("avatar");
 
+
 export type AvatarShape = "circle" | "square";
 export type AvatarSize = "large" | "medium" | "small" | number;
 export type AvatarFit = "fill" | "contain" | "cover" | "none" | "scale-down"
@@ -15,6 +16,11 @@ export default defineComponent({
             type: String,
             default: "",
         },
+        /**
+         * @description 形状
+         * - `circle` 圆形
+         * - `square` 方形
+         */
         shape: {
             type: String as PropType<AvatarShape>,
             default: "square",
