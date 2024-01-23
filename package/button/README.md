@@ -4,7 +4,7 @@
 
 ```js
 import Vue from 'vue';
-import { Button } from 'megan-ui';
+import { Button } from 'cool-design';
 
 Vue.use(Button);
 ```

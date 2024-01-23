@@ -1,6 +1,26 @@
 @import "@/style/base.scss";
 
-.i-cascader {
+$namespace : 'i';
+
+@mixin bem($block) {
+    @at-root #{'.' + $namespace + '-' + $block} {
+        @content;
+    }
+}
+
+@mixin bem-elm($block, $element) {
+    @at-root #{'.' + $namespace + '-' + $block + '__' + $element} {
+        @content;
+    }
+}
+
+@mixin bem-mod($block, $modifier) {
+    @at-root #{'.' + $namespace + '-' + $block + '--' + $modifier} {
+        @content;
+    }
+}
+
+@include bem(cascader) {
     position: relative;
     display: inline-block;
     width: 180px;
@@ -67,7 +87,9 @@
     &__item--disabled:hover {
         background-color: $white;
     }
+
 }
+
 
 @keyframes fadeInDown {
     0% {

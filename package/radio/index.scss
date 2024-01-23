@@ -1,6 +1,6 @@
-@import "@/style/base.scss";
+@import "../../src/style/base.scss";
 
-.i-radio {
+@include b("radio") {
     display: inline-block;
     height: 20px;
     line-height: 20px;
