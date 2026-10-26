@@ -1,5 +1,28 @@
 # Tooltip 文字提示
 
+### 介绍
+
+为操作提供简短的补充说明，支持鼠标悬停与键盘聚焦。
+
+## API
+
+### 属性
+
+| 参数      | 说明                              | 类型    | 默认值   |
+| --------- | --------------------------------- | ------- | -------- |
+| content   | 纯文本提示                        | string  | 空字符串 |
+| placement | 方向：top / bottom / left / right | string  | top      |
+| disabled  | 禁用提示                          | boolean | false    |
+
+### 插槽
+
+| 名称    | 说明               |
+| ------- | ------------------ |
+| default | 一个可聚焦触发元素 |
+| content | 替换文字提示       |
+
+## 使用说明
+
 -   `content`: 纯文本说明；`content` 插槽可覆盖。
 -   `placement`: top（默认）/bottom/left/right。
 -   `disabled`: 默认 false。

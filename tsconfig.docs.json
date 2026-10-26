@@ -1,0 +1,16 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "lib": ["ES2021", "DOM", "DOM.Iterable"]
+    },
+    "include": [
+        "doc/App.vue",
+        "doc/main.ts",
+        "doc/env.d.ts",
+        "doc/site/**/*.ts",
+        "doc/site/**/*.vue",
+        "package/*/demo/*.vue"
+    ],
+    "exclude": ["**/__test__/**"],
+    "references": []
+}
