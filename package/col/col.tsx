@@ -1,42 +1,35 @@
-import { type CSSProperties, computed, defineComponent , inject } from "vue";
-import { createNamespace } from "../../src/utils/create";
-const [name, bem] = createNamespace("col");
-import { rowKeys } from "../row";
-
+import { computed, defineComponent, h, inject } from "vue";
+import { rowKeys } from "../row/row";
 export default defineComponent({
-    name,
+    name: "i-col",
     props: {
-        span: {
-            type: Number,
-            default: 24,
-        },
-        tag: {
-            type: String,
-            default: "div",
-        },
-        offset: Number,
+        span: { type: Number, default: 24 },
+        tag: { type: String, default: "div" },
+        offset: { type: Number, default: 0 },
         pull: Number,
         push: Number,
         xs: [Number, Object],
         sm: [Number, Object],
         md: [Number, Object],
         lg: [Number, Object],
-        xl: [Number, Object],
+        xl: [Number, Object]
     },
     setup(props, { slots }) {
-        const { tag , span , offset} = props;
         const { gutter } = inject(rowKeys, { gutter: computed(() => 0) });
-        const style = computed(() => {
-            const styles : CSSProperties = {};
-            if( gutter.value ){
-                styles.paddingLeft = `${gutter.value / 2}px`;
-            }
-        });
-        
-        return () => (
-            <tag class={bem({ [span] : span , [`offset-${offset}`]: offset })} style={style.value}>
-                {slots.default?.()}
-            </tag>
-        );
-    },
+        return () =>
+            h(
+                props.tag,
+                {
+                    class: "i-col",
+                    style: {
+                        flex: `0 0 ${(props.span / 24) * 100}%`,
+                        maxWidth: `${(props.span / 24) * 100}%`,
+                        marginLeft: `${(props.offset / 24) * 100}%`,
+                        paddingLeft: `${gutter.value / 2}px`,
+                        paddingRight: `${gutter.value / 2}px`
+                    }
+                },
+                slots.default?.()
+            );
+    }
 });

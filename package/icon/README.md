@@ -1,18 +1,5 @@
-# Icon
+# Icon 图标
 
-### Install
+源码已修复，尚未加入首版公开入口。
 
-```js
-import Vue from 'vue';
-import { Icon } from 'megan-ui';
-
-Vue.use(Icon);
-```
-
-## Usage
-怎么用 
-
-props参数 
-
-例子
-
+`type` 接受字体库已有类名，例如 `icon-close`；动态更新会同步图标。使用当前仓库自带 iconfont，尚未迁移为 SVG 图标体系。

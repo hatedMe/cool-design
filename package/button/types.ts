@@ -1,21 +1,10 @@
-
-
-export type ButtonType = 'primary'| 'success'| 'warning'| 'danger'| 'info';
-export type ButtonSize = 'large'| 'medium'| 'small'| 'mini';
-
+export type ButtonType = "default" | "primary" | "success" | "warning" | "danger";
+export type ButtonSize = "small" | "default" | "normal" | "large";
 export interface IButtonProps {
     type?: ButtonType;
     size?: ButtonSize;
-    icon?: string;
-    nativeType?: string;
+    nativeType?: "button" | "submit" | "reset";
     loading?: boolean;
     disabled?: boolean;
-    /**
-     * @description: 是否为朴素按钮
-     */
-    plain?: boolean;
-    autofocus?: boolean;
-    round?: boolean;
-    circle?: boolean;
     onClick?: (event: MouseEvent) => void;
 }

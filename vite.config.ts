@@ -1,34 +1,45 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import vitePluginJsx from '@vitejs/plugin-vue-jsx';
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import jsx from "@vitejs/plugin-vue-jsx";
+import dts from "vite-plugin-dts";
 
 export default defineConfig({
-    plugins: [vue(), vitePluginJsx()],
-
+    plugins: [
+        vue(),
+        jsx(),
+        dts({
+            tsconfigPath: "tsconfig.build.json",
+            include: [
+                "package/index.ts",
+                "src/utils/create.ts",
+                "src/utils/with-install.ts",
+                "package/{button,row,col,config-provider,input,select,select-option,checkbox,switch,form,form-item,table,pagination,dialog,message}/**/*.{ts,tsx}"
+            ],
+            exclude: ["**/__test__/**"],
+            outDir: "es"
+        })
+    ],
     build: {
+        lib: { entry: "package/index.ts" },
         rollupOptions: {
-            external: ['vue'],
-            input: "package/index.ts",
+            external: ["vue"],
             output: [
                 {
                     format: "es",
-                    entryFileNames: "[name].mjs",
-                    preserveModules: true,
                     dir: "es",
+                    preserveModules: true,
+                    entryFileNames: "[name].js",
+                    assetFileNames: "[name][extname]"
                 },
                 {
                     format: "cjs",
-                    entryFileNames: "[name].js",
-                    preserveModules: true,
                     dir: "lib",
-                },
+                    preserveModules: true,
+                    entryFileNames: "[name].cjs",
+                    exports: "named",
+                    assetFileNames: "[name][extname]"
+                }
             ]
-        },
-        lib: {
-            entry: "package/index.ts",
-            name: "cool-design",
-            fileName: (format) => `cool-design.${format}.js`,
-            formats: ["es", "umd", "cjs"],
-        },
+        }
     }
-})
+});

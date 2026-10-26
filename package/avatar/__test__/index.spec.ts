@@ -1,21 +1,21 @@
 import { nextTick } from "vue";
-import { mount, shallowMount } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
 import { describe, expect, test } from "vitest";
 
 import Avatar from "../index";
-const { name } = Avatar
+const { name } = Avatar;
 
 describe("test `Avatar` component", () => {
     test("renders a component", async () => {
         const wrapper = mount(Avatar);
-        expect(wrapper.find('.i-avatar').exists()).toBe(true);
+        expect(wrapper.find(".i-avatar").exists()).toBe(true);
     });
 
     test("test props `size` is number type", async () => {
         const wrapper = mount(Avatar, {
             props: {
-                size: 50,
-            },
+                size: 50
+            }
         });
         await nextTick();
         expect(wrapper.attributes("style")).toContain("width: 50px; height: 50px;");
@@ -26,11 +26,20 @@ describe("test `Avatar` component", () => {
         for (const size of sizes) {
             const wrapper = mount(Avatar, {
                 props: {
-                    size : size,
-                },
+                    size: size
+                }
             });
             await nextTick();
             expect(wrapper.classes()).toContain(name + "--" + size);
         }
+    });
+
+    test("动态属性更新尺寸、图片、形状和图片适配", async () => {
+        const wrapper = mount(Avatar, { props: { size: 40, url: "first.png", fit: "cover" } });
+        await wrapper.setProps({ size: 64, url: "second.png", shape: "circle", fit: "contain" });
+        expect(wrapper.attributes("style")).toContain("width: 64px");
+        expect(wrapper.classes()).toContain("i-avatar--circle");
+        expect(wrapper.get("img").attributes("src")).toBe("second.png");
+        expect(wrapper.get("img").classes()).toContain("i-avatar__img--contain");
     });
 });

@@ -1,0 +1,72 @@
+.i-table {
+    position: relative;
+    border: 1px solid var(--i-border);
+    border-radius: var(--i-radius);
+    background: var(--i-bg);
+    overflow: hidden;
+}
+.i-table__scroll {
+    overflow: auto;
+}
+.i-table table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    text-align: left;
+}
+.i-table th,
+.i-table td {
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--i-border);
+    background: var(--i-bg);
+}
+.i-table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--i-bg-subtle);
+    color: var(--i-text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 2 !important;
+}
+.i-table th[style*="sticky"] {
+    z-index: 3 !important;
+}
+.i-table th button {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+.i-table .i-table__selection {
+    position: sticky;
+    left: 0;
+    width: 48px;
+    min-width: 48px;
+    padding: 12px;
+    z-index: 1;
+}
+.i-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+.i-table tbody tr:hover td,
+.i-table__selected td {
+    background: var(--i-bg-subtle);
+}
+.i-table .i-table__empty {
+    text-align: center;
+    padding: 64px 20px;
+    color: var(--i-text-muted);
+}
+.i-table__loading {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: var(--i-bg);
+    opacity: 0.85;
+    min-height: 80px;
+    z-index: 4;
+}

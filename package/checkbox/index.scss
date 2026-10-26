@@ -1,2 +1,11 @@
-@charset "UTF-8";
-@import "@/style/base.scss";
+.i-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+.i-checkbox input {
+    accent-color: var(--i-primary);
+    width: 15px;
+    height: 15px;
+}

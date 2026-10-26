@@ -1,11 +1,11 @@
 import { PropType, computed, defineComponent } from "vue";
 import { createNamespace } from "../../src/utils/create";
+import Icon from "../icon";
 const [name, bem] = createNamespace("avatar");
-
 
 export type AvatarShape = "circle" | "square";
 export type AvatarSize = "large" | "medium" | "small" | number;
-export type AvatarFit = "fill" | "contain" | "cover" | "none" | "scale-down"
+export type AvatarFit = "fill" | "contain" | "cover" | "none" | "scale-down";
 
 const isNumber = (value: unknown): boolean => typeof value === "number";
 
@@ -14,7 +14,7 @@ export default defineComponent({
     props: {
         url: {
             type: String,
-            default: "",
+            default: ""
         },
         /**
          * @description 形状
@@ -23,41 +23,41 @@ export default defineComponent({
          */
         shape: {
             type: String as PropType<AvatarShape>,
-            default: "square",
+            default: "square"
         },
         size: {
             type: [String, Number] as PropType<AvatarSize>,
-            default: "large",
+            default: "large"
         },
         icon: String,
         fit: {
             type: String as PropType<AvatarFit>,
-            default: "cover",
+            default: "cover"
         }
     },
     setup(props, { slots }) {
-        const { size, url, icon , shape , fit } = props;
         const style = computed(() => {
-            if (isNumber(size)) {
+            if (isNumber(props.size)) {
                 return {
-                    width: `${size}px`,
-                    height: `${size}px`,
+                    width: `${props.size}px`,
+                    height: `${props.size}px`
                 };
             }
         });
 
-        const classLists = bem({ 
-            [shape] : !0 , 
-            [fit] : !0 ,
-            [size] : !isNumber(size),
-        })
+        const classLists = computed(() =>
+            bem({
+                [props.shape]: true,
+                [props.size]: !isNumber(props.size)
+            })
+        );
 
         return () => (
-            <div class={classLists} style={style.value}>
-                { url && <img class={bem("img")} src={url}></img> }
-                { icon && <i-icon type={icon}></i-icon> }
-                { slots.default?.() }
+            <div class={classLists.value} style={style.value}>
+                {props.url && <img class={[bem("img"), bem("img", { [props.fit]: true })]} src={props.url} alt="" />}
+                {props.icon && <Icon type={props.icon} />}
+                {slots.default?.()}
             </div>
         );
-    },
+    }
 });

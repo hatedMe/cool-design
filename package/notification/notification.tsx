@@ -1,45 +1,37 @@
-import { defineComponent } from "vue";
-import type { PropType } from "vue";
+import { defineComponent, type PropType } from "vue";
 import { createNamespace } from "../../src/utils/create";
-const [name, bem] = createNamespace("button");
-
-const props = {
-    /** @description 标题 */
-    title: String,
-    /** @description 通知栏正文内容 */
-    message: String,
-    size: String as PropType<"large" | "normal" | "small">,
-    type: {
-        type: String as PropType<ButtonType>,
-        default: "warning"
-    }
-};
+import type { NotificationType } from "./types";
+const [name, bem] = createNamespace("notification");
 
 export default defineComponent({
     name,
-    props,
+    props: {
+        title: String,
+        message: String,
+        size: { type: String as PropType<"large" | "normal" | "small">, default: "normal" },
+        type: { type: String as PropType<NotificationType>, default: "warning" }
+    },
+    emits: ["click", "close"],
     setup(props, { emit, slots }) {
-        const { size } = props;
-
-        const classes = [bem(), bem(size)];
-        //  <button class={classes}>555</button>
-        // const renderLoading = () => {
-        // 	return (
-        // 		<div class={bem('loading')}>
-        // 			{ ctx.slots.loading && <solt name="loading" /> }
-        // 		</div>
-        // 	)
-        // };
-
-        const onClick = (event: MouseEvent) => {
-            emit("click", event);
-        };
-
-        return (
-            <div class={bem} onClick={onClick}>
-                {/* { props.loading && <Loading type="spinner" size="20" /> }
-					{ slots.default?.() } */}
-            </div>
+        return () => (
+            <section
+                class={[bem(), bem({ [props.type]: true, [props.size]: true })]}
+                role="status"
+                onClick={(event: MouseEvent) => emit("click", event)}>
+                <div class={bem("content")}>
+                    {props.title && <h3 class={bem("title")}>{props.title}</h3>}
+                    <div class={bem("message")}>{slots.default?.() ?? props.message}</div>
+                </div>
+                <button
+                    type="button"
+                    aria-label="关闭通知"
+                    onClick={(event: MouseEvent) => {
+                        event.stopPropagation();
+                        emit("close");
+                    }}>
+                    ×
+                </button>
+            </section>
         );
     }
 });

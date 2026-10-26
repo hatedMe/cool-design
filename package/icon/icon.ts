@@ -7,19 +7,13 @@ export default defineComponent({
     props: {
         type: {
             type: String,
-            default: "",
-        },
+            default: ""
+        }
     },
     setup(props) {
-        const { type } = props;
         return () =>
             h("i", {
-                class: [
-                    "iconfont",
-                    bem({
-                        [type]: type,
-                    }),
-                ],
+                class: ["iconfont", bem(), props.type]
             });
-    },
+    }
 });

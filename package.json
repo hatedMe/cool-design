@@ -1,38 +1,75 @@
 {
-  "name": "cool-design",
-  "version": "3.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "test": "vitest run",
-    "build": "vite build",
-    "preview": "vite preview",
-    "release": "release-it"
-  },
-  "files": [
-    "lib",
-    "types"
-  ],
-  "types": "types/index.d.ts",
-  "license": "MIT",
-  "dependencies": {
-    "vue": "^3.2.47"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^4.3.2",
-    "@vitejs/plugin-vue-jsx": "^3.0.2",
-    "@vue/test-utils": "^2.4.1",
-    "chalk": "^5.3.0",
-    "jsdom": "^22.1.0",
-    "prettier": "^3.2.4",
-    "release-it": "^14.11.6",
-    "sass": "^1.66.1",
-    "typescript": "^5.1.6",
-    "vite": "^4.4.9",
-    "vite-plugin-dts": "^3.5.2",
-    "vitest": "^0.34.3",
-    "vue-router": "^3.5.2",
-    "vue-template-compiler": "^2.6.11",
-    "vue-tsc": "^1.8.8"
-  }
+    "name": "cool-design",
+    "version": "3.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite --config vite.examples.config.ts",
+        "test": "vitest run",
+        "build": "node scripts/build.mjs",
+        "preview": "vite preview --config vite.examples.config.ts",
+        "release": "release-it",
+        "typecheck": "vue-tsc --noEmit -p tsconfig.build.json",
+        "typecheck:legacy": "vue-tsc --noEmit -p tsconfig.json",
+        "dev:examples": "vite --config vite.examples.config.ts",
+        "build:examples": "vite build --config vite.examples.config.ts",
+        "dev:legacy": "vite"
+    },
+    "files": [
+        "es",
+        "lib"
+    ],
+    "types": "./es/package/index.d.ts",
+    "license": "MIT",
+    "devDependencies": {
+        "@vitejs/plugin-vue": "^4.3.2",
+        "@vitejs/plugin-vue-jsx": "^3.0.2",
+        "@vue/test-utils": "^2.4.1",
+        "chalk": "^5.3.0",
+        "jsdom": "^22.1.0",
+        "prettier": "^3.2.4",
+        "release-it": "^14.11.6",
+        "sass": "^1.66.1",
+        "typescript": "^5.1.6",
+        "vite": "^4.4.9",
+        "vite-plugin-dts": "^3.5.2",
+        "vitest": "^0.34.3",
+        "vue-router": "^3.5.2",
+        "vue-template-compiler": "^2.6.11",
+        "vue-tsc": "^1.8.8",
+        "vue": "^3.2.47"
+    },
+    "peerDependencies": {
+        "vue": "^3.2.47"
+    },
+    "main": "./lib/package/index.cjs",
+    "module": "./es/package/index.js",
+    "sideEffects": [
+        "**/*.css",
+        "**/*.scss"
+    ],
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./es/package/index.d.ts",
+                "default": "./es/package/index.js"
+            },
+            "require": {
+                "types": "./lib/package/index.d.cts",
+                "default": "./lib/package/index.cjs"
+            }
+        },
+        "./style.css": "./es/style.css",
+        "./package.json": "./package.json",
+        "./*": {
+            "import": {
+                "types": "./es/package/*/index.d.ts",
+                "default": "./es/package/*/index.js"
+            },
+            "require": {
+                "types": "./lib/package/*/index.d.cts",
+                "default": "./lib/package/*/index.cjs"
+            }
+        }
+    },
+    "packageManager": "pnpm@10.33.0"
 }
