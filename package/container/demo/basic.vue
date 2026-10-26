@@ -3,19 +3,72 @@ import { Container, Header, Aside, Main, Footer, Space } from "../../index";
 </script>
 <template>
     <Space direction="vertical" align="stretch" :size="24">
-        <Container class="container-demo">
-            <Header :height="48">Header 顶栏</Header>
-            <Main>Main 主内容</Main>
-            <Footer :height="40">Footer 页脚</Footer>
-        </Container>
-        <Container class="container-demo">
-            <Aside width="28%">Aside 侧栏</Aside>
-            <Container>
+        <div>
+            <p>页头 + 主内容 + 页脚</p>
+            <Container class="container-demo" data-layout="header-main-footer">
                 <Header :height="48">Header 顶栏</Header>
                 <Main>Main 主内容</Main>
                 <Footer :height="40">Footer 页脚</Footer>
             </Container>
-        </Container>
+        </div>
+        <div>
+            <p>侧栏 +（页头 + 主内容 + 页脚）</p>
+            <Container class="container-demo" data-layout="aside-header-main-footer">
+                <Aside width="28%">Aside 侧栏</Aside>
+                <Container>
+                    <Header :height="48">Header 顶栏</Header>
+                    <Main>Main 主内容</Main>
+                    <Footer :height="40">Footer 页脚</Footer>
+                </Container>
+            </Container>
+        </div>
+        <div>
+            <p>页头 + 主内容</p>
+            <Container class="container-demo" data-layout="header-main">
+                <Header :height="48">Header 顶栏</Header>
+                <Main>Main 主内容</Main>
+            </Container>
+        </div>
+        <div>
+            <p>侧栏 + 主内容</p>
+            <Container class="container-demo" data-layout="aside-main">
+                <Aside width="28%">Aside 侧栏</Aside>
+                <Main>Main 主内容</Main>
+            </Container>
+        </div>
+        <div>
+            <p>页头 +（侧栏 + 主内容）</p>
+            <Container class="container-demo" data-layout="header-aside-main">
+                <Header :height="48">Header 顶栏</Header>
+                <Container>
+                    <Aside width="28%">Aside 侧栏</Aside>
+                    <Main>Main 主内容</Main>
+                </Container>
+            </Container>
+        </div>
+        <div>
+            <p>页头 +（侧栏 +（主内容 + 页脚））</p>
+            <Container class="container-demo" data-layout="header-aside-main-footer">
+                <Header :height="48">Header 顶栏</Header>
+                <Container>
+                    <Aside width="28%">Aside 侧栏</Aside>
+                    <Container>
+                        <Main>Main 主内容</Main>
+                        <Footer :height="40">Footer 页脚</Footer>
+                    </Container>
+                </Container>
+            </Container>
+        </div>
+        <div>
+            <p>侧栏 +（页头 + 主内容）</p>
+            <Container class="container-demo" data-layout="aside-header-main">
+                <Aside width="28%">Aside 侧栏</Aside>
+                <Container>
+                    <Header :height="48">Header 顶栏</Header>
+                    <Main>Main 主内容</Main>
+                </Container>
+            </Container>
+        </div>
     </Space>
 </template>
 <style scoped>

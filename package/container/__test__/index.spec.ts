@@ -52,3 +52,49 @@ test("忽略 Fragment 中的空节点和文本，仍识别页头", () => {
     expect(w.classes()).toContain("i-container--vertical");
     w.unmount();
 });
+
+test("五个容器渲染默认插槽、保留原生属性，并使用文档约定的默认尺寸", () => {
+    for (const [Component, tag] of [
+        [Container, "section"],
+        [Header, "header"],
+        [Aside, "aside"],
+        [Main, "main"],
+        [Footer, "footer"]
+    ] as const) {
+        const w = mount({
+            setup: () => () =>
+                h(Component, { id: "region", class: "custom-region", "aria-label": "业务区域" }, () => "业务内容")
+        });
+        const region = w.get(tag);
+        expect(region.text()).toBe("业务内容");
+        expect(region.attributes("id")).toBe("region");
+        expect(region.attributes("aria-label")).toBe("业务区域");
+        expect(region.classes()).toContain("custom-region");
+        if (tag === "header" || tag === "footer") expect((region.element as HTMLElement).style.height).toBe("60px");
+        if (tag === "aside") expect((region.element as HTMLElement).style.width).toBe("300px");
+        w.unmount();
+    }
+});
+
+test("嵌套容器分别判断方向，不将后代页头误判为父容器的直接区域", () => {
+    const w = mount(Container, {
+        slots: { default: () => [h(Aside), h(Container, {}, () => [h(Header), h(Main), h(Footer)])] }
+    });
+    expect(w.classes()).toContain("i-container--horizontal");
+    expect(w.get(".i-container .i-container").classes()).toContain("i-container--vertical");
+    w.unmount();
+});
+
+test("包装组件通过显式direction控制方向，并可在运行时恢复自动判断", async () => {
+    const WrappedHeader = { setup: () => () => h(Header, {}, () => "包装页头") };
+    const w = mount(Container, {
+        props: { direction: "vertical" },
+        slots: { default: () => [h(WrappedHeader), h(Main)] }
+    });
+    expect(w.classes()).toContain("i-container--vertical");
+    await w.setProps({ direction: undefined });
+    expect(w.classes()).toContain("i-container--horizontal");
+    await w.setProps({ direction: "vertical" });
+    expect(w.classes()).toContain("i-container--vertical");
+    w.unmount();
+});

@@ -244,6 +244,13 @@ body {
     min-width: 0;
     outline: none;
 }
+.docs-body.docs-body--home {
+    margin-left: 0;
+    padding-top: 92px;
+    .docs-content {
+        max-width: 1200px;
+    }
+}
 .docs-breadcrumb {
     display: flex;
     align-items: center;

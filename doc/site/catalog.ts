@@ -117,7 +117,13 @@ export const pages: Page[] = [
         ["basic", "24 栅格布局", "使用 gutter 设置列间距；内部配合 Col 划分宽度。"]
     ]),
     component("col", "Col 列布局", "布局组件", [["basic", "列宽与偏移", "span 与 offset 以 24 栅格为单位。"], ["responsive", "响应式布局与隐藏", "调整窗口宽度，观察断点列宽与小屏隐藏。"], ["position", "列的视觉位移", "push/pull 改变视觉位置，offset 改变留白。"]]),
-    component("container", "Container 布局容器", "布局组件", [["basic", "常见页面结构", "组合页头、侧栏、主内容和页脚，自动判断布局方向。"], ["scroll", "主区域独立滚动", "限定外层高度后，主内容独立滚动，页头页脚保持可见。"]]),
+    component("container", "Container 布局容器", "布局组件", [
+        ["basic", "常见页面布局", "七种页面组合：通过嵌套 Container 控制页头、侧栏、主内容和页脚的位置。"],
+        ["admin", "后台布局示例", "侧栏导航、页头工具栏、内容表格与页脚组合；点击按钮可折叠侧栏。"],
+        ["size", "自定义区域尺寸", "Header/Footer 的 height 和 Aside 的 width 同时支持数字与 CSS 长度。"],
+        ["direction", "显式设置排列方向", "自动判断适合直接布局区域；自定义包装层可以使用 direction 明确指定方向。"],
+        ["scroll", "主区域独立滚动", "限定外层高度后，主内容独立滚动，页头页脚保持可见。"]
+    ], ["Container", "Header", "Aside", "Main", "Footer"]),
     component("header", "Header 页头", "布局组件", [["basic", "自定义页头高度", "顶栏保持高度，主内容自动填充剩余区域。"]]),
     component("aside", "Aside 侧栏", "布局组件", [["basic", "自定义侧栏宽度", "横向布局内，侧栏固定宽度，主内容占据剩余区域。"]]),
     component("main", "Main 主内容", "布局组件", [["basic", "滚动主区域", "主区域自动填充，超出内容在区域内部滚动。"]]),

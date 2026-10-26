@@ -5,11 +5,12 @@ import { pages } from "./site/catalog";
 import { renderMarkdown } from "./site/markdown";
 import { highlightCode } from "./site/highlight";
 import DemoBlock from "./site/DemoBlock.vue";
+import HomePage from "./site/HomePage.vue";
 import "./site/style.scss";
 
 const UserManagement = defineAsyncComponent(() => import("../examples/user-management/index.vue"));
 
-const readRoute = () => window.location.hash.slice(2) || "guide/quickstart";
+const readRoute = () => window.location.hash.slice(2) || "home";
 const route = ref(readRoute());
 const query = ref("");
 const dark = ref(false);
@@ -22,7 +23,10 @@ const registration = computed(() => {
     return highlightCode(code, "ts");
 });
 watchEffect(() => {
-    document.title = `${route.value === "examples/user-management" ? "用户管理示例" : page.value?.title || "页面未找到"} · Cool Design`;
+    document.title =
+        route.value === "home"
+            ? "Cool Design · 为桌面应用提供清晰、一致的交互。"
+            : `${route.value === "examples/user-management" ? "用户管理示例" : page.value?.title || "页面未找到"} · Cool Design`;
 });
 const groups = computed(() => {
     const matching = pages.filter((item) => item.title.toLowerCase().includes(query.value.trim().toLowerCase()));
@@ -61,7 +65,7 @@ onBeforeUnmount(() => window.removeEventListener("hashchange", navigate));
         <template v-else>
             <a class="docs-skip" href="#docs-content" @click.prevent="article?.focus()">跳到正文</a>
             <header class="docs-header">
-                <a class="docs-brand" href="#/guide/quickstart">
+                <a class="docs-brand" href="#/home" aria-label="Cool Design 首页">
                     <span class="docs-brand-mark">C</span>
                     Cool Design
                 </a>
@@ -70,6 +74,7 @@ onBeforeUnmount(() => window.removeEventListener("hashchange", navigate));
                     <span class="docs-version">{{ version }}</span>
                 </span>
                 <nav aria-label="站点导航">
+                    <a href="#/home" :aria-current="route === 'home' ? 'page' : undefined">首页</a>
                     <a href="#/guide/quickstart">开发指南</a>
                     <a href="#/components/button">组件</a>
                     <a href="#/examples/user-management">业务示例</a>
@@ -77,6 +82,7 @@ onBeforeUnmount(() => window.removeEventListener("hashchange", navigate));
                 </nav>
             </header>
             <button
+                v-if="route !== 'home'"
                 class="docs-menu"
                 type="button"
                 :aria-expanded="navigationOpen"
@@ -84,7 +90,11 @@ onBeforeUnmount(() => window.removeEventListener("hashchange", navigate));
                 @click="navigationOpen = !navigationOpen">
                 组件目录
             </button>
-            <aside id="docs-navigation" class="docs-sidebar" :class="{ 'is-open': navigationOpen }">
+            <aside
+                v-if="route !== 'home'"
+                id="docs-navigation"
+                class="docs-sidebar"
+                :class="{ 'is-open': navigationOpen }">
                 <label class="docs-search">
                     <span>搜索组件</span>
                     <input v-model="query" type="search" placeholder="输入组件名称…" />
@@ -103,9 +113,10 @@ onBeforeUnmount(() => window.removeEventListener("hashchange", navigate));
                     <p v-if="!groups.length" class="docs-search-empty">未找到组件，请尝试其他名称。</p>
                 </nav>
             </aside>
-            <div class="docs-body">
+            <div class="docs-body" :class="{ 'docs-body--home': route === 'home' }">
                 <main id="docs-content" ref="article" class="docs-content" tabindex="-1">
-                    <template v-if="page">
+                    <HomePage v-if="route === 'home'" />
+                    <template v-else-if="page">
                         <div class="docs-breadcrumb">
                             {{ page.group }}
                             <span>/</span>
