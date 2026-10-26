@@ -1,4 +1,43 @@
+@use "sass:math";
 .i-col {
     box-sizing: border-box;
     min-width: 0;
+    position: relative;
+    --i-col-push: 0;
+    --i-col-pull: 0;
+    left: calc((var(--i-col-push) - var(--i-col-pull)) / 24 * 100%);
+}
+@mixin grid($prefix) {
+    @for $i from 0 through 24 {
+        .i-col-#{$prefix}#{$i} {
+            display: if($i == 0, none, block);
+            flex: 0 0 math.percentage(math.div($i, 24));
+            max-width: math.percentage(math.div($i, 24));
+        }
+        .i-col-#{$prefix}offset-#{$i} {
+            margin-left: math.percentage(math.div($i, 24));
+        }
+        .i-col-#{$prefix}push-#{$i} {
+            --i-col-push: #{$i};
+        }
+        .i-col-#{$prefix}pull-#{$i} {
+            --i-col-pull: #{$i};
+        }
+    }
+}
+@include grid("");
+@media not all and (min-width: 768px) {
+    @include grid("xs-");
+}
+@media (min-width: 768px) {
+    @include grid("sm-");
+}
+@media (min-width: 992px) {
+    @include grid("md-");
+}
+@media (min-width: 1200px) {
+    @include grid("lg-");
+}
+@media (min-width: 1920px) {
+    @include grid("xl-");
 }

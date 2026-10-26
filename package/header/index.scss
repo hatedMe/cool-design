@@ -1,0 +1,6 @@
+.i-header {
+    flex-shrink: 0;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 0 var(--i-header-padding, 20px);
+}

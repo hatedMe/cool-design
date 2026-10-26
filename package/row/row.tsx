@@ -1,5 +1,5 @@
 import { computed, defineComponent, h, provide, type InjectionKey, type ComputedRef, type PropType } from "vue";
-export const rowValues = ["start", "end", "center", "space-around", "space-between"] as const;
+export const rowValues = ["start", "end", "center", "space-around", "space-between", "space-evenly"] as const;
 export const columnValues = ["top", "bottom", "center"] as const;
 export const rowKeys: InjectionKey<{ gutter: ComputedRef<number> }> = Symbol("row");
 export default defineComponent({

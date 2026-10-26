@@ -30,3 +30,7 @@
 -   `label`: 可访问名称；有名称时 role=img，否则作为装饰图标 aria-hidden。
 
 图标按钮的名称应由按钮提供。使用构建产物时统一引入 `cool-design/style.css`，字体资源已包含在构建样式内。
+
+## 图标检索
+
+下方目录展示全部178个内置字形，可按英文名称或常见中文别名搜索，点击复制完整用法；复制失败时显示可手动选择的代码。`iconNames` 是从 cool-design/icon 或 cool-design 导出的只读名称列表。使用默认 SVG 插槽时不再叠加字体字形，SVG 自身的 fill/stroke 设置优先。

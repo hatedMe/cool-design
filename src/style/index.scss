@@ -1,4 +1,6 @@
 @use "./tokens.scss";
+@use "./palette.scss";
+@use "./border.scss";
 @use "../../package/button/index.scss" as *;
 @use "../../package/row/index.scss" as *;
 @use "../../package/col/index.scss" as *;
@@ -20,3 +22,9 @@
 @use "../../package/tooltip/index.scss" as *;
 @use "../../package/popconfirm/index.scss" as *;
 @use "../../package/message-box/index.scss" as *;
+@use "../../package/container/index.scss" as *;
+@use "../../package/header/index.scss" as *;
+@use "../../package/aside/index.scss" as *;
+@use "../../package/main/index.scss" as *;
+@use "../../package/footer/index.scss" as *;
+@use "../../package/link/index.scss" as *;

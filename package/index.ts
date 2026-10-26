@@ -1,3 +1,9 @@
+import Container from "./container";
+import Header from "./header";
+import Aside from "./aside";
+import Main from "./main";
+import Footer from "./footer";
+import Link from "./link";
 import Icon from "./icon";
 import Space from "./space";
 import Divider from "./divider";
@@ -31,6 +37,12 @@ export type { TableColumn, SortChange } from "./table";
 export type { Size, Config } from "./config-provider/context";
 
 export {
+    Container,
+    Header,
+    Aside,
+    Main,
+    Footer,
+    Link,
     Icon,
     Space,
     Divider,
@@ -57,6 +69,12 @@ export {
     Message
 };
 const components = [
+    Container,
+    Header,
+    Aside,
+    Main,
+    Footer,
+    Link,
     Icon,
     Space,
     Divider,
@@ -91,3 +109,7 @@ export { useMessageBox } from "./message-box";
 export type { MessageBoxAction, MessageBoxOptions } from "./message-box";
 export type { TagType } from "./tag/tag";
 export type { Placement } from "../src/utils/use-floating";
+
+export { iconNames } from "./icon";
+export type { ColSize, ColSizeObject } from "./col";
+export type { LinkType, LinkUnderline } from "./link/link";

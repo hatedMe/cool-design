@@ -1,26 +1,14 @@
 # Row 行布局
 
-### 介绍
-
-基于 Flex 的行容器，与 Col 配合构建桌面应用的 24 栅格布局。
+与 Col 组合构建 24 栅格。基于 Flex，支持换行、动态 gutter、水平排列和垂直对齐；嵌套 Row 的 gutter 独立生效。
 
 ## API
 
-### 属性
+| 属性    | 类型                                                               | 默认  |
+| ------- | ------------------------------------------------------------------ | ----- |
+| tag     | string                                                             | div   |
+| gutter  | number，列间距 px                                                  | 0     |
+| justify | start / end / center / space-around / space-between / space-evenly | start |
+| align   | top / bottom / center                                              | top   |
 
-| 参数    | 说明                                                          | 类型   | 默认值 |
-| ------- | ------------------------------------------------------------- | ------ | ------ |
-| tag     | 根节点标签                                                    | string | div    |
-| gutter  | 列间距，单位 px                                               | number | 0      |
-| justify | 水平排列：start / end / center / space-around / space-between | string | start  |
-| align   | 垂直排列：top / bottom / center                               | string | top    |
-
-### 插槽
-
-| 名称    | 说明       |
-| ------- | ---------- |
-| default | Col 子组件 |
-
-## 使用说明
-
-默认插槽放 Col。属性 tag（默认 div）、gutter（默认 0px）、justify: 'start' | 'end' | 'center' | 'space-around' | 'space-between'、align: 'top' | 'bottom' | 'center'。基于 flex，支持动态属性和左右对称 gutter。
+默认插槽放 Col。每列左右各使用 gutter/2 内边距，Row 使用对应负外边距；父区域应提供相应留白，避免在页面边缘直接产生横向溢出。

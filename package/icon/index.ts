@@ -5,3 +5,5 @@ import _Icon from "./icon";
 
 export const Icon = withInstall(_Icon);
 export default Icon;
+
+export { iconNames } from "./icons";

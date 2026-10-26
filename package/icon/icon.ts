@@ -14,7 +14,12 @@ export default defineComponent({
             h(
                 "i",
                 {
-                    class: ["iconfont", "i-icon", props.type, `i-icon--${config.value.size}`],
+                    class: [
+                        !slots.default && "iconfont",
+                        "i-icon",
+                        !slots.default && props.type,
+                        `i-icon--${config.value.size}`
+                    ],
                     role: props.label ? "img" : undefined,
                     "aria-label": props.label || undefined,
                     "aria-hidden": props.label ? undefined : "true",

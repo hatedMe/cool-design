@@ -9,6 +9,7 @@
         "doc/env.d.ts",
         "doc/site/**/*.ts",
         "doc/site/**/*.vue",
+        "doc/demos/**/*.vue",
         "package/*/demo/*.vue"
     ],
     "exclude": ["**/__test__/**"],

@@ -53,7 +53,19 @@
         "package/popconfirm/**/*.ts",
         "package/popconfirm/**/*.tsx",
         "package/message-box/**/*.ts",
-        "package/message-box/**/*.tsx"
+        "package/message-box/**/*.tsx",
+        "package/container/**/*.ts",
+        "package/container/**/*.tsx",
+        "package/header/**/*.ts",
+        "package/header/**/*.tsx",
+        "package/aside/**/*.ts",
+        "package/aside/**/*.tsx",
+        "package/main/**/*.ts",
+        "package/main/**/*.tsx",
+        "package/footer/**/*.ts",
+        "package/footer/**/*.tsx",
+        "package/link/**/*.ts",
+        "package/link/**/*.tsx"
     ],
     "exclude": ["**/__test__/**"],
     "references": []
