@@ -1,5 +1,5 @@
-import { withInstall } from "../../src/utils/with-install";
 import "./index.scss";
+import { withInstall } from "../../src/utils/with-install";
 
 import _Icon from "./icon";
 

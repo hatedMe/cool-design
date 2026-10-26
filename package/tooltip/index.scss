@@ -1,0 +1,20 @@
+.i-tooltip__trigger {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    vertical-align: middle;
+}
+.i-tooltip {
+    box-sizing: border-box;
+    max-width: min(320px, calc(100vw - 16px));
+    max-height: calc(100vh - 16px);
+    overflow: auto;
+    overflow-wrap: anywhere;
+    padding: 8px 12px;
+    border: 1px solid var(--i-border);
+    border-radius: var(--i-radius);
+    background: var(--i-bg);
+    color: var(--i-text);
+    font-size: var(--i-font-size);
+    box-shadow: var(--i-shadow);
+}

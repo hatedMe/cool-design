@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import {
+    Icon,
+    Space,
+    Divider,
+    Tag,
+    Tooltip,
+    Popconfirm,
+    MessageBox,
     Button,
     ConfigProvider,
     Dialog,
@@ -42,6 +49,9 @@ const query = reactive<UserQuery>({ name: "", status: undefined, page: 1, pageSi
 const rows = ref<User[]>([]);
 const total = ref(0);
 const loading = ref(false);
+const deleting = ref(false);
+const batchConfirmOpen = ref(false);
+const batchIds = ref<number[]>([]);
 const loadError = ref("");
 const selected = ref<object[]>([]);
 const table = ref<{ clearSelection(): void }>();
@@ -52,7 +62,7 @@ const columns: TableColumn[] = [
     { key: "id", title: "用户 ID", width: 150, fixed: "left", sortable: true },
     { key: "name", title: "姓名", sortable: true },
     { key: "status", title: "账号状态", width: 180 },
-    { key: "action", title: "操作", width: 120, fixed: "right" }
+    { key: "action", title: "操作", width: 200, fixed: "right" }
 ];
 const errorMessage = (reason: unknown, fallback: string) => (reason instanceof Error ? reason.message : fallback);
 async function loadUsers(): Promise<boolean> {
@@ -131,7 +141,7 @@ const rules: Record<string, FormRule[]> = {
     status: [{ required: true, message: "请选择状态", trigger: "change" }]
 };
 function editUser(user: User) {
-    if (loading.value || saving.value) return;
+    if (loading.value || saving.value || deleting.value) return;
     editingId.value = user.id;
     draft.name = user.name;
     draft.status = user.status;
@@ -166,6 +176,35 @@ async function save() {
             persisting.value = false;
         }
     }
+}
+async function deleteAndRefresh(ids: number[]) {
+    if (deleting.value || loading.value || saving.value || !ids.length) return false;
+    deleting.value = true;
+    try {
+        await service.deleteUsers(ids);
+        if (!alive) return false;
+        const refreshed = await loadUsers();
+        if (alive)
+            feedback.value = {
+                type: refreshed ? "success" : "error",
+                message: refreshed ? "删除成功" : "删除成功，列表刷新失败，请重试加载"
+            };
+        return true;
+    } finally {
+        if (alive) deleting.value = false;
+    }
+}
+async function deleteOne(user: User) {
+    try {
+        await deleteAndRefresh([user.id]);
+    } catch (reason) {
+        if (alive) feedback.value = { type: "error", message: errorMessage(reason, "删除失败，请重试") };
+    }
+}
+function prepareBatchDelete() {
+    if (loading.value || saving.value || deleting.value || batchConfirmOpen.value || !selected.value.length) return;
+    batchIds.value = selected.value.map((row) => (row as User).id);
+    batchConfirmOpen.value = true;
 }
 onMounted(() => {
     void loadUsers();
@@ -246,10 +285,13 @@ onBeforeUnmount(() => {
                                     <SelectOption value="disabled" label="停用" />
                                 </Select>
                             </label>
-                            <div class="query-actions">
-                                <Button type="primary" native-type="submit">查询</Button>
+                            <Space class="query-actions">
+                                <Button type="primary" native-type="submit">
+                                    <Icon type="icon-search" />
+                                    查询
+                                </Button>
                                 <Button data-test="reset" @click="resetSearch">重置</Button>
-                            </div>
+                            </Space>
                         </form>
                     </section>
                     <section class="list-panel" aria-labelledby="list-title">
@@ -258,9 +300,22 @@ onBeforeUnmount(() => {
                                 <h2 id="list-title">用户列表</h2>
                                 <span class="list-toolbar__count">{{ total }} 位用户</span>
                             </div>
-                            <span class="selection-hint">
-                                {{ selected.length ? `已选择 ${selected.length} 项` : "可勾选当前页用户" }}
-                            </span>
+                            <Space>
+                                <Tooltip content="选择仅保留当前页，查询或翻页后清空。">
+                                    <button type="button" class="selection-hint selection-help">
+                                        {{ selected.length ? `已选择 ${selected.length} 项` : "可勾选当前页用户" }}
+                                    </button>
+                                </Tooltip>
+                                <Divider vertical />
+                                <Button
+                                    data-test="batch-delete"
+                                    type="danger"
+                                    size="small"
+                                    :disabled="!selected.length || loading || saving || deleting"
+                                    @click="prepareBatchDelete">
+                                    批量删除
+                                </Button>
+                            </Space>
                         </div>
                         <div v-if="loadError" class="load-error" role="alert">
                             <span>{{ loadError }}</span>
@@ -282,19 +337,32 @@ onBeforeUnmount(() => {
                                 </span>
                             </template>
                             <template #status="{ row }">
-                                <span class="status-tag" :class="{ 'status-tag--disabled': row.status === 'disabled' }">
-                                    <span></span>
+                                <Tag :type="row.status === 'enabled' ? 'success' : 'info'" size="small">
                                     {{ row.status === "enabled" ? "启用" : "停用" }}
-                                </span>
+                                </Tag>
                             </template>
                             <template #action="{ row }">
-                                <Button
-                                    data-test="edit"
-                                    size="small"
-                                    :disabled="loading || saving"
-                                    @click="editUser(row as User)">
-                                    编辑
-                                </Button>
+                                <Space :size="8" :wrap="false">
+                                    <Button
+                                        data-test="edit"
+                                        size="small"
+                                        :disabled="loading || saving || deleting"
+                                        @click="editUser(row as User)">
+                                        编辑
+                                    </Button>
+                                    <Popconfirm
+                                        :title="`确定删除“${row.name}”吗？`"
+                                        :disabled="loading || saving || deleting"
+                                        @confirm="deleteOne(row as User)">
+                                        <Button
+                                            data-test="delete"
+                                            size="small"
+                                            type="danger"
+                                            :disabled="loading || saving || deleting">
+                                            删除
+                                        </Button>
+                                    </Popconfirm>
+                                </Space>
                             </template>
                         </Table>
                         <Pagination
@@ -324,6 +392,14 @@ onBeforeUnmount(() => {
                                     feedback = { type: 'success', message: '下一次保存将模拟失败，请编辑任意用户' };
                                 ">
                                 体验保存失败
+                            </Button>
+                            <Button
+                                size="small"
+                                @click="
+                                    demo.failNextDelete();
+                                    feedback = { type: 'success', message: '下一次删除将模拟失败，请选择删除操作' };
+                                ">
+                                体验删除失败
                             </Button>
                         </div>
                     </details>
@@ -370,6 +446,12 @@ onBeforeUnmount(() => {
                 <Button type="primary" native-type="submit" form="user-edit-form" :loading="saving">保存修改</Button>
             </template>
         </Dialog>
+        <MessageBox
+            v-model="batchConfirmOpen"
+            title="批量删除用户"
+            :message="`确定删除选中的 ${batchIds.length} 位用户吗？此操作不可恢复。`"
+            confirm-button-text="删除"
+            :before-confirm="() => deleteAndRefresh(batchIds)" />
         <Message
             v-if="feedback"
             :key="feedback.message"

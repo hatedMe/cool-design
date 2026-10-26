@@ -12,6 +12,7 @@ export interface UserQuery {
     order?: "asc" | "desc" | null;
 }
 export interface UserService {
+    deleteUsers(ids: number[]): Promise<void>;
     listUsers(query: UserQuery): Promise<{ items: User[]; total: number }>;
     updateUser(id: number, draft: Pick<User, "name" | "status">): Promise<User>;
 }

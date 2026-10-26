@@ -1,3 +1,12 @@
+import Icon from "./icon";
+import Space from "./space";
+import Divider from "./divider";
+import Empty from "./empty";
+import Loading from "./loading";
+import Tag from "./tag";
+import Tooltip from "./tooltip";
+import Popconfirm from "./popconfirm";
+import MessageBox from "./message-box";
 import type { App } from "vue";
 import { version as packageVersion } from "../package.json";
 export const version: string = packageVersion;
@@ -22,6 +31,15 @@ export type { TableColumn, SortChange } from "./table";
 export type { Size, Config } from "./config-provider/context";
 
 export {
+    Icon,
+    Space,
+    Divider,
+    Empty,
+    Loading,
+    Tag,
+    Tooltip,
+    Popconfirm,
+    MessageBox,
     Button,
     Row,
     Col,
@@ -39,6 +57,15 @@ export {
     Message
 };
 const components = [
+    Icon,
+    Space,
+    Divider,
+    Empty,
+    Loading,
+    Tag,
+    Tooltip,
+    Popconfirm,
+    MessageBox,
     Button,
     Row,
     Col,
@@ -59,3 +86,8 @@ export const install = (app: App) => {
     components.forEach((component) => app.use(component));
 };
 export default { version, install };
+
+export { useMessageBox } from "./message-box";
+export type { MessageBoxAction, MessageBoxOptions } from "./message-box";
+export type { TagType } from "./tag/tag";
+export type { Placement } from "../src/utils/use-floating";

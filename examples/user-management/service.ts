@@ -42,8 +42,16 @@ export function createUserService(delay = 350) {
     }));
     let failList = false;
     let failSave = false;
+    let failDelete = false;
     const wait = () => new Promise((resolve) => setTimeout(resolve, delay));
     const api: UserService = {
+        async deleteUsers(ids) {
+            const shouldFail = failDelete;
+            failDelete = false;
+            await wait();
+            if (shouldFail) throw new Error("删除失败，请重试");
+            for (let i = users.length - 1; i >= 0; i--) if (ids.includes(users[i].id)) users.splice(i, 1);
+        },
         async listUsers(query: UserQuery) {
             const shouldFail = failList;
             failList = false;
@@ -85,6 +93,9 @@ export function createUserService(delay = 350) {
         api,
         failNextList: () => {
             failList = true;
+        },
+        failNextDelete: () => {
+            failDelete = true;
         },
         failNextSave: () => {
             failSave = true;

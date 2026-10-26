@@ -38,3 +38,14 @@ test("分页在总数缩小时修正页码，改变大小只发出大小事件",
     expect(w.emitted("update:pageSize")?.[0]).toEqual([20]);
     expect(w.emitted("update:currentPage")).toHaveLength(1);
 });
+
+test("加载期间隔离表格交互，结束后显示统一空态", async () => {
+    const w = mount(Table, { props: { loading: true, columns: [{ key: "id", title: "编号", sortable: true }] } });
+    expect(w.find('[role="status"]').exists()).toBe(true);
+    await w.get("thead button").trigger("click");
+    expect(w.emitted("sort-change")).toBeUndefined();
+    await w.setProps({ loading: false });
+    expect(w.find(".i-empty").exists()).toBe(true);
+    expect(w.find('[role="status"]').exists()).toBe(false);
+    w.unmount();
+});

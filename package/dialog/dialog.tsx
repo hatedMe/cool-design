@@ -1,6 +1,6 @@
 import { Teleport, defineComponent, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { overlayKey } from "../config-provider/context";
-import { isTopDialog, lockDialog, unlockDialog } from "./stack";
+import { isTopDialog, isTopFocusDialog, lockDialog, unlockDialog } from "./stack";
 let dialogId = 0;
 export default defineComponent({
     name: "i-dialog",
@@ -15,9 +15,15 @@ export default defineComponent({
     setup(props, { slots, emit }) {
         const host = inject(overlayKey, undefined);
         const root = ref<HTMLElement>();
+        const zIndex = ref(2000);
         const titleId = `i-dialog-title-${++dialogId}`;
         const token = Symbol("dialog");
         let active = false;
+        let maskGestureAllowed = true;
+        // 在锚定浮层处理外部 pointerdown 之前，记录本次手势是否属于当前弹窗。
+        const onPointerdown = () => {
+            maskGestureAllowed = isTopDialog(token);
+        };
         let previous: HTMLElement | null = null;
         const focusable = () =>
             Array.from(
@@ -36,13 +42,17 @@ export default defineComponent({
             unlockDialog(token);
             document.removeEventListener("keydown", onKeydown);
             document.removeEventListener("focusin", onFocus);
+            document.removeEventListener("pointerdown", onPointerdown, true);
             if (wasTop && previous?.isConnected) previous.focus();
         };
         const onFocus = (event: FocusEvent) => {
-            if (active && isTopDialog(token) && root.value && !root.value.contains(event.target as Node)) focusFirst();
+            if (active && isTopFocusDialog(token) && root.value && !root.value.contains(event.target as Node))
+                focusFirst();
         };
         const onKeydown = (event: KeyboardEvent) => {
-            if (!active || !isTopDialog(token)) return;
+            if (!active) return;
+            if (event.key === "Escape" && !isTopDialog(token)) return;
+            if (event.key === "Tab" && !isTopFocusDialog(token)) return;
             if (event.key === "Escape" && props.closeOnPressEscape && props.closable) {
                 event.preventDefault();
                 close();
@@ -73,9 +83,10 @@ export default defineComponent({
                     if (active) return;
                     previous = document.activeElement as HTMLElement;
                     active = true;
-                    lockDialog(token);
+                    zIndex.value = lockDialog(token);
                     document.addEventListener("keydown", onKeydown);
                     document.addEventListener("focusin", onFocus);
+                    document.addEventListener("pointerdown", onPointerdown, true);
                     await nextTick();
                     if (active) focusFirst();
                 },
@@ -86,8 +97,11 @@ export default defineComponent({
         const content = () => (
             <div
                 class="i-dialog__mask"
+                style={{ zIndex: zIndex.value }}
                 onClick={(event: MouseEvent) => {
-                    if (event.target === event.currentTarget && props.closeOnClickModal) close();
+                    const allowed = maskGestureAllowed && isTopDialog(token);
+                    maskGestureAllowed = true;
+                    if (event.target === event.currentTarget && props.closeOnClickModal && allowed) close();
                 }}>
                 <section
                     ref={root}

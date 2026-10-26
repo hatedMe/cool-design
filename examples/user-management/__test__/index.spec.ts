@@ -14,6 +14,7 @@ afterEach(() => {
 function create(service?: Partial<UserService>) {
     const api: UserService = {
         listUsers: vi.fn().mockResolvedValue({ items: [{ ...first }, { ...second }], total: 32 }),
+        deleteUsers: vi.fn().mockResolvedValue(undefined),
         updateUser: vi.fn().mockImplementation(async (id, draft) => ({ id, ...draft })),
         ...service
     };
@@ -149,5 +150,47 @@ test("排序刷新后保留排序指示，重新查询清空同一记录的选�
     expect(w.text()).toContain("已选择 1 项");
     await w.get('[data-test="query-form"]').trigger("submit");
     await flushPromises();
+    expect((w.get("tbody input").element as HTMLInputElement).checked).toBe(false);
+});
+
+test("逐行删除先确认，取消不调用接口，处理中不能重复提交", async () => {
+    let complete!: () => void;
+    const deleteUsers = vi.fn().mockImplementation(() => new Promise<void>((resolve) => (complete = resolve)));
+    const { w, api } = create({ deleteUsers });
+    await flushPromises();
+    await w.findAll('[data-test="delete"]')[0].trigger("click");
+    await flushPromises();
+    document.querySelector<HTMLButtonElement>(".i-popconfirm button")!.click();
+    await flushPromises();
+    expect(deleteUsers).not.toHaveBeenCalled();
+    await w.findAll('[data-test="delete"]')[0].trigger("click");
+    await flushPromises();
+    const confirm = document.querySelector<HTMLButtonElement>("[data-popconfirm-confirm]")!;
+    confirm.click();
+    confirm.click();
+    await flushPromises();
+    expect(deleteUsers).toHaveBeenCalledTimes(1);
+    expect(deleteUsers).toHaveBeenCalledWith([1001]);
+    expect(w.findAll('[data-test="edit"]')[0].attributes("disabled")).toBeDefined();
+    complete();
+    await flushPromises();
+    expect(api.listUsers).toHaveBeenCalledTimes(2);
+    expect(document.body.textContent).toContain("删除成功");
+});
+test("批量确认失败保留窗口，重试成功后刷新并清空选择", async () => {
+    const deleteUsers = vi.fn().mockRejectedValueOnce(new Error("删除失败，请重试")).mockResolvedValueOnce(undefined);
+    const { w } = create({ deleteUsers });
+    await flushPromises();
+    await w.get("tbody input").setValue(true);
+    await w.get('[data-test="batch-delete"]').trigger("click");
+    await flushPromises();
+    expect(document.body.textContent).toContain("确定删除选中的 1 位用户吗？");
+    document.querySelector<HTMLButtonElement>("[data-message-box-confirm]")!.click();
+    await flushPromises();
+    expect(document.querySelector(".i-message-box__error")?.textContent).toBe("删除失败，请重试");
+    document.querySelector<HTMLButtonElement>("[data-message-box-confirm]")!.click();
+    await flushPromises();
+    expect(deleteUsers).toHaveBeenCalledTimes(2);
+    expect(document.querySelector(".i-message-box")).toBeNull();
     expect((w.get("tbody input").element as HTMLInputElement).checked).toBe(false);
 });
