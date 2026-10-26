@@ -100,7 +100,19 @@ export const pages: Page[] = [
         ["basic", "工具栏间距", "使用水平或垂直间距组织桌面工具栏与操作组。"]
     ]),
     component("divider", "Divider 分割线", "基础组件", [["basic", "内容分隔", "横向分割章节，竖向分隔行内操作。"]]),
-    component("layout", "Layout 布局", "布局组件", [["basic", "间距与对齐", "调整列间距、水平排列和垂直对齐，观察实时布局。"]], ["Row", "Col"]),
+    {
+        ...component("layout", "Layout 布局", "布局组件", [], ["Row", "Col"]),
+        demos: [
+            demo("../../package/layout/demo/grid.vue", "grid", "基础布局", "通过 span 划分 24 栅格，列宽总和超出 24 时自动换行。"),
+            demo("../../package/layout/demo/gutter.vue", "gutter", "分栏间隔", "gutter 以像素为单位设置相邻列间距。"),
+            demo("../../package/layout/demo/mixed.vue", "mixed", "混合布局", "组合不同列宽，构建主次分明的页面区域。"),
+            demo("../../package/layout/demo/offset.vue", "offset", "列偏移", "offset 在列左侧增加指定栅格数的留白。"),
+            demo("../../package/layout/demo/basic.vue", "basic", "对齐方式", "调整水平排列、垂直对齐和列间距，观察布局变化。"),
+            demo("../../package/col/demo/position.vue", "position", "列的视觉位移", "push/pull 改变视觉位置，不改变 DOM 和键盘阅读顺序。"),
+            demo("../../package/col/demo/responsive.vue", "responsive", "响应式布局", "五个断点控制列宽，span 为 0 时隐藏整列。"),
+            demo("../../package/layout/demo/hidden.vue", "hidden", "基于断点的隐藏类", "hidden-* 可用于任意 DOM 元素或组件，已包含在 cool-design/style.css 中。完整范围见下方 API。")
+        ]
+    },
     component("row", "Row 行布局", "布局组件", [
         ["basic", "24 栅格布局", "使用 gutter 设置列间距；内部配合 Col 划分宽度。"]
     ]),
