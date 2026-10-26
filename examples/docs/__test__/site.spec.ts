@@ -18,6 +18,26 @@ afterEach(() => {
 });
 
 describe("PC 组件文档站", () => {
+    it("开发指南按安装、快速上手、自定义主题、过渡动画排列", async () => {
+        const wrapper = await open("#/guide/install");
+        const guide = wrapper.findAll(".docs-nav-group").find((group) => group.get("h2").text() === "开发指南")!;
+        expect(guide.findAll("a").map((link) => link.text())).toEqual(["安装", "快速上手", "自定义主题", "过渡动画"]);
+        expect(wrapper.get("h1").text()).toBe("安装");
+    });
+
+    it("过渡动画指南提供可切换演示及源码，不生成组件引入说明", async () => {
+        const wrapper = await open("#/guide/transition");
+        expect(wrapper.get("h1").text()).toBe("过渡动画");
+        expect(wrapper.find("#registration").exists()).toBe(false);
+        const toggle = wrapper.get('button[aria-controls="guide-transition-panel"]');
+        await toggle.trigger("click");
+        expect(wrapper.find("#guide-transition-panel").exists()).toBe(false);
+        await toggle.trigger("click");
+        expect(wrapper.find("#guide-transition-panel").exists()).toBe(true);
+        await wrapper.get(".demo-toolbar button").trigger("click");
+        expect(wrapper.get(".demo-source").text()).toContain("prefers-reduced-motion");
+    });
+
     it("直接访问组件地址，展示实际组件、API 和同源演示代码", async () => {
         const wrapper = await open();
         expect(wrapper.get("h1").text()).toBe("Button 按钮");
@@ -85,4 +105,13 @@ describe("PC 组件文档站", () => {
         await flushPromises();
         expect(wrapper.text()).toContain("已保存：测试用户");
     });
+});
+
+it("色彩与边框页面只引入样式，不生成不存在的组件导入", async () => {
+    for (const name of ["color", "border"]) {
+        const wrapper = await open(`#/components/${name}`);
+        expect(wrapper.get("#registration").text()).toContain("引入样式");
+        expect(wrapper.get("#registration code").text()).toBe('import "cool-design/style.css";');
+        expect(wrapper.find(".demo-preview").exists()).toBe(true);
+    }
 });

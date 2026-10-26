@@ -6,7 +6,7 @@ body {
     background: var(--i-bg);
     color: var(--i-text);
     font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
-    a {
+    a:not(.i-link) {
         color: var(--i-primary);
         text-decoration: none;
     }

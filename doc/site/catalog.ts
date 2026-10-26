@@ -8,6 +8,7 @@ export interface Demo {
     source: string;
 }
 export interface Page {
+    imports?: string[];
     id: string;
     title: string;
     group: string;
@@ -16,38 +17,71 @@ export interface Page {
 }
 const readmes = import.meta.glob<string>("../../package/*/README.md", { eager: true, as: "raw" });
 const guides = import.meta.glob<string>("../markdown/guide/*.md", { eager: true, as: "raw" });
-const sources = import.meta.glob<string>("../../package/*/demo/*.vue", { eager: true, as: "raw" });
-const components = import.meta.glob<{ default: Component }>("../../package/*/demo/*.vue", { eager: true });
+const sources = import.meta.glob<string>(["../../package/*/demo/*.vue", "../demos/*.vue"], { eager: true, as: "raw" });
+const components = import.meta.glob<{ default: Component }>(["../../package/*/demo/*.vue", "../demos/*.vue"], {
+    eager: true
+});
 
-function component(id: string, title: string, group: string, demos: [string, string, string][]): Page {
+function demo(path: string, name: string, title: string, description: string): Demo {
     return {
+        name,
+        title,
+        description,
+        source: sources[path]
+            .trim()
+            .replaceAll('from "../../index"', 'from "cool-design"')
+            .replaceAll('from "../../package/index"', 'from "cool-design"'),
+        component: components[path].default
+    };
+}
+
+function component(id: string, title: string, group: string, demos: [string, string, string][], imports?: string[]): Page {
+    return {
+        imports: imports ?? [title.split(" ")[0]],
         id: `components/${id}`,
         title,
         group,
         markdown: readmes[`../../package/${id}/README.md`],
-        demos: demos.map(([name, demoTitle, description]) => {
-            const path = `../../package/${id}/demo/${name}.vue`;
-            return {
-                name,
-                title: demoTitle,
-                description,
-                source: sources[path].trim().replaceAll('from "../../index"', 'from "cool-design"'),
-                component: components[path].default
-            };
-        })
+        demos: demos.map(([name, title, description]) =>
+            demo(`../../package/${id}/demo/${name}.vue`, name, title, description)
+        )
     };
 }
 
 export const pages: Page[] = [
     ...[
-        ["quickstart", "快速开始"],
-        ["theme", "主题定制"]
-    ].map(([name, title]) => ({
+        { name: "install", title: "安装", demos: [] },
+        { name: "quickstart", title: "快速上手", demos: [] },
+        {
+            name: "theme",
+            title: "自定义主题",
+            demos: [
+                demo(
+                    "../../package/config-provider/demo/basic.vue",
+                    "theme",
+                    "体验局部主题与尺寸",
+                    "切换局部深色主题，观察大尺寸按钮、标签和输入框；查看代码获取完整示例。"
+                )
+            ]
+        },
+        {
+            name: "transition",
+            title: "过渡动画",
+            demos: [
+                demo(
+                    "../demos/motion.vue",
+                    "transition",
+                    "淡入淡出与滑动渐变",
+                    "选择一种动画后切换面板显示。示例使用 Vue 3 内置 Transition，并遵循系统减少动态效果偏好。"
+                )
+            ]
+        }
+    ].map(({ name, title, demos }) => ({
         id: `guide/${name}`,
         title,
         group: "开发指南",
         markdown: guides[`../markdown/guide/${name}.md`],
-        demos: []
+        demos
     })),
     component("button", "Button 按钮", "基础组件", [
         ["basic", "按钮类型", "用不同类型区分主要操作、普通操作和风险操作。"],
@@ -55,8 +89,12 @@ export const pages: Page[] = [
         ["states", "禁用与加载", "禁用和加载状态都不会触发点击事件。"],
         ["events", "点击事件", "点击按钮，查看事件触发结果。"]
     ]),
+    component("color", "Color 色彩", "基础组件", [["basic", "语义色与主题色阶", "切换全局主题，或修改主色观察派生色同步变化。"]], []),
+    component("border", "Border 边框", "基础组件", [["basic", "边框、圆角与阴影", "对照线型、强弱层次、圆角和阴影；颜色随主题变化。"]], []),
+    component("link", "Link 文字链接", "基础组件", [["basic", "导航与行内操作", "体验语义色、尺寸、下划线、图标和禁用行为。"]]),
     component("icon", "Icon 图标", "基础组件", [
-        ["basic", "图标与自定义 SVG", "装饰图标无需名称；表达独立含义时通过 label 提供可访问名称。"]
+        ["basic", "图标与自定义 SVG", "装饰图标无需名称；表达独立含义时通过 label 提供可访问名称。"],
+        ["catalog", "图标目录", "搜索全部内置图标，点击复制完整用法。"]
     ]),
     component("space", "Space 间距", "基础组件", [
         ["basic", "工具栏间距", "使用水平或垂直间距组织桌面工具栏与操作组。"]
@@ -65,7 +103,12 @@ export const pages: Page[] = [
     component("row", "Row 行布局", "布局组件", [
         ["basic", "24 栅格布局", "使用 gutter 设置列间距；内部配合 Col 划分宽度。"]
     ]),
-    component("col", "Col 列布局", "布局组件", [["basic", "列宽与偏移", "span 与 offset 以 24 栅格为单位。"]]),
+    component("col", "Col 列布局", "布局组件", [["basic", "列宽与偏移", "span 与 offset 以 24 栅格为单位。"], ["responsive", "响应式布局与隐藏", "调整窗口宽度，观察断点列宽与小屏隐藏。"], ["position", "列的视觉位移", "push/pull 改变视觉位置，offset 改变留白。"]]),
+    component("container", "Container 布局容器", "布局组件", [["basic", "常见页面结构", "组合页头、侧栏、主内容和页脚，自动判断布局方向。"], ["scroll", "主区域独立滚动", "限定外层高度后，主内容独立滚动，页头页脚保持可见。"]]),
+    component("header", "Header 页头", "布局组件", [["basic", "自定义页头高度", "顶栏保持高度，主内容自动填充剩余区域。"]]),
+    component("aside", "Aside 侧栏", "布局组件", [["basic", "自定义侧栏宽度", "横向布局内，侧栏固定宽度，主内容占据剩余区域。"]]),
+    component("main", "Main 主内容", "布局组件", [["basic", "滚动主区域", "主区域自动填充，超出内容在区域内部滚动。"]]),
+    component("footer", "Footer 页脚", "布局组件", [["basic", "自定义页脚高度", "页脚区域支持数字与 CSS 长度。"]]),
     component("config-provider", "ConfigProvider 全局配置", "基础组件", [
         ["basic", "主题与尺寸", "局部配置作用于内部控件，切换主题也会作用于内部浮层。"]
     ]),

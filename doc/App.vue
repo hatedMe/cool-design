@@ -16,12 +16,11 @@ const dark = ref(false);
 const navigationOpen = ref(false);
 const article = ref<HTMLElement>();
 const page = computed(() => pages.find((item) => item.id === route.value));
-const registration = computed(() =>
-    highlightCode(
-        `import { ${page.value?.title.split(" ")[0]} } from "cool-design";\nimport "cool-design/style.css";`,
-        "ts"
-    )
-);
+const registration = computed(() => {
+    const names = page.value?.imports ?? [];
+    const code = [...(names.length ? [`import { ${names.join(", ")} } from "cool-design";`] : []), 'import "cool-design/style.css";'].join("\n");
+    return highlightCode(code, "ts");
+});
 watchEffect(() => {
     document.title = `${route.value === "examples/user-management" ? "用户管理示例" : page.value?.title || "页面未找到"} · Cool Design`;
 });
@@ -115,12 +114,12 @@ onBeforeUnmount(() => window.removeEventListener("hashchange", navigate));
                         <article :key="page.id">
                             <div class="docs-markdown" v-html="intro" />
                             <template v-if="page.demos.length">
-                                <section id="registration" class="docs-registration">
-                                    <h2>引入组件</h2>
+                                <section v-if="page.group !== '开发指南'" id="registration" class="docs-registration">
+                                    <h2>{{ page.imports?.length ? "引入组件" : "引入样式" }}</h2>
                                     <pre><code class="hljs language-ts" v-html="registration" /></pre>
                                     <p>
                                         示例使用局部引入，可直接复制完整 Vue 文件。安装和全局注册方式见
-                                        <a href="#/guide/quickstart">快速开始</a>
+                                        <a href="#/guide/quickstart">快速上手</a>
                                         。
                                     </p>
                                 </section>
@@ -142,14 +141,16 @@ onBeforeUnmount(() => window.removeEventListener("hashchange", navigate));
                         <h1>页面未找到</h1>
                         <p>
                             此文档地址不存在，
-                            <a href="#/guide/quickstart">返回快速开始</a>
+                            <a href="#/guide/quickstart">返回快速上手</a>
                             。
                         </p>
                     </template>
                 </main>
                 <aside v-if="page?.demos.length" class="docs-toc" aria-label="本页目录">
                     <p>本页内容</p>
-                    <button type="button" @click="jump('registration')">引入组件</button>
+                    <button v-if="page.group !== '开发指南'" type="button" @click="jump('registration')">
+                        引入组件
+                    </button>
                     <button type="button" @click="jump('examples')">代码演示</button>
                     <button
                         v-for="demo in page.demos"
