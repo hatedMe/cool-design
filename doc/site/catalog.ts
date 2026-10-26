@@ -100,6 +100,7 @@ export const pages: Page[] = [
         ["basic", "工具栏间距", "使用水平或垂直间距组织桌面工具栏与操作组。"]
     ]),
     component("divider", "Divider 分割线", "基础组件", [["basic", "内容分隔", "横向分割章节，竖向分隔行内操作。"]]),
+    component("layout", "Layout 布局", "布局组件", [["basic", "间距与对齐", "调整列间距、水平排列和垂直对齐，观察实时布局。"]], ["Row", "Col"]),
     component("row", "Row 行布局", "布局组件", [
         ["basic", "24 栅格布局", "使用 gutter 设置列间距；内部配合 Col 划分宽度。"]
     ]),

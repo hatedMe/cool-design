@@ -6,7 +6,7 @@ body {
     background: var(--i-bg);
     color: var(--i-text);
     font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
-    a:not(.i-link) {
+    :where(a:not(.i-link)) {
         color: var(--i-primary);
         text-decoration: none;
     }
@@ -267,12 +267,13 @@ body {
         padding: 2px 5px;
         border-radius: 3px;
     }
-    table {
-        display: block;
-        width: 100%;
+    .docs-table-scroll {
         overflow-x: auto;
-        border-collapse: collapse;
         margin: 16px 0 28px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
         font-size: 13px;
     }
     th,
