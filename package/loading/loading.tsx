@@ -4,7 +4,9 @@ export default defineComponent({
     props: {
         loading: { type: Boolean, default: true },
         text: { type: String, default: "正在加载…" },
-        overlay: Boolean
+        overlay: Boolean,
+        fullscreen: Boolean,
+        background: { type: String, default: "" }
     },
     setup(props, { slots }) {
         const block = (event: Event) => {
@@ -14,7 +16,10 @@ export default defineComponent({
             }
         };
         return () => (
-            <div class={["i-loading", { "i-loading--overlay": props.overlay }]} aria-busy={props.loading}>
+            <div
+                class={["i-loading", { "i-loading--overlay": props.overlay, "i-loading--fullscreen": props.fullscreen }]}
+                style={props.background && props.loading ? { "--i-loading-background": props.background } : undefined}
+                aria-busy={props.loading}>
                 {slots.default && (
                     <div
                         class="i-loading__content"

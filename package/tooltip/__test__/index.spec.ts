@@ -57,3 +57,14 @@ test("视口顶部放不下时翻转，滚动更新坐标，卸载移除监听�
     expect(document.querySelector('[role="tooltip"]')).toBeNull();
     expect(remove.mock.calls.some((call) => call[0] === "scroll")).toBe(true);
 });
+
+test("支持 click 触发、延迟和浅色主题", async () => {
+    vi.useFakeTimers();
+    const w = mount(Tooltip, { props: { content: "说明", trigger: "click", showAfter: 20, effect: "light" }, slots: { default: () => h("span", "帮助") }, attachTo: document.body });
+    wrappers.push(w);
+    await w.get("span").trigger("click");
+    expect(document.querySelector('[role="tooltip"]')).toBeNull();
+    vi.advanceTimersByTime(20);
+    await flushPromises();
+    expect(document.querySelector(".i-tooltip--light")).not.toBeNull();
+});

@@ -19,7 +19,7 @@ function save() {
         <Button type="primary" @click="edit">编辑用户</Button>
         <span role="status">{{ result }}</span>
     </Space>
-    <Dialog v-model="open" title="编辑用户">
+    <Dialog v-model="open" title="编辑用户" width="520px" center destroy-on-close>
         <Form :model="model" @submit="save">
             <FormItem prop="name" label="用户名称"><Input v-model="model.name" /></FormItem>
         </Form>

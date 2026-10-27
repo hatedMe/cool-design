@@ -2,9 +2,10 @@ import { defineComponent, onBeforeUnmount, watch, type PropType } from "vue";
 export default defineComponent({
     name: "i-message",
     props: {
-        type: { type: String as PropType<"success" | "error">, default: "success" },
+        type: { type: String as PropType<"success" | "warning" | "info" | "error">, default: "success" },
         message: { type: String, required: true },
-        duration: { type: Number, default: 4000 }
+        duration: { type: Number, default: 4000 },
+        showClose: { type: Boolean, default: true }
     },
     emits: ["close"],
     setup(props, { emit }) {
@@ -24,7 +25,7 @@ export default defineComponent({
         return () => (
             <div class={["i-message", `i-message--${props.type}`]} role={props.type === "error" ? "alert" : "status"}>
                 <span>{props.message}</span>
-                <button
+                {props.showClose && <button
                     type="button"
                     aria-label="关闭提示"
                     onClick={() => {
@@ -32,7 +33,7 @@ export default defineComponent({
                         emit("close");
                     }}>
                     ×
-                </button>
+                </button>}
             </div>
         );
     }

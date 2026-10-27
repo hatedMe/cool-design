@@ -6,21 +6,28 @@ export default defineComponent({
     props: {
         content: { type: String, default: "" },
         placement: { type: String as PropType<Placement>, default: "top" },
-        disabled: Boolean
+        disabled: Boolean,
+        trigger: { type: String as PropType<"hover" | "focus" | "click">, default: "hover" },
+        showAfter: { type: Number, default: 0 },
+        hideAfter: { type: Number, default: 80 },
+        effect: { type: String as PropType<"light" | "dark">, default: "dark" }
     },
     setup(props, { slots }) {
         const reference = ref<HTMLElement>(),
             floating = ref<HTMLElement>();
         const hovered = ref(false),
             focused = ref(false),
-            dismissed = ref(false);
+            dismissed = ref(false),
+            clicked = ref(false);
         let timer: ReturnType<typeof setTimeout> | undefined;
         const tooltipId = `i-tooltip-${++id}`;
         const open = computed(
             () =>
                 !props.disabled &&
                 !dismissed.value &&
-                (hovered.value || focused.value) &&
+            ((props.trigger === "click" ? dismissed.value === false && clicked.value : false) ||
+                (props.trigger === "hover" && (hovered.value || focused.value)) ||
+                (props.trigger === "focus" && focused.value)) &&
                 !!(props.content || slots.content)
         );
         const position = useFloating({
@@ -30,16 +37,20 @@ export default defineComponent({
             placement: () => props.placement,
             close: () => {
                 dismissed.value = true;
+                focused.value = false;
+                clicked.value = false;
             }
         });
         const enter = () => {
             clearTimeout(timer);
-            hovered.value = true;
-            dismissed.value = false;
+            timer = setTimeout(() => {
+                hovered.value = true;
+                dismissed.value = false;
+            }, props.showAfter);
         };
         const leave = () => {
             clearTimeout(timer);
-            timer = setTimeout(() => (hovered.value = false), 80);
+            timer = setTimeout(() => (hovered.value = false), props.hideAfter);
         };
         onBeforeUnmount(() => clearTimeout(timer));
         return () => (
@@ -49,6 +60,20 @@ export default defineComponent({
                     ref={reference}
                     onMouseenter={enter}
                     onMouseleave={leave}
+                    onClick={() => {
+                        if (props.trigger === "click") {
+                            clearTimeout(timer);
+                            if (clicked.value) {
+                                clicked.value = false;
+                                dismissed.value = true;
+                            } else {
+                                timer = setTimeout(() => {
+                                    clicked.value = true;
+                                    dismissed.value = false;
+                                }, props.showAfter);
+                            }
+                        }
+                    }}
                     onFocusin={() => {
                         focused.value = true;
                         dismissed.value = false;
@@ -69,7 +94,7 @@ export default defineComponent({
                         <div
                             id={tooltipId}
                             ref={floating}
-                            class="i-tooltip"
+                            class={["i-tooltip", `i-tooltip--${props.effect}`]}
                             role="tooltip"
                             style={position.style.value}
                             data-placement={position.placement.value}

@@ -16,6 +16,10 @@
 | confirmButtonText    | 确认按钮文字                      | string  | 确定               |
 | cancelButtonText     | 取消按钮文字                      | string  | 取消               |
 | disabled             | 禁止打开确认框                    | boolean | false              |
+| confirmButtonType   | 确认按钮类型                      | string  | primary            |
+| cancelButtonType    | 取消按钮类型                      | string  | default            |
+| hideIcon            | 隐藏标题前图标                    | boolean | false              |
+| width               | 面板宽度                          | number / string | — |
 
 ### 事件
 

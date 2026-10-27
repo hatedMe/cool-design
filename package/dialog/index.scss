@@ -19,6 +19,9 @@
     color: var(--i-text);
     box-shadow: var(--i-shadow);
 }
+.i-dialog--center {
+    align-self: center;
+}
 .i-dialog__header {
     display: flex;
     justify-content: space-between;

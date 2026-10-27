@@ -79,3 +79,10 @@ test("组合式调用继承响应式主题，调用者卸载取消并清理弹�
     await expect(result).resolves.toBe("cancel");
     expect(document.querySelector(".i-message-box")).toBeNull();
 });
+
+test("支持消息类型样式", async () => {
+    const w = mount(MessageBox, { props: { modelValue: true, type: "error", message: "失败" }, attachTo: document.body });
+    await flushPromises();
+    expect(document.querySelector(".i-message-box--error")).not.toBeNull();
+    w.unmount();
+});

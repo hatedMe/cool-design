@@ -58,6 +58,15 @@ test("关闭开关有效，多弹窗保持滚动锁，主题宿主承载浮层",
     expect(document.body.style.overflow).toBe("");
 });
 
+test("支持宽度、居中和关闭后销毁内容", async () => {
+    const w = mount(Dialog, { props: { modelValue: true, width: 360, center: true, destroyOnClose: true }, slots: { default: () => h("p", "内容") } });
+    await nextTick();
+    expect(w.get(".i-dialog").classes()).toContain("i-dialog--center");
+    expect(w.get(".i-dialog").attributes("style")).toContain("width: 360px");
+    await w.setProps({ modelValue: false });
+    expect(w.find("p").exists()).toBe(false);
+});
+
 test("消息自动关闭，卸载后取消计时器", async () => {
     vi.useFakeTimers();
     const w = mount(Message, { props: { message: "保存成功", duration: 1000 } });

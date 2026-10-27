@@ -1,4 +1,4 @@
-import { Teleport, defineComponent, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { Teleport, defineComponent, inject, nextTick, onBeforeUnmount, onMounted, ref, watch, type PropType } from "vue";
 import { overlayKey } from "../config-provider/context";
 import { isTopDialog, isTopFocusDialog, lockDialog, unlockDialog } from "./stack";
 let dialogId = 0;
@@ -9,7 +9,10 @@ export default defineComponent({
         title: { type: String, default: "对话框" },
         closeOnClickModal: { type: Boolean, default: true },
         closeOnPressEscape: { type: Boolean, default: true },
-        closable: { type: Boolean, default: true }
+        closable: { type: Boolean, default: true },
+        width: { type: [String, Number] as PropType<string | number>, default: undefined },
+        center: Boolean,
+        destroyOnClose: Boolean
     },
     emits: ["update:modelValue"],
     setup(props, { slots, emit }) {
@@ -105,7 +108,8 @@ export default defineComponent({
                 }}>
                 <section
                     ref={root}
-                    class="i-dialog"
+                    class={{ "i-dialog": true, "i-dialog--center": props.center }}
+                    style={{ width: typeof props.width === "number" ? `${props.width}px` : props.width }}
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby={titleId}

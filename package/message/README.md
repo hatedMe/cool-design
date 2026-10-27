@@ -10,9 +10,10 @@
 
 | 参数     | 说明                                    | 类型   | 默认值  |
 | -------- | --------------------------------------- | ------ | ------- |
-| type     | 消息类型：success / error               | string | success |
+| type     | 消息类型：success / warning / info / error | string | success |
 | message  | 消息文本，必填                          | string | —       |
 | duration | 自动关闭等待时间，单位 ms；0 不自动关闭 | number | 4000    |
+| showClose | 是否显示关闭按钮                         | boolean | true |
 
 ### 事件
 
@@ -22,6 +23,6 @@
 
 ## 使用说明
 
-声明式属性 type: 'success' | 'error'（默认 success）、message: string（必填，按文本渲染）、duration: number（默认 4000ms，0 表示不自动关闭）。
+声明式属性 type: 'success' | 'warning' | 'info' | 'error'（默认 success）、message: string（必填，按文本渲染）、duration: number（默认 4000ms，0 表示不自动关闭）、showClose。不同类型使用对应语义颜色，error 使用 role=alert。
 
 计时结束或关闭按钮触发 close，由父级通过 v-if 移除。卸载清理计时器，消息或时长改变重新计时。在 ConfigProvider 内声明以继承主题。首版不提供全局函数 API 或消息队列。

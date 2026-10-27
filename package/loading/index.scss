@@ -18,8 +18,18 @@
     position: absolute;
     inset: 0;
     z-index: 5;
-    background: var(--i-bg);
+    background: var(--i-loading-background, var(--i-bg));
     opacity: 0.92;
+}
+.i-loading--fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    background: var(--i-loading-background, var(--i-bg));
+}
+.i-loading--fullscreen > .i-loading__status {
+    position: fixed;
+    inset: 0;
 }
 .i-loading--overlay[aria-busy="true"] > .i-loading__content {
     pointer-events: none;

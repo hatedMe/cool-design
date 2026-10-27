@@ -15,6 +15,9 @@
 | closeOnClickModal    | 点击遮罩请求关闭                 | boolean | true   |
 | closeOnPressEscape   | 按 Esc 请求关闭                  | boolean | true   |
 | closable             | 允许关闭按钮、遮罩、Esc 请求关闭 | boolean | true   |
+| width                | 弹窗宽度，支持数字或 CSS 尺寸    | number / string | — |
+| center               | 垂直居中显示                     | boolean | false |
+| destroyOnClose       | 关闭后销毁内容                   | boolean | false |
 
 ### 事件
 

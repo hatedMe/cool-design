@@ -8,6 +8,7 @@ export default defineComponent({
         modelValue: Boolean,
         title: { type: String, default: "操作确认" },
         message: { type: String, default: "" },
+        type: { type: String as PropType<"success" | "warning" | "info" | "error">, default: "warning" },
         confirmButtonText: { type: String, default: "确定" },
         cancelButtonText: { type: String, default: "取消" },
         beforeConfirm: Function as PropType<MessageBoxOptions["beforeConfirm"]>
@@ -68,7 +69,7 @@ export default defineComponent({
                 }}>
                 {{
                     default: () => (
-                        <div class="i-message-box">
+                            <div class={["i-message-box", `i-message-box--${props.type}`]}>
                             <div class="i-message-box__message">{slots.default?.() ?? props.message}</div>
                             {error.value && (
                                 <p class="i-message-box__error" role="alert">

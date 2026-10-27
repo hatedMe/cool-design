@@ -18,3 +18,8 @@
     font-size: var(--i-font-size);
     box-shadow: var(--i-shadow);
 }
+.i-tooltip--light {
+    background: var(--i-bg);
+    color: var(--i-text);
+    border: 1px solid var(--i-border);
+}

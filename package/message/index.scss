@@ -19,6 +19,14 @@
     border-color: var(--i-danger);
     color: var(--i-danger);
 }
+.i-message--warning {
+    border-color: var(--i-warning);
+    color: var(--i-warning);
+}
+.i-message--info {
+    border-color: var(--i-border);
+    color: var(--i-text-secondary);
+}
 .i-message button {
     border: 0;
     background: none;

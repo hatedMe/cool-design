@@ -19,3 +19,9 @@ test("遮罩期间隔离内容交互，结束恢复，支持状态文案", async
     expect(action).toHaveBeenCalledTimes(1);
     w.unmount();
 });
+
+test("支持全屏加载层和自定义背景", () => {
+    const w = mount(Loading, { props: { fullscreen: true, background: "rgba(0,0,0,.2)" } });
+    expect(w.classes()).toContain("i-loading--fullscreen");
+    expect(w.attributes("style")).toContain("--i-loading-background");
+});

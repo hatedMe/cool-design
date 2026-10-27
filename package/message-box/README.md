@@ -13,6 +13,7 @@
 | modelValue / v-model | 是否显示                                 | boolean                                        | false    |
 | title                | 标题                                     | string                                         | 操作确认 |
 | message              | 纯文本内容，可被默认插槽覆盖             | string                                         | 空字符串 |
+| type                 | 消息类型：success / warning / info / error | string                                      | warning  |
 | confirmButtonText    | 确认按钮文字                             | string                                         | 确定     |
 | cancelButtonText     | 取消按钮文字                             | string                                         | 取消     |
 | beforeConfirm        | 确认前执行；false 保持窗口，抛错显示错误 | () => void / boolean / Promise<void / boolean> | —        |

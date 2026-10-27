@@ -10,7 +10,11 @@ export default defineComponent({
         placement: { type: String as PropType<Placement>, default: "bottom" },
         confirmButtonText: { type: String, default: "确定" },
         cancelButtonText: { type: String, default: "取消" },
-        disabled: Boolean
+        disabled: Boolean,
+        confirmButtonType: { type: String, default: "primary" },
+        cancelButtonType: { type: String, default: "default" },
+        hideIcon: Boolean,
+        width: { type: [String, Number] as PropType<string | number>, default: undefined }
     },
     emits: ["update:modelValue", "confirm", "cancel"],
     setup(props, { slots, emit }) {
@@ -70,19 +74,19 @@ export default defineComponent({
                             ref={floating}
                             id={panelId}
                             class="i-popconfirm"
-                            style={position.style.value}
+                            style={{ ...position.style.value, width: typeof props.width === "number" ? `${props.width}px` : props.width }}
                             data-placement={position.placement.value}
                             role="dialog"
                             aria-labelledby={`${panelId}-title`}
                             tabindex={-1}>
-                            <p id={`${panelId}-title`}>{props.title}</p>
+                            <p id={`${panelId}-title`}>{!props.hideIcon && <span aria-hidden="true">⚠ </span>}{props.title}</p>
                             <div class="i-popconfirm__actions">
-                                <Button size="small" onClick={() => finish("cancel")}>
+                                <Button size="small" type={props.cancelButtonType as any} onClick={() => finish("cancel")}>
                                     {props.cancelButtonText}
                                 </Button>
                                 <Button
                                     size="small"
-                                    type="primary"
+                                    type={props.confirmButtonType as any}
                                     data-popconfirm-confirm
                                     onClick={() => finish("confirm")}>
                                     {props.confirmButtonText}

@@ -132,3 +132,17 @@ test("同一次遮罩手势只关闭气泡，下一次才关闭底层弹窗", as
     await flushPromises();
     expect(open.value).toBe(false);
 });
+
+test("支持按钮类型、隐藏图标和面板宽度", async () => {
+    const w = mount(Popconfirm, {
+        props: { hideIcon: true, width: 280, confirmButtonType: "danger", cancelButtonType: "plain" },
+        slots: { default: () => h("button", "删除") },
+        attachTo: document.body
+    });
+    wrappers.push(w);
+    await w.get("button").trigger("click");
+    await flushPromises();
+    const panel = document.querySelector<HTMLElement>(".i-popconfirm")!;
+    expect(panel.querySelector("span")).toBeNull();
+    expect(panel.style.width).toBe("280px");
+});
