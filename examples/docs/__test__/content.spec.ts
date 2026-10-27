@@ -21,8 +21,8 @@ describe('文档内容与组件覆盖', () => {
     for (const demo of page.demos) {
       const wrapper = mount(demo.component);
       expect(wrapper.html()).not.toBe('');
-      expect(demo.source).toContain('from "cool-design"');
-      expect(demo.source).not.toContain('from "../../index"');
+      expect(demo.source).toContain("from 'cool-design'");
+      expect(demo.source).not.toContain("from '../../index'");
       wrapper.unmount();
     }
   });

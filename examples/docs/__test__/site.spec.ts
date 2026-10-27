@@ -44,7 +44,7 @@ describe('PC 组件文档站', () => {
     expect(wrapper.findAll('.demo-preview .i-button').length).toBeGreaterThan(4);
     expect(wrapper.text()).toContain('nativeType');
     await wrapper.get('.demo-toolbar button').trigger('click');
-    expect(wrapper.get('.demo-source').text()).toContain('from "cool-design"');
+    expect(wrapper.get('.demo-source').text()).toContain("from 'cool-design'");
     expect(wrapper.get('.demo-source .hljs-keyword').text()).toBe('import');
     expect(wrapper.get('#registration .hljs-keyword').text()).toBe('import');
   });
@@ -111,7 +111,7 @@ it('色彩与边框页面只引入样式，不生成不存在的组件导入', a
   for (const name of ['color', 'border']) {
     const wrapper = await open(`#/components/${name}`);
     expect(wrapper.get('#registration').text()).toContain('引入样式');
-    expect(wrapper.get('#registration code').text()).toBe('import "cool-design/style.css";');
+    expect(wrapper.get('#registration code').text()).toBe("import 'cool-design/style.css';");
     expect(wrapper.find('.demo-preview').exists()).toBe(true);
   }
 });

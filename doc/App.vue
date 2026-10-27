@@ -20,8 +20,8 @@ const page = computed(() => pages.find((item) => item.id === route.value));
 const registration = computed(() => {
   const names = page.value?.imports ?? [];
   const code = [
-    ...(names.length ? [`import { ${names.join(', ')} } from "cool-design";`] : []),
-    'import "cool-design/style.css";'
+    ...(names.length ? [`import { ${names.join(', ')} } from 'cool-design';`] : []),
+    "import 'cool-design/style.css';"
   ].join('\n');
   return highlightCode(code, 'ts');
 });

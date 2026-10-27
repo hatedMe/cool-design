@@ -5,3 +5,4 @@ lib
 coverage
 .superpowers
 .git
+*.timestamp-*.mjs

@@ -29,8 +29,10 @@ function demo(path: string, name: string, title: string, description: string): D
     description,
     source: sources[path]
       .trim()
-      .replaceAll('from "../../index"', 'from "cool-design"')
-      .replaceAll('from "../../package/index"', 'from "cool-design"'),
+      .replaceAll('from "../../index"', "from 'cool-design'")
+      .replaceAll('from "../../package/index"', "from 'cool-design'")
+      .replaceAll("from '../../index'", "from 'cool-design'")
+      .replaceAll("from '../../package/index'", "from 'cool-design'"),
     component: components[path].default
   };
 }
