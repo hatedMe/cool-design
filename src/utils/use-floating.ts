@@ -12,6 +12,7 @@ import {
 } from 'vue';
 import { overlayKey } from '../../packages/cool-design/config-provider/context';
 import { isTopOverlay, isTopFocusOverlay, pushOverlay, removeOverlay } from './overlay-stack';
+import { useZIndex } from '../hooks/use-z-index';
 export type Placement = 'top' | 'bottom' | 'left' | 'right';
 interface FloatingController {
   target: ComputedRef<HTMLElement>;
@@ -34,6 +35,7 @@ export function useFloating(options: {
   let observer: ResizeObserver | undefined;
   const style = ref<CSSProperties>({ position: 'fixed', visibility: 'hidden' });
   const placement = ref<Placement>(options.placement());
+  const { nextZIndex } = useZIndex();
   let zIndex = 2001;
   const target = computed(() => host?.value || document.body);
   const items = () =>
@@ -137,7 +139,7 @@ export function useFloating(options: {
         cleanup(!open);
         if (!open) return;
         active = true;
-        zIndex = pushOverlay(token, options.trapFocus);
+        zIndex = Math.max(pushOverlay(token, options.trapFocus), nextZIndex());
         style.value = { position: 'fixed', visibility: 'hidden', zIndex };
         window.addEventListener('resize', update);
         window.addEventListener('scroll', update, true);

@@ -7,3 +7,4 @@ export const Icon = withInstall(_Icon);
 export default Icon;
 
 export { iconNames } from './icons';
+export type IconProp = string | import('vue').Component;

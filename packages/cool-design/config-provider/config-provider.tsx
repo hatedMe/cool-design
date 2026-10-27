@@ -1,11 +1,13 @@
 import { computed, defineComponent, provide, ref, type PropType } from 'vue';
 import { configKey, overlayKey, useConfig, type Size } from './context';
+import { idKey, namespaceKey, sizeKey } from '../../../src/hooks';
 export default defineComponent({
   name: 'i-config-provider',
   props: {
     theme: String as PropType<'light' | 'dark'>,
     size: String as PropType<Size>,
-    themeVars: Object as PropType<Record<string, string>>
+    themeVars: Object as PropType<Record<string, string>>,
+    namespace: String
   },
   setup(props, { slots }) {
     const parent = useConfig();
@@ -16,6 +18,15 @@ export default defineComponent({
     }));
     const host = ref<HTMLElement>();
     provide(configKey, config);
+    provide(
+      namespaceKey,
+      computed(() => props.namespace || 'i')
+    );
+    provide(
+      sizeKey,
+      computed(() => config.value.size)
+    );
+    provide(idKey, { prefix: Math.floor(Math.random() * 10000), current: 0 });
     provide(overlayKey, host);
     return () => (
       <div

@@ -17,10 +17,16 @@ export interface Page {
 }
 const readmes = import.meta.glob<string>('../../packages/cool-design/*/README.md', { eager: true, as: 'raw' });
 const guides = import.meta.glob<string>('../markdown/guide/*.md', { eager: true, as: 'raw' });
-const sources = import.meta.glob<string>(['../../packages/cool-design/*/demo/*.vue', '../demos/*.vue'], { eager: true, as: 'raw' });
-const components = import.meta.glob<{ default: Component }>(['../../packages/cool-design/*/demo/*.vue', '../demos/*.vue'], {
-  eager: true
+const sources = import.meta.glob<string>(['../../packages/cool-design/*/demo/*.vue', '../demos/*.vue'], {
+  eager: true,
+  as: 'raw'
 });
+const components = import.meta.glob<{ default: Component }>(
+  ['../../packages/cool-design/*/demo/*.vue', '../demos/*.vue'],
+  {
+    eager: true
+  }
+);
 
 function demo(path: string, name: string, title: string, description: string): Demo {
   return {
@@ -172,9 +178,24 @@ export const pages: Page[] = [
         '基础布局',
         '通过 span 划分 24 栅格，列宽总和超出 24 时自动换行。'
       ),
-      demo('../../packages/cool-design/layout/demo/gutter.vue', 'gutter', '分栏间隔', 'gutter 以像素为单位设置相邻列间距。'),
-      demo('../../packages/cool-design/layout/demo/mixed.vue', 'mixed', '混合布局', '组合不同列宽，构建主次分明的页面区域。'),
-      demo('../../packages/cool-design/layout/demo/offset.vue', 'offset', '列偏移', 'offset 在列左侧增加指定栅格数的留白。'),
+      demo(
+        '../../packages/cool-design/layout/demo/gutter.vue',
+        'gutter',
+        '分栏间隔',
+        'gutter 以像素为单位设置相邻列间距。'
+      ),
+      demo(
+        '../../packages/cool-design/layout/demo/mixed.vue',
+        'mixed',
+        '混合布局',
+        '组合不同列宽，构建主次分明的页面区域。'
+      ),
+      demo(
+        '../../packages/cool-design/layout/demo/offset.vue',
+        'offset',
+        '列偏移',
+        'offset 在列左侧增加指定栅格数的留白。'
+      ),
       demo(
         '../../packages/cool-design/layout/demo/basic.vue',
         'basic',

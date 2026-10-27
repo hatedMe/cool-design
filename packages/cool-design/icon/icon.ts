@@ -1,9 +1,10 @@
-import { defineComponent, h, type PropType } from 'vue';
+import { defineComponent, h, type Component, type PropType } from 'vue';
 import { useConfig } from '../config-provider/context';
 export default defineComponent({
   name: 'i-icon',
   props: {
     type: { type: String, default: '' },
+    icon: [String, Object, Function] as PropType<string | Component>,
     size: [String, Number] as PropType<string | number>,
     color: String,
     label: String
@@ -14,7 +15,12 @@ export default defineComponent({
       h(
         'i',
         {
-          class: [!slots.default && 'iconfont', 'i-icon', !slots.default && props.type, `i-icon--${config.value.size}`],
+          class: [
+            !slots.default && typeof props.icon !== 'object' && typeof props.icon !== 'function' && 'iconfont',
+            'i-icon',
+            !slots.default && (typeof props.icon === 'string' ? props.icon : !props.icon ? props.type : undefined),
+            `i-icon--${config.value.size}`
+          ],
           role: props.label ? 'img' : undefined,
           'aria-label': props.label || undefined,
           'aria-hidden': props.label ? undefined : 'true',
@@ -23,7 +29,7 @@ export default defineComponent({
             color: props.color
           }
         },
-        slots.default?.()
+        slots.default?.() || (props.icon && typeof props.icon !== 'string' ? [h(props.icon)] : undefined)
       );
   }
 });

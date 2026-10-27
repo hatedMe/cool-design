@@ -13,7 +13,7 @@ export default defineComponent({
     target: { type: String, default: '_self' },
     disabled: Boolean,
     underline: { type: [String, Boolean] as PropType<LinkUnderline | boolean>, default: 'hover' },
-    icon: String
+    icon: [String, Object, Function] as PropType<string | import('vue').Component>
   },
   emits: ['click'],
   setup(props, { slots, attrs, emit }) {
@@ -62,7 +62,10 @@ export default defineComponent({
               (event.currentTarget as HTMLElement).click();
             }
           }}>
-          {slots.icon?.() ?? (props.icon ? <Icon type={props.icon} /> : null)}
+          {slots.icon?.() ??
+            (props.icon ? (
+              <Icon icon={props.icon} type={typeof props.icon === 'string' ? props.icon : undefined} />
+            ) : null)}
           {slots.default?.()}
         </a>
       );

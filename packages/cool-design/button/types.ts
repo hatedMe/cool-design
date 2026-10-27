@@ -12,11 +12,13 @@ export interface IButtonProps {
   round?: boolean;
   circle?: boolean;
   dashed?: boolean;
-  icon?: string;
+  icon?: IconProp;
   color?: string;
   dark?: boolean;
-  loadingIcon?: string;
+  loadingIcon?: IconProp;
   tag?: 'button' | 'a' | 'div';
   autoInsertSpace?: boolean;
   onClick?: (event: MouseEvent) => void;
 }
+import type { Component } from 'vue';
+export type IconProp = string | Component;

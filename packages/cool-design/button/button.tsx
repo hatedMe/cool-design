@@ -1,8 +1,9 @@
 import { defineComponent, h, inject, type PropType } from 'vue';
 import { useConfig } from '../config-provider/context';
-import type { ButtonType, ButtonSize } from './types';
+import type { ButtonType, ButtonSize, IconProp } from './types';
 import { buttonGroupKey } from './group';
-export type { ButtonType } from './types';
+import Icon from '../icon';
+export type { ButtonType, IconProp } from './types';
 export default defineComponent({
   name: 'i-button',
   props: {
@@ -17,8 +18,8 @@ export default defineComponent({
     round: Boolean,
     circle: Boolean,
     dashed: Boolean,
-    icon: String,
-    loadingIcon: String,
+    icon: [String, Object, Function] as PropType<IconProp>,
+    loadingIcon: [String, Object, Function] as PropType<IconProp>,
     color: String,
     dark: Boolean,
     tag: { type: String as PropType<'button' | 'a' | 'div'>, default: 'button' },
@@ -71,11 +72,14 @@ export default defineComponent({
             h(
               'span',
               { class: 'i-button__loading', 'aria-hidden': 'true' },
-              slots.loading?.() ?? h('i', { class: [props.loadingIcon, 'i-button__icon'] }, '...')
+              slots.loading?.() ??
+                (props.loadingIcon
+                  ? h(Icon, { icon: props.loadingIcon, class: 'i-button__icon' })
+                  : h('i', { class: 'i-button__icon' }, '...'))
             ),
           !props.loading &&
             (slots.icon?.() ??
-              (props.icon && h('i', { class: ['i-button__icon', props.icon], 'aria-hidden': 'true' }))),
+              (props.icon && h(Icon, { icon: props.icon, class: 'i-button__icon', 'aria-hidden': 'true' }))),
           content
         ]
       );

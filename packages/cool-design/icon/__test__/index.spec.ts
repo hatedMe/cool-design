@@ -1,4 +1,5 @@
 import { mount } from '@vue/test-utils';
+import { h, defineComponent } from 'vue';
 import { expect, test } from 'vitest';
 import Icon from '../index';
 
@@ -30,4 +31,11 @@ test('自定义 SVG 优先，不同时叠加字体字形', () => {
   expect(w.classes()).not.toContain('iconfont');
   expect(w.classes()).not.toContain('icon-search');
   w.unmount();
+});
+
+test('支持 Component 图标属性', () => {
+  const Search = defineComponent({ render: () => h('svg', { 'data-test': 'search' }) });
+  const w = mount(Icon, { props: { icon: Search } });
+  expect(w.find('[data-test="search"]').exists()).toBe(true);
+  expect(w.classes()).not.toContain('iconfont');
 });

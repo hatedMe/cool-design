@@ -10,6 +10,6 @@ describe('公开入口', () => {
     expect(app.component('i-button')).toBe(components.Button);
     expect(app.component('i-row')).toBe(components.Row);
     expect(app.component('i-col')).toBe(components.Col);
-    expect(UI.version).toBe('3.0.0');
+    expect(UI.version).toBe('1.2.0');
   });
 });
