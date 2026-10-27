@@ -11,6 +11,7 @@ export default defineConfig({
       tsconfigPath: 'tsconfig.build.json',
       include: [
         'packages/cool-design/index.ts',
+        'packages/cool-design/hooks.ts',
         'packages/hooks/**/*.ts',
         'src/utils/create.ts',
         'src/utils/with-install.ts',

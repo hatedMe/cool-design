@@ -214,7 +214,7 @@ export type { TagType } from './tag/tag';
 export type { Placement } from '../../src/utils/use-floating';
 
 export { iconNames } from './icon';
-export * from '../hooks/index.ts';
+export * from './hooks';
 export type { ColSize, ColSizeObject } from './col';
 export type { LinkType, LinkUnderline } from './link/link';
 export type { DatePickerType } from './date-picker';

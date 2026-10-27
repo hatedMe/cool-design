@@ -83,6 +83,16 @@
     },
     "./style.css": "./es/style.css",
     "./package.json": "./package.json",
+    "./hooks": {
+      "import": {
+        "types": "./es/packages/cool-design/index.d.ts",
+        "default": "./es/packages/cool-design/index.js"
+      },
+      "require": {
+        "types": "./lib/packages/cool-design/index.d.cts",
+        "default": "./lib/packages/cool-design/index.cjs"
+      }
+    },
     "./*": {
       "import": {
         "types": "./es/packages/cool-design/*/index.d.ts",

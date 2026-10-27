@@ -2,6 +2,7 @@
   "extends": "./tsconfig.json",
   "include": [
     "packages/hooks/**/*.ts",
+    "packages/cool-design/hooks.ts",
     "packages/cool-design/index.ts",
     "packages/cool-design/button/**/*.ts",
     "packages/cool-design/button-group/**/*.ts",
