@@ -1,0 +1,19 @@
+{
+    "$schema": "https://unpkg.com/release-it@14/schema/release-it.json",
+    "hooks": {
+        "after:bump": "pnpm build"
+    },
+    "git": {
+        "commitMessage": "chore(release): v${version} [skip ci]",
+        "tagName": "v${version}",
+        "push": true
+    },
+    "npm": {
+        "publish": true,
+        "skipChecks": true,
+        "publishArgs": ["--provenance"]
+    },
+    "github": {
+        "release": true
+    }
+}

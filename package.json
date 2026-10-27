@@ -24,6 +24,13 @@
     ],
     "types": "./es/package/index.d.ts",
     "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hatedMe/cool-design.git"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
     "devDependencies": {
         "@types/markdown-it": "^14.2.0",
         "@vitejs/plugin-vue": "^4.3.2",
