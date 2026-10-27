@@ -99,7 +99,7 @@ const brand = { '--i-primary': '#126d58', '--i-primary-hover': '#0e5847', '--i-o
 
 ## 常用 CSS 变量
 
-以下颜色默认值来自当前源码。完整定义位于 `src/style/tokens.scss`。
+以下颜色默认值来自当前源码。完整定义位于 `packages/cool-design/style/tokens.scss`。
 
 | 变量                 | 用途         | 浅色默认值 | 深色默认值 |
 | -------------------- | ------------ | ---------- | ---------- |

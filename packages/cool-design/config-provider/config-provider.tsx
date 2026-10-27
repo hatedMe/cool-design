@@ -1,6 +1,6 @@
 import { computed, defineComponent, provide, ref, type PropType } from 'vue';
 import { configKey, overlayKey, useConfig, type Size } from './context';
-import { idKey, namespaceKey, sizeKey } from '../../../src/hooks';
+import { idKey, namespaceKey, sizeKey } from '../../hooks/index.ts';
 export default defineComponent({
   name: 'i-config-provider',
   props: {

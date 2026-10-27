@@ -71,7 +71,7 @@ export default defineComponent({
                     .then(() => callback())
                     .catch((reason) => callback(reason instanceof Error ? reason : '校验失败'))
               : undefined
-          }))
+          })) as Rules['value']
         };
         await new Schema(descriptor).validate({ value }, { suppressWarning: true });
         if (current !== revision) return false;

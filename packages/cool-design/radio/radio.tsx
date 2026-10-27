@@ -22,7 +22,7 @@ export default defineComponent({
     const field = useField();
     const group = inject(radioGroupKey, undefined);
     return () => (
-      <label class={bem({ 'is-disabled': props.disabled || group?.disabled, 'is-bordered': props.border })}>
+      <label class={bem({ 'is-disabled': props.disabled || group?.disabled || false, 'is-bordered': props.border })}>
         <input
           {...attrs}
           id={(attrs.id as string) || field?.id}
@@ -30,7 +30,7 @@ export default defineComponent({
           value={String(props.value)}
           name={props.name || group?.name || (attrs.name as string | undefined)}
           checked={(group?.modelValue ?? props.modelValue) === props.value}
-          disabled={props.disabled || group?.disabled}
+          disabled={props.disabled || group?.disabled || false}
           aria-invalid={field?.invalid() || undefined}
           aria-describedby={field?.invalid() ? field.errorId : undefined}
           onChange={() => {

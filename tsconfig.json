@@ -25,7 +25,8 @@
     "packages/cool-design/**/*.ts",
     "packages/cool-design/**/*.d.ts",
     "packages/cool-design/**/*.tsx",
-    "packages/cool-design/**/*.vue"
+    "packages/cool-design/**/*.vue",
+    "packages/hooks/**/*.ts"
   ],
   "references": [
     {

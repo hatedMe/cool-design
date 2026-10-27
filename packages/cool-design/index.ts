@@ -63,7 +63,7 @@ import Drawer from './drawer';
 import { Notification } from './notification';
 import Popover from './popover';
 import Watermark from './watermark';
-import '../../src/style/index.scss';
+import './style/index.scss';
 export type { FormRule, FormInstance } from './form';
 export type { TableColumn, SortChange } from './table';
 export type { SelectRemoteOption } from './select/select';
@@ -214,6 +214,7 @@ export type { TagType } from './tag/tag';
 export type { Placement } from '../../src/utils/use-floating';
 
 export { iconNames } from './icon';
+export * from '../hooks/index.ts';
 export type { ColSize, ColSizeObject } from './col';
 export type { LinkType, LinkUnderline } from './link/link';
 export type { DatePickerType } from './date-picker';

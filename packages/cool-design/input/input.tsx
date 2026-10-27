@@ -1,6 +1,7 @@
 import { computed, defineComponent, nextTick, onMounted, ref, watch, type PropType } from 'vue';
 import { useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
+import { useComposition } from '../../hooks/index.ts';
 export default defineComponent({
   name: 'i-input',
   inheritAttrs: false,
@@ -29,7 +30,7 @@ export default defineComponent({
     const config = useConfig();
     const input = ref<HTMLInputElement | HTMLTextAreaElement>();
     const passwordVisible = ref(false);
-    const composing = ref(false);
+    const { isComposing, handleCompositionStart, handleCompositionEnd } = useComposition();
     const displayValue = computed(() => (props.formatter ? props.formatter(props.modelValue) : props.modelValue));
     const parseValue = (value: string) => (props.parser ? props.parser(value) : value);
     const resizeTextarea = () => {
@@ -83,13 +84,13 @@ export default defineComponent({
           placeholder={props.placeholder}
           aria-invalid={field?.invalid() || undefined}
           aria-describedby={field?.invalid() ? field.errorId : undefined}
-          onCompositionstart={() => (composing.value = true)}
+          onCompositionstart={handleCompositionStart}
           onCompositionend={(e: Event) => {
-            composing.value = false;
+            handleCompositionEnd();
             if (!props.disabled && !props.readonly) update(parseValue((e.target as HTMLTextAreaElement).value));
           }}
           onInput={(e: Event) => {
-            if (!composing.value && !props.disabled && !props.readonly) {
+            if (!isComposing.value && !props.disabled && !props.readonly) {
               update(parseValue((e.target as HTMLTextAreaElement).value));
               nextTick(() => resizeTextarea());
             }
@@ -116,13 +117,13 @@ export default defineComponent({
           placeholder={props.placeholder}
           aria-invalid={field?.invalid() || undefined}
           aria-describedby={field?.invalid() ? field.errorId : undefined}
-          onCompositionstart={() => (composing.value = true)}
+          onCompositionstart={handleCompositionStart}
           onCompositionend={(e: Event) => {
-            composing.value = false;
+            handleCompositionEnd();
             if (!props.disabled && !props.readonly) update(parseValue((e.target as HTMLInputElement).value));
           }}
           onInput={(e: Event) => {
-            if (!composing.value && !props.disabled && !props.readonly) update((e.target as HTMLInputElement).value);
+            if (!isComposing.value && !props.disabled && !props.readonly) update((e.target as HTMLInputElement).value);
           }}
           onChange={(e: Event) => {
             if (!props.disabled && !props.readonly) emit('change', (e.target as HTMLInputElement).value);

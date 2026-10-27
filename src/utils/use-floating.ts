@@ -12,7 +12,7 @@ import {
 } from 'vue';
 import { overlayKey } from '../../packages/cool-design/config-provider/context';
 import { isTopOverlay, isTopFocusOverlay, pushOverlay, removeOverlay } from './overlay-stack';
-import { useZIndex } from '../hooks/use-z-index';
+import { useZIndex } from '../../packages/hooks/use-z-index';
 export type Placement = 'top' | 'bottom' | 'left' | 'right';
 interface FloatingController {
   target: ComputedRef<HTMLElement>;
