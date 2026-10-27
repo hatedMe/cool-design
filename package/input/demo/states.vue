@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Input, Space } from "../../index";
-const value = ref("可清空内容");
+import { ref } from 'vue';
+import { Input, Space } from '../../index';
+const value = ref('可清空内容');
 </script>
 
 <template>

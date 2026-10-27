@@ -117,19 +117,19 @@ Main 没有专属属性；可用 `class`、`style` 等原生属性定制区域�
 五个组件均支持全局注册、具名引入和独立入口；独立入口同样需要引入组件库样式。
 
 ```ts
-import { Container, Header, Aside, Main, Footer } from "cool-design";
-import "cool-design/style.css";
+import { Container, Header, Aside, Main, Footer } from 'cool-design';
+import 'cool-design/style.css';
 ```
 
 也可以逐个引入：
 
 ```ts
-import Container from "cool-design/container";
-import Header from "cool-design/header";
-import Aside from "cool-design/aside";
-import Main from "cool-design/main";
-import Footer from "cool-design/footer";
-import "cool-design/style.css";
+import Container from 'cool-design/container';
+import Header from 'cool-design/header';
+import Aside from 'cool-design/aside';
+import Main from 'cool-design/main';
+import Footer from 'cool-design/footer';
+import 'cool-design/style.css';
 ```
 
 独立组件文档：[Header](#/components/header)、[Aside](#/components/aside)、[Main](#/components/main)、[Footer](#/components/footer)。

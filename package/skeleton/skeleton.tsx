@@ -1,6 +1,6 @@
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue';
 export default defineComponent({
-  name: "i-skeleton",
+  name: 'i-skeleton',
   props: {
     loading: { type: Boolean, default: true },
     animated: Boolean,
@@ -11,11 +11,11 @@ export default defineComponent({
   setup(props, { slots }) {
     return () =>
       props.loading ? (
-        <div class={{ "i-skeleton": true, "is-animated": props.animated }}>
-          {props.avatar && <i class="i-skeleton__avatar" />}
-          {props.title && <i class="i-skeleton__title" />}
+        <div class={{ 'i-skeleton': true, 'is-animated': props.animated }}>
+          {props.avatar && <i class='i-skeleton__avatar' />}
+          {props.title && <i class='i-skeleton__title' />}
           {Array.from({ length: props.rows }, (_, i) => (
-            <i class="i-skeleton__row" key={i} />
+            <i class='i-skeleton__row' key={i} />
           ))}
         </div>
       ) : (

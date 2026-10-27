@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Divider, Space } from "../../index";
+import { Divider, Space } from '../../index';
 </script>
 
 <template>

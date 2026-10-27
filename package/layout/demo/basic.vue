@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Row, Col, Space } from "../../index";
+import { ref } from 'vue';
+import { Row, Col, Space } from '../../index';
 const gutter = ref(16);
-const justify = ref<"start" | "end" | "center" | "space-around" | "space-between" | "space-evenly">("start");
-const align = ref<"top" | "center" | "bottom">("center");
+const justify = ref<'start' | 'end' | 'center' | 'space-around' | 'space-between' | 'space-evenly'>('start');
+const align = ref<'top' | 'center' | 'bottom'>('center');
 </script>
 <template>
   <Space direction="vertical" align="stretch" :size="20">

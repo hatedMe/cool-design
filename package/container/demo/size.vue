@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Container, Header, Aside, Main, Footer } from "../../index";
+import { Container, Header, Aside, Main, Footer } from '../../index';
 </script>
 <template>
   <Container class="size-demo">

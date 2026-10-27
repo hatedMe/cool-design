@@ -1,7 +1,7 @@
-import { Component } from "./component";
+import { Component } from './component';
 
-export type ButtonType = "primary" | "success" | "warning" | "danger" | "info" | "text";
-export type ButtonNativeType = "button" | "submit" | "reset" | "menu";
+export type ButtonType = 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'text';
+export type ButtonNativeType = 'button' | 'submit' | 'reset' | 'menu';
 
 export declare class Button extends Component {
   type: ButtonType;

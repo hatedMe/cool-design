@@ -8,15 +8,15 @@ import {
   ref,
   watch,
   type PropType
-} from "vue";
-import { overlayKey } from "../config-provider/context";
-import { isTopDialog, isTopFocusDialog, lockDialog, unlockDialog } from "./stack";
+} from 'vue';
+import { overlayKey } from '../config-provider/context';
+import { isTopDialog, isTopFocusDialog, lockDialog, unlockDialog } from './stack';
 let dialogId = 0;
 export default defineComponent({
-  name: "i-dialog",
+  name: 'i-dialog',
   props: {
     modelValue: Boolean,
-    title: { type: String, default: "对话框" },
+    title: { type: String, default: '对话框' },
     closeOnClickModal: { type: Boolean, default: true },
     closeOnPressEscape: { type: Boolean, default: true },
     closable: { type: Boolean, default: true },
@@ -24,13 +24,13 @@ export default defineComponent({
     center: Boolean,
     destroyOnClose: Boolean
   },
-  emits: ["update:modelValue"],
+  emits: ['update:modelValue'],
   setup(props, { slots, emit }) {
     const host = inject(overlayKey, undefined);
     const root = ref<HTMLElement>();
     const zIndex = ref(2000);
     const titleId = `i-dialog-title-${++dialogId}`;
-    const token = Symbol("dialog");
+    const token = Symbol('dialog');
     let active = false;
     let maskGestureAllowed = true;
     // 在锚定浮层处理外部 pointerdown 之前，记录本次手势是否属于当前弹窗。
@@ -46,16 +46,16 @@ export default defineComponent({
       );
     const focusFirst = () => (focusable()[0] || root.value)?.focus();
     const close = () => {
-      if (props.closable) emit("update:modelValue", false);
+      if (props.closable) emit('update:modelValue', false);
     };
     const cleanup = () => {
       if (!active) return;
       const wasTop = isTopDialog(token);
       active = false;
       unlockDialog(token);
-      document.removeEventListener("keydown", onKeydown);
-      document.removeEventListener("focusin", onFocus);
-      document.removeEventListener("pointerdown", onPointerdown, true);
+      document.removeEventListener('keydown', onKeydown);
+      document.removeEventListener('focusin', onFocus);
+      document.removeEventListener('pointerdown', onPointerdown, true);
       if (wasTop && previous?.isConnected) previous.focus();
     };
     const onFocus = (event: FocusEvent) => {
@@ -63,13 +63,13 @@ export default defineComponent({
     };
     const onKeydown = (event: KeyboardEvent) => {
       if (!active) return;
-      if (event.key === "Escape" && !isTopDialog(token)) return;
-      if (event.key === "Tab" && !isTopFocusDialog(token)) return;
-      if (event.key === "Escape" && props.closeOnPressEscape && props.closable) {
+      if (event.key === 'Escape' && !isTopDialog(token)) return;
+      if (event.key === 'Tab' && !isTopFocusDialog(token)) return;
+      if (event.key === 'Escape' && props.closeOnPressEscape && props.closable) {
         event.preventDefault();
         close();
       }
-      if (event.key !== "Tab") return;
+      if (event.key !== 'Tab') return;
       const items = focusable();
       const first = items[0];
       const last = items[items.length - 1];
@@ -96,9 +96,9 @@ export default defineComponent({
           previous = document.activeElement as HTMLElement;
           active = true;
           zIndex.value = lockDialog(token);
-          document.addEventListener("keydown", onKeydown);
-          document.addEventListener("focusin", onFocus);
-          document.addEventListener("pointerdown", onPointerdown, true);
+          document.addEventListener('keydown', onKeydown);
+          document.addEventListener('focusin', onFocus);
+          document.addEventListener('pointerdown', onPointerdown, true);
           await nextTick();
           if (active) focusFirst();
         },
@@ -108,7 +108,7 @@ export default defineComponent({
     onBeforeUnmount(cleanup);
     const content = () => (
       <div
-        class="i-dialog__mask"
+        class='i-dialog__mask'
         style={{ zIndex: zIndex.value }}
         onClick={(event: MouseEvent) => {
           const allowed = maskGestureAllowed && isTopDialog(token);
@@ -117,20 +117,20 @@ export default defineComponent({
         }}>
         <section
           ref={root}
-          class={{ "i-dialog": true, "i-dialog--center": props.center }}
-          style={{ width: typeof props.width === "number" ? `${props.width}px` : props.width }}
-          role="dialog"
-          aria-modal="true"
+          class={{ 'i-dialog': true, 'i-dialog--center': props.center }}
+          style={{ width: typeof props.width === 'number' ? `${props.width}px` : props.width }}
+          role='dialog'
+          aria-modal='true'
           aria-labelledby={titleId}
           tabindex={-1}>
-          <header class="i-dialog__header">
+          <header class='i-dialog__header'>
             <h2 id={titleId}>{props.title}</h2>
-            <button type="button" aria-label="关闭对话框" disabled={!props.closable} onClick={close}>
+            <button type='button' aria-label='关闭对话框' disabled={!props.closable} onClick={close}>
               ×
             </button>
           </header>
-          <div class="i-dialog__body">{slots.default?.()}</div>
-          {slots.footer && <footer class="i-dialog__footer">{slots.footer()}</footer>}
+          <div class='i-dialog__body'>{slots.default?.()}</div>
+          {slots.footer && <footer class='i-dialog__footer'>{slots.footer()}</footer>}
         </section>
       </div>
     );

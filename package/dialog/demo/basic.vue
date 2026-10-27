@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { reactive, ref } from "vue";
-import { Button, Dialog, Form, FormItem, Input, Space } from "../../index";
+import { reactive, ref } from 'vue';
+import { Button, Dialog, Form, FormItem, Input, Space } from '../../index';
 const open = ref(false);
-const model = reactive({ name: "陈晨" });
-const result = ref("");
+const model = reactive({ name: '陈晨' });
+const result = ref('');
 function edit() {
-  model.name = "陈晨";
+  model.name = '陈晨';
   open.value = true;
 }
 function save() {

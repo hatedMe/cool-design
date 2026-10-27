@@ -1,9 +1,9 @@
-import "./index.scss";
-import { withInstall } from "../../src/utils/with-install";
+import './index.scss';
+import { withInstall } from '../../src/utils/with-install';
 
-import _Icon from "./icon";
+import _Icon from './icon';
 
 export const Icon = withInstall(_Icon);
 export default Icon;
 
-export { iconNames } from "./icons";
+export { iconNames } from './icons';

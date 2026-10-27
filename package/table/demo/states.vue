@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Space, Switch, Table } from "../../index";
+import { ref } from 'vue';
+import { Space, Switch, Table } from '../../index';
 const loading = ref(false);
 const columns = [
-  { key: "name", title: "用户名称" },
-  { key: "email", title: "联系邮箱" }
+  { key: 'name', title: '用户名称' },
+  { key: 'email', title: '联系邮箱' }
 ];
 </script>
 

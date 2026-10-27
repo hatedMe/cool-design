@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Button, Empty } from "../../index";
+import { ref } from 'vue';
+import { Button, Empty } from '../../index';
 const reset = ref(false);
 </script>
 

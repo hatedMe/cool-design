@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Descriptions } from "../../index";
+import { Descriptions } from '../../index';
 const items = [
-  { label: "姓名", content: "张三" },
-  { label: "状态", content: "正常" }
+  { label: '姓名', content: '张三' },
+  { label: '状态', content: '正常' }
 ];
 </script>
 <template>

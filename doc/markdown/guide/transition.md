@@ -20,8 +20,8 @@ Transition 包裹一个元素，通过 `v-if` 或 `v-show` 改变其可见性。
 
 ```vue
 <script setup lang="ts">
-import { ref, Transition } from "vue";
-import { Button, Space } from "cool-design";
+import { ref, Transition } from 'vue';
+import { Button, Space } from 'cool-design';
 const visible = ref(true);
 </script>
 
@@ -109,12 +109,12 @@ TransitionGroup 可处理多个子元素。稳定的业务 ID 用作 key，排�
 
 ```vue
 <script setup lang="ts">
-import { ref, TransitionGroup } from "vue";
-import { Button, Space } from "cool-design";
+import { ref, TransitionGroup } from 'vue';
+import { Button, Space } from 'cool-design';
 let nextId = 3;
 const items = ref([
-  { id: 1, name: "产品设计" },
-  { id: 2, name: "研发中心" }
+  { id: 1, name: '产品设计' },
+  { id: 2, name: '研发中心' }
 ]);
 function add() {
   const id = nextId++;

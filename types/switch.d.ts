@@ -1,4 +1,4 @@
-import { Component } from "./component";
+import { Component } from './component';
 export declare class Switch extends Component {
   value: string | boolean | number;
   closeText: string;

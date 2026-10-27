@@ -1,12 +1,12 @@
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue';
 export default defineComponent({
-  name: "i-loading",
+  name: 'i-loading',
   props: {
     loading: { type: Boolean, default: true },
-    text: { type: String, default: "正在加载…" },
+    text: { type: String, default: '正在加载…' },
     overlay: Boolean,
     fullscreen: Boolean,
-    background: { type: String, default: "" }
+    background: { type: String, default: '' }
   },
   setup(props, { slots }) {
     const block = (event: Event) => {
@@ -17,20 +17,20 @@ export default defineComponent({
     };
     return () => (
       <div
-        class={["i-loading", { "i-loading--overlay": props.overlay, "i-loading--fullscreen": props.fullscreen }]}
-        style={props.background && props.loading ? { "--i-loading-background": props.background } : undefined}
+        class={['i-loading', { 'i-loading--overlay': props.overlay, 'i-loading--fullscreen': props.fullscreen }]}
+        style={props.background && props.loading ? { '--i-loading-background': props.background } : undefined}
         aria-busy={props.loading}>
         {slots.default && (
           <div
-            class="i-loading__content"
+            class='i-loading__content'
             inert={props.loading && props.overlay ? true : undefined}
             {...{ onClickCapture: block, onKeydownCapture: block }}>
             {slots.default()}
           </div>
         )}
         {props.loading && (
-          <div class="i-loading__status" role="status" aria-live="polite">
-            <span class="i-loading__spinner" aria-hidden="true" />
+          <div class='i-loading__status' role='status' aria-live='polite'>
+            <span class='i-loading__spinner' aria-hidden='true' />
             <span>{props.text}</span>
           </div>
         )}

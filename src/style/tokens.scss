@@ -19,7 +19,7 @@
   --i-space: 8px;
   --i-font-size: 14px;
 }
-.i-config-provider[data-theme="dark"] {
+.i-config-provider[data-theme='dark'] {
   color-scheme: dark;
   --i-on-primary: #13213b;
   --i-primary: #7aa9ff;
@@ -38,8 +38,8 @@
 .i-config-provider {
   color: var(--i-text);
   font:
-    var(--i-font-size) / 1.5 "Microsoft YaHei",
-    "PingFang SC",
+    var(--i-font-size) / 1.5 'Microsoft YaHei',
+    'PingFang SC',
     sans-serif;
 }
 .i-config-provider *,

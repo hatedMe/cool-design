@@ -1,8 +1,8 @@
-import { defineComponent, inject, nextTick, type PropType } from "vue";
-import { useField } from "../form/context";
-import { checkboxGroupKey, type CheckboxValue } from "./group";
+import { defineComponent, inject, nextTick, type PropType } from 'vue';
+import { useField } from '../form/context';
+import { checkboxGroupKey, type CheckboxValue } from './group';
 export default defineComponent({
-  name: "i-checkbox",
+  name: 'i-checkbox',
   inheritAttrs: false,
   props: {
     modelValue: Boolean,
@@ -11,17 +11,17 @@ export default defineComponent({
     indeterminate: Boolean,
     border: Boolean
   },
-  emits: ["update:modelValue", "change"],
+  emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, slots }) {
     const field = useField();
     const group = inject(checkboxGroupKey, undefined);
     return () => (
       <label
-        class={["i-checkbox", props.border && "is-bordered", (props.disabled || group?.disabled) && "is-disabled"]}>
+        class={['i-checkbox', props.border && 'is-bordered', (props.disabled || group?.disabled) && 'is-disabled']}>
         <input
           {...attrs}
           id={(attrs.id as string) || field?.id}
-          type="checkbox"
+          type='checkbox'
           checked={group ? group.modelValue.includes(props.value as CheckboxValue) : props.modelValue}
           indeterminate={props.indeterminate}
           disabled={
@@ -39,9 +39,9 @@ export default defineComponent({
               group.update(props.value as CheckboxValue, value);
               return;
             }
-            emit("update:modelValue", value);
-            emit("change", value);
-            nextTick(() => field?.validate("change"));
+            emit('update:modelValue', value);
+            emit('change', value);
+            nextTick(() => field?.validate('change'));
           }}
         />
         {slots.default?.()}

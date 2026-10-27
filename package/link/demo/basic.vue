@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Link, Space } from "../../index";
+import { ref } from 'vue';
+import { Link, Space } from '../../index';
 const count = ref(0);
-const types = ["default", "primary", "success", "warning", "danger", "info"] as const;
+const types = ['default', 'primary', 'success', 'warning', 'danger', 'info'] as const;
 </script>
 <template>
   <Space direction="vertical" align="stretch" :size="20">

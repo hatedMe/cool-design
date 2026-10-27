@@ -1,30 +1,30 @@
 export type DateValue = string | number | Date;
 
-export const pad = (value: number) => String(value).padStart(2, "0");
+export const pad = (value: number) => String(value).padStart(2, '0');
 
 export const toDate = (value: DateValue | null | undefined): Date | null => {
-  if (value == null || value === "") return null;
+  if (value == null || value === '') return null;
   if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : new Date(value.getTime());
-  const date = typeof value === "number" ? new Date(value) : new Date(String(value).replace(/-/g, "/"));
+  const date = typeof value === 'number' ? new Date(value) : new Date(String(value).replace(/-/g, '/'));
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
 export const dateInputValue = (value: DateValue | null | undefined, withTime = false) => {
   const date = toDate(value);
-  if (!date) return "";
+  if (!date) return '';
   const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   return withTime ? `${day}T${pad(date.getHours())}:${pad(date.getMinutes())}` : day;
 };
 
 export const timeInputValue = (value: DateValue | null | undefined) => {
   const date = toDate(value);
-  if (!date) return "";
+  if (!date) return '';
   return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 };
 
-export const formatDate = (value: DateValue | null | undefined, format = "YYYY-MM-DD") => {
+export const formatDate = (value: DateValue | null | undefined, format = 'YYYY-MM-DD') => {
   const date = toDate(value);
-  if (!date) return "";
+  if (!date) return '';
   return format
     .replace(/YYYY/g, String(date.getFullYear()))
     .replace(/MM/g, pad(date.getMonth() + 1))
@@ -38,8 +38,8 @@ export const emitValue = (input: string, valueFormat?: string, withTime = false)
   if (!input) return null;
   const date = toDate(input);
   if (!date) return input;
-  if (valueFormat === "x") return date.getTime();
-  if (valueFormat === "timestamp") return date.getTime();
+  if (valueFormat === 'x') return date.getTime();
+  if (valueFormat === 'timestamp') return date.getTime();
   if (valueFormat) return formatDate(date, valueFormat);
   return withTime ? date : date;
 };

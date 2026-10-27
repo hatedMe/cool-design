@@ -1,20 +1,20 @@
-import { defineComponent, type PropType } from "vue";
+import { defineComponent, type PropType } from 'vue';
 export interface TimelineItem {
   timestamp?: string;
-  type?: "primary" | "success" | "warning" | "danger" | "info";
+  type?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
   color?: string;
   hollow?: boolean;
-  placement?: "top" | "bottom";
+  placement?: 'top' | 'bottom';
 }
 export default defineComponent({
-  name: "i-timeline",
+  name: 'i-timeline',
   props: { items: { type: Array as PropType<TimelineItem[]>, default: () => [] }, reverse: Boolean },
   setup(props, { slots }) {
     return () => (
-      <ul class="i-timeline">
+      <ul class='i-timeline'>
         {(props.reverse ? [...props.items].reverse() : props.items).map((item, index) => (
-          <li class={{ "i-timeline__item": true, "is-hollow": item.hollow }} key={index}>
-            <i style={{ backgroundColor: item.color }} class={`is-${item.type || "primary"}`} />
+          <li class={{ 'i-timeline__item': true, 'is-hollow': item.hollow }} key={index}>
+            <i style={{ backgroundColor: item.color }} class={`is-${item.type || 'primary'}`} />
             <div>
               <time>{item.timestamp}</time>
               {slots.default?.({ item, index }) ?? <p>{item.timestamp}</p>}

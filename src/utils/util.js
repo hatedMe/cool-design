@@ -1,7 +1,7 @@
 //解决小数运算精度问题
 export const operationTwoNumber = (num1, num2, type = 0) => {
-  let num_1 = num1.toString().split(".");
-  let num_2 = num2.toString().split(".");
+  let num_1 = num1.toString().split('.');
+  let num_2 = num2.toString().split('.');
   let maxPointLen;
   if (num_1.length > 1 && num_2.length > 1 && num_1[1].length >= num_2[1].length) {
     maxPointLen = num_1[1].length;
@@ -38,7 +38,7 @@ export const emptyInArr = (arr, expObjs) => {
         return true;
       }
     }
-    if (typeof element === "string" && !element.trim()) {
+    if (typeof element === 'string' && !element.trim()) {
       return true;
     }
     if (!element) {
@@ -51,29 +51,29 @@ export const emptyInArr = (arr, expObjs) => {
 //指定类型，长度获取随机字符串
 function randomStr(type, maxlen = 10) {
   //type:str;upper;lower;uppernum;lowernum;num;strnum
-  let result = "";
-  let strs = "";
+  let result = '';
+  let strs = '';
   const letters = getLetter();
   switch (type) {
-    case "str":
+    case 'str':
       strs = [...letters.lower, ...letters.upper];
       break;
-    case "upper":
+    case 'upper':
       strs = [...letters.upper];
       break;
-    case "lower":
+    case 'lower':
       strs = [...letters.lower];
       break;
-    case "uppernum":
+    case 'uppernum':
       strs = [...letters.upper, ...getNumList(10)];
       break;
-    case "lowernum":
+    case 'lowernum':
       strs = [...letters.lower, ...getNumList(10)];
       break;
-    case "num":
+    case 'num':
       strs = [...getNumList(10)];
       break;
-    case "strnum":
+    case 'strnum':
       strs = [...letters.lower, ...letters.upper, ...getNumList(10)];
       break;
   }
@@ -90,8 +90,8 @@ function getLetter() {
     upper: []
   };
   for (let i = 97; i < 97 + 26; i++) {
-    result["lower"].push(String.fromCharCode(i));
-    result["upper"].push(String.fromCharCode(i - 32));
+    result['lower'].push(String.fromCharCode(i));
+    result['upper'].push(String.fromCharCode(i - 32));
   }
   return result;
 }

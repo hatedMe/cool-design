@@ -1,21 +1,21 @@
-import { defineComponent, computed, type PropType } from "vue";
+import { defineComponent, computed, type PropType } from 'vue';
 export default defineComponent({
-  name: "i-watermark",
+  name: 'i-watermark',
   props: {
-    content: { type: [String, Array] as PropType<string | string[]>, default: "" },
+    content: { type: [String, Array] as PropType<string | string[]>, default: '' },
     font: Object as PropType<Record<string, string | number>>,
-    color: { type: String, default: "rgba(0,0,0,.15)" },
+    color: { type: String, default: 'rgba(0,0,0,.15)' },
     rotate: { type: Number, default: -22 },
     gap: { type: Array as unknown as PropType<[number, number]>, default: () => [100, 100] },
     zIndex: { type: Number, default: 9 }
   },
   setup(props, { slots }) {
-    const text = computed(() => (Array.isArray(props.content) ? props.content.join(" ") : props.content));
+    const text = computed(() => (Array.isArray(props.content) ? props.content.join(' ') : props.content));
     return () => (
-      <div class="i-watermark">
-        <div class="i-watermark__content">{slots.default?.()}</div>
+      <div class='i-watermark'>
+        <div class='i-watermark__content'>{slots.default?.()}</div>
         <div
-          class="i-watermark__layer"
+          class='i-watermark__layer'
           style={{
             zIndex: props.zIndex,
             backgroundImage: `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='${props.gap[0] + 160}' height='${props.gap[1] + 80}'><text x='20' y='50' fill='${props.color}' transform='rotate(${props.rotate} 80 40)' font-size='16'>${text.value}</text></svg>`)}")`

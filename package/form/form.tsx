@@ -1,21 +1,21 @@
-import { defineComponent, nextTick, provide, watch, type PropType } from "vue";
-import type { Size } from "../config-provider/context";
-import { formKey, type Field } from "./context";
-import type { FormRule } from "./types";
+import { defineComponent, nextTick, provide, watch, type PropType } from 'vue';
+import type { Size } from '../config-provider/context';
+import { formKey, type Field } from './context';
+import type { FormRule } from './types';
 export default defineComponent({
-  name: "i-form",
+  name: 'i-form',
   props: {
     model: { type: Object as PropType<Record<string, unknown>>, required: true },
     rules: { type: Object as PropType<Record<string, FormRule[]>>, default: () => ({}) },
     inline: Boolean,
-    labelPosition: { type: String as PropType<"left" | "right" | "top">, default: "right" },
+    labelPosition: { type: String as PropType<'left' | 'right' | 'top'>, default: 'right' },
     labelWidth: [String, Number],
     labelSuffix: String,
     disabled: Boolean,
     size: String as PropType<Size>,
     showMessage: { type: Boolean, default: true }
   },
-  emits: ["submit"],
+  emits: ['submit'],
   setup(props, { slots, expose, emit }) {
     let modelVersion = 0;
     watch(
@@ -23,7 +23,7 @@ export default defineComponent({
       () => {
         modelVersion++;
       },
-      { flush: "sync", deep: true }
+      { flush: 'sync', deep: true }
     );
     const fields = new Map<string, Field>();
     provide(formKey, {
@@ -60,14 +60,14 @@ export default defineComponent({
     });
     return () => (
       <form
-        class={["i-form", props.inline && "is-inline", `i-form--label-${props.labelPosition}`]}
+        class={['i-form', props.inline && 'is-inline', `i-form--label-${props.labelPosition}`]}
         style={{
-          "--i-form-label-width": typeof props.labelWidth === "number" ? `${props.labelWidth}px` : props.labelWidth
+          '--i-form-label-width': typeof props.labelWidth === 'number' ? `${props.labelWidth}px` : props.labelWidth
         }}
         novalidate
         onSubmit={(event: Event) => {
           event.preventDefault();
-          emit("submit", event);
+          emit('submit', event);
         }}>
         {slots.default?.()}
       </form>

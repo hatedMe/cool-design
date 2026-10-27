@@ -7,10 +7,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { Input, Space } from "../../index";
-const amount = ref("1234");
-const note = ref("");
-const formatAmount = (value: string) => (value ? `¥ ${value}` : "");
-const parseAmount = (value: string) => value.replace(/^¥\s*/, "");
+import { ref } from 'vue';
+import { Input, Space } from '../../index';
+const amount = ref('1234');
+const note = ref('');
+const formatAmount = (value: string) => (value ? `¥ ${value}` : '');
+const parseAmount = (value: string) => value.replace(/^¥\s*/, '');
 </script>

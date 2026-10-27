@@ -8,9 +8,9 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
-import { Button, Form, FormItem, Input } from "../../index";
-const model = reactive({ user: { name: "" } });
-const rules = { "user.name": [{ required: true, message: "请输入联系人" }] };
+import { reactive } from 'vue';
+import { Button, Form, FormItem, Input } from '../../index';
+const model = reactive({ user: { name: '' } });
+const rules = { 'user.name': [{ required: true, message: '请输入联系人' }] };
 const validate = () => undefined;
 </script>

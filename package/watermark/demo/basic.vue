@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Watermark } from "../../index";
+import { Watermark } from '../../index';
 </script>
 <template>
   <Watermark content="Megane UI">

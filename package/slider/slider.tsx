@@ -1,6 +1,6 @@
-import { defineComponent, type PropType } from "vue";
+import { defineComponent, type PropType } from 'vue';
 export default defineComponent({
-  name: "i-slider",
+  name: 'i-slider',
   props: {
     modelValue: { type: [Number, Array] as PropType<number | number[]>, default: 0 },
     min: { type: Number, default: 0 },
@@ -12,18 +12,18 @@ export default defineComponent({
     showInput: Boolean,
     showStops: Boolean
   },
-  emits: ["update:modelValue", "input", "change"],
+  emits: ['update:modelValue', 'input', 'change'],
   setup(props, { emit }) {
     const update = (value: number | number[]) => {
-      emit("update:modelValue", value);
-      emit("input", value);
-      emit("change", value);
+      emit('update:modelValue', value);
+      emit('input', value);
+      emit('change', value);
     };
     const clamp = (value: number) => Math.min(props.max, Math.max(props.min, value));
     return () => (
-      <div class={{ "i-slider": true, "is-vertical": props.vertical, "is-disabled": props.disabled }}>
+      <div class={{ 'i-slider': true, 'is-vertical': props.vertical, 'is-disabled': props.disabled }}>
         <input
-          type="range"
+          type='range'
           min={props.min}
           max={props.max}
           step={props.step}
@@ -33,7 +33,7 @@ export default defineComponent({
         />
         {props.range && (
           <input
-            type="range"
+            type='range'
             min={props.min}
             max={props.max}
             step={props.step}
@@ -48,8 +48,8 @@ export default defineComponent({
         )}
         {props.showInput && (
           <input
-            class="i-slider__number"
-            type="number"
+            class='i-slider__number'
+            type='number'
             min={props.min}
             max={props.max}
             step={props.step}

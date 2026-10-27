@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Pagination, Space } from "../../index";
+import { ref } from 'vue';
+import { Pagination, Space } from '../../index';
 const page = ref(1);
 const size = ref(10);
 function changeSize(value: number) {

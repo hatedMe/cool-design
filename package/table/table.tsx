@@ -1,30 +1,30 @@
-import Empty from "../empty";
-import Loading from "../loading";
-import { computed, defineComponent, ref, watch, type CSSProperties, type PropType } from "vue";
-import Checkbox from "../checkbox";
-import type { TableColumn, SortChange } from "./types";
+import Empty from '../empty';
+import Loading from '../loading';
+import { computed, defineComponent, ref, watch, type CSSProperties, type PropType } from 'vue';
+import Checkbox from '../checkbox';
+import type { TableColumn, SortChange } from './types';
 export default defineComponent({
-  name: "i-table",
+  name: 'i-table',
   props: {
     data: { type: Array as PropType<object[]>, default: () => [] },
     columns: { type: Array as PropType<TableColumn[]>, default: () => [] },
-    rowKey: { type: String, default: "id" },
+    rowKey: { type: String, default: 'id' },
     selection: Boolean,
     loading: Boolean,
     maxHeight: { type: Number, default: 440 },
-    emptyText: { type: String, default: "没有符合条件的数据" },
+    emptyText: { type: String, default: '没有符合条件的数据' },
     stripe: Boolean,
     border: Boolean,
     showHeader: { type: Boolean, default: true }
   },
-  emits: ["selection-change", "sort-change"],
+  emits: ['selection-change', 'sort-change'],
   setup(props, { emit, slots, expose }) {
     const selected = ref<Array<string | number>>([]);
-    const sort = ref<SortChange>({ key: "", order: null });
+    const sort = ref<SortChange>({ key: '', order: null });
     const key = (row: object) => (row as Record<string, unknown>)[props.rowKey] as string | number;
     const selectionChanged = () =>
       emit(
-        "selection-change",
+        'selection-change',
         props.data.filter((row) => selected.value.includes(key(row)))
       );
     watch(
@@ -53,17 +53,17 @@ export default defineComponent({
         minWidth: `${column.width || 140}px`
       };
       if (column.fixed) {
-        style.position = "sticky";
+        style.position = 'sticky';
         style[column.fixed] = `${
-          column.fixed === "left"
+          column.fixed === 'left'
             ? (props.selection ? 48 : 0) +
               props.columns
                 .slice(0, index)
-                .filter((c) => c.fixed === "left")
+                .filter((c) => c.fixed === 'left')
                 .reduce((n, c) => n + (c.width || 140), 0)
             : props.columns
                 .slice(index + 1)
-                .filter((c) => c.fixed === "right")
+                .filter((c) => c.fixed === 'right')
                 .reduce((n, c) => n + (c.width || 140), 0)
         }px`;
         style.zIndex = 1;
@@ -76,27 +76,27 @@ export default defineComponent({
         key: column.key,
         order:
           sort.value.key !== column.key || sort.value.order === null
-            ? "asc"
-            : sort.value.order === "asc"
-              ? "desc"
+            ? 'asc'
+            : sort.value.order === 'asc'
+              ? 'desc'
               : null
       };
-      emit("sort-change", { ...sort.value });
+      emit('sort-change', { ...sort.value });
     };
     return () => (
       <div
-        class={{ "i-table": true, "is-striped": props.stripe, "is-bordered": props.border }}
+        class={{ 'i-table': true, 'is-striped': props.stripe, 'is-bordered': props.border }}
         aria-busy={props.loading}>
         <Loading loading={props.loading} overlay>
-          <div class="i-table__scroll" style={{ maxHeight: `${props.maxHeight}px` }}>
+          <div class='i-table__scroll' style={{ maxHeight: `${props.maxHeight}px` }}>
             <table>
               {props.showHeader && (
                 <thead>
                   <tr>
                     {props.selection && (
-                      <th class="i-table__selection">
+                      <th class='i-table__selection'>
                         <Checkbox
-                          aria-label="选择当前页全部"
+                          aria-label='选择当前页全部'
                           modelValue={allSelected.value}
                           indeterminate={selected.value.length > 0 && !allSelected.value}
                           disabled={props.loading || !props.data.length}
@@ -110,7 +110,7 @@ export default defineComponent({
                     {props.columns.map((column, index) => (
                       <th
                         key={column.key}
-                        scope="col"
+                        scope='col'
                         style={{
                           ...columnStyle(column, index),
                           textAlign: column.headerAlign || column.align
@@ -118,23 +118,23 @@ export default defineComponent({
                         aria-sort={
                           column.sortable
                             ? sort.value.key === column.key && sort.value.order
-                              ? sort.value.order === "asc"
-                                ? "ascending"
-                                : "descending"
-                              : "none"
+                              ? sort.value.order === 'asc'
+                                ? 'ascending'
+                                : 'descending'
+                              : 'none'
                             : undefined
                         }>
                         {column.sortable ? (
-                          <button type="button" onClick={() => changeSort(column)}>
-                            {column.title}{" "}
-                            <span aria-hidden="true">
+                          <button type='button' onClick={() => changeSort(column)}>
+                            {column.title}{' '}
+                            <span aria-hidden='true'>
                               {sort.value.key === column.key
-                                ? sort.value.order === "asc"
-                                  ? "↑"
-                                  : sort.value.order === "desc"
-                                    ? "↓"
-                                    : "↕"
-                                : "↕"}
+                                ? sort.value.order === 'asc'
+                                  ? '↑'
+                                  : sort.value.order === 'desc'
+                                    ? '↓'
+                                    : '↕'
+                                : '↕'}
                             </span>
                           </button>
                         ) : (
@@ -147,9 +147,9 @@ export default defineComponent({
               )}
               <tbody>
                 {props.data.map((row, index) => (
-                  <tr key={key(row)} class={{ "i-table__selected": selected.value.includes(key(row)) }}>
+                  <tr key={key(row)} class={{ 'i-table__selected': selected.value.includes(key(row)) }}>
                     {props.selection && (
-                      <td class="i-table__selection">
+                      <td class='i-table__selection'>
                         <Checkbox
                           aria-label={`选择第 ${index + 1} 行`}
                           modelValue={selected.value.includes(key(row))}
@@ -172,14 +172,14 @@ export default defineComponent({
                         }}>
                         {slots[column.key]?.({ row, index }) ??
                           column.formatter?.(row as Record<string, unknown>) ??
-                          String((row as Record<string, unknown>)[column.key] ?? "")}
+                          String((row as Record<string, unknown>)[column.key] ?? '')}
                       </td>
                     ))}
                   </tr>
                 ))}
                 {!props.data.length && !props.loading && (
                   <tr>
-                    <td class="i-table__empty" colspan={props.columns.length + (props.selection ? 1 : 0)}>
+                    <td class='i-table__empty' colspan={props.columns.length + (props.selection ? 1 : 0)}>
                       {slots.empty?.() ?? <Empty description={props.emptyText} />}
                     </td>
                   </tr>

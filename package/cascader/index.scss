@@ -1,21 +1,21 @@
-@import "../../src/style/var.scss";
+@import '../../src/style/var.scss';
 
-$namespace: "i";
+$namespace: 'i';
 
 @mixin bem($block) {
-  @at-root #{"." + $namespace + "-" + $block} {
+  @at-root #{'.' + $namespace + '-' + $block} {
     @content;
   }
 }
 
 @mixin bem-elm($block, $element) {
-  @at-root #{"." + $namespace + "-" + $block + "__" + $element} {
+  @at-root #{'.' + $namespace + '-' + $block + '__' + $element} {
     @content;
   }
 }
 
 @mixin bem-mod($block, $modifier) {
-  @at-root #{"." + $namespace + "-" + $block + "--" + $modifier} {
+  @at-root #{'.' + $namespace + '-' + $block + '--' + $modifier} {
     @content;
   }
 }

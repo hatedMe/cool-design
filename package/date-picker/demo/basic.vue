@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Calendar, DatePicker, DateTimePicker, TimePicker } from "../../index";
+import { ref } from 'vue';
+import { Calendar, DatePicker, DateTimePicker, TimePicker } from '../../index';
 const date = ref<string | null>(null);
 const time = ref<string | null>(null);
 const datetime = ref<string | null>(null);

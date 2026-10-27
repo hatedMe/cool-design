@@ -1,9 +1,9 @@
-import { defineComponent, nextTick, type PropType } from "vue";
-import { createNamespace } from "../../src/utils/create";
-import { useField } from "../form/context";
-import { inject } from "vue";
-import { radioGroupKey } from "./group";
-const [name, bem] = createNamespace("radio");
+import { defineComponent, nextTick, type PropType } from 'vue';
+import { createNamespace } from '../../src/utils/create';
+import { useField } from '../form/context';
+import { inject } from 'vue';
+import { radioGroupKey } from './group';
+const [name, bem] = createNamespace('radio');
 export type RadioValue = string | number | boolean;
 
 export default defineComponent({
@@ -17,16 +17,16 @@ export default defineComponent({
     border: Boolean,
     size: String
   },
-  emits: ["update:modelValue", "change"],
+  emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, slots }) {
     const field = useField();
     const group = inject(radioGroupKey, undefined);
     return () => (
-      <label class={bem({ "is-disabled": props.disabled || group?.disabled, "is-bordered": props.border })}>
+      <label class={bem({ 'is-disabled': props.disabled || group?.disabled, 'is-bordered': props.border })}>
         <input
           {...attrs}
           id={(attrs.id as string) || field?.id}
-          type="radio"
+          type='radio'
           value={String(props.value)}
           name={props.name || group?.name || (attrs.name as string | undefined)}
           checked={(group?.modelValue ?? props.modelValue) === props.value}
@@ -35,13 +35,13 @@ export default defineComponent({
           aria-describedby={field?.invalid() ? field.errorId : undefined}
           onChange={() => {
             if (props.disabled || group?.disabled) return;
-            emit("update:modelValue", props.value);
-            emit("change", props.value);
+            emit('update:modelValue', props.value);
+            emit('change', props.value);
             group?.update(props.value);
-            nextTick(() => field?.validate("change"));
+            nextTick(() => field?.validate('change'));
           }}
         />
-        <span class={bem("text")}>{slots.default?.()}</span>
+        <span class={bem('text')}>{slots.default?.()}</span>
       </label>
     );
   }

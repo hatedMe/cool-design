@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Slider } from "../../index";
+import { ref } from 'vue';
+import { Slider } from '../../index';
 const value = ref(30);
 </script>
 <template>

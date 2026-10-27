@@ -1,6 +1,6 @@
-import { createNamespace } from "@/utils/index";
-const [createComponent, bem] = createNamespace("rate");
-import "./index.scss";
+import { createNamespace } from '@/utils/index';
+const [createComponent, bem] = createNamespace('rate');
+import './index.scss';
 
 export default createComponent({
   props: {
@@ -13,15 +13,15 @@ export default createComponent({
     },
     iconType: {
       type: String,
-      default: "icon-collection_fill"
+      default: 'icon-collection_fill'
     },
     emptyColor: {
       type: String,
-      default: "#ffffff"
+      default: '#ffffff'
     },
     fillColor: {
       type: String,
-      default: "#f7ba2a"
+      default: '#f7ba2a'
     },
     texts: {
       type: Array,
@@ -32,12 +32,12 @@ export default createComponent({
     },
     color: {
       type: String,
-      default: "#3c3c3c"
+      default: '#3c3c3c'
     }
   },
   model: {
-    prop: "value",
-    event: "change"
+    prop: 'value',
+    event: 'change'
   },
   data() {
     return {
@@ -76,7 +76,7 @@ export default createComponent({
       if (this.$attrs.disabled != undefined) return;
       this.currIndex = index;
       this.hoverChange(index);
-      this.$emit("change", index);
+      this.$emit('change', index);
     }
   },
   render() {
@@ -85,14 +85,14 @@ export default createComponent({
         {this.arr.map((item, index) => {
           return (
             <span
-              class={[bem("item")]}
+              class={[bem('item')]}
               onMouseover={() => this.hoverChange(index + 1)}
               onClick={() => this.clickRate(index + 1)}>
               <i-icon
                 type={this.iconType}
-                class={[bem("icon")]}
+                class={[bem('icon')]}
                 style={{
-                  "-webkit-text-fill-color": item !== 0 ? this.fillColor : this.emptyColor
+                  '-webkit-text-fill-color': item !== 0 ? this.fillColor : this.emptyColor
                 }}></i-icon>
             </span>
           );

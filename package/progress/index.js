@@ -1,6 +1,6 @@
-import { createNamespace } from "@/utils/index";
-const [createComponent, bem] = createNamespace("progress");
-import "./index.scss";
+import { createNamespace } from '@/utils/index';
+const [createComponent, bem] = createNamespace('progress');
+import './index.scss';
 
 export default createComponent({
   props: {
@@ -10,7 +10,7 @@ export default createComponent({
     },
     type: {
       type: String,
-      default: "line"
+      default: 'line'
     },
     width: {
       type: Number,
@@ -42,7 +42,7 @@ export default createComponent({
   computed: {
     widthText: function () {
       this.lineValue = this.lineValue > 100 ? 100 : this.lineValue;
-      return this.lineValue + "%";
+      return this.lineValue + '%';
     },
 
     describeText: function () {
@@ -59,17 +59,17 @@ export default createComponent({
         return this.color(this.lineValue);
       } else {
         switch (this.status) {
-          case "success":
-            color = "#67c23a";
+          case 'success':
+            color = '#67c23a';
             break;
-          case "warning":
-            color = "#f4984e";
+          case 'warning':
+            color = '#f4984e';
             break;
-          case "exception":
-            color = "#F86868";
+          case 'exception':
+            color = '#F86868';
             break;
           default:
-            color = "#20aeff";
+            color = '#20aeff';
         }
         return this.color || color;
       }
@@ -77,7 +77,7 @@ export default createComponent({
   },
   mounted() {
     this.lineValue = Number(this.value);
-    if (this.type === "circle") {
+    if (this.type === 'circle') {
       this.setCircleCanvas();
     }
   },
@@ -87,9 +87,9 @@ export default createComponent({
         color: this.fullColor,
         lineWidth: 10
       };
-      let circle = document.getElementById("circle");
+      let circle = document.getElementById('circle');
       let sCircle = circle.width / 2;
-      let ctx = circle.getContext("2d");
+      let ctx = circle.getContext('2d');
       let nBegin = Math.PI * 2 * (this.lineValue >= 100 ? 1 : 1 - this.lineValue * 0.01);
       let nEnd = 0;
       ctx.lineWidth = options.lineWidth;
@@ -99,14 +99,14 @@ export default createComponent({
       ctx.beginPath();
       ctx.arc(sCircle, sCircle, sCircle - options.lineWidth, -Math.PI / 2, Math.PI * 2);
       ctx.closePath();
-      ctx.strokeStyle = "#E9E9E9FF";
+      ctx.strokeStyle = '#E9E9E9FF';
       ctx.stroke();
 
       //进度圆
       ctx.beginPath();
       ctx.arc(sCircle, sCircle, sCircle - options.lineWidth, nBegin, nEnd);
       ctx.strokeStyle = options.color;
-      ctx.textAlign = "center";
+      ctx.textAlign = 'center';
       if (this.showText) {
         ctx.fillText(this.widthText, sCircle, sCircle); //文本
       }
@@ -120,27 +120,27 @@ export default createComponent({
   render() {
     return (
       <div class={bem()} onClick={() => this.fullProgressHandle()}>
-        {this.type === "line" ? (
+        {this.type === 'line' ? (
           <div>
             <p
-              class={bem("line")}
+              class={bem('line')}
               style={{ height: `${this.strokeHeight || 8}px`, width: `${this.strokeWidth || 380}px` }}>
               <span
-                class={bem("line", { full: true })}
-                style={{ width: this.widthText, "background-color": this.fullColor }}>
-                {this.type === "line" && this.textInside && this.showText ? (
-                  <p class={bem("describe", { inside: true })}>{this.describeText}</p>
+                class={bem('line', { full: true })}
+                style={{ width: this.widthText, 'background-color': this.fullColor }}>
+                {this.type === 'line' && this.textInside && this.showText ? (
+                  <p class={bem('describe', { inside: true })}>{this.describeText}</p>
                 ) : null}
               </span>
             </p>
             {this.textInside ? null : this.status ? (
               <i-icon type={`icon-${this.status}`} style={{ color: this.fullColor }} />
             ) : (
-              <p class={bem("describe")}>{this.describeText}</p>
+              <p class={bem('describe')}>{this.describeText}</p>
             )}
           </div>
         ) : (
-          <canvas class={bem("circle")} id="circle" height={this.width} width={this.width}></canvas>
+          <canvas class={bem('circle')} id='circle' height={this.width} width={this.width}></canvas>
         )}
       </div>
     );

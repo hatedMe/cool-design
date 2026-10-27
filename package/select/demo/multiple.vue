@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Select, SelectOption } from "../../index";
+import { ref } from 'vue';
+import { Select, SelectOption } from '../../index';
 const values = ref<(string | number)[]>([1]);
 </script>
 <template>

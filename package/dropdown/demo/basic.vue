@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Dropdown } from "../../index";
+import { Dropdown } from '../../index';
 const items = [
-  { command: "edit", label: "编辑" },
-  { command: "delete", label: "删除" }
+  { command: 'edit', label: '编辑' },
+  { command: 'delete', label: '删除' }
 ];
 </script>
 <template>

@@ -1,4 +1,4 @@
-export type MessageBoxAction = "confirm" | "cancel";
+export type MessageBoxAction = 'confirm' | 'cancel';
 export interface MessageBoxOptions {
   confirmButtonText?: string;
   cancelButtonText?: string;

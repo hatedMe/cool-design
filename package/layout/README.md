@@ -13,7 +13,7 @@
 隐藏类可以添加到普通 DOM 元素或自定义组件上，不限于 Col。随组件库样式一起引入，无需额外安装或引入 Element Plus 的样式：
 
 ```ts
-import "cool-design/style.css";
+import 'cool-design/style.css';
 ```
 
 ```vue

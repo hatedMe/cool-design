@@ -1,6 +1,6 @@
-import { createNamespace, operationTwoNumber } from "@/utils/index";
-const [createComponent, bem] = createNamespace("input-number");
-import "./index.scss";
+import { createNamespace, operationTwoNumber } from '@/utils/index';
+const [createComponent, bem] = createNamespace('input-number');
+import './index.scss';
 
 export default createComponent({
   props: {
@@ -16,8 +16,8 @@ export default createComponent({
     }
   },
   model: {
-    prop: "value",
-    event: "change"
+    prop: 'value',
+    event: 'change'
   },
   data() {
     return {
@@ -46,7 +46,7 @@ export default createComponent({
       this.changeValue(val);
     },
     changeValue(val) {
-      this.$emit("change", val);
+      this.$emit('change', val);
     },
     changeInputValue(e) {
       const val = Number(e.target.value);
@@ -78,18 +78,18 @@ export default createComponent({
     const isMaxNum = this.max != undefined && this.val + this.step > this.max;
     return (
       <div class={[bem({ disable: this.$attrs.disabled != undefined })]}>
-        <span class={bem("action", { disable: isMinNum })} onClick={() => this.reduce()}>
+        <span class={bem('action', { disable: isMinNum })} onClick={() => this.reduce()}>
           -
         </span>
         <input
-          class={bem("input", { disable: this.$attrs.disabled != undefined })}
-          type="string"
+          class={bem('input', { disable: this.$attrs.disabled != undefined })}
+          type='string'
           value={this.value}
           readonly={this.$attrs.disabled != undefined}
           onInput={(e) => this.changeInputValue(e)}
           onBlur={(e) => this.inputBlurHandle(e)}
         />
-        <span class={bem("action", { disable: isMaxNum })} onClick={() => this.add()}>
+        <span class={bem('action', { disable: isMaxNum })} onClick={() => this.add()}>
           +
         </span>
       </div>

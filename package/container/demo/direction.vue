@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Container, Aside, Main } from "../../index";
-const direction = ref<"horizontal" | "vertical" | "">("");
+import { ref } from 'vue';
+import { Container, Aside, Main } from '../../index';
+const direction = ref<'horizontal' | 'vertical' | ''>('');
 </script>
 <template>
   <div class="direction-demo">

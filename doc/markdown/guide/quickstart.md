@@ -8,18 +8,18 @@
 
 ```vue
 <script setup lang="ts">
-import { ref } from "vue";
-import { Button, ConfigProvider, Input, Space } from "cool-design";
-import "cool-design/style.css";
+import { ref } from 'vue';
+import { Button, ConfigProvider, Input, Space } from 'cool-design';
+import 'cool-design/style.css';
 
-const name = ref("");
-const result = ref("请输入姓名后查询");
+const name = ref('');
+const result = ref('请输入姓名后查询');
 function search() {
-  result.value = name.value.trim() ? `正在查询：${name.value.trim()}` : "正在查询全部用户";
+  result.value = name.value.trim() ? `正在查询：${name.value.trim()}` : '正在查询全部用户';
 }
 function reset() {
-  name.value = "";
-  result.value = "筛选条件已重置";
+  name.value = '';
+  result.value = '筛选条件已重置';
 }
 </script>
 
@@ -55,7 +55,7 @@ function reset() {
 
 ```vue
 <script setup lang="ts">
-import { Button, ConfigProvider } from "cool-design";
+import { Button, ConfigProvider } from 'cool-design';
 </script>
 
 <template>
@@ -72,12 +72,12 @@ import { Button, ConfigProvider } from "cool-design";
 在应用的 `main.ts` 中注册组件库并导入样式：
 
 ```ts
-import { createApp } from "vue";
-import CoolDesign from "cool-design";
-import "cool-design/style.css";
-import App from "./App.vue";
+import { createApp } from 'vue';
+import CoolDesign from 'cool-design';
+import 'cool-design/style.css';
+import App from './App.vue';
 
-createApp(App).use(CoolDesign).mount("#app");
+createApp(App).use(CoolDesign).mount('#app');
 ```
 
 全局注册后，模板使用 `i-` 前缀：
@@ -96,7 +96,7 @@ createApp(App).use(CoolDesign).mount("#app");
 
 ```vue
 <script setup lang="ts">
-import { Button, ConfigProvider } from "cool-design";
+import { Button, ConfigProvider } from 'cool-design';
 </script>
 
 <template>
@@ -124,10 +124,10 @@ import { Button, ConfigProvider } from "cool-design";
 公开类型可以与组件一起从包入口导入：
 
 ```ts
-import type { FormInstance, FormRule, TableColumn, SortChange, Size } from "cool-design";
+import type { FormInstance, FormRule, TableColumn, SortChange, Size } from 'cool-design';
 
-const size: Size = "default";
-const columns: TableColumn[] = [{ key: "name", title: "姓名" }];
+const size: Size = 'default';
+const columns: TableColumn[] = [{ key: 'name', title: '姓名' }];
 ```
 
 `FormInstance` 用于模板 ref，`FormRule` 用于表单规则，`SortChange` 用于表格排序回调；各组件文档提供对应的完整示例。

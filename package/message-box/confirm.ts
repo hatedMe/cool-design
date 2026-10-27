@@ -7,11 +7,11 @@ import {
   render,
   type AppContext,
   type ComputedRef
-} from "vue";
-import ConfigProvider from "../config-provider";
-import { useConfig, type Config } from "../config-provider/context";
-import Box from "./message-box";
-import type { MessageBoxAction, MessageBoxOptions } from "./types";
+} from 'vue';
+import ConfigProvider from '../config-provider';
+import { useConfig, type Config } from '../config-provider/context';
+import Box from './message-box';
+import type { MessageBoxAction, MessageBoxOptions } from './types';
 function open(
   message: string,
   title: string,
@@ -20,7 +20,7 @@ function open(
   config?: ComputedRef<Config>,
   register?: (close: () => void) => () => void
 ): Promise<MessageBoxAction> {
-  const container = document.createElement("div");
+  const container = document.createElement('div');
   document.body.appendChild(container);
   return new Promise((resolve) => {
     let settled = false;
@@ -35,7 +35,7 @@ function open(
         resolve(action);
       });
     };
-    unregister = register?.(() => finish("cancel")) || unregister;
+    unregister = register?.(() => finish('cancel')) || unregister;
     const Root = defineComponent({
       setup: () => () =>
         h(
@@ -47,8 +47,8 @@ function open(
               modelValue: true,
               message,
               title,
-              onConfirm: () => finish("confirm"),
-              onCancel: () => finish("cancel")
+              onConfirm: () => finish('confirm'),
+              onCancel: () => finish('cancel')
             })
         )
     });
@@ -57,7 +57,7 @@ function open(
     render(vnode, container);
   });
 }
-export const confirm = (message: string, title = "操作确认", options: MessageBoxOptions = {}) =>
+export const confirm = (message: string, title = '操作确认', options: MessageBoxOptions = {}) =>
   open(message, title, options, null);
 export function useMessageBox() {
   const context = getCurrentInstance()?.appContext || null;
@@ -68,7 +68,7 @@ export function useMessageBox() {
     pending.clear();
   });
   return {
-    confirm: (message: string, title = "操作确认", options: MessageBoxOptions = {}) =>
+    confirm: (message: string, title = '操作确认', options: MessageBoxOptions = {}) =>
       open(message, title, options, context, config, (close) => {
         pending.add(close);
         return () => pending.delete(close);

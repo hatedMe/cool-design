@@ -11,7 +11,7 @@
   color: var(--i-primary);
   font-size: var(--i-font-size);
 }
-.i-loading--overlay[aria-busy="true"] {
+.i-loading--overlay[aria-busy='true'] {
   min-height: 96px;
 }
 .i-loading--overlay > .i-loading__status {
@@ -31,7 +31,7 @@
   position: fixed;
   inset: 0;
 }
-.i-loading--overlay[aria-busy="true"] > .i-loading__content {
+.i-loading--overlay[aria-busy='true'] > .i-loading__content {
   pointer-events: none;
   user-select: none;
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Space } from "../../index";
-const radii = ["none", "small", "base", "large", "round", "circle"];
-const shadows = ["small", "base", "large", "inset"];
+import { Space } from '../../index';
+const radii = ['none', 'small', 'base', 'large', 'round', 'circle'];
+const shadows = ['small', 'base', 'large', 'inset'];
 </script>
 <template>
   <Space direction="vertical" align="stretch" :size="24">

@@ -1,4 +1,4 @@
-import type { App, AppContext, Component, Plugin } from "vue";
+import type { App, AppContext, Component, Plugin } from 'vue';
 
 function camelize(str: string): string {
   return str.replace(/-(\w)/g, (_, s) => s.toUpperCase());

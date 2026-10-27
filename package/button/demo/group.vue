@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button, ButtonGroup } from "../../index";
+import { Button, ButtonGroup } from '../../index';
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Card } from "../../index";
+import { Card } from '../../index';
 </script>
 <template>
   <Card header="卡片标题">

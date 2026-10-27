@@ -8,7 +8,7 @@ function bem(componentName: string) {
 
     let element;
 
-    if (typeof elementOrMods === "string") {
+    if (typeof elementOrMods === 'string') {
       element = elementOrMods;
     } else {
       mods = elementOrMods;
@@ -16,7 +16,7 @@ function bem(componentName: string) {
 
     let base = componentName;
     if (element) {
-      base += "__" + element;
+      base += '__' + element;
     }
 
     return (
@@ -26,12 +26,12 @@ function bem(componentName: string) {
             const value = (mods as Record<string, boolean | number | string>)[name];
 
             if (value) {
-              result += " " + (typeof value === "boolean" ? base + "--" + name : base + "--" + name + "_" + value);
+              result += ' ' + (typeof value === 'boolean' ? base + '--' + name : base + '--' + name + '_' + value);
             }
 
             return result;
-          }, "")
-        : "")
+          }, '')
+        : '')
     );
   };
 }

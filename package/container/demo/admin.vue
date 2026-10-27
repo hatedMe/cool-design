@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Container, Header, Aside, Main, Footer, Button, Table } from "../../index";
-import type { TableColumn } from "../../index";
+import { ref } from 'vue';
+import { Container, Header, Aside, Main, Footer, Button, Table } from '../../index';
+import type { TableColumn } from '../../index';
 const collapsed = ref(false);
 const columns: TableColumn[] = [
-  { key: "id", title: "用户 ID", width: 100 },
-  { key: "name", title: "姓名", width: 100 },
-  { key: "department", title: "所属部门", width: 140 }
+  { key: 'id', title: '用户 ID', width: 100 },
+  { key: 'name', title: '姓名', width: 100 },
+  { key: 'department', title: '所属部门', width: 140 }
 ];
 const records = Array.from({ length: 20 }, (_, index) => ({
   id: 1001 + index,
-  name: ["陈晨", "林沐", "周远"][index % 3],
-  department: ["产品设计", "研发中心", "运营支持"][index % 3]
+  name: ['陈晨', '林沐', '周远'][index % 3],
+  department: ['产品设计', '研发中心', '运营支持'][index % 3]
 }));
 </script>
 <template>
   <Container class="admin-layout-demo">
     <Aside :width="collapsed ? 64 : 160">
       <div class="admin-layout-demo__brand">
-        {{ collapsed ? "C" : "Cool Design" }}
+        {{ collapsed ? 'C' : 'Cool Design' }}
       </div>
       <nav aria-label="示例工作台导航">
-        <a href="#/components/table" aria-label="数据表格">{{ collapsed ? "表" : "数据表格" }}</a>
-        <a href="#/components/form" aria-label="表单编辑">{{ collapsed ? "单" : "表单编辑" }}</a>
+        <a href="#/components/table" aria-label="数据表格">{{ collapsed ? '表' : '数据表格' }}</a>
+        <a href="#/components/form" aria-label="表单编辑">{{ collapsed ? '单' : '表单编辑' }}</a>
       </nav>
     </Aside>
     <Container>
       <Header :height="56">
         <Button size="small" :aria-expanded="!collapsed" @click="collapsed = !collapsed">
-          {{ collapsed ? "展开侧栏" : "折叠侧栏" }}
+          {{ collapsed ? '展开侧栏' : '折叠侧栏' }}
         </Button>
         <span class="hidden-xs-only">管理工作台</span>
       </Header>

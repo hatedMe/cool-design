@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Avatar, Space } from "../../index";
-const fits = ["fill", "contain", "cover", "none", "scale-down"] as const;
+import { Avatar, Space } from '../../index';
+const fits = ['fill', 'contain', 'cover', 'none', 'scale-down'] as const;
 </script>
 
 <template>

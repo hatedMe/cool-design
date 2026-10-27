@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { reactive, ref } from "vue";
-import { Button, Form, FormItem, Input } from "../../index";
-import type { FormInstance } from "../../index";
-const model = reactive({ name: "" });
+import { reactive, ref } from 'vue';
+import { Button, Form, FormItem, Input } from '../../index';
+import type { FormInstance } from '../../index';
+const model = reactive({ name: '' });
 const form = ref<FormInstance>();
-const rules = { name: [{ required: true, message: "请输入姓名", trigger: "blur" as const }] };
+const rules = { name: [{ required: true, message: '请输入姓名', trigger: 'blur' as const }] };
 const submit = () => form.value?.validate();
 </script>
 <template>

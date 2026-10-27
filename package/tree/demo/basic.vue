@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Tree } from "../../index";
-const data = [{ id: 1, label: "根节点", children: [{ id: 2, label: "子节点" }] }];
+import { Tree } from '../../index';
+const data = [{ id: 1, label: '根节点', children: [{ id: 2, label: '子节点' }] }];
 </script>
 <template>
   <Tree :data="data" show-checkbox default-expand-all />

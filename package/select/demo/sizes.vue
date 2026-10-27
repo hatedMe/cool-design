@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Select, SelectOption, Space } from "../../index";
+import { Select, SelectOption, Space } from '../../index';
 </script>
 <template>
   <Space>

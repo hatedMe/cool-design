@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Button, ConfigProvider, Input, Space, Switch, Tag } from "../../index";
+import { ref } from 'vue';
+import { Button, ConfigProvider, Input, Space, Switch, Tag } from '../../index';
 const dark = ref(false);
-const name = ref("");
+const name = ref('');
 </script>
 
 <template>

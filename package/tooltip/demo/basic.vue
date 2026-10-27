@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button, Space, Tooltip } from "../../index";
+import { Button, Space, Tooltip } from '../../index';
 </script>
 
 <template>

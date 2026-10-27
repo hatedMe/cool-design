@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { nextTick, reactive, ref } from "vue";
-import { Button, Form, FormItem, Input, Space } from "../../index";
-import type { FormInstance, FormRule } from "../../index";
+import { nextTick, reactive, ref } from 'vue';
+import { Button, Form, FormItem, Input, Space } from '../../index';
+import type { FormInstance, FormRule } from '../../index';
 const form = ref<FormInstance>();
-const model = reactive({ name: "", email: "" });
-const result = ref("");
+const model = reactive({ name: '', email: '' });
+const result = ref('');
 const rules: Record<string, FormRule[]> = {
-  name: [{ required: true, message: "请输入用户名称", trigger: "blur" }],
+  name: [{ required: true, message: '请输入用户名称', trigger: 'blur' }],
   email: [
-    { required: true, message: "请输入邮箱", trigger: "blur" },
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
     {
-      trigger: "blur",
+      trigger: 'blur',
       validator(value) {
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))) throw new Error("请输入有效邮箱");
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))) throw new Error('请输入有效邮箱');
       }
     }
   ]
@@ -20,11 +20,11 @@ const rules: Record<string, FormRule[]> = {
 async function submit() {
   // 等待本次失焦触发的字段校验启动，再执行提交校验。
   await nextTick();
-  result.value = (await form.value!.validate()) ? `已保存：${model.name}` : "请检查表单内容";
+  result.value = (await form.value!.validate()) ? `已保存：${model.name}` : '请检查表单内容';
 }
 function reset() {
   form.value?.resetFields();
-  result.value = "";
+  result.value = '';
 }
 </script>
 

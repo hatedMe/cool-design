@@ -1,6 +1,6 @@
-import { createNamespace } from "@/utils/index";
-const [createComponent, bem] = createNamespace("mask");
-import "./index.scss";
+import { createNamespace } from '@/utils/index';
+const [createComponent, bem] = createNamespace('mask');
+import './index.scss';
 
 export default createComponent({
   props: {
@@ -8,7 +8,7 @@ export default createComponent({
   },
   methods: {
     clickMsakHandle() {
-      this.$emit("click");
+      this.$emit('click');
     }
   },
   render() {

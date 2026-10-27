@@ -1,24 +1,24 @@
-import { PropType, computed, defineComponent, ref } from "vue";
-import { createNamespace } from "../../src/utils/create";
-import Icon from "../icon";
-const [name, bem] = createNamespace("avatar");
+import { PropType, computed, defineComponent, ref } from 'vue';
+import { createNamespace } from '../../src/utils/create';
+import Icon from '../icon';
+const [name, bem] = createNamespace('avatar');
 
-export type AvatarShape = "circle" | "square";
-export type AvatarSize = "large" | "medium" | "small" | number;
-export type AvatarFit = "fill" | "contain" | "cover" | "none" | "scale-down";
+export type AvatarShape = 'circle' | 'square';
+export type AvatarSize = 'large' | 'medium' | 'small' | number;
+export type AvatarFit = 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
 
-const isNumber = (value: unknown): boolean => typeof value === "number";
+const isNumber = (value: unknown): boolean => typeof value === 'number';
 
 export default defineComponent({
   name,
   props: {
     url: {
       type: String,
-      default: ""
+      default: ''
     },
     src: String,
     srcSet: String,
-    alt: { type: String, default: "" },
+    alt: { type: String, default: '' },
     /**
      * @description 形状
      * - `circle` 圆形
@@ -26,19 +26,19 @@ export default defineComponent({
      */
     shape: {
       type: String as PropType<AvatarShape>,
-      default: "square"
+      default: 'square'
     },
     size: {
       type: [String, Number] as PropType<AvatarSize>,
-      default: "large"
+      default: 'large'
     },
     icon: String,
     fit: {
       type: String as PropType<AvatarFit>,
-      default: "cover"
+      default: 'cover'
     }
   },
-  emits: ["error"],
+  emits: ['error'],
   setup(props, { slots, emit }) {
     const imageError = ref(false);
     const style = computed(() => {
@@ -62,13 +62,13 @@ export default defineComponent({
       <div class={classLists.value} style={style.value}>
         {!imageError.value && (props.url || props.src) && (
           <img
-            class={[bem("img"), bem("img", { [props.fit]: true })]}
+            class={[bem('img'), bem('img', { [props.fit]: true })]}
             src={props.url || props.src}
             srcset={props.srcSet}
             alt={props.alt}
             onError={(event: Event) => {
               imageError.value = true;
-              emit("error", event);
+              emit('error', event);
             }}
           />
         )}

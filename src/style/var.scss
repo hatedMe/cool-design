@@ -1,4 +1,4 @@
-$font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial,
+$font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial,
   sans-serif;
 
 $primary: #20aeff;
@@ -48,49 +48,49 @@ $lg: 1200px !default;
 $xl: 1920px !default;
 
 $breakpoints: (
-  "xs": (
+  'xs': (
     max-width: $sm - 1
   ),
-  "sm": (
+  'sm': (
     min-width: $sm
   ),
-  "md": (
+  'md': (
     min-width: $md
   ),
-  "lg": (
+  'lg': (
     min-width: $lg
   ),
-  "xl": (
+  'xl': (
     min-width: $xl
   )
 );
 
 $breakpoints-spec: (
-  "xs-only": (
+  'xs-only': (
     max-width: $sm - 1
   ),
-  "sm-and-up": (
+  'sm-and-up': (
     min-width: $sm
   ),
-  "sm-only": "(min-width: #{$sm}) and (max-width: #{$md - 1})",
-  "sm-and-down": (
+  'sm-only': '(min-width: #{$sm}) and (max-width: #{$md - 1})',
+  'sm-and-down': (
     max-width: $md - 1
   ),
-  "md-and-up": (
+  'md-and-up': (
     min-width: $md
   ),
-  "md-only": "(min-width: #{$md}) and (max-width: #{$lg - 1})",
-  "md-and-down": (
+  'md-only': '(min-width: #{$md}) and (max-width: #{$lg - 1})',
+  'md-and-down': (
     max-width: $lg - 1
   ),
-  "lg-and-up": (
+  'lg-and-up': (
     min-width: $lg
   ),
-  "lg-only": "(min-width: #{$lg}) and (max-width: #{$xl - 1})",
-  "lg-and-down": (
+  'lg-only': '(min-width: #{$lg}) and (max-width: #{$xl - 1})',
+  'lg-and-down': (
     max-width: $xl - 1
   ),
-  "xl-only": (
+  'xl-only': (
     min-width: $xl
   )
 );

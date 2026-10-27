@@ -8,14 +8,14 @@
 
 ```vue
 <script setup lang="ts">
-import { ref } from "vue";
-import { Button, ConfigProvider, Input, Space, Switch } from "cool-design";
-import type { Size } from "cool-design";
-import "cool-design/style.css";
+import { ref } from 'vue';
+import { Button, ConfigProvider, Input, Space, Switch } from 'cool-design';
+import type { Size } from 'cool-design';
+import 'cool-design/style.css';
 
 const dark = ref(false);
-const size = ref<Size>("default");
-const name = ref("");
+const size = ref<Size>('default');
+const name = ref('');
 </script>
 
 <template>
@@ -49,12 +49,12 @@ const name = ref("");
 
 ```vue
 <script setup lang="ts">
-import { Button, ConfigProvider, Space, Tag } from "cool-design";
+import { Button, ConfigProvider, Space, Tag } from 'cool-design';
 const themeVars = {
-  "--i-primary": "#126d58",
-  "--i-primary-hover": "#0e5847",
-  "--i-on-primary": "#ffffff",
-  "--i-radius": "8px"
+  '--i-primary': '#126d58',
+  '--i-primary-hover': '#0e5847',
+  '--i-on-primary': '#ffffff',
+  '--i-radius': '8px'
 };
 </script>
 
@@ -76,8 +76,8 @@ const themeVars = {
 
 ```vue
 <script setup lang="ts">
-import { Button, ConfigProvider, Space } from "cool-design";
-const brand = { "--i-primary": "#126d58", "--i-primary-hover": "#0e5847", "--i-on-primary": "#ffffff" };
+import { Button, ConfigProvider, Space } from 'cool-design';
+const brand = { '--i-primary': '#126d58', '--i-primary-hover': '#0e5847', '--i-on-primary': '#ffffff' };
 </script>
 
 <template>
@@ -133,7 +133,7 @@ const brand = { "--i-primary": "#126d58", "--i-primary-hover": "#0e5847", "--i-o
 
 ```vue
 <script setup lang="ts">
-import { Button, ConfigProvider } from "cool-design";
+import { Button, ConfigProvider } from 'cool-design';
 </script>
 
 <template>

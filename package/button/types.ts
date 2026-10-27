@@ -1,9 +1,9 @@
-export type ButtonType = "default" | "primary" | "success" | "warning" | "danger" | "info";
-export type ButtonSize = "small" | "default" | "normal" | "large";
+export type ButtonType = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+export type ButtonSize = 'small' | 'default' | 'normal' | 'large';
 export interface IButtonProps {
   type?: ButtonType;
   size?: ButtonSize;
-  nativeType?: "button" | "submit" | "reset";
+  nativeType?: 'button' | 'submit' | 'reset';
   loading?: boolean;
   disabled?: boolean;
   plain?: boolean;
@@ -16,7 +16,7 @@ export interface IButtonProps {
   color?: string;
   dark?: boolean;
   loadingIcon?: string;
-  tag?: "button" | "a" | "div";
+  tag?: 'button' | 'a' | 'div';
   autoInsertSpace?: boolean;
   onClick?: (event: MouseEvent) => void;
 }

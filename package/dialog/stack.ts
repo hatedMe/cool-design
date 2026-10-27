@@ -1,10 +1,10 @@
-import { pushOverlay, removeOverlay, isTopOverlay, isTopFocusOverlay } from "../../src/utils/overlay-stack";
+import { pushOverlay, removeOverlay, isTopOverlay, isTopFocusOverlay } from '../../src/utils/overlay-stack';
 const dialogs: symbol[] = [];
-let originalOverflow = "";
+let originalOverflow = '';
 export function lockDialog(token: symbol) {
   if (!dialogs.length) {
     originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
   }
   dialogs.push(token);
   return pushOverlay(token, true);

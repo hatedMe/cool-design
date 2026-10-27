@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { ConfigProvider, Space, Switch } from "../../index";
+import { ref } from 'vue';
+import { ConfigProvider, Space, Switch } from '../../index';
 const custom = ref(false);
-const primary = ref("#7c3aed");
+const primary = ref('#7c3aed');
 const colors = [
-  ["primary", "主色"],
-  ["success", "成功"],
-  ["warning", "警告"],
-  ["danger", "危险"],
-  ["info", "信息"]
+  ['primary', '主色'],
+  ['success', '成功'],
+  ['warning', '警告'],
+  ['danger', '危险'],
+  ['info', '信息']
 ];
-const shades = ["dark-2", "base", "light-3", "light-5", "light-7", "light-8", "light-9"];
-const variable = (name: string, shade: string) => `--i-${name}${shade === "base" ? "" : `-${shade}`}`;
+const shades = ['dark-2', 'base', 'light-3', 'light-5', 'light-7', 'light-8', 'light-9'];
+const variable = (name: string, shade: string) => `--i-${name}${shade === 'base' ? '' : `-${shade}`}`;
 </script>
 <template>
   <Space direction="vertical" align="stretch" :size="20">

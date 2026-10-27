@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import {
   Icon,
   Space,
@@ -20,17 +20,17 @@ import {
   SelectOption,
   Switch,
   Table
-} from "../../package/index";
-import type { FormInstance, FormRule, SortChange, TableColumn } from "../../package/index";
-import { createUserService } from "./service";
-import type { User, UserQuery, UserService } from "./types";
-import "./style.scss";
+} from '../../package/index';
+import type { FormInstance, FormRule, SortChange, TableColumn } from '../../package/index';
+import { createUserService } from './service';
+import type { User, UserQuery, UserService } from './types';
+import './style.scss';
 
 const props = defineProps<{ service?: UserService }>();
 const demo = createUserService();
 const service = props.service || demo.api;
 const dark = ref(false);
-const primary = ref("#2463eb");
+const primary = ref('#2463eb');
 const themeVars = computed(() => {
   const rgb = primary.value
     .slice(1)
@@ -39,37 +39,37 @@ const themeVars = computed(() => {
   const linear = rgb.map((value) => (value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4));
   const luminance = linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
   return {
-    "--i-primary": primary.value,
-    "--i-primary-hover": primary.value,
-    "--i-on-primary": luminance > 0.179 ? "#000000" : "#ffffff"
+    '--i-primary': primary.value,
+    '--i-primary-hover': primary.value,
+    '--i-on-primary': luminance > 0.179 ? '#000000' : '#ffffff'
   };
 });
-const conditions = reactive<{ name: string; status?: User["status"] }>({ name: "", status: undefined });
-const query = reactive<UserQuery>({ name: "", status: undefined, page: 1, pageSize: 10 });
+const conditions = reactive<{ name: string; status?: User['status'] }>({ name: '', status: undefined });
+const query = reactive<UserQuery>({ name: '', status: undefined, page: 1, pageSize: 10 });
 const rows = ref<User[]>([]);
 const total = ref(0);
 const loading = ref(false);
 const deleting = ref(false);
 const batchConfirmOpen = ref(false);
 const batchIds = ref<number[]>([]);
-const loadError = ref("");
+const loadError = ref('');
 const selected = ref<object[]>([]);
 const table = ref<{ clearSelection(): void }>();
-const feedback = ref<{ type: "success" | "error"; message: string }>();
+const feedback = ref<{ type: 'success' | 'error'; message: string }>();
 let requestId = 0;
 let alive = true;
 const columns: TableColumn[] = [
-  { key: "id", title: "用户 ID", width: 150, fixed: "left", sortable: true },
-  { key: "name", title: "姓名", sortable: true },
-  { key: "status", title: "账号状态", width: 180 },
-  { key: "action", title: "操作", width: 200, fixed: "right" }
+  { key: 'id', title: '用户 ID', width: 150, fixed: 'left', sortable: true },
+  { key: 'name', title: '姓名', sortable: true },
+  { key: 'status', title: '账号状态', width: 180 },
+  { key: 'action', title: '操作', width: 200, fixed: 'right' }
 ];
 const errorMessage = (reason: unknown, fallback: string) => (reason instanceof Error ? reason.message : fallback);
 async function loadUsers(): Promise<boolean> {
   const id = ++requestId;
   const params = { ...query };
   loading.value = true;
-  loadError.value = "";
+  loadError.value = '';
   selected.value = [];
   table.value?.clearSelection();
   try {
@@ -85,7 +85,7 @@ async function loadUsers(): Promise<boolean> {
     return true;
   } catch (reason) {
     if (alive && id === requestId) {
-      loadError.value = errorMessage(reason, "列表加载失败，请重试");
+      loadError.value = errorMessage(reason, '列表加载失败，请重试');
       rows.value = [];
     }
     return false;
@@ -100,7 +100,7 @@ function search() {
   void loadUsers();
 }
 function resetSearch() {
-  conditions.name = "";
+  conditions.name = '';
   conditions.status = undefined;
   search();
 }
@@ -126,19 +126,19 @@ const editingId = ref(0);
 const editVersion = ref(0);
 const saving = ref(false);
 const persisting = ref(false);
-const draft = reactive<Pick<User, "name" | "status">>({ name: "", status: "enabled" });
+const draft = reactive<Pick<User, 'name' | 'status'>>({ name: '', status: 'enabled' });
 const editForm = ref<FormInstance>();
 const rules: Record<string, FormRule[]> = {
   name: [
-    { required: true, message: "请输入姓名", trigger: "blur" },
+    { required: true, message: '请输入姓名', trigger: 'blur' },
     {
       validator: (value) => {
-        if (typeof value === "string" && value.trim().length > 30) throw new Error("姓名不能超过 30 个字符");
+        if (typeof value === 'string' && value.trim().length > 30) throw new Error('姓名不能超过 30 个字符');
       },
-      trigger: "blur"
+      trigger: 'blur'
     }
   ],
-  status: [{ required: true, message: "请选择状态", trigger: "change" }]
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }]
 };
 function editUser(user: User) {
   if (loading.value || saving.value || deleting.value) return;
@@ -165,11 +165,11 @@ async function save() {
     const refreshed = await loadUsers();
     if (alive)
       feedback.value = {
-        type: refreshed ? "success" : "error",
-        message: refreshed ? "保存成功" : "保存成功，列表刷新失败，请重试加载"
+        type: refreshed ? 'success' : 'error',
+        message: refreshed ? '保存成功' : '保存成功，列表刷新失败，请重试加载'
       };
   } catch (reason) {
-    if (alive) feedback.value = { type: "error", message: errorMessage(reason, "保存失败，请重试") };
+    if (alive) feedback.value = { type: 'error', message: errorMessage(reason, '保存失败，请重试') };
   } finally {
     if (alive) {
       saving.value = false;
@@ -186,8 +186,8 @@ async function deleteAndRefresh(ids: number[]) {
     const refreshed = await loadUsers();
     if (alive)
       feedback.value = {
-        type: refreshed ? "success" : "error",
-        message: refreshed ? "删除成功" : "删除成功，列表刷新失败，请重试加载"
+        type: refreshed ? 'success' : 'error',
+        message: refreshed ? '删除成功' : '删除成功，列表刷新失败，请重试加载'
       };
     return true;
   } finally {
@@ -198,7 +198,7 @@ async function deleteOne(user: User) {
   try {
     await deleteAndRefresh([user.id]);
   } catch (reason) {
-    if (alive) feedback.value = { type: "error", message: errorMessage(reason, "删除失败，请重试") };
+    if (alive) feedback.value = { type: 'error', message: errorMessage(reason, '删除失败，请重试') };
   }
 }
 function prepareBatchDelete() {
@@ -299,7 +299,7 @@ onBeforeUnmount(() => {
               <Space>
                 <Tooltip content="选择仅保留当前页，查询或翻页后清空。">
                   <button type="button" class="selection-hint selection-help">
-                    {{ selected.length ? `已选择 ${selected.length} 项` : "可勾选当前页用户" }}
+                    {{ selected.length ? `已选择 ${selected.length} 项` : '可勾选当前页用户' }}
                   </button>
                 </Tooltip>
                 <Divider vertical />
@@ -334,7 +334,7 @@ onBeforeUnmount(() => {
               </template>
               <template #status="{ row }">
                 <Tag :type="row.status === 'enabled' ? 'success' : 'info'" size="small">
-                  {{ row.status === "enabled" ? "启用" : "停用" }}
+                  {{ row.status === 'enabled' ? '启用' : '停用' }}
                 </Tag>
               </template>
               <template #action="{ row }">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Aside, Container, Main } from "../../index";
+import { Aside, Container, Main } from '../../index';
 </script>
 <template>
   <Container style="min-height: 160px; border: var(--i-border-base)">

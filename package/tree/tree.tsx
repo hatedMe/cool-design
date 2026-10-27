@@ -1,4 +1,4 @@
-import { defineComponent, type PropType } from "vue";
+import { defineComponent, type PropType } from 'vue';
 export interface TreeNode {
   id: string | number;
   label: string;
@@ -6,16 +6,16 @@ export interface TreeNode {
   disabled?: boolean;
 }
 export default defineComponent({
-  name: "i-tree",
+  name: 'i-tree',
   props: {
     data: { type: Array as PropType<TreeNode[]>, default: () => [] },
-    nodeKey: { type: String, default: "id" },
+    nodeKey: { type: String, default: 'id' },
     showCheckbox: Boolean,
     defaultExpandAll: Boolean,
     highlightCurrent: Boolean,
     expandOnClickNode: { type: Boolean, default: true }
   },
-  emits: ["node-click", "check-change", "current-change", "node-expand", "node-collapse"],
+  emits: ['node-click', 'check-change', 'current-change', 'node-expand', 'node-collapse'],
   setup(props, { emit }) {
     const expanded = new Set<string | number>();
     const checked = new Set<string | number>();
@@ -23,47 +23,47 @@ export default defineComponent({
       nodes.flatMap((node) => {
         const open = props.defaultExpandAll || expanded.has(node.id);
         return [
-          <div class={{ "i-tree__node": true, "is-disabled": node.disabled }} key={String(node.id)}>
+          <div class={{ 'i-tree__node': true, 'is-disabled': node.disabled }} key={String(node.id)}>
             <span
-              class="i-tree__label"
+              class='i-tree__label'
               onClick={() => {
-                emit("node-click", node);
+                emit('node-click', node);
                 if (node.children && props.expandOnClickNode) {
                   if (open) expanded.delete(node.id);
                   else expanded.add(node.id);
-                  emit(open ? "node-collapse" : "node-expand", node);
+                  emit(open ? 'node-collapse' : 'node-expand', node);
                 }
               }}>
               {node.children && (
                 <button
-                  type="button"
-                  aria-label="展开"
+                  type='button'
+                  aria-label='展开'
                   onClick={(e) => {
                     e.stopPropagation();
                     if (open) expanded.delete(node.id);
                     else expanded.add(node.id);
                   }}>
-                  {open ? "▾" : "▸"}
+                  {open ? '▾' : '▸'}
                 </button>
               )}
               {props.showCheckbox && (
                 <input
-                  type="checkbox"
+                  type='checkbox'
                   checked={checked.has(node.id)}
                   disabled={node.disabled}
                   onChange={() => {
                     if (checked.has(node.id)) checked.delete(node.id);
                     else checked.add(node.id);
-                    emit("check-change", node, checked.has(node.id));
+                    emit('check-change', node, checked.has(node.id));
                   }}
                 />
               )}
               {node.label}
             </span>
-            {open && node.children && <div class="i-tree__children">{render(node.children)}</div>}
+            {open && node.children && <div class='i-tree__children'>{render(node.children)}</div>}
           </div>
         ];
       });
-    return () => <div class="i-tree">{render(props.data)}</div>;
+    return () => <div class='i-tree'>{render(props.data)}</div>;
   }
 });

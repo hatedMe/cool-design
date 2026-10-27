@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Popover } from "../../index";
+import { Popover } from '../../index';
 </script>
 <template>
   <Popover content="补充说明">

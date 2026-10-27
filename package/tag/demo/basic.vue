@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Button, Space, Tag } from "../../index";
+import { ref } from 'vue';
+import { Button, Space, Tag } from '../../index';
 const visible = ref(true);
 </script>
 

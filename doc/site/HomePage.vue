@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { Input, Switch, Table, Tag, version } from "../../package/index";
-import type { TableColumn } from "../../package/index";
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { Input, Switch, Table, Tag, version } from '../../package/index';
+import type { TableColumn } from '../../package/index';
 
-const title = "Cool Design";
-const typedTitle = ref("");
+const title = 'Cool Design';
+const typedTitle = ref('');
 let typingTimer: ReturnType<typeof setTimeout>;
 let motionPreference: MediaQueryList;
 
@@ -25,88 +25,88 @@ function startTyping() {
     }
     typingTimer = setTimeout(tick, delay);
   }
-  typedTitle.value = "";
+  typedTitle.value = '';
   typingTimer = setTimeout(tick, 350);
 }
 onMounted(() => {
-  motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+  motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
   startTyping();
-  motionPreference.addEventListener("change", startTyping);
+  motionPreference.addEventListener('change', startTyping);
 });
 onBeforeUnmount(() => {
   clearTimeout(typingTimer);
-  motionPreference.removeEventListener("change", startTyping);
+  motionPreference.removeEventListener('change', startTyping);
 });
 
-const search = ref("");
+const search = ref('');
 const members = ref([
-  { id: 1, name: "陈晨", department: "产品设计", enabled: true },
-  { id: 2, name: "林沐", department: "研发中心", enabled: true },
-  { id: 3, name: "周远", department: "运营支持", enabled: false }
+  { id: 1, name: '陈晨', department: '产品设计', enabled: true },
+  { id: 2, name: '林沐', department: '研发中心', enabled: true },
+  { id: 3, name: '周远', department: '运营支持', enabled: false }
 ]);
 const filteredMembers = computed(() => {
   const keyword = search.value.trim();
   return members.value.filter((member) => `${member.name}${member.department}`.includes(keyword));
 });
 const columns: TableColumn[] = [
-  { key: "name", title: "成员", width: 100 },
-  { key: "department", title: "所属部门", width: 120 },
-  { key: "status", title: "状态", width: 90 },
-  { key: "action", title: "启用", width: 70 }
+  { key: 'name', title: '成员', width: 100 },
+  { key: 'department', title: '所属部门', width: 120 },
+  { key: 'status', title: '状态', width: 90 },
+  { key: 'action', title: '启用', width: 70 }
 ];
 const resources = [
   {
-    title: "从第一个按钮开始",
-    description: "安装、引入与使用，用一个简单示例了解 Cool Design。",
-    href: "guide/quickstart",
-    label: "快速上手"
+    title: '从第一个按钮开始',
+    description: '安装、引入与使用，用一个简单示例了解 Cool Design。',
+    href: 'guide/quickstart',
+    label: '快速上手'
   },
   {
-    title: "搭建清晰的页面结构",
-    description: "用栅格、间距和布局容器，组织桌面应用的信息层级。",
-    href: "components/container",
-    label: "布局组件"
+    title: '搭建清晰的页面结构',
+    description: '用栅格、间距和布局容器，组织桌面应用的信息层级。',
+    href: 'components/container',
+    label: '布局组件'
   },
   {
-    title: "让数据与操作有序呈现",
-    description: "组合表单、表格与反馈组件，完成日常业务流程。",
-    href: "examples/user-management",
-    label: "业务示例"
+    title: '让数据与操作有序呈现',
+    description: '组合表单、表格与反馈组件，完成日常业务流程。',
+    href: 'examples/user-management',
+    label: '业务示例'
   },
   {
-    title: "让界面拥有你的风格",
-    description: "从主题色到深浅模式，让组件融入产品的视觉语言。",
-    href: "guide/theme",
-    label: "自定义主题"
+    title: '让界面拥有你的风格',
+    description: '从主题色到深浅模式，让组件融入产品的视觉语言。',
+    href: 'guide/theme',
+    label: '自定义主题'
   }
 ];
 const capabilities = [
   {
-    number: "01",
-    title: "基础与布局",
-    description: "按钮、输入、间距、栅格与容器，先把页面骨架搭稳。",
-    href: "components/container",
-    label: "查看布局"
+    number: '01',
+    title: '基础与布局',
+    description: '按钮、输入、间距、栅格与容器，先把页面骨架搭稳。',
+    href: 'components/container',
+    label: '查看布局'
   },
   {
-    number: "02",
-    title: "表单与数据",
-    description: "表单校验、选择器、表格和分页，覆盖常见的后台工作流。",
-    href: "components/form",
-    label: "查看表单"
+    number: '02',
+    title: '表单与数据',
+    description: '表单校验、选择器、表格和分页，覆盖常见的后台工作流。',
+    href: 'components/form',
+    label: '查看表单'
   },
   {
-    number: "03",
-    title: "反馈与状态",
-    description: "提示、弹窗、加载和空状态，让每一次操作都有明确回应。",
-    href: "components/dialog",
-    label: "查看反馈"
+    number: '03',
+    title: '反馈与状态',
+    description: '提示、弹窗、加载和空状态，让每一次操作都有明确回应。',
+    href: 'components/dialog',
+    label: '查看反馈'
   }
 ];
 const scenarios = [
-  { title: "后台工作台", description: "侧栏导航、工具栏、表格和批量操作，快速组成高频业务页面。" },
-  { title: "数据录入工具", description: "用清晰的字段关系和即时校验，降低复杂表单的填写成本。" },
-  { title: "运营管理台", description: "把筛选、状态、反馈与权限操作放在用户熟悉的位置。" }
+  { title: '后台工作台', description: '侧栏导航、工具栏、表格和批量操作，快速组成高频业务页面。' },
+  { title: '数据录入工具', description: '用清晰的字段关系和即时校验，降低复杂表单的填写成本。' },
+  { title: '运营管理台', description: '把筛选、状态、反馈与权限操作放在用户熟悉的位置。' }
 ];
 </script>
 
@@ -168,7 +168,7 @@ const scenarios = [
             <Table :data="filteredMembers" :columns="columns" empty-text="未找到成员，试试其他关键词">
               <template #status="{ row }">
                 <Tag :type="row.enabled ? 'success' : 'info'" size="small">
-                  {{ row.enabled ? "已启用" : "已停用" }}
+                  {{ row.enabled ? '已启用' : '已停用' }}
                 </Tag>
               </template>
               <template #action="{ row }">
@@ -368,7 +368,7 @@ const scenarios = [
   filter: blur(2px);
 }
 .home-title-typed::after {
-  content: "";
+  content: '';
   display: inline-block;
   width: 3px;
   height: 0.85em;
@@ -441,7 +441,7 @@ const scenarios = [
 .home-install {
   color: var(--i-text-secondary);
   &::before {
-    content: "$ ";
+    content: '$ ';
     color: var(--i-text-muted);
   }
 }
@@ -450,7 +450,7 @@ const scenarios = [
   position: relative;
   padding: 24px 0 0;
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     inset: -30px -25px 0;
     border-radius: 50%;
@@ -597,7 +597,7 @@ const scenarios = [
 .home-capability-number,
 .home-kicker {
   color: var(--i-primary);
-  font-family: Consolas, "Cascadia Code", monospace;
+  font-family: Consolas, 'Cascadia Code', monospace;
   font-size: 12px;
 }
 .home-capability-art {
@@ -766,7 +766,7 @@ const scenarios = [
   border-bottom: 1px solid var(--i-border);
   > span {
     color: var(--i-text-muted);
-    font-family: Consolas, "Cascadia Code", monospace;
+    font-family: Consolas, 'Cascadia Code', monospace;
     font-size: 12px;
   }
   h3 {

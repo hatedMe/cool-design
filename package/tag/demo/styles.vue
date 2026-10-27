@@ -9,8 +9,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { Space, Tag } from "../../index";
+import { ref } from 'vue';
+import { Space, Tag } from '../../index';
 
 const closed = ref(false);
 </script>

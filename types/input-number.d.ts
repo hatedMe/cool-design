@@ -1,4 +1,4 @@
-import { Component } from "./component";
+import { Component } from './component';
 export declare class InputNumber extends Component {
   value: number;
   max: number;

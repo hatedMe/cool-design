@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, ref, watchEffect } from "vue";
-import { ConfigProvider, version } from "../package/index";
-import { pages } from "./site/catalog";
-import { renderMarkdown } from "./site/markdown";
-import { highlightCode } from "./site/highlight";
-import DemoBlock from "./site/DemoBlock.vue";
-import HomePage from "./site/HomePage.vue";
-import "./site/style.scss";
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, ref, watchEffect } from 'vue';
+import { ConfigProvider, version } from '../package/index';
+import { pages } from './site/catalog';
+import { renderMarkdown } from './site/markdown';
+import { highlightCode } from './site/highlight';
+import DemoBlock from './site/DemoBlock.vue';
+import HomePage from './site/HomePage.vue';
+import './site/style.scss';
 
-const UserManagement = defineAsyncComponent(() => import("../examples/user-management/index.vue"));
+const UserManagement = defineAsyncComponent(() => import('../examples/user-management/index.vue'));
 
-const readRoute = () => window.location.hash.slice(2) || "home";
+const readRoute = () => window.location.hash.slice(2) || 'home';
 const route = ref(readRoute());
-const query = ref("");
+const query = ref('');
 const dark = ref(false);
 const navigationOpen = ref(false);
 const article = ref<HTMLElement>();
@@ -20,16 +20,16 @@ const page = computed(() => pages.find((item) => item.id === route.value));
 const registration = computed(() => {
   const names = page.value?.imports ?? [];
   const code = [
-    ...(names.length ? [`import { ${names.join(", ")} } from "cool-design";`] : []),
+    ...(names.length ? [`import { ${names.join(', ')} } from "cool-design";`] : []),
     'import "cool-design/style.css";'
-  ].join("\n");
-  return highlightCode(code, "ts");
+  ].join('\n');
+  return highlightCode(code, 'ts');
 });
 watchEffect(() => {
   document.title =
-    route.value === "home"
-      ? "Cool Design · 为桌面应用提供清晰、一致的交互。"
-      : `${route.value === "examples/user-management" ? "用户管理示例" : page.value?.title || "页面未找到"} · Cool Design`;
+    route.value === 'home'
+      ? 'Cool Design · 为桌面应用提供清晰、一致的交互。'
+      : `${route.value === 'examples/user-management' ? '用户管理示例' : page.value?.title || '页面未找到'} · Cool Design`;
 });
 const groups = computed(() => {
   const matching = pages.filter((item) => item.title.toLowerCase().includes(query.value.trim().toLowerCase()));
@@ -38,10 +38,10 @@ const groups = computed(() => {
     pages: matching.filter((item) => item.group === title)
   }));
 });
-const intro = computed(() => renderMarkdown((page.value?.markdown || "").split(/^## API\s*$/m)[0]));
+const intro = computed(() => renderMarkdown((page.value?.markdown || '').split(/^## API\s*$/m)[0]));
 const api = computed(() => {
   const content = page.value?.markdown.split(/^## API\s*$/m)[1];
-  return content ? renderMarkdown(content) : "";
+  return content ? renderMarkdown(content) : '';
 });
 async function navigate() {
   const next = readRoute();
@@ -53,10 +53,10 @@ async function navigate() {
   window.scrollTo({ top: 0 });
 }
 function jump(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-window.addEventListener("hashchange", navigate);
-onBeforeUnmount(() => window.removeEventListener("hashchange", navigate));
+window.addEventListener('hashchange', navigate);
+onBeforeUnmount(() => window.removeEventListener('hashchange', navigate));
 </script>
 
 <template>
@@ -84,7 +84,7 @@ onBeforeUnmount(() => window.removeEventListener("hashchange", navigate));
           <a href="#/components/button">组件</a>
           <a href="#/examples/user-management">业务示例</a>
           <button type="button" @click="dark = !dark">
-            {{ dark ? "浅色模式" : "深色模式" }}
+            {{ dark ? '浅色模式' : '深色模式' }}
           </button>
         </nav>
       </header>
@@ -129,7 +129,7 @@ onBeforeUnmount(() => window.removeEventListener("hashchange", navigate));
               <div class="docs-markdown" v-html="intro" />
               <template v-if="page.demos.length">
                 <section v-if="page.group !== '开发指南'" id="registration" class="docs-registration">
-                  <h2>{{ page.imports?.length ? "引入组件" : "引入样式" }}</h2>
+                  <h2>{{ page.imports?.length ? '引入组件' : '引入样式' }}</h2>
                   <pre><code
 class="hljs language-ts"
                                                v-html="registration"

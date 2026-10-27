@@ -5,12 +5,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { Select, SelectOption } from "../../index";
+import { ref } from 'vue';
+import { Select, SelectOption } from '../../index';
 const value = ref<string | number>();
 const options = ref([
-  { value: 1, label: "小明" },
-  { value: 2, label: "小红" }
+  { value: 1, label: '小明' },
+  { value: 2, label: '小红' }
 ]);
 const search = async (query: string) => options.value.filter((item) => item.label.includes(query));
 </script>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { DateTimePicker } from "../../index";
+import { ref } from 'vue';
+import { DateTimePicker } from '../../index';
 const value = ref(null);
 </script>
 <template>

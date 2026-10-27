@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PageHeader } from "../../index";
+import { PageHeader } from '../../index';
 </script>
 <template>
   <PageHeader title="详情页" content="用户信息">

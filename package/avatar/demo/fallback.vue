@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Avatar, Space } from "../../index";
+import { Avatar, Space } from '../../index';
 </script>
 
 <template>

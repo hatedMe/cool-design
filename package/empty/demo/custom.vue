@@ -5,5 +5,5 @@
 </template>
 
 <script setup lang="ts">
-import { Button, Empty } from "../../index";
+import { Button, Empty } from '../../index';
 </script>

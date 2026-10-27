@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Icon, Space } from "../../index";
+import { Icon, Space } from '../../index';
 </script>
 
 <template>

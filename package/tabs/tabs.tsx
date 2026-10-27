@@ -1,40 +1,40 @@
-import { defineComponent, type PropType } from "vue";
+import { defineComponent, type PropType } from 'vue';
 export interface TabPane {
   name: string;
   label: string;
   disabled?: boolean;
 }
 export default defineComponent({
-  name: "i-tabs",
+  name: 'i-tabs',
   props: {
-    modelValue: { type: String, default: "" },
+    modelValue: { type: String, default: '' },
     panes: { type: Array as PropType<TabPane[]>, default: () => [] },
-    type: { type: String as PropType<"card" | "border-card" | "default">, default: "default" },
+    type: { type: String as PropType<'card' | 'border-card' | 'default'>, default: 'default' },
     closable: Boolean,
     addable: Boolean
   },
-  emits: ["update:modelValue", "tab-click", "tab-remove", "tab-add", "edit"],
+  emits: ['update:modelValue', 'tab-click', 'tab-remove', 'tab-add', 'edit'],
   setup(props, { emit, slots }) {
     return () => (
-      <div class={["i-tabs", `is-${props.type}`]}>
-        <div class="i-tabs__header">
+      <div class={['i-tabs', `is-${props.type}`]}>
+        <div class='i-tabs__header'>
           {props.panes.map((pane) => (
             <button
-              type="button"
-              class={{ "is-active": props.modelValue === pane.name, "is-disabled": pane.disabled }}
+              type='button'
+              class={{ 'is-active': props.modelValue === pane.name, 'is-disabled': pane.disabled }}
               disabled={pane.disabled}
               key={pane.name}
               onClick={() => {
-                emit("update:modelValue", pane.name);
-                emit("tab-click", pane);
+                emit('update:modelValue', pane.name);
+                emit('tab-click', pane);
               }}>
               {pane.label}
               {props.closable && (
                 <i
                   onClick={(e) => {
                     e.stopPropagation();
-                    emit("tab-remove", pane.name);
-                    emit("edit", pane.name, "remove");
+                    emit('tab-remove', pane.name);
+                    emit('edit', pane.name, 'remove');
                   }}>
                   ×
                 </i>
@@ -43,16 +43,16 @@ export default defineComponent({
           ))}
           {props.addable && (
             <button
-              type="button"
+              type='button'
               onClick={() => {
-                emit("tab-add");
-                emit("edit", null, "add");
+                emit('tab-add');
+                emit('edit', null, 'add');
               }}>
               +
             </button>
           )}
         </div>
-        <div class="i-tabs__content">{slots.default?.({ name: props.modelValue })}</div>
+        <div class='i-tabs__content'>{slots.default?.({ name: props.modelValue })}</div>
       </div>
     );
   }

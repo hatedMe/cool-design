@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Input } from "../../index";
-const text = ref("");
+import { ref } from 'vue';
+import { Input } from '../../index';
+const text = ref('');
 </script>
 
 <template>

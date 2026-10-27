@@ -1,4 +1,4 @@
-@import "config.scss";
+@import 'config.scss';
 
 @mixin res($key, $map: $breakpoints) {
   @if map-has-key($map, $key) {
@@ -25,7 +25,7 @@
 }
 
 @mixin b($block) {
-  $BEM: $namespace + "-" + $block !global;
+  $BEM: $namespace + '-' + $block !global;
 
   .#{$BEM} {
     @content;
@@ -35,10 +35,10 @@
 @mixin e($element) {
   $E: $element !global;
   $selector: &;
-  $currentSelector: "";
+  $currentSelector: '';
 
   @each $unit in $element {
-    $currentSelector: #{$currentSelector + "." + $BEM + $element-separator + $unit + ","};
+    $currentSelector: #{$currentSelector + '.' + $BEM + $element-separator + $unit + ','};
   }
 
   @if hitAllSpecialNestRule($selector) {
@@ -60,10 +60,10 @@
 
 @mixin m($modifier) {
   $selector: &;
-  $currentSelector: "";
+  $currentSelector: '';
 
   @each $unit in $modifier {
-    $currentSelector: #{$currentSelector + & + $modifier-separator + $unit + ","};
+    $currentSelector: #{$currentSelector + & + $modifier-separator + $unit + ','};
   }
 
   @at-root {

@@ -6,7 +6,7 @@ export default function bem(componentName) {
 
     let element;
 
-    if (typeof elementOrMods === "string") {
+    if (typeof elementOrMods === 'string') {
       element = elementOrMods;
     } else {
       mods = elementOrMods;
@@ -14,7 +14,7 @@ export default function bem(componentName) {
 
     let base = componentName;
     if (element) {
-      base += "__" + element;
+      base += '__' + element;
     }
 
     return (
@@ -24,12 +24,12 @@ export default function bem(componentName) {
             const value = mods[name];
 
             if (value) {
-              result += " " + (typeof value === "boolean" ? base + "--" + name : base + "--" + name + "_" + value);
+              result += ' ' + (typeof value === 'boolean' ? base + '--' + name : base + '--' + name + '_' + value);
             }
 
             return result;
-          }, "")
-        : "")
+          }, '')
+        : '')
     );
   };
 }

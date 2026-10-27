@@ -39,7 +39,7 @@ pnpm add vue@3
 在应用入口引入一次组件样式，局部引入与全局注册都需要此步骤：
 
 ```ts
-import "cool-design/style.css";
+import 'cool-design/style.css';
 ```
 
 图标字体包含在样式资源中，无需另行配置图标 CDN。主题通过 CSS 变量运行时设置，使用组件库不需要额外安装 Sass。

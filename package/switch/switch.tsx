@@ -1,7 +1,7 @@
-import { defineComponent, nextTick, type PropType } from "vue";
-import { useField } from "../form/context";
+import { defineComponent, nextTick, type PropType } from 'vue';
+import { useField } from '../form/context';
 export default defineComponent({
-  name: "i-switch",
+  name: 'i-switch',
   inheritAttrs: false,
   props: {
     modelValue: { type: [Boolean, String, Number] as PropType<boolean | string | number>, default: false },
@@ -17,18 +17,18 @@ export default defineComponent({
     inactiveColor: String,
     beforeChange: Function as PropType<() => boolean | Promise<boolean>>
   },
-  emits: ["update:modelValue", "change"],
+  emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, slots }) {
     const field = useField();
     return () => (
       <label
-        class={["i-switch", props.size && `i-switch--${props.size}`]}
-        style={{ "--i-switch-on": props.activeColor, "--i-switch-off": props.inactiveColor }}>
+        class={['i-switch', props.size && `i-switch--${props.size}`]}
+        style={{ '--i-switch-on': props.activeColor, '--i-switch-off': props.inactiveColor }}>
         <input
           {...attrs}
           id={(attrs.id as string) || field?.id}
-          type="checkbox"
-          role="switch"
+          type='checkbox'
+          role='switch'
           aria-checked={props.modelValue === props.activeValue}
           checked={props.modelValue === props.activeValue}
           disabled={props.disabled || field?.disabled?.() || props.loading}
@@ -38,15 +38,15 @@ export default defineComponent({
             const next = value ? props.activeValue : props.inactiveValue;
             Promise.resolve(props.beforeChange?.() ?? true).then((allowed) => {
               if (!allowed) return;
-              emit("update:modelValue", next);
-              emit("change", next);
-              nextTick(() => field?.validate("change"));
+              emit('update:modelValue', next);
+              emit('change', next);
+              nextTick(() => field?.validate('change'));
             });
           }}
         />
-        <span class="i-switch__track" aria-hidden="true" />
+        <span class='i-switch__track' aria-hidden='true' />
         {(props.activeText || props.inactiveText) && (
-          <span class="i-switch__text">
+          <span class='i-switch__text'>
             {props.modelValue === props.activeValue ? props.activeText : props.inactiveText}
           </span>
         )}

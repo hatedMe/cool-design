@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { Row, Col } from "../../index";
+import { Row, Col } from '../../index';
 const classes = [
-  "xs-only",
-  "sm-only",
-  "sm-and-down",
-  "sm-and-up",
-  "md-only",
-  "md-and-down",
-  "md-and-up",
-  "lg-only",
-  "lg-and-down",
-  "lg-and-up",
-  "xl-only"
+  'xs-only',
+  'sm-only',
+  'sm-and-down',
+  'sm-and-up',
+  'md-only',
+  'md-and-down',
+  'md-and-up',
+  'lg-only',
+  'lg-and-down',
+  'lg-and-up',
+  'xl-only'
 ];
 </script>
 <template>

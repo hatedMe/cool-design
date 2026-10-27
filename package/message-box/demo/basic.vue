@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Button, Checkbox, MessageBox, Space } from "../../index";
+import { ref } from 'vue';
+import { Button, Checkbox, MessageBox, Space } from '../../index';
 const open = ref(false);
 const simulateFailure = ref(false);
-const result = ref("尚未执行操作");
+const result = ref('尚未执行操作');
 async function beforeConfirm() {
   await new Promise((resolve) => setTimeout(resolve, 600));
-  if (simulateFailure.value) throw new Error("删除失败，请取消模拟失败后重试");
+  if (simulateFailure.value) throw new Error('删除失败，请取消模拟失败后重试');
 }
 </script>
 

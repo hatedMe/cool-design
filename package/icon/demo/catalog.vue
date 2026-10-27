@@ -1,30 +1,30 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { Icon, Input, iconNames } from "../../index";
-const query = ref("");
-const selected = ref("");
-const feedback = ref("");
+import { computed, ref } from 'vue';
+import { Icon, Input, iconNames } from '../../index';
+const query = ref('');
+const selected = ref('');
+const feedback = ref('');
 const aliases: Record<string, string> = {
-  "icon-search": "搜索 查找",
-  "icon-close": "关闭 取消",
-  "icon-add": "添加 新增",
-  "icon-editor": "编辑 修改",
-  "icon-delete": "删除",
-  "icon-homepage": "首页",
-  "icon-setup": "设置",
-  "icon-people": "用户"
+  'icon-search': '搜索 查找',
+  'icon-close': '关闭 取消',
+  'icon-add': '添加 新增',
+  'icon-editor': '编辑 修改',
+  'icon-delete': '删除',
+  'icon-homepage': '首页',
+  'icon-setup': '设置',
+  'icon-people': '用户'
 };
 const filtered = computed(() => {
   const text = query.value.trim().toLowerCase();
-  return iconNames.filter((name) => `${name} ${aliases[name] || ""}`.toLowerCase().includes(text));
+  return iconNames.filter((name) => `${name} ${aliases[name] || ''}`.toLowerCase().includes(text));
 });
 async function copy(name: string) {
   selected.value = `<Icon type="${name}" />`;
   try {
     await navigator.clipboard.writeText(selected.value);
-    feedback.value = "已复制图标用法";
+    feedback.value = '已复制图标用法';
   } catch {
-    feedback.value = "无法自动复制，请手动复制下方代码";
+    feedback.value = '无法自动复制，请手动复制下方代码';
   }
 }
 </script>

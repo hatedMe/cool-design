@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Button, Space } from "../../package/index";
+import { ref } from 'vue';
+import { Button, Space } from '../../package/index';
 
 const visible = ref(true);
-const effect = ref("guide-fade");
+const effect = ref('guide-fade');
 </script>
 
 <template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Radio, RadioGroup, Space } from "../../index";
-const value = ref("a");
+import { ref } from 'vue';
+import { Radio, RadioGroup, Space } from '../../index';
+const value = ref('a');
 </script>
 
 <template>

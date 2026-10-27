@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Button, Popconfirm, Space } from "../../index";
-const result = ref("尚未执行操作");
+import { ref } from 'vue';
+import { Button, Popconfirm, Space } from '../../index';
+const result = ref('尚未执行操作');
 </script>
 
 <template>

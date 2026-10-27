@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Col, Row, Space } from "../../index";
+import { Col, Row, Space } from '../../index';
 </script>
 
 <template>

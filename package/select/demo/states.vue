@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Select, SelectOption, Space } from "../../index";
-const value = ref("enabled");
+import { ref } from 'vue';
+import { Select, SelectOption, Space } from '../../index';
+const value = ref('enabled');
 </script>
 <template>
   <Space>

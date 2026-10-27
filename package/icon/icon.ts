@@ -1,9 +1,9 @@
-import { defineComponent, h, type PropType } from "vue";
-import { useConfig } from "../config-provider/context";
+import { defineComponent, h, type PropType } from 'vue';
+import { useConfig } from '../config-provider/context';
 export default defineComponent({
-  name: "i-icon",
+  name: 'i-icon',
   props: {
-    type: { type: String, default: "" },
+    type: { type: String, default: '' },
     size: [String, Number] as PropType<string | number>,
     color: String,
     label: String
@@ -12,14 +12,14 @@ export default defineComponent({
     const config = useConfig();
     return () =>
       h(
-        "i",
+        'i',
         {
-          class: [!slots.default && "iconfont", "i-icon", !slots.default && props.type, `i-icon--${config.value.size}`],
-          role: props.label ? "img" : undefined,
-          "aria-label": props.label || undefined,
-          "aria-hidden": props.label ? undefined : "true",
+          class: [!slots.default && 'iconfont', 'i-icon', !slots.default && props.type, `i-icon--${config.value.size}`],
+          role: props.label ? 'img' : undefined,
+          'aria-label': props.label || undefined,
+          'aria-hidden': props.label ? undefined : 'true',
           style: {
-            fontSize: typeof props.size === "number" ? `${props.size}px` : props.size,
+            fontSize: typeof props.size === 'number' ? `${props.size}px` : props.size,
             color: props.color
           }
         },

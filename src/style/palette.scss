@@ -1,4 +1,4 @@
-@use "sass:color";
+@use 'sass:color';
 $light: (
   primary: #2463eb,
   success: #16815d,
@@ -26,7 +26,7 @@ $dark: (
   --i-info: #65748a;
   @include fallback-shades($light, #fff, #203047);
 }
-.i-config-provider[data-theme="dark"] {
+.i-config-provider[data-theme='dark'] {
   --i-info: #a6b4c9;
   @include fallback-shades($dark, #1c2738, #e0e8f4);
 }

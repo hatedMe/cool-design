@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Checkbox, Space } from "../../index";
+import { Checkbox, Space } from '../../index';
 </script>
 <template>
   <Space>

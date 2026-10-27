@@ -1,7 +1,7 @@
 export interface FormRule {
   required?: boolean;
   message?: string;
-  trigger?: "blur" | "change";
+  trigger?: 'blur' | 'change';
   type?: string;
   min?: number;
   max?: number;

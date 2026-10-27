@@ -5,7 +5,7 @@ body {
   min-height: 100vh;
   background: var(--i-bg);
   color: var(--i-text);
-  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
   :where(a:not(.i-link)) {
     color: var(--i-primary);
     text-decoration: none;
@@ -19,7 +19,7 @@ body {
   }
   pre,
   code {
-    font-family: Consolas, "Cascadia Code", monospace;
+    font-family: Consolas, 'Cascadia Code', monospace;
     font-size: 13px;
   }
   pre {
@@ -69,7 +69,7 @@ body {
   --docs-code-name: #116329;
   --docs-code-attr: #953800;
   --docs-code-title: #8250df;
-  &[data-theme="dark"] {
+  &[data-theme='dark'] {
     --docs-code-comment: #8b949e;
     --docs-code-keyword: #ff7b72;
     --docs-code-string: #a5d6ff;

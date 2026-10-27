@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Space, Switch } from "../../index";
-const value = ref("on");
+import { ref } from 'vue';
+import { Space, Switch } from '../../index';
+const value = ref('on');
 </script>
 <template>
   <Space>

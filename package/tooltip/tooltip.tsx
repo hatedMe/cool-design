@@ -1,16 +1,16 @@
-import { Teleport, cloneVNode, computed, defineComponent, onBeforeUnmount, ref, type PropType } from "vue";
-import { useFloating, type Placement } from "../../src/utils/use-floating";
+import { Teleport, cloneVNode, computed, defineComponent, onBeforeUnmount, ref, type PropType } from 'vue';
+import { useFloating, type Placement } from '../../src/utils/use-floating';
 let id = 0;
 export default defineComponent({
-  name: "i-tooltip",
+  name: 'i-tooltip',
   props: {
-    content: { type: String, default: "" },
-    placement: { type: String as PropType<Placement>, default: "top" },
+    content: { type: String, default: '' },
+    placement: { type: String as PropType<Placement>, default: 'top' },
     disabled: Boolean,
-    trigger: { type: String as PropType<"hover" | "focus" | "click">, default: "hover" },
+    trigger: { type: String as PropType<'hover' | 'focus' | 'click'>, default: 'hover' },
     showAfter: { type: Number, default: 0 },
     hideAfter: { type: Number, default: 80 },
-    effect: { type: String as PropType<"light" | "dark">, default: "dark" }
+    effect: { type: String as PropType<'light' | 'dark'>, default: 'dark' }
   },
   setup(props, { slots }) {
     const reference = ref<HTMLElement>(),
@@ -25,9 +25,9 @@ export default defineComponent({
       () =>
         !props.disabled &&
         !dismissed.value &&
-        ((props.trigger === "click" ? dismissed.value === false && clicked.value : false) ||
-          (props.trigger === "hover" && (hovered.value || focused.value)) ||
-          (props.trigger === "focus" && focused.value)) &&
+        ((props.trigger === 'click' ? dismissed.value === false && clicked.value : false) ||
+          (props.trigger === 'hover' && (hovered.value || focused.value)) ||
+          (props.trigger === 'focus' && focused.value)) &&
         !!(props.content || slots.content)
     );
     const position = useFloating({
@@ -56,12 +56,12 @@ export default defineComponent({
     return () => (
       <>
         <span
-          class="i-tooltip__trigger"
+          class='i-tooltip__trigger'
           ref={reference}
           onMouseenter={enter}
           onMouseleave={leave}
           onClick={() => {
-            if (props.trigger === "click") {
+            if (props.trigger === 'click') {
               clearTimeout(timer);
               if (clicked.value) {
                 clicked.value = false;
@@ -83,9 +83,9 @@ export default defineComponent({
           }}>
           {slots.default?.().map((vnode) =>
             cloneVNode(vnode, {
-              "aria-describedby": open.value
-                ? [vnode.props?.["aria-describedby"], tooltipId].filter(Boolean).join(" ")
-                : vnode.props?.["aria-describedby"]
+              'aria-describedby': open.value
+                ? [vnode.props?.['aria-describedby'], tooltipId].filter(Boolean).join(' ')
+                : vnode.props?.['aria-describedby']
             })
           )}
         </span>
@@ -94,8 +94,8 @@ export default defineComponent({
             <div
               id={tooltipId}
               ref={floating}
-              class={["i-tooltip", `i-tooltip--${props.effect}`]}
-              role="tooltip"
+              class={['i-tooltip', `i-tooltip--${props.effect}`]}
+              role='tooltip'
               style={position.style.value}
               data-placement={position.placement.value}
               onMouseenter={enter}

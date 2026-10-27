@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Checkbox, CheckboxGroup } from "../../index";
-const values = ref(["a"]);
+import { ref } from 'vue';
+import { Checkbox, CheckboxGroup } from '../../index';
+const values = ref(['a']);
 </script>
 <template>
   <CheckboxGroup v-model="values" :max="2">

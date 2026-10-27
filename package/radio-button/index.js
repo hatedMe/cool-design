@@ -1,6 +1,6 @@
-import { createNamespace } from "@/utils/index";
-const [createComponent, bem] = createNamespace("radio-button");
-import "./index.scss";
+import { createNamespace } from '@/utils/index';
+const [createComponent, bem] = createNamespace('radio-button');
+import './index.scss';
 
 export default createComponent({
   props: {
@@ -17,9 +17,9 @@ export default createComponent({
     return (
       <div
         class={bem({
-          "is-checked": this.label == this.$parent.value,
-          "is-disabled": this.$attrs.disabled != undefined && this.label == this.$parent.value,
-          "is-disabled-not-check": this.$attrs.disabled != undefined && this.label != this.$parent.value
+          'is-checked': this.label == this.$parent.value,
+          'is-disabled': this.$attrs.disabled != undefined && this.label == this.$parent.value,
+          'is-disabled-not-check': this.$attrs.disabled != undefined && this.label != this.$parent.value
         })}
         onClick={() => (this.$attrs.disabled !== undefined ? null : this.changeHandle(this.label))}>
         {this.$slots.default}

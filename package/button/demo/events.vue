@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Button, Space } from "../../index";
+import { ref } from 'vue';
+import { Button, Space } from '../../index';
 const count = ref(0);
 </script>
 

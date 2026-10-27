@@ -84,7 +84,7 @@ interface FormRule {
   whitespace?: boolean;
   transform?: (value: unknown) => unknown;
   message?: string;
-  trigger?: "blur" | "change";
+  trigger?: 'blur' | 'change';
   validator?: (value: unknown) => void | Promise<void>;
 }
 ```

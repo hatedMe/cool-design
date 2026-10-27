@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Checkbox, CheckboxGroup, Space } from "../../index";
-const values = ref(["a"]);
+import { ref } from 'vue';
+import { Checkbox, CheckboxGroup, Space } from '../../index';
+const values = ref(['a']);
 </script>
 <template>
   <Space direction="vertical" align="start">
@@ -10,6 +10,6 @@ const values = ref(["a"]);
       <Checkbox value="b">选项 B</Checkbox>
       <Checkbox value="c">选项 C</Checkbox>
     </CheckboxGroup>
-    <span>已选：{{ values.join(",") }}</span>
+    <span>已选：{{ values.join(',') }}</span>
   </Space>
 </template>

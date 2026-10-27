@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Select, SelectOption } from "../../index";
+import { ref } from 'vue';
+import { Select, SelectOption } from '../../index';
 const role = ref<string>();
 </script>
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { reactive } from "vue";
-import { Form, FormItem, Input, Button } from "../../index";
-const model = reactive({ name: "" });
+import { reactive } from 'vue';
+import { Form, FormItem, Input, Button } from '../../index';
+const model = reactive({ name: '' });
 </script>
 <template>
   <Form :model="model" inline label-position="left" label-width="70px">

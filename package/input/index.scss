@@ -51,8 +51,8 @@
   background: var(--i-bg);
   color: var(--i-text);
 }
-.i-input:has([aria-invalid="true"]),
-.i-select:has([aria-invalid="true"]) {
+.i-input:has([aria-invalid='true']),
+.i-select:has([aria-invalid='true']) {
   border-color: var(--i-danger);
 }
 .i-input button,

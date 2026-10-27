@@ -27,7 +27,7 @@ jobs:
       - name: 配置 Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: "24"
+          node-version: '24'
       - name: 启用项目指定的 pnpm
         run: corepack enable && corepack prepare pnpm@10.33.0 --activate
       - name: 安装依赖

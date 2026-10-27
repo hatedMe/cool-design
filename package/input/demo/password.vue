@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Input } from "../../index";
-const password = ref("secret");
+import { ref } from 'vue';
+import { Input } from '../../index';
+const password = ref('secret');
 </script>
 
 <template>
