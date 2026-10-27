@@ -38,6 +38,31 @@ import Badge from "./badge";
 import Radio from "./radio";
 import RadioGroup from "./radio-group";
 import { DatePicker, TimePicker, DateTimePicker, Calendar } from "./date-picker";
+import Autocomplete from "./autocomplete";
+import ColorPicker from "./color-picker";
+import Slider from "./slider";
+import Transfer from "./transfer";
+import TreeSelect from "./tree-select";
+import Upload from "./upload";
+import Card from "./card";
+import Descriptions from "./descriptions";
+import Image from "./image";
+import Result from "./result";
+import Skeleton from "./skeleton";
+import Tree from "./tree";
+import Timeline from "./timeline";
+import Statistic from "./statistic";
+import Menu from "./menu";
+import Breadcrumb from "./breadcrumb";
+import Tabs from "./tabs";
+import Dropdown from "./dropdown";
+import Steps from "./steps";
+import PageHeader from "./page-header";
+import Alert from "./alert";
+import Drawer from "./drawer";
+import { Notification } from "./notification";
+import Popover from "./popover";
+import Watermark from "./watermark";
 import "../src/style/index.scss";
 export type { FormRule, FormInstance } from "./form";
 export type { TableColumn, SortChange } from "./table";
@@ -84,7 +109,32 @@ export {
     DatePicker,
     TimePicker,
     DateTimePicker,
-    Calendar
+    Calendar,
+    Autocomplete,
+    ColorPicker,
+    Slider,
+    Transfer,
+    TreeSelect,
+    Upload,
+    Card,
+    Descriptions,
+    Image,
+    Result,
+    Skeleton,
+    Tree,
+    Timeline,
+    Statistic,
+    Menu,
+    Breadcrumb,
+    Tabs,
+    Dropdown,
+    Steps,
+    PageHeader,
+    Alert,
+    Drawer,
+    Notification,
+    Popover,
+    Watermark
 };
 const components = [
     Container,
@@ -126,7 +176,32 @@ const components = [
     DatePicker,
     TimePicker,
     DateTimePicker,
-    Calendar
+    Calendar,
+    Autocomplete,
+    ColorPicker,
+    Slider,
+    Transfer,
+    TreeSelect,
+    Upload,
+    Card,
+    Descriptions,
+    Image,
+    Result,
+    Skeleton,
+    Tree,
+    Timeline,
+    Statistic,
+    Menu,
+    Breadcrumb,
+    Tabs,
+    Dropdown,
+    Steps,
+    PageHeader,
+    Alert,
+    Drawer,
+    Notification,
+    Popover,
+    Watermark
 ];
 export const install = (app: App) => {
     components.forEach((component) => app.use(component));
@@ -142,3 +217,4 @@ export { iconNames } from "./icon";
 export type { ColSize, ColSizeObject } from "./col";
 export type { LinkType, LinkUnderline } from "./link/link";
 export type { DatePickerType } from "./date-picker";
+export { Notify } from "./notification";
