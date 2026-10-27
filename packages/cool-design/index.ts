@@ -63,6 +63,8 @@ import Drawer from './drawer';
 import { Notification } from './notification';
 import Popover from './popover';
 import Watermark from './watermark';
+import { installDirectives } from './directives';
+export { ClickOutside, InfiniteScroll, LoadingDirective, directives, installDirectives } from './directives';
 import './style/index.scss';
 export type { FormRule, FormInstance } from './form';
 export type { TableColumn, SortChange } from './table';
@@ -205,6 +207,7 @@ const components = [
 ];
 export const install = (app: App) => {
   components.forEach((component) => app.use(component));
+  installDirectives(app);
 };
 export default { version, install };
 

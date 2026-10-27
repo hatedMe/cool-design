@@ -39,3 +39,27 @@
 @use '../feedback/index.scss' as *;
 
 @use './display.scss';
+
+.i-loading-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: color-mix(in srgb, var(--i-bg, #fff) 80%, transparent);
+}
+
+.i-loading-mask.is-fullscreen { position: fixed; }
+
+.i-loading-mask__spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: i-loading-mask-spin 0.8s linear infinite;
+}
+
+@keyframes i-loading-mask-spin { to { transform: rotate(360deg); } }
