@@ -41,7 +41,11 @@ function component(id: string, title: string, group: string, demos: [string, str
         id: `components/${id}`,
         title,
         group,
-        markdown: readmes[`../../package/${id}/README.md`],
+        markdown: readmes[`../../package/${id}/README.md`].replace(
+            /^(#{3,4} )(.*?)(属性|事件|插槽|Slots)([ \t]*)(\r?)$/gm,
+            (_, heading, prefix, name: "属性" | "事件" | "插槽" | "Slots", spacing, ending) =>
+                `${heading}${prefix}${{ 属性: "Attributes", 事件: "Events", 插槽: "Slot", Slots: "Slot" }[name]}${spacing}${ending}`
+        ),
         demos: demos.map(([name, title, description]) =>
             demo(`../../package/${id}/demo/${name}.vue`, name, title, description)
         )

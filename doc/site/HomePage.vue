@@ -80,6 +80,34 @@ const resources = [
         label: "自定义主题"
     }
 ];
+const capabilities = [
+    {
+        number: "01",
+        title: "基础与布局",
+        description: "按钮、输入、间距、栅格与容器，先把页面骨架搭稳。",
+        href: "components/container",
+        label: "查看布局"
+    },
+    {
+        number: "02",
+        title: "表单与数据",
+        description: "表单校验、选择器、表格和分页，覆盖常见的后台工作流。",
+        href: "components/form",
+        label: "查看表单"
+    },
+    {
+        number: "03",
+        title: "反馈与状态",
+        description: "提示、弹窗、加载和空状态，让每一次操作都有明确回应。",
+        href: "components/dialog",
+        label: "查看反馈"
+    }
+];
+const scenarios = [
+    { title: "后台工作台", description: "侧栏导航、工具栏、表格和批量操作，快速组成高频业务页面。" },
+    { title: "数据录入工具", description: "用清晰的字段关系和即时校验，降低复杂表单的填写成本。" },
+    { title: "运营管理台", description: "把筛选、状态、反馈与权限操作放在用户熟悉的位置。" }
+];
 </script>
 
 <template>
@@ -174,6 +202,81 @@ const resources = [
             <div>
                 <h2>恰当的反馈</h2>
                 <p>从输入到完成，让每一步都有明确回应。</p>
+            </div>
+        </section>
+
+        <section class="home-capabilities" aria-labelledby="home-capabilities-title">
+            <div class="home-section-heading">
+                <h2 id="home-capabilities-title">一套组件，覆盖日常工作台。</h2>
+                <p>从页面结构到操作反馈，保持同一套体验。</p>
+            </div>
+            <div class="home-capability-grid">
+                <a
+                    v-for="capability in capabilities"
+                    :key="capability.number"
+                    :href="`#/${capability.href}`"
+                    class="home-capability">
+                    <span class="home-capability-number">{{ capability.number }}</span>
+                    <div class="home-capability-art" aria-hidden="true">
+                        <template v-if="capability.number === '01'">
+                            <span class="home-art-sidebar" />
+                            <span class="home-art-panel home-art-panel--wide" />
+                            <span class="home-art-panel home-art-panel--short" />
+                            <i />
+                            <i />
+                            <i />
+                            <i />
+                        </template>
+                        <template v-else-if="capability.number === '02'">
+                            <span class="home-art-field home-art-field--long" />
+                            <span class="home-art-field" />
+                            <span class="home-art-field home-art-field--short" />
+                            <span class="home-art-button" />
+                        </template>
+                        <template v-else>
+                            <span class="home-art-toast">
+                                <b />
+                                已保存
+                            </span>
+                            <span class="home-art-dialog">
+                                <b />
+                                <b />
+                                <b />
+                            </span>
+                        </template>
+                    </div>
+                    <h3>{{ capability.title }}</h3>
+                    <p>{{ capability.description }}</p>
+                    <span class="home-capability-link">
+                        {{ capability.label }}
+                        <span aria-hidden="true">↗</span>
+                    </span>
+                </a>
+            </div>
+        </section>
+
+        <section class="home-scenarios" aria-labelledby="home-scenarios-title">
+            <div class="home-scenario-copy">
+                <span class="home-kicker">为桌面场景而做</span>
+                <h2 id="home-scenarios-title">
+                    让复杂的工作，
+                    <br />
+                    变得更容易完成。
+                </h2>
+                <p>Cool Design 关注桌面应用里真正重要的细节：稳定的布局、可预期的状态和不打断工作的反馈。</p>
+                <a class="home-text-link" href="#/guide/transition">
+                    了解交互细节
+                    <span aria-hidden="true">↗</span>
+                </a>
+            </div>
+            <div class="home-scenario-list">
+                <article v-for="(scenario, index) in scenarios" :key="scenario.title" class="home-scenario">
+                    <span>0{{ index + 1 }}</span>
+                    <div>
+                        <h3>{{ scenario.title }}</h3>
+                        <p>{{ scenario.description }}</p>
+                    </div>
+                </article>
             </div>
         </section>
 
@@ -465,6 +568,223 @@ const resources = [
 .home-resources {
     padding-top: 58px;
 }
+.home-capabilities {
+    padding-top: 58px;
+}
+.home-capability-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 28px;
+}
+.home-capability {
+    min-height: 230px;
+    padding: 22px;
+    border: 1px solid var(--i-border);
+    border-radius: 8px;
+    background: var(--i-bg-subtle);
+    transition:
+        border-color 160ms ease,
+        transform 160ms ease;
+    &:hover {
+        border-color: var(--i-primary);
+        transform: translateY(-3px);
+    }
+    h3 {
+        margin: 36px 0 10px;
+        font-size: 18px;
+    }
+    p {
+        color: var(--i-text-secondary);
+        font-size: 13px;
+        line-height: 1.8;
+    }
+}
+.home-capability-number,
+.home-kicker {
+    color: var(--i-primary);
+    font-family: Consolas, "Cascadia Code", monospace;
+    font-size: 12px;
+}
+.home-capability-art {
+    position: relative;
+    height: 70px;
+    margin-top: 16px;
+    overflow: hidden;
+    border: 1px solid var(--i-border);
+    border-radius: 5px;
+    background: var(--i-bg);
+}
+.home-art-sidebar {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 22%;
+    background: color-mix(in srgb, var(--i-primary) 13%, var(--i-bg));
+    border-right: 1px solid var(--i-border);
+}
+.home-art-panel {
+    position: absolute;
+    left: 31%;
+    height: 7px;
+    border-radius: 2px;
+    background: var(--i-primary);
+    opacity: 0.75;
+    &--wide {
+        top: 17px;
+        width: 48%;
+    }
+    &--short {
+        top: 31px;
+        width: 30%;
+        opacity: 0.25;
+    }
+}
+.home-capability-art > i {
+    position: absolute;
+    top: 49px;
+    width: 13px;
+    height: 10px;
+    border: 1px solid var(--i-border);
+    border-radius: 2px;
+    background: var(--i-bg-subtle);
+    &:nth-of-type(1) {
+        left: 31%;
+    }
+    &:nth-of-type(2) {
+        left: 43%;
+    }
+    &:nth-of-type(3) {
+        left: 55%;
+    }
+    &:nth-of-type(4) {
+        left: 67%;
+    }
+}
+.home-art-field {
+    position: absolute;
+    left: 14%;
+    top: 22px;
+    width: 29%;
+    height: 9px;
+    border: 1px solid var(--i-border);
+    border-radius: 2px;
+    &--long {
+        top: 13px;
+        width: 56%;
+    }
+    &:nth-of-type(3) {
+        top: 38px;
+        width: 42%;
+    }
+}
+.home-art-button {
+    position: absolute;
+    left: 67%;
+    top: 38px;
+    width: 18%;
+    height: 10px;
+    border-radius: 2px;
+    background: var(--i-primary);
+}
+.home-art-toast,
+.home-art-dialog {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--i-border);
+    border-radius: 3px;
+    background: var(--i-bg);
+    box-shadow: var(--i-shadow);
+    color: var(--i-text-secondary);
+    font-size: 9px;
+}
+.home-art-toast {
+    top: 11px;
+    right: 13%;
+    padding: 5px 8px;
+    b {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--i-success);
+    }
+}
+.home-art-dialog {
+    left: 18%;
+    top: 32px;
+    width: 51%;
+    height: 24px;
+    padding: 0 7px;
+    b {
+        display: block;
+        width: 22%;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--i-border);
+        &:first-child {
+            width: 37%;
+            background: var(--i-primary);
+        }
+    }
+}
+.home-capability-link,
+.home-text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 24px;
+    color: var(--i-primary);
+    font-size: 12px;
+}
+.home-scenarios {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 80px;
+    margin-top: 82px;
+    padding: 58px 0;
+    border-top: 1px solid var(--i-border);
+    border-bottom: 1px solid var(--i-border);
+}
+.home-scenario-copy {
+    h2 {
+        margin-top: 18px;
+        font-size: clamp(25px, 3vw, 36px);
+        letter-spacing: -1px;
+        line-height: 1.45;
+    }
+    p {
+        max-width: 380px;
+        margin-top: 20px;
+        color: var(--i-text-secondary);
+        font-size: 14px;
+        line-height: 1.9;
+    }
+}
+.home-scenario-list {
+    border-top: 1px solid var(--i-border);
+}
+.home-scenario {
+    display: grid;
+    grid-template-columns: 46px 1fr;
+    gap: 18px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--i-border);
+    > span {
+        color: var(--i-text-muted);
+        font-family: Consolas, "Cascadia Code", monospace;
+        font-size: 12px;
+    }
+    h3 {
+        font-size: 16px;
+    }
+    p {
+        margin-top: 8px;
+        color: var(--i-text-secondary);
+        font-size: 13px;
+        line-height: 1.75;
+    }
+}
 .home-section-heading {
     display: flex;
     align-items: baseline;
@@ -539,6 +859,9 @@ const resources = [
     .home-principles {
         gap: 20px;
     }
+    .home-scenarios {
+        gap: 36px;
+    }
 }
 @media (max-width: 540px) {
     .home-page {
@@ -554,6 +877,18 @@ const resources = [
     .home-resource-grid {
         grid-template-columns: 1fr;
         gap: 8px;
+    }
+    .home-capability-grid,
+    .home-scenarios {
+        grid-template-columns: 1fr;
+    }
+    .home-capability-grid {
+        gap: 12px;
+    }
+    .home-scenarios {
+        gap: 36px;
+        margin-top: 54px;
+        padding: 38px 0;
     }
     .home-workspace-body {
         padding: 18px 12px;
