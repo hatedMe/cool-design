@@ -14,7 +14,7 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 
 ## 表单校验
 
-规则支持必填、blur/change 触发和同步/异步 validator；校验失败时自动聚焦第一个错误字段。
+规则由 `async-validator` 执行，支持必填、类型、长度、正则、blur/change 触发和同步/异步 validator；校验失败时自动聚焦第一个错误字段。
 
 ## API
 
@@ -61,23 +61,35 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 | message   | 必填失败提示                                | string                                   |
 | trigger   | blur / change；省略时两者均可触发           | string                                   |
 | validator | 自定义校验，失败时抛出 Error 或拒绝 Promise | (value: unknown) => void / Promise<void> |
+| type | async-validator 类型 | string |
+| min / max / len | 长度或数值范围 | number |
+| pattern | 正则校验 | RegExp |
+| whitespace | 必填字符串是否拒绝空白 | boolean |
+| transform | 校验前转换值 | (value: unknown) => unknown |
 
-`FormRule`、`FormInstance` 可从 `cool-design` 导入。返回 false 不表示自定义校验失败；异步期间模型发生变化，整体 validate 返回 false。
+`FormRule`、`FormInstance` 可从 `cool-design` 导入。自定义 validator 抛出 Error 或返回 rejected Promise 表示失败；异步期间模型发生变化，整体 validate 返回 false。
 
 ## 使用说明
 
-属性 model: Record<string, unknown>（必填，响应式对象）、rules: Record<string, FormRule[]>（默认空对象）。字段为平面键名，不支持点路径。
+属性 model: Record<string, unknown>（必填，响应式对象）、rules: Record<string, FormRule[]>（默认空对象）。`prop` 支持 `user.name` 和 `items[0].name` 点路径，校验由 async-validator 执行。
 
 ```ts
 interface FormRule {
     required?: boolean;
+    type?: string;
+    min?: number;
+    max?: number;
+    len?: number;
+    pattern?: RegExp;
+    whitespace?: boolean;
+    transform?: (value: unknown) => unknown;
     message?: string;
     trigger?: "blur" | "change";
     validator?: (value: unknown) => void | Promise<void>;
 }
 ```
 
-必填检查 null、undefined、空白字符串和空数组；false、0 有效。自定义失败通过抛出 Error 或拒绝 Promise 表达，错误消息取 Error.message，不通过返回 false 表达失败。
+必填检查 null、undefined、空白字符串和空数组；false、0 有效。校验错误消息取规则或 async-validator 返回的 message。
 
 模板 ref 可标注 FormInstance：validate(): Promise<boolean> 校验全部字段，失败聚焦首个无效字段；resetFields() 恢复注册时初值；clearValidate() 清除错误并使旧异步校验失效。校验期间模型变化使整体校验返回 false，需要重新提交。
 

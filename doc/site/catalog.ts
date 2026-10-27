@@ -165,6 +165,7 @@ export const pages: Page[] = [
         ["states", "禁用、只读与清空", "比较 disabled、readonly 和 clearable 的行为。"],
         ["password", "密码输入", "使用 show-password 切换密码可见性。"],
         ["textarea", "文本域与长度统计", "使用 textarea、rows 和 show-word-limit 输入多行内容。"],
+        ["formatter", "格式化与自适应", "使用 formatter/parser 和 autosize 处理金额与多行文本。"],
         ["sizes", "尺寸与图标", "使用 small、default、large 和前后缀图标。"]
     ]),
     component("date-picker", "DatePicker 日期选择器", "表单组件", [["basic", "日期选择", "选择日期、日期时间以及日期范围。"]]),
@@ -175,6 +176,7 @@ export const pages: Page[] = [
         ["basic", "基础用法", "从 SelectOption 中选择单个值。"],
         ["states", "禁用与清空", "比较禁用选项、禁用选择器和 clearable。"],
         ["multiple", "多选", "使用 multiple 和数组模型选择多个值。"],
+        ["remote", "远程与虚拟选项", "按查询词加载远程选项，并可用于大数据量列表。"],
         ["sizes", "尺寸", "使用 small、default、large 控制选择器高度。"]
     ]),
     component("select-option", "SelectOption 选项", "表单组件", [
@@ -194,7 +196,8 @@ export const pages: Page[] = [
     component("form", "Form 表单", "表单组件", [
         ["basic", "典型表单", "组合 Input、Select、Checkbox 和 Switch 收集表单值。"],
         ["inline", "行内表单与对齐", "使用 inline、labelPosition 和 labelWidth 控制布局。"],
-        ["validation", "表单校验", "展示必填、触发时机、异步规则和重置。"]
+        ["validation", "表单校验", "展示必填、触发时机、异步规则和重置。"],
+        ["nested", "嵌套路径校验", "使用 user.name 这样的 prop 校验嵌套模型。"]
     ]),
     component("form-item", "FormItem 字段", "表单组件", [
         ["basic", "字段关联与校验提示", "prop 对应 model 和 rules 中的同名字段，标签与错误自动关联输入框。"]

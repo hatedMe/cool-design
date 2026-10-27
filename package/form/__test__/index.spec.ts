@@ -125,3 +125,21 @@ test("等待另一字段时修改已通过字段，整体校验也应失败", as
     expect(await pending).toBe(false);
     w.unmount();
 });
+
+test("使用 async-validator 校验嵌套路径", async () => {
+    const model = reactive({ user: { name: "" } });
+    const form = ref<FormInstance>();
+    const w = mount(
+        defineComponent({
+            setup: () => () =>
+                h(Form, { ref: form, model, rules: { "user.name": [{ required: true, message: "请输入姓名" }] } }, () =>
+                    h(FormItem, { prop: "user.name", label: "姓名" }, () => h(Input, { modelValue: model.user.name, "onUpdate:modelValue": (v: string) => (model.user.name = v) }))
+                )
+        })
+    );
+    expect(await form.value!.validate()).toBe(false);
+    expect(w.text()).toContain("请输入姓名");
+    model.user.name = "小明";
+    expect(await form.value!.validateField("user.name")).toBe(true);
+    w.unmount();
+});

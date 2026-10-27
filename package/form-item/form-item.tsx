@@ -1,4 +1,5 @@
 import { defineComponent, inject, nextTick, onBeforeUnmount, provide, ref, watch } from "vue";
+import Schema from "async-validator";
 import { formKey, fieldKey, nextFieldId } from "../form/context";
 export default defineComponent({
     name: "i-form-item",
@@ -10,42 +11,58 @@ export default defineComponent({
         const error = ref("");
         const root = ref<HTMLElement>();
         let revision = 0;
+        const pathParts = (path: string) => path.replace(/\[(\w+)\]/g, ".$1").split(".").filter(Boolean);
+        const getValue = () => pathParts(props.prop!).reduce<unknown>((value, part) => (value as Record<string, unknown> | undefined)?.[part], form?.model());
+        const setValue = (value: unknown) => {
+            const parts = pathParts(props.prop!);
+            const last = parts.pop();
+            if (!last || !form) return;
+            let target = form.model() as Record<string, unknown>;
+            parts.forEach((part) => {
+                if (!target[part] || typeof target[part] !== "object") target[part] = {};
+                target = target[part] as Record<string, unknown>;
+            });
+            target[last] = value;
+        };
         watch(
-            () => form?.model()[props.prop!],
+            getValue,
             () => {
                 revision++;
             },
             { flush: "sync", deep: true }
         );
-        const initial = form?.model()[props.prop!];
+        const initialValue = getValue();
+        const initial = initialValue && typeof initialValue === "object" ? JSON.parse(JSON.stringify(initialValue)) : initialValue;
         const clear = () => {
             revision++;
             error.value = "";
         };
         const validate = async (trigger?: "blur" | "change") => {
-            const value = form?.model()[props.prop!];
+            const value = getValue();
             const rules = (form?.rules()[props.prop!] || []).filter(
                 (rule) => !trigger || !rule.trigger || rule.trigger === trigger
             );
             if (trigger && !rules.length) return !error.value;
             const current = ++revision;
             try {
-                for (const rule of rules) {
-                    if (
-                        rule.required &&
-                        (value == null ||
-                            (typeof value === "string" && !value.trim()) ||
-                            (Array.isArray(value) && !value.length))
-                    )
-                        throw new Error(rule.message || "请填写此项");
-                    await rule.validator?.(value);
-                }
+                const descriptor = {
+                    value: rules.map((rule) => ({
+                        ...rule,
+                        whitespace: rule.whitespace ?? (rule.required ? true : undefined),
+                        validator: rule.validator
+                            ? (_rule: unknown, ruleValue: unknown, callback: (error?: string | Error) => void) =>
+                                  Promise.resolve(rule.validator?.(ruleValue)).then(() => callback()).catch((reason) => callback(reason instanceof Error ? reason : "校验失败"))
+                            : undefined
+                    }))
+                };
+                await new Schema(descriptor as any).validate({ value }, { suppressWarning: true });
                 if (current !== revision) return false;
                 error.value = "";
                 return true;
             } catch (reason) {
                 if (current !== revision) return false;
-                error.value = reason instanceof Error ? reason.message : "校验失败";
+                const first = (reason as { errors?: Array<{ message?: string }> })?.errors?.[0];
+                error.value = first?.message || (reason instanceof Error ? reason.message : "校验失败");
                 return false;
             }
         };
@@ -64,7 +81,7 @@ export default defineComponent({
             validate,
             clear,
             reset: () => {
-                if (form) form.model()[key] = initial;
+                setValue(initial);
                 clear();
             },
             focus: () =>

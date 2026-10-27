@@ -56,3 +56,10 @@ test("复选框与开关发出布尔值，禁用不改变值", async () => {
         expect(w.emitted("update:modelValue")).toHaveLength(1);
     }
 });
+
+test("formatter 只改变展示值，parser 写入模型，textarea 支持 autosize", async () => {
+    const w = mount(Input, { props: { modelValue: "1234", formatter: (value: string) => `¥${value}`, parser: (value: string) => value.replace(/^¥/, ""), type: "textarea", autosize: { minRows: 2, maxRows: 4 } } });
+    expect(w.get("textarea").element.value).toBe("¥1234");
+    await w.get("textarea").setValue("¥5678");
+    expect(w.emitted("update:modelValue")?.at(-1)).toEqual(["5678"]);
+});

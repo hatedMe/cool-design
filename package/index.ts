@@ -41,6 +41,7 @@ import { DatePicker, TimePicker, DateTimePicker, Calendar } from "./date-picker"
 import "../src/style/index.scss";
 export type { FormRule, FormInstance } from "./form";
 export type { TableColumn, SortChange } from "./table";
+export type { SelectRemoteOption } from "./select/select";
 export type { Size, Config } from "./config-provider/context";
 
 export {

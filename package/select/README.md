@@ -20,6 +20,10 @@ Select 和 SelectOption 都支持 `disabled`；`clearable` 清空为 `undefined`
 
 设置 `filterable` 显示筛选输入框；无匹配项时显示 `noMatchText`。
 
+## 远程与虚拟选项
+
+设置 `remote` 和 `remoteMethod` 按查询词异步加载 `SelectRemoteOption[]`；选项很多时设置 `virtualized` 只渲染可视范围附近的选项。
+
 ## 尺寸
 
 支持 `small`、`default`、`large`，未设置时继承 ConfigProvider。
@@ -40,6 +44,16 @@ Select 和 SelectOption 都支持 `disabled`；`clearable` 清空为 `undefined`
 | filterable           | 是否启用本地筛选 | boolean | false |
 | noDataText           | 没有选项时的提示 | string | 无数据 |
 | noMatchText          | 没有匹配项时的提示 | string | 无匹配数据 |
+| remote               | 是否启用远程选项 | boolean | false |
+| remoteMethod         | 根据查询词加载选项 | (query: string) => SelectRemoteOption[] / Promise<SelectRemoteOption[]> | — |
+| remoteLoading        | 远程加载中 | boolean | false |
+| virtualized          | 是否只渲染可视选项 | boolean | false |
+| itemHeight / height  | 虚拟选项行高和容器高度 | number | 34 / 240 |
+| remote               | 是否启用远程选项 | boolean | false |
+| remoteMethod         | 根据查询词加载选项 | (query: string) => SelectRemoteOption[] / Promise<SelectRemoteOption[]> | — |
+| remoteLoading        | 远程加载中 | boolean | false |
+| virtualized          | 是否只渲染可视选项 | boolean | false |
+| itemHeight / height  | 虚拟选项行高和容器高度 | number | 34 / 240 |
 
 ### 事件
 
@@ -74,4 +88,4 @@ Select 和 SelectOption 都支持 `disabled`；`clearable` 清空为 `undefined`
 </Select>
 ```
 
-键盘和关闭行为遵循原生浏览器；筛选为本地过滤，不包含远程加载和分页。
+键盘和关闭行为遵循原生浏览器；`remote` 通过 `remoteMethod(query)` 加载选项，`virtualized` 仅渲染当前可视范围附近的选项，适合较长列表。

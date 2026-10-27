@@ -24,6 +24,10 @@
 
 设置 `type="textarea"`，并用 `rows` 控制初始行数。
 
+## 格式化与自适应高度
+
+`formatter` 控制输入框展示内容，`parser` 将展示内容转换回 `v-model`；文本域设置 `autosize` 或 `{ minRows, maxRows }` 自动调整高度。
+
 ## 图标与插槽
 
 支持 `prefix-icon`、`suffix-icon` 以及 `prefix`、`suffix` 插槽。
@@ -50,6 +54,9 @@
 | showWordLimit        | 显示长度统计 | boolean | false |
 | showPassword         | 显示密码切换 | boolean | false |
 | prefixIcon / suffixIcon | 图标字体类名 | string | — |
+| formatter            | 展示值格式化函数 | (value: string) => string | — |
+| parser               | 输入值解析函数 | (value: string) => string | — |
+| autosize             | 文本域自适应高度，可配置 minRows/maxRows | boolean / object | false |
 
 ### 事件
 
@@ -75,4 +82,4 @@
 
 事件：`update:modelValue(value: string)` 在输入和清空时触发；`change(value: string)` 在原生 change 或清空时触发；`blur(event: FocusEvent)`。实例方法 focus()。禁用、只读不能编辑和清空。在 FormItem 内自动关联标签和错误。
 
-示例：`<Input v-model="name" clearable placeholder="请输入姓名" />`。
+示例：`<Input v-model="name" clearable placeholder="请输入姓名" />`。`formatter` 只改变展示值，`parser` 将用户输入转换为模型值；文本域设置 `autosize` 可根据内容自动调整高度。

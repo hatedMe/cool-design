@@ -1,4 +1,4 @@
-import { defineComponent, nextTick, ref, type PropType } from "vue";
+import { computed, defineComponent, nextTick, onMounted, ref, watch, type PropType } from "vue";
 import { useField } from "../form/context";
 import { useConfig, type Size } from "../config-provider/context";
 export default defineComponent({
@@ -19,6 +19,9 @@ export default defineComponent({
         showPassword: Boolean,
         prefixIcon: String,
         suffixIcon: String
+        ,formatter: Function as PropType<(value: string) => string>
+        ,parser: Function as PropType<(value: string) => string>
+        ,autosize: [Boolean, Object] as PropType<boolean | { minRows?: number; maxRows?: number }>
     },
     emits: ["update:modelValue", "change", "blur", "focus", "input", "clear"],
     setup(props, { attrs, emit, expose, slots }) {
@@ -27,6 +30,21 @@ export default defineComponent({
         const input = ref<HTMLInputElement | HTMLTextAreaElement>();
         const passwordVisible = ref(false);
         const composing = ref(false);
+        const displayValue = computed(() => (props.formatter ? props.formatter(props.modelValue) : props.modelValue));
+        const parseValue = (value: string) => (props.parser ? props.parser(value) : value);
+        const resizeTextarea = () => {
+            if (props.type !== "textarea" || !props.autosize || !input.value || !(input.value instanceof HTMLTextAreaElement)) return;
+            const textarea = input.value;
+            textarea.style.height = "auto";
+            const minRows = typeof props.autosize === "object" ? props.autosize.minRows : undefined;
+            const maxRows = typeof props.autosize === "object" ? props.autosize.maxRows : undefined;
+            const lineHeight = Number.parseFloat(getComputedStyle(textarea).lineHeight) || 20;
+            const minHeight = minRows ? minRows * lineHeight : 0;
+            const maxHeight = maxRows ? maxRows * lineHeight : Number.POSITIVE_INFINITY;
+            textarea.style.height = `${Math.min(maxHeight, Math.max(minHeight, textarea.scrollHeight))}px`;
+        };
+        onMounted(() => nextTick(resizeTextarea));
+        watch(() => [props.modelValue, props.autosize, props.rows], () => nextTick(resizeTextarea));
         expose({
             focus: () => input.value?.focus(),
             blur: () => input.value?.blur(),
@@ -45,7 +63,7 @@ export default defineComponent({
                     {...attrs}
                     id={(attrs.id as string) || field?.id}
                     ref={input}
-                    value={props.modelValue}
+                    value={displayValue.value}
                     rows={props.rows}
                     maxlength={props.maxlength}
                     minlength={props.minlength}
@@ -57,10 +75,13 @@ export default defineComponent({
                     onCompositionstart={() => (composing.value = true)}
                     onCompositionend={(e: Event) => {
                         composing.value = false;
-                        if (!props.disabled && !props.readonly) update((e.target as HTMLTextAreaElement).value);
+                        if (!props.disabled && !props.readonly) update(parseValue((e.target as HTMLTextAreaElement).value));
                     }}
                     onInput={(e: Event) => {
-                        if (!composing.value && !props.disabled && !props.readonly) update((e.target as HTMLTextAreaElement).value);
+                        if (!composing.value && !props.disabled && !props.readonly) {
+                            update(parseValue((e.target as HTMLTextAreaElement).value));
+                            nextTick(resizeTextarea);
+                        }
                     }}
                     onChange={(e: Event) => {
                         if (!props.disabled && !props.readonly) emit("change", (e.target as HTMLInputElement).value);
@@ -76,7 +97,7 @@ export default defineComponent({
                     id={(attrs.id as string) || field?.id}
                     ref={input}
                     type={inputType}
-                    value={props.modelValue}
+                    value={displayValue.value}
                     maxlength={props.maxlength}
                     minlength={props.minlength}
                     disabled={props.disabled || field?.disabled?.()}
@@ -87,7 +108,7 @@ export default defineComponent({
                     onCompositionstart={() => (composing.value = true)}
                     onCompositionend={(e: Event) => {
                         composing.value = false;
-                        if (!props.disabled && !props.readonly) update((e.target as HTMLInputElement).value);
+                        if (!props.disabled && !props.readonly) update(parseValue((e.target as HTMLInputElement).value));
                     }}
                     onInput={(e: Event) => {
                         if (!composing.value && !props.disabled && !props.readonly) update((e.target as HTMLInputElement).value);
