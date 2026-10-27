@@ -20,8 +20,8 @@ import {
   SelectOption,
   Switch,
   Table
-} from '../../package/index';
-import type { FormInstance, FormRule, SortChange, TableColumn } from '../../package/index';
+} from '../../packages/cool-design/index';
+import type { FormInstance, FormRule, SortChange, TableColumn } from '../../packages/cool-design/index';
 import { createUserService } from './service';
 import type { User, UserQuery, UserService } from './types';
 import './style.scss';

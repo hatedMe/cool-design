@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, ref, watchEffect } from 'vue';
-import { ConfigProvider, version } from '../package/index';
+import { ConfigProvider, version } from '../packages/cool-design/index';
 import { pages } from './site/catalog';
 import { renderMarkdown } from './site/markdown';
 import { highlightCode } from './site/highlight';

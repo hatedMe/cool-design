@@ -26,7 +26,7 @@
     "es",
     "lib"
   ],
-  "types": "./es/package/index.d.ts",
+  "types": "./es/packages/cool-design/index.d.ts",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -64,8 +64,8 @@
   "peerDependencies": {
     "vue": "^3.2.47"
   },
-  "main": "./lib/package/index.cjs",
-  "module": "./es/package/index.js",
+  "main": "./lib/packages/cool-design/index.cjs",
+  "module": "./es/packages/cool-design/index.js",
   "sideEffects": [
     "**/*.css",
     "**/*.scss"
@@ -73,24 +73,24 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./es/package/index.d.ts",
-        "default": "./es/package/index.js"
+        "types": "./es/packages/cool-design/index.d.ts",
+        "default": "./es/packages/cool-design/index.js"
       },
       "require": {
-        "types": "./lib/package/index.d.cts",
-        "default": "./lib/package/index.cjs"
+        "types": "./lib/packages/cool-design/index.d.cts",
+        "default": "./lib/packages/cool-design/index.cjs"
       }
     },
     "./style.css": "./es/style.css",
     "./package.json": "./package.json",
     "./*": {
       "import": {
-        "types": "./es/package/*/index.d.ts",
-        "default": "./es/package/*/index.js"
+        "types": "./es/packages/cool-design/*/index.d.ts",
+        "default": "./es/packages/cool-design/*/index.js"
       },
       "require": {
-        "types": "./lib/package/*/index.d.cts",
-        "default": "./lib/package/*/index.cjs"
+        "types": "./lib/packages/cool-design/*/index.d.cts",
+        "default": "./lib/packages/cool-design/*/index.cjs"
       }
     }
   },

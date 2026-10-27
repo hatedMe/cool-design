@@ -22,10 +22,10 @@
     "src/**/*.d.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "package/**/*.ts",
-    "package/**/*.d.ts",
-    "package/**/*.tsx",
-    "package/**/*.vue"
+    "packages/cool-design/**/*.ts",
+    "packages/cool-design/**/*.d.ts",
+    "packages/cool-design/**/*.tsx",
+    "packages/cool-design/**/*.vue"
   ],
   "references": [
     {

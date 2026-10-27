@@ -10,7 +10,7 @@ import {
   type Ref,
   type ComputedRef
 } from 'vue';
-import { overlayKey } from '../../package/config-provider/context';
+import { overlayKey } from '../../packages/cool-design/config-provider/context';
 import { isTopOverlay, isTopFocusOverlay, pushOverlay, removeOverlay } from './overlay-stack';
 export type Placement = 'top' | 'bottom' | 'left' | 'right';
 interface FloatingController {

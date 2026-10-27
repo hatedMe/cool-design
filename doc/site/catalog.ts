@@ -15,10 +15,10 @@ export interface Page {
   markdown: string;
   demos: Demo[];
 }
-const readmes = import.meta.glob<string>('../../package/*/README.md', { eager: true, as: 'raw' });
+const readmes = import.meta.glob<string>('../../packages/cool-design/*/README.md', { eager: true, as: 'raw' });
 const guides = import.meta.glob<string>('../markdown/guide/*.md', { eager: true, as: 'raw' });
-const sources = import.meta.glob<string>(['../../package/*/demo/*.vue', '../demos/*.vue'], { eager: true, as: 'raw' });
-const components = import.meta.glob<{ default: Component }>(['../../package/*/demo/*.vue', '../demos/*.vue'], {
+const sources = import.meta.glob<string>(['../../packages/cool-design/*/demo/*.vue', '../demos/*.vue'], { eager: true, as: 'raw' });
+const components = import.meta.glob<{ default: Component }>(['../../packages/cool-design/*/demo/*.vue', '../demos/*.vue'], {
   eager: true
 });
 
@@ -30,9 +30,9 @@ function demo(path: string, name: string, title: string, description: string): D
     source: sources[path]
       .trim()
       .replaceAll('from "../../index"', "from 'cool-design'")
-      .replaceAll('from "../../package/index"', "from 'cool-design'")
+      .replaceAll('from "../../packages/cool-design/index"', "from 'cool-design'")
       .replaceAll("from '../../index'", "from 'cool-design'")
-      .replaceAll("from '../../package/index'", "from 'cool-design'"),
+      .replaceAll("from '../../packages/cool-design/index'", "from 'cool-design'"),
     component: components[path].default
   };
 }
@@ -49,13 +49,13 @@ function component(
     id: `components/${id}`,
     title,
     group,
-    markdown: readmes[`../../package/${id}/README.md`].replace(
+    markdown: readmes[`../../packages/cool-design/${id}/README.md`].replace(
       /^(#{3,4} )(.*?)(属性|事件|插槽|Slots)([ \t]*)(\r?)$/gm,
       (_, heading, prefix, name: '属性' | '事件' | '插槽' | 'Slots', spacing, ending) =>
         `${heading}${prefix}${{ 属性: 'Attributes', 事件: 'Events', 插槽: 'Slot', Slots: 'Slot' }[name]}${spacing}${ending}`
     ),
     demos: demos.map(([name, title, description]) =>
-      demo(`../../package/${id}/demo/${name}.vue`, name, title, description)
+      demo(`../../packages/cool-design/${id}/demo/${name}.vue`, name, title, description)
     )
   };
 }
@@ -69,7 +69,7 @@ export const pages: Page[] = [
       title: '自定义主题',
       demos: [
         demo(
-          '../../package/config-provider/demo/basic.vue',
+          '../../packages/cool-design/config-provider/demo/basic.vue',
           'theme',
           '体验局部主题与尺寸',
           '切换局部深色主题，观察大尺寸按钮、标签和输入框；查看代码获取完整示例。'
@@ -167,34 +167,34 @@ export const pages: Page[] = [
     ...component('layout', 'Layout 布局', '布局组件', [], ['Row', 'Col']),
     demos: [
       demo(
-        '../../package/layout/demo/grid.vue',
+        '../../packages/cool-design/layout/demo/grid.vue',
         'grid',
         '基础布局',
         '通过 span 划分 24 栅格，列宽总和超出 24 时自动换行。'
       ),
-      demo('../../package/layout/demo/gutter.vue', 'gutter', '分栏间隔', 'gutter 以像素为单位设置相邻列间距。'),
-      demo('../../package/layout/demo/mixed.vue', 'mixed', '混合布局', '组合不同列宽，构建主次分明的页面区域。'),
-      demo('../../package/layout/demo/offset.vue', 'offset', '列偏移', 'offset 在列左侧增加指定栅格数的留白。'),
+      demo('../../packages/cool-design/layout/demo/gutter.vue', 'gutter', '分栏间隔', 'gutter 以像素为单位设置相邻列间距。'),
+      demo('../../packages/cool-design/layout/demo/mixed.vue', 'mixed', '混合布局', '组合不同列宽，构建主次分明的页面区域。'),
+      demo('../../packages/cool-design/layout/demo/offset.vue', 'offset', '列偏移', 'offset 在列左侧增加指定栅格数的留白。'),
       demo(
-        '../../package/layout/demo/basic.vue',
+        '../../packages/cool-design/layout/demo/basic.vue',
         'basic',
         '对齐方式',
         '调整水平排列、垂直对齐和列间距，观察布局变化。'
       ),
       demo(
-        '../../package/col/demo/position.vue',
+        '../../packages/cool-design/col/demo/position.vue',
         'position',
         '列的视觉位移',
         'push/pull 改变视觉位置，不改变 DOM 和键盘阅读顺序。'
       ),
       demo(
-        '../../package/col/demo/responsive.vue',
+        '../../packages/cool-design/col/demo/responsive.vue',
         'responsive',
         '响应式布局',
         '五个断点控制列宽，span 为 0 时隐藏整列。'
       ),
       demo(
-        '../../package/layout/demo/hidden.vue',
+        '../../packages/cool-design/layout/demo/hidden.vue',
         'hidden',
         '基于断点的隐藏类',
         'hidden-* 可用于任意 DOM 元素或组件，已包含在 cool-design/style.css 中。完整范围见下方 API。'

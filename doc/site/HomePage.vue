@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { Input, Switch, Table, Tag, version } from '../../package/index';
-import type { TableColumn } from '../../package/index';
+import { Input, Switch, Table, Tag, version } from '../../packages/cool-design/index';
+import type { TableColumn } from '../../packages/cool-design/index';
 
 const title = 'Cool Design';
 const typedTitle = ref('');

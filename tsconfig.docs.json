@@ -10,7 +10,7 @@
     "doc/site/**/*.ts",
     "doc/site/**/*.vue",
     "doc/demos/**/*.vue",
-    "package/*/demo/*.vue"
+    "packages/cool-design/*/demo/*.vue"
   ],
   "exclude": ["**/__test__/**"],
   "references": []

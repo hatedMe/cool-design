@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { App } from 'vue';
 import { mount } from '@vue/test-utils';
-import { install } from '../../../package/index';
+import { install } from '../../../packages/cool-design/index';
 import { pages } from '../../../doc/site/catalog';
 import { renderMarkdown } from '../../../doc/site/markdown';
 
