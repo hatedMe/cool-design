@@ -83,10 +83,10 @@ import "cool-design/style.css";
 
 ```ts
 interface ColSizeObject {
-    span?: number;
-    offset?: number;
-    push?: number;
-    pull?: number;
+  span?: number;
+  offset?: number;
+  push?: number;
+  pull?: number;
 }
 type ColSize = number | ColSizeObject;
 ```

@@ -1,13 +1,13 @@
 .i-container {
-    display: flex;
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
 }
 .i-container--vertical {
-    flex-direction: column;
+  flex-direction: column;
 }
 .i-container--horizontal {
-    flex-direction: row;
+  flex-direction: row;
 }

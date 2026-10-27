@@ -19,21 +19,21 @@ const name = ref("");
 </script>
 
 <template>
-    <ConfigProvider :theme="dark ? 'dark' : 'light'" :size="size">
-        <Space direction="vertical" align="start" :size="16">
-            <Switch v-model="dark">深色主题</Switch>
-            <label>
-                控件尺寸
-                <select v-model="size">
-                    <option value="small">小尺寸</option>
-                    <option value="default">默认尺寸</option>
-                    <option value="large">大尺寸</option>
-                </select>
-            </label>
-            <Input v-model="name" placeholder="体验控件尺寸" aria-label="主题示例" />
-            <Button type="primary">保存配置</Button>
-        </Space>
-    </ConfigProvider>
+  <ConfigProvider :theme="dark ? 'dark' : 'light'" :size="size">
+    <Space direction="vertical" align="start" :size="16">
+      <Switch v-model="dark">深色主题</Switch>
+      <label>
+        控件尺寸
+        <select v-model="size">
+          <option value="small">小尺寸</option>
+          <option value="default">默认尺寸</option>
+          <option value="large">大尺寸</option>
+        </select>
+      </label>
+      <Input v-model="name" placeholder="体验控件尺寸" aria-label="主题示例" />
+      <Button type="primary">保存配置</Button>
+    </Space>
+  </ConfigProvider>
 </template>
 ```
 
@@ -51,20 +51,20 @@ const name = ref("");
 <script setup lang="ts">
 import { Button, ConfigProvider, Space, Tag } from "cool-design";
 const themeVars = {
-    "--i-primary": "#126d58",
-    "--i-primary-hover": "#0e5847",
-    "--i-on-primary": "#ffffff",
-    "--i-radius": "8px"
+  "--i-primary": "#126d58",
+  "--i-primary-hover": "#0e5847",
+  "--i-on-primary": "#ffffff",
+  "--i-radius": "8px"
 };
 </script>
 
 <template>
-    <ConfigProvider :theme-vars="themeVars">
-        <Space>
-            <Button type="primary">保存配置</Button>
-            <Tag>品牌标签</Tag>
-        </Space>
-    </ConfigProvider>
+  <ConfigProvider :theme-vars="themeVars">
+    <Space>
+      <Button type="primary">保存配置</Button>
+      <Tag>品牌标签</Tag>
+    </Space>
+  </ConfigProvider>
 </template>
 ```
 
@@ -81,17 +81,17 @@ const brand = { "--i-primary": "#126d58", "--i-primary-hover": "#0e5847", "--i-o
 </script>
 
 <template>
-    <ConfigProvider :theme-vars="brand" size="default">
-        <Space direction="vertical" align="start" :size="16">
-            <Button type="primary">继承品牌色与默认尺寸</Button>
-            <ConfigProvider size="small">
-                <Button type="primary">继承品牌色，使用小尺寸</Button>
-            </ConfigProvider>
-            <ConfigProvider :theme-vars="{ '--i-primary': '#2463eb', '--i-primary-hover': '#1d4ed8' }">
-                <Button type="primary">局部覆盖为蓝色</Button>
-            </ConfigProvider>
-        </Space>
-    </ConfigProvider>
+  <ConfigProvider :theme-vars="brand" size="default">
+    <Space direction="vertical" align="start" :size="16">
+      <Button type="primary">继承品牌色与默认尺寸</Button>
+      <ConfigProvider size="small">
+        <Button type="primary">继承品牌色，使用小尺寸</Button>
+      </ConfigProvider>
+      <ConfigProvider :theme-vars="{ '--i-primary': '#2463eb', '--i-primary-hover': '#1d4ed8' }">
+        <Button type="primary">局部覆盖为蓝色</Button>
+      </ConfigProvider>
+    </Space>
+  </ConfigProvider>
 </template>
 ```
 
@@ -137,12 +137,12 @@ import { Button, ConfigProvider } from "cool-design";
 </script>
 
 <template>
-    <ConfigProvider class="settings-panel"><Button>设置操作</Button></ConfigProvider>
+  <ConfigProvider class="settings-panel"><Button>设置操作</Button></ConfigProvider>
 </template>
 
 <style scoped>
 .settings-panel :deep(.i-button) {
-    min-width: 120px;
+  min-width: 120px;
 }
 </style>
 ```

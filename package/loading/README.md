@@ -8,13 +8,13 @@
 
 ### 属性
 
-| 参数    | 说明                         | 类型    | 默认值    |
-| ------- | ---------------------------- | ------- | --------- |
-| loading | 是否显示加载状态             | boolean | true      |
-| text    | 加载提示文字                 | string  | 正在加载… |
-| overlay | 遮罩默认插槽内容，并阻止交互 | boolean | false     |
-| fullscreen | 使用全屏加载层 | boolean | false |
-| background | 加载层背景色 | string | — |
+| 参数       | 说明                         | 类型    | 默认值    |
+| ---------- | ---------------------------- | ------- | --------- |
+| loading    | 是否显示加载状态             | boolean | true      |
+| text       | 加载提示文字                 | string  | 正在加载… |
+| overlay    | 遮罩默认插槽内容，并阻止交互 | boolean | false     |
+| fullscreen | 使用全屏加载层               | boolean | false     |
+| background | 加载层背景色                 | string  | —         |
 
 ### 插槽
 
@@ -24,9 +24,9 @@
 
 ## 使用说明
 
--   `loading`: 默认 true。
--   `text`: 默认“正在加载…”。
--   `overlay`: 默认 false；为 true 时遮罩默认插槽内容。
+- `loading`: 默认 true。
+- `text`: 默认“正在加载…”。
+- `overlay`: 默认 false；为 true 时遮罩默认插槽内容。
 
 ```vue
 <Loading :loading="pending" overlay text="正在加载用户…">

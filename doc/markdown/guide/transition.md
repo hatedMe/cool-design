@@ -26,38 +26,38 @@ const visible = ref(true);
 </script>
 
 <template>
-    <Space direction="vertical" align="stretch" :size="16">
-        <Button :aria-expanded="visible" aria-controls="filter-tip" @click="visible = !visible">切换提示</Button>
-        <div class="panel-stage">
-            <Transition name="panel-fade">
-                <div v-if="visible" id="filter-tip" class="panel">修改筛选条件后，点击查询更新列表。</div>
-            </Transition>
-        </div>
-    </Space>
+  <Space direction="vertical" align="stretch" :size="16">
+    <Button :aria-expanded="visible" aria-controls="filter-tip" @click="visible = !visible">切换提示</Button>
+    <div class="panel-stage">
+      <Transition name="panel-fade">
+        <div v-if="visible" id="filter-tip" class="panel">修改筛选条件后，点击查询更新列表。</div>
+      </Transition>
+    </div>
+  </Space>
 </template>
 
 <style scoped>
 .panel-stage {
-    min-height: 72px;
+  min-height: 72px;
 }
 .panel {
-    padding: 20px;
-    border: 1px solid var(--i-border);
-    border-radius: var(--i-radius);
+  padding: 20px;
+  border: 1px solid var(--i-border);
+  border-radius: var(--i-radius);
 }
 .panel-fade-enter-active,
 .panel-fade-leave-active {
-    transition: opacity 180ms ease;
+  transition: opacity 180ms ease;
 }
 .panel-fade-enter-from,
 .panel-fade-leave-to {
-    opacity: 0;
+  opacity: 0;
 }
 @media (prefers-reduced-motion: reduce) {
-    .panel-fade-enter-active,
-    .panel-fade-leave-active {
-        transition: none;
-    }
+  .panel-fade-enter-active,
+  .panel-fade-leave-active {
+    transition: none;
+  }
 }
 </style>
 ```
@@ -84,20 +84,20 @@ const visible = ref(true);
 ```css
 .panel-slide-enter-active,
 .panel-slide-leave-active {
-    transition:
-        opacity 220ms ease,
-        transform 220ms ease;
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
 }
 .panel-slide-enter-from,
 .panel-slide-leave-to {
-    opacity: 0;
-    transform: translateY(-8px);
+  opacity: 0;
+  transform: translateY(-8px);
 }
 @media (prefers-reduced-motion: reduce) {
-    .panel-slide-enter-active,
-    .panel-slide-leave-active {
-        transition: none;
-    }
+  .panel-slide-enter-active,
+  .panel-slide-leave-active {
+    transition: none;
+  }
 }
 ```
 
@@ -113,74 +113,74 @@ import { ref, TransitionGroup } from "vue";
 import { Button, Space } from "cool-design";
 let nextId = 3;
 const items = ref([
-    { id: 1, name: "产品设计" },
-    { id: 2, name: "研发中心" }
+  { id: 1, name: "产品设计" },
+  { id: 2, name: "研发中心" }
 ]);
 function add() {
-    const id = nextId++;
-    items.value.push({ id, name: `新增部门 ${id}` });
+  const id = nextId++;
+  items.value.push({ id, name: `新增部门 ${id}` });
 }
 </script>
 
 <template>
-    <Space direction="vertical" align="stretch" :size="16">
-        <Button @click="add">添加部门</Button>
-        <TransitionGroup name="department" tag="ul" class="department-list">
-            <li v-for="item in items" :key="item.id">
-                <span>{{ item.name }}</span>
-                <Button size="small" @click="items = items.filter((row) => row.id !== item.id)">移除</Button>
-            </li>
-        </TransitionGroup>
-    </Space>
+  <Space direction="vertical" align="stretch" :size="16">
+    <Button @click="add">添加部门</Button>
+    <TransitionGroup name="department" tag="ul" class="department-list">
+      <li v-for="item in items" :key="item.id">
+        <span>{{ item.name }}</span>
+        <Button size="small" @click="items = items.filter((row) => row.id !== item.id)">移除</Button>
+      </li>
+    </TransitionGroup>
+  </Space>
 </template>
 
 <style scoped>
 .department-list {
-    position: relative;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 .department-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid var(--i-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--i-border);
 }
 .department-move,
 .department-enter-active,
 .department-leave-active {
-    transition:
-        opacity 180ms ease,
-        transform 180ms ease;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
 }
 .department-enter-from,
 .department-leave-to {
-    opacity: 0;
-    transform: translateX(12px);
+  opacity: 0;
+  transform: translateX(12px);
 }
 .department-leave-active {
-    position: absolute;
-    width: 100%;
+  position: absolute;
+  width: 100%;
 }
 @media (prefers-reduced-motion: reduce) {
-    .department-move,
-    .department-enter-active,
-    .department-leave-active {
-        transition: none;
-    }
+  .department-move,
+  .department-enter-active,
+  .department-leave-active {
+    transition: none;
+  }
 }
 </style>
 ```
 
 ## 显示切换与交互
 
--   `v-if` 会在离开动画结束后移除元素；再次显示会重新创建其中的表单状态。
--   `v-show` 保留节点和状态，适合需要频繁展开、收起的区域。
--   切换两个不同内容时可使用不同的 `key`，并通过 `mode="out-in"` 先离开后进入；列表过渡使用 TransitionGroup。
--   交互控件隐藏前应处理焦点，避免键盘焦点留在不可见区域。示例将切换按钮放在动画区域外。
--   Dialog、MessageBox 自己管理挂载、浮层宿主、焦点和滚动锁，不能把外包 Transition 当作现成的弹窗动画 API。本页示例用于业务内容区域。
+- `v-if` 会在离开动画结束后移除元素；再次显示会重新创建其中的表单状态。
+- `v-show` 保留节点和状态，适合需要频繁展开、收起的区域。
+- 切换两个不同内容时可使用不同的 `key`，并通过 `mode="out-in"` 先离开后进入；列表过渡使用 TransitionGroup。
+- 交互控件隐藏前应处理焦点，避免键盘焦点留在不可见区域。示例将切换按钮放在动画区域外。
+- Dialog、MessageBox 自己管理挂载、浮层宿主、焦点和滚动锁，不能把外包 Transition 当作现成的弹窗动画 API。本页示例用于业务内容区域。
 
 ## 减少动态效果
 

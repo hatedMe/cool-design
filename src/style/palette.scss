@@ -1,50 +1,50 @@
 @use "sass:color";
 $light: (
-    primary: #2463eb,
-    success: #16815d,
-    warning: #b77909,
-    danger: #d73d4a,
-    info: #65748a
+  primary: #2463eb,
+  success: #16815d,
+  warning: #b77909,
+  danger: #d73d4a,
+  info: #65748a
 );
 $dark: (
-    primary: #7aa9ff,
-    success: #64d5a6,
-    warning: #f0bf65,
-    danger: #ff8793,
-    info: #a6b4c9
+  primary: #7aa9ff,
+  success: #64d5a6,
+  warning: #f0bf65,
+  danger: #ff8793,
+  info: #a6b4c9
 );
 @mixin fallback-shades($palette, $background, $foreground) {
-    @each $name, $value in $palette {
-        @each $level in (3, 5, 7, 8, 9) {
-            --i-#{$name}-light-#{$level}: #{color.mix($background, $value, $level * 10%)};
-        }
-        --i-#{$name}-dark-2: #{color.mix($foreground, $value, 20%)};
+  @each $name, $value in $palette {
+    @each $level in (3, 5, 7, 8, 9) {
+      --i-#{$name}-light-#{$level}: #{color.mix($background, $value, $level * 10%)};
     }
+    --i-#{$name}-dark-2: #{color.mix($foreground, $value, 20%)};
+  }
 }
 :root,
 .i-config-provider {
-    --i-info: #65748a;
-    @include fallback-shades($light, #fff, #203047);
+  --i-info: #65748a;
+  @include fallback-shades($light, #fff, #203047);
 }
 .i-config-provider[data-theme="dark"] {
-    --i-info: #a6b4c9;
-    @include fallback-shades($dark, #1c2738, #e0e8f4);
+  --i-info: #a6b4c9;
+  @include fallback-shades($dark, #1c2738, #e0e8f4);
 }
 @supports (color: color-mix(in srgb, red, blue)) {
-    :root,
-    .i-config-provider,
-    .i-config-provider[data-theme] {
-        @each $name, $value in $light {
-            @each $level in (3, 5, 7, 8, 9) {
-                --i-#{$name}-light-#{$level}: color-mix(in srgb, var(--i-#{$name}), var(--i-bg) #{$level * 10%});
-            }
-            --i-#{$name}-dark-2: color-mix(in srgb, var(--i-#{$name}), var(--i-text) 20%);
-        }
+  :root,
+  .i-config-provider,
+  .i-config-provider[data-theme] {
+    @each $name, $value in $light {
+      @each $level in (3, 5, 7, 8, 9) {
+        --i-#{$name}-light-#{$level}: color-mix(in srgb, var(--i-#{$name}), var(--i-bg) #{$level * 10%});
+      }
+      --i-#{$name}-dark-2: color-mix(in srgb, var(--i-#{$name}), var(--i-text) 20%);
     }
+  }
 }
 
 :root,
 .i-config-provider,
 .i-config-provider[data-theme] {
-    --i-primary-hover: var(--i-primary-dark-2);
+  --i-primary-hover: var(--i-primary-dark-2);
 }

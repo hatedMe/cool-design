@@ -8,12 +8,12 @@
 
 ### 属性
 
-| 参数     | 说明                                    | 类型   | 默认值  |
-| -------- | --------------------------------------- | ------ | ------- |
-| type     | 消息类型：success / warning / info / error | string | success |
-| message  | 消息文本，必填                          | string | —       |
-| duration | 自动关闭等待时间，单位 ms；0 不自动关闭 | number | 4000    |
-| showClose | 是否显示关闭按钮                         | boolean | true |
+| 参数      | 说明                                       | 类型    | 默认值  |
+| --------- | ------------------------------------------ | ------- | ------- |
+| type      | 消息类型：success / warning / info / error | string  | success |
+| message   | 消息文本，必填                             | string  | —       |
+| duration  | 自动关闭等待时间，单位 ms；0 不自动关闭    | number  | 4000    |
+| showClose | 是否显示关闭按钮                           | boolean | true    |
 
 ### 事件
 

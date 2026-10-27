@@ -33,8 +33,8 @@
 
 ```css
 .panel {
-    border: var(--i-border-base);
-    border-radius: var(--i-radius-base);
-    box-shadow: var(--i-shadow-small);
+  border: var(--i-border-base);
+  border-radius: var(--i-radius-base);
+  box-shadow: var(--i-shadow-small);
 }
 ```

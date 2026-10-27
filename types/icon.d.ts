@@ -1,5 +1,5 @@
-import { Component } from './component'
+import { Component } from "./component";
 export declare class Icon extends Component {
-    type: string
-    size : number
+  type: string;
+  size: number;
 }

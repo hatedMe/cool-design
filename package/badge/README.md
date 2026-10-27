@@ -16,19 +16,19 @@ Badge 用于在内容旁显示数量、状态或提醒圆点。
 
 ### 属性
 
-| 参数 | 说明 | 类型 | 默认值 |
-| --- | --- | --- | --- |
-| value | 徽标内容 | string / number | 空 |
-| max | 数值最大值 | number | 99 |
-| type | primary / success / warning / danger / info | string | warning |
-| isDot | 显示圆点 | boolean | false |
-| hidden | 隐藏徽标 | boolean | false |
-| showZero | 显示数值 0 | boolean | false |
-| offset | 位置偏移 `[x, y]` | [number, number] | — |
-| color | 自定义背景色 | string | — |
+| 参数     | 说明                                        | 类型             | 默认值  |
+| -------- | ------------------------------------------- | ---------------- | ------- |
+| value    | 徽标内容                                    | string / number  | 空      |
+| max      | 数值最大值                                  | number           | 99      |
+| type     | primary / success / warning / danger / info | string           | warning |
+| isDot    | 显示圆点                                    | boolean          | false   |
+| hidden   | 隐藏徽标                                    | boolean          | false   |
+| showZero | 显示数值 0                                  | boolean          | false   |
+| offset   | 位置偏移 `[x, y]`                           | [number, number] | —       |
+| color    | 自定义背景色                                | string           | —       |
 
 ### 插槽
 
-| 名称 | 说明 |
-| --- | --- |
+| 名称    | 说明       |
+| ------- | ---------- |
 | default | 被标记内容 |

@@ -1,90 +1,101 @@
 {
-    "name": "cool-design",
-    "version": "3.0.0",
-    "type": "module",
-    "scripts": {
-        "dev": "vite --config vite.docs.config.ts",
-        "test": "vitest run",
-        "build": "node scripts/build.mjs",
-        "preview": "vite preview --config vite.docs.config.ts",
-        "dev:docs": "vite --config vite.docs.config.ts",
-        "build:docs": "vite build --config vite.docs.config.ts",
-        "preview:docs": "vite preview --config vite.docs.config.ts",
-        "preview:examples": "vite preview --config vite.examples.config.ts",
-        "typecheck:docs": "vue-tsc --noEmit -p tsconfig.docs.json",
-        "release": "release-it",
-        "typecheck": "vue-tsc --noEmit -p tsconfig.build.json",
-        "typecheck:legacy": "vue-tsc --noEmit -p tsconfig.json",
-        "dev:examples": "vite --config vite.examples.config.ts",
-        "build:examples": "vite build --config vite.examples.config.ts"
+  "name": "cool-design",
+  "version": "3.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config vite.docs.config.ts",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "build": "node scripts/build.mjs",
+    "preview": "vite preview --config vite.docs.config.ts",
+    "dev:docs": "vite --config vite.docs.config.ts",
+    "build:docs": "vite build --config vite.docs.config.ts",
+    "preview:docs": "vite preview --config vite.docs.config.ts",
+    "preview:examples": "vite preview --config vite.examples.config.ts",
+    "typecheck:docs": "vue-tsc --noEmit -p tsconfig.docs.json",
+    "release": "release-it",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.build.json",
+    "typecheck:legacy": "vue-tsc --noEmit -p tsconfig.json",
+    "dev:examples": "vite --config vite.examples.config.ts",
+    "build:examples": "vite build --config vite.examples.config.ts"
+  },
+  "files": [
+    "es",
+    "lib"
+  ],
+  "types": "./es/package/index.d.ts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hatedMe/cool-design.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/markdown-it": "^14.2.0",
+    "@vitejs/plugin-vue": "^4.3.2",
+    "@vitejs/plugin-vue-jsx": "^3.0.2",
+    "@vue/test-utils": "^2.4.1",
+    "chalk": "^5.3.0",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vue": "^10.12.0",
+    "globals": "^17.13.0",
+    "highlight.js": "^11.12.0",
+    "jsdom": "^22.1.0",
+    "markdown-it": "^15.0.3",
+    "prettier": "^3.2.4",
+    "release-it": "^14.11.6",
+    "sass": "^1.66.1",
+    "typescript": "^5.1.6",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^4.4.9",
+    "vite-plugin-dts": "^3.5.2",
+    "vitest": "^0.34.3",
+    "vue": "^3.2.47",
+    "vue-eslint-parser": "^10.4.1",
+    "vue-tsc": "^1.8.8"
+  },
+  "peerDependencies": {
+    "vue": "^3.2.47"
+  },
+  "main": "./lib/package/index.cjs",
+  "module": "./es/package/index.js",
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./es/package/index.d.ts",
+        "default": "./es/package/index.js"
+      },
+      "require": {
+        "types": "./lib/package/index.d.cts",
+        "default": "./lib/package/index.cjs"
+      }
     },
-    "files": [
-        "es",
-        "lib"
-    ],
-    "types": "./es/package/index.d.ts",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/hatedMe/cool-design.git"
-    },
-    "publishConfig": {
-        "access": "public"
-    },
-    "devDependencies": {
-        "@types/markdown-it": "^14.2.0",
-        "@vitejs/plugin-vue": "^4.3.2",
-        "@vitejs/plugin-vue-jsx": "^3.0.2",
-        "@vue/test-utils": "^2.4.1",
-        "chalk": "^5.3.0",
-        "highlight.js": "^11.12.0",
-        "jsdom": "^22.1.0",
-        "markdown-it": "^15.0.3",
-        "prettier": "^3.2.4",
-        "release-it": "^14.11.6",
-        "sass": "^1.66.1",
-        "typescript": "^5.1.6",
-        "vite": "^4.4.9",
-        "vite-plugin-dts": "^3.5.2",
-        "vitest": "^0.34.3",
-        "vue": "^3.2.47",
-        "vue-tsc": "^1.8.8"
-    },
-    "peerDependencies": {
-        "vue": "^3.2.47"
-    },
-    "main": "./lib/package/index.cjs",
-    "module": "./es/package/index.js",
-    "sideEffects": [
-        "**/*.css",
-        "**/*.scss"
-    ],
-    "exports": {
-        ".": {
-            "import": {
-                "types": "./es/package/index.d.ts",
-                "default": "./es/package/index.js"
-            },
-            "require": {
-                "types": "./lib/package/index.d.cts",
-                "default": "./lib/package/index.cjs"
-            }
-        },
-        "./style.css": "./es/style.css",
-        "./package.json": "./package.json",
-        "./*": {
-            "import": {
-                "types": "./es/package/*/index.d.ts",
-                "default": "./es/package/*/index.js"
-            },
-            "require": {
-                "types": "./lib/package/*/index.d.cts",
-                "default": "./lib/package/*/index.cjs"
-            }
-        }
-    },
-    "packageManager": "pnpm@10.33.0",
-    "dependencies": {
-        "async-validator": "^4.2.5"
+    "./style.css": "./es/style.css",
+    "./package.json": "./package.json",
+    "./*": {
+      "import": {
+        "types": "./es/package/*/index.d.ts",
+        "default": "./es/package/*/index.js"
+      },
+      "require": {
+        "types": "./lib/package/*/index.d.cts",
+        "default": "./lib/package/*/index.cjs"
+      }
     }
+  },
+  "packageManager": "pnpm@10.33.0",
+  "dependencies": {
+    "async-validator": "^4.2.5"
+  }
 }

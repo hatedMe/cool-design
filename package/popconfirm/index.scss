@@ -1,28 +1,28 @@
 .i-popconfirm__trigger {
-    display: inline-flex;
-    align-items: center;
-    vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
 }
 .i-popconfirm {
-    box-sizing: border-box;
-    width: 260px;
-    max-width: calc(100vw - 16px);
-    max-height: calc(100vh - 16px);
-    overflow: auto;
-    padding: 16px;
-    background: var(--i-bg);
-    color: var(--i-text);
-    border: 1px solid var(--i-border);
-    border-radius: var(--i-radius);
-    box-shadow: var(--i-shadow);
-    font-size: var(--i-font-size);
+  box-sizing: border-box;
+  width: 260px;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+  padding: 16px;
+  background: var(--i-bg);
+  color: var(--i-text);
+  border: 1px solid var(--i-border);
+  border-radius: var(--i-radius);
+  box-shadow: var(--i-shadow);
+  font-size: var(--i-font-size);
 }
 .i-popconfirm p {
-    margin: 0 0 16px;
-    overflow-wrap: anywhere;
+  margin: 0 0 16px;
+  overflow-wrap: anywhere;
 }
 .i-popconfirm__actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }

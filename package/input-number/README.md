@@ -1,7 +1,7 @@
 # InputNumber
 
 ## Usage
-怎么用 
 
-props参数 
+怎么用
 
+props参数

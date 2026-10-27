@@ -22,25 +22,25 @@ Avatar 组件可以用来代表人物或对象，支持使用图片、图标或�
 
 ### 属性
 
-| 参数 | 说明 | 类型 | 默认值 |
-| --- | --- | --- | --- |
-| url / src | 图片地址 | string | — |
-| srcSet | 响应式图片地址 | string | — |
-| alt | 图片替代文本 | string | 空 |
-| shape | circle / square | string | square |
-| size | large / medium / small / 数字 | string / number | large |
-| fit | 图片适配方式 | string | cover |
-| icon | 图标字体类名 | string | — |
+| 参数      | 说明                          | 类型            | 默认值 |
+| --------- | ----------------------------- | --------------- | ------ |
+| url / src | 图片地址                      | string          | —      |
+| srcSet    | 响应式图片地址                | string          | —      |
+| alt       | 图片替代文本                  | string          | 空     |
+| shape     | circle / square               | string          | square |
+| size      | large / medium / small / 数字 | string / number | large  |
+| fit       | 图片适配方式                  | string          | cover  |
+| icon      | 图标字体类名                  | string          | —      |
 
 ### 事件
 
-| 事件名 | 说明 | 回调参数 |
-| --- | --- | --- |
-| error | 图片加载失败 | event: Event |
+| 事件名 | 说明         | 回调参数     |
+| ------ | ------------ | ------------ |
+| error  | 图片加载失败 | event: Event |
 
 ### 插槽
 
-| 名称 | 说明 |
-| --- | --- |
-| default | 文字内容 |
+| 名称     | 说明                 |
+| -------- | -------------------- |
+| default  | 文字内容             |
 | fallback | 图片失败后的回退内容 |

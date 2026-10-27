@@ -16,21 +16,21 @@ Radio 用于在互斥选项中选择一个值；RadioGroup 用于管理同一组
 
 ### Radio 属性
 
-| 参数 | 说明 | 类型 | 默认值 |
-| --- | --- | --- | --- |
-| modelValue | 当前选中值 | string / number / boolean | — |
-| value | 当前选项值 | string / number / boolean | true |
-| disabled | 禁用选项 | boolean | false |
-| name | 原生单选组名称 | string | — |
-| border | 显示边框 | boolean | false |
+| 参数       | 说明           | 类型                      | 默认值 |
+| ---------- | -------------- | ------------------------- | ------ |
+| modelValue | 当前选中值     | string / number / boolean | —      |
+| value      | 当前选项值     | string / number / boolean | true   |
+| disabled   | 禁用选项       | boolean                   | false  |
+| name       | 原生单选组名称 | string                    | —      |
+| border     | 显示边框       | boolean                   | false  |
 
 ### RadioGroup 属性
 
-| 参数 | 说明 | 类型 | 默认值 |
-| --- | --- | --- | --- |
-| modelValue | 当前选中值 | string / number / boolean | — |
-| name | 统一的原生名称 | string | — |
-| disabled | 禁用整个组 | boolean | false |
+| 参数       | 说明           | 类型                      | 默认值 |
+| ---------- | -------------- | ------------------------- | ------ |
+| modelValue | 当前选中值     | string / number / boolean | —      |
+| name       | 统一的原生名称 | string                    | —      |
+| disabled   | 禁用整个组     | boolean                   | false  |
 
 ### 事件
 

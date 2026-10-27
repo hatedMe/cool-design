@@ -8,18 +8,18 @@
 
 ### 属性
 
-| 参数      | 说明                                             | 类型          | 默认值             |
-| --------- | ------------------------------------------------ | ------------- | ------------------ |
-| data      | 表格数据                                         | object[]      | []                 |
-| columns   | 列定义                                           | TableColumn[] | []                 |
-| rowKey    | 行唯一键对应字段，值必须是稳定唯一的字符串或数字 | string        | id                 |
-| selection | 显示勾选列                                       | boolean       | false              |
-| loading   | 显示加载遮罩                                     | boolean       | false              |
-| maxHeight | 内部滚动区最大高度，px                           | number        | 440                |
-| emptyText | 空态文字                                         | string        | 没有符合条件的数据 |
-| stripe    | 是否显示斑马纹                                   | boolean       | false              |
-| border    | 是否显示单元格边框                               | boolean       | false              |
-| showHeader | 是否显示表头                                    | boolean       | true               |
+| 参数       | 说明                                             | 类型          | 默认值             |
+| ---------- | ------------------------------------------------ | ------------- | ------------------ |
+| data       | 表格数据                                         | object[]      | []                 |
+| columns    | 列定义                                           | TableColumn[] | []                 |
+| rowKey     | 行唯一键对应字段，值必须是稳定唯一的字符串或数字 | string        | id                 |
+| selection  | 显示勾选列                                       | boolean       | false              |
+| loading    | 显示加载遮罩                                     | boolean       | false              |
+| maxHeight  | 内部滚动区最大高度，px                           | number        | 440                |
+| emptyText  | 空态文字                                         | string        | 没有符合条件的数据 |
+| stripe     | 是否显示斑马纹                                   | boolean       | false              |
+| border     | 是否显示单元格边框                               | boolean       | false              |
+| showHeader | 是否显示表头                                     | boolean       | true               |
 
 ### 事件
 
@@ -43,16 +43,16 @@
 
 ### TableColumn 列定义
 
-| 字段      | 说明                            | 类型                    |
-| --------- | ------------------------------- | ----------------------- |
-| key       | 必填，字段名及单元格插槽名      | string                  |
-| title     | 必填，表头文字                  | string                  |
-| width     | 列宽，固定列请显式指定，单位 px | number                  |
-| align     | 单元格对齐方式                 | left / center / right   |
-| headerAlign | 表头对齐方式，省略时使用 align | left / center / right |
-| fixed     | 固定在左侧或右侧                | left / right            |
-| sortable  | 是否显示排序操作                | boolean                 |
-| formatter | 字段文本格式化                  | (row: object) => string |
+| 字段        | 说明                            | 类型                    |
+| ----------- | ------------------------------- | ----------------------- |
+| key         | 必填，字段名及单元格插槽名      | string                  |
+| title       | 必填，表头文字                  | string                  |
+| width       | 列宽，固定列请显式指定，单位 px | number                  |
+| align       | 单元格对齐方式                  | left / center / right   |
+| headerAlign | 表头对齐方式，省略时使用 align  | left / center / right   |
+| fixed       | 固定在左侧或右侧                | left / right            |
+| sortable    | 是否显示排序操作                | boolean                 |
+| formatter   | 字段文本格式化                  | (row: object) => string |
 
 `TableColumn`、`SortChange` 可从 `cool-design` 导入。首版不支持虚拟滚动、跨页选择、编辑单元格和合并单元格。
 

@@ -15,34 +15,34 @@ import "cool-design/style.css";
 const name = ref("");
 const result = ref("请输入姓名后查询");
 function search() {
-    result.value = name.value.trim() ? `正在查询：${name.value.trim()}` : "正在查询全部用户";
+  result.value = name.value.trim() ? `正在查询：${name.value.trim()}` : "正在查询全部用户";
 }
 function reset() {
-    name.value = "";
-    result.value = "筛选条件已重置";
+  name.value = "";
+  result.value = "筛选条件已重置";
 }
 </script>
 
 <template>
-    <ConfigProvider>
-        <form class="search-form" @submit.prevent="search">
-            <label for="user-name">用户姓名</label>
-            <Input id="user-name" v-model="name" clearable placeholder="请输入姓名" />
-            <Space>
-                <Button type="primary" native-type="submit">查询</Button>
-                <Button @click="reset">重置</Button>
-            </Space>
-            <p role="status">{{ result }}</p>
-        </form>
-    </ConfigProvider>
+  <ConfigProvider>
+    <form class="search-form" @submit.prevent="search">
+      <label for="user-name">用户姓名</label>
+      <Input id="user-name" v-model="name" clearable placeholder="请输入姓名" />
+      <Space>
+        <Button type="primary" native-type="submit">查询</Button>
+        <Button @click="reset">重置</Button>
+      </Space>
+      <p role="status">{{ result }}</p>
+    </form>
+  </ConfigProvider>
 </template>
 
 <style scoped>
 .search-form {
-    display: grid;
-    gap: 16px;
-    max-width: 480px;
-    padding: 24px;
+  display: grid;
+  gap: 16px;
+  max-width: 480px;
+  padding: 24px;
 }
 </style>
 ```
@@ -59,9 +59,9 @@ import { Button, ConfigProvider } from "cool-design";
 </script>
 
 <template>
-    <ConfigProvider>
-        <Button type="primary">保存修改</Button>
-    </ConfigProvider>
+  <ConfigProvider>
+    <Button type="primary">保存修改</Button>
+  </ConfigProvider>
 </template>
 ```
 
@@ -84,9 +84,9 @@ createApp(App).use(CoolDesign).mount("#app");
 
 ```vue
 <template>
-    <i-config-provider>
-        <i-button type="primary">保存修改</i-button>
-    </i-config-provider>
+  <i-config-provider>
+    <i-button type="primary">保存修改</i-button>
+  </i-config-provider>
 </template>
 ```
 
@@ -100,9 +100,9 @@ import { Button, ConfigProvider } from "cool-design";
 </script>
 
 <template>
-    <ConfigProvider theme="light" size="default">
-        <Button type="primary">默认桌面尺寸</Button>
-    </ConfigProvider>
+  <ConfigProvider theme="light" size="default">
+    <Button type="primary">默认桌面尺寸</Button>
+  </ConfigProvider>
 </template>
 ```
 
@@ -134,10 +134,10 @@ const columns: TableColumn[] = [{ key: "name", title: "姓名" }];
 
 ## 下一步
 
--   [Form 表单](#/components/form)：校验、提交和重置。
--   [Table 表格](#/components/table)：选择、排序、固定列和操作列。
--   [Dialog 对话框](#/components/dialog)：桌面编辑弹窗。
--   [自定义主题](#/guide/theme)：品牌颜色、深浅主题和局部配置。
--   [过渡动画](#/guide/transition)：在业务区域加入进入、离开动画。
+- [Form 表单](#/components/form)：校验、提交和重置。
+- [Table 表格](#/components/table)：选择、排序、固定列和操作列。
+- [Dialog 对话框](#/components/dialog)：桌面编辑弹窗。
+- [自定义主题](#/guide/theme)：品牌颜色、深浅主题和局部配置。
+- [过渡动画](#/guide/transition)：在业务区域加入进入、离开动画。
 
 右上角“业务示例”提供用户管理页面，可查看查询、分页和编辑如何组合使用。

@@ -20,17 +20,17 @@
 
 ### 属性
 
-| 参数                 | 说明     | 类型    | 默认值 |
-| -------------------- | -------- | ------- | ------ |
-| modelValue / v-model | 是否开启 | boolean | false  |
-| disabled             | 是否禁用 | boolean | false  |
-| loading              | 加载中并阻止操作 | boolean | false |
-| size                 | small / default / large | string | default |
-| activeValue / inactiveValue | 开启/关闭时的模型值 | boolean / string / number | true / false |
-| activeText / inactiveText | 状态文字 | string | — |
-| inlinePrompt         | 在轨道内显示文字 | boolean | false |
-| activeColor / inactiveColor | 开启/关闭颜色 | string | — |
-| beforeChange         | 变更前守卫 | `() => boolean \| Promise<boolean>` | — |
+| 参数                        | 说明                    | 类型                                | 默认值       |
+| --------------------------- | ----------------------- | ----------------------------------- | ------------ |
+| modelValue / v-model        | 是否开启                | boolean                             | false        |
+| disabled                    | 是否禁用                | boolean                             | false        |
+| loading                     | 加载中并阻止操作        | boolean                             | false        |
+| size                        | small / default / large | string                              | default      |
+| activeValue / inactiveValue | 开启/关闭时的模型值     | boolean / string / number           | true / false |
+| activeText / inactiveText   | 状态文字                | string                              | —            |
+| inlinePrompt                | 在轨道内显示文字        | boolean                             | false        |
+| activeColor / inactiveColor | 开启/关闭颜色           | string                              | —            |
+| beforeChange                | 变更前守卫              | `() => boolean \| Promise<boolean>` | —            |
 
 ### 事件
 

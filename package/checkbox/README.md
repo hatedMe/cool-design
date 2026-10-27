@@ -8,13 +8,13 @@
 
 ### 属性
 
-| 参数                 | 说明                       | 类型    | 默认值 |
-| -------------------- | -------------------------- | ------- | ------ |
-| modelValue / v-model | 是否勾选                   | boolean | false  |
-| disabled             | 是否禁用                   | boolean | false  |
-| indeterminate        | 是否显示半选，不改变模型值 | boolean | false  |
-| value                | 分组中的选项值 | string / number / boolean | — |
-| border               | 显示边框 | boolean | false |
+| 参数                 | 说明                       | 类型                      | 默认值 |
+| -------------------- | -------------------------- | ------------------------- | ------ |
+| modelValue / v-model | 是否勾选                   | boolean                   | false  |
+| disabled             | 是否禁用                   | boolean                   | false  |
+| indeterminate        | 是否显示半选，不改变模型值 | boolean                   | false  |
+| value                | 分组中的选项值             | string / number / boolean | —      |
+| border               | 显示边框                   | boolean                   | false  |
 
 ### 事件
 

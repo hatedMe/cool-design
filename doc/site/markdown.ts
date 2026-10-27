@@ -5,5 +5,5 @@ const markdown = new MarkdownIt({ html: false, linkify: false, typographer: fals
 markdown.renderer.rules.table_open = () => '<div class="docs-table-scroll"><table>\n';
 markdown.renderer.rules.table_close = () => "</table></div>\n";
 export function renderMarkdown(source: string): string {
-    return markdown.render(source);
+  return markdown.render(source);
 }

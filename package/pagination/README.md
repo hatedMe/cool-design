@@ -8,17 +8,17 @@
 
 ### 属性
 
-| 参数                               | 说明                | 类型    | 默认值 |
-| ---------------------------------- | ------------------- | ------- | ------ |
-| currentPage / v-model:current-page | 当前页码，从 1 开始 | number  | 1      |
-| pageSize / v-model:page-size       | 每页条数，正整数    | number  | 10     |
-| total                              | 总记录数            | number  | 0      |
-| disabled                           | 禁用页码和条数切换  | boolean | false  |
-| pageSizes                          | 每页条数选项        | number[] | [10, 20, 50] |
-| pagerCount                         | 显示页码数量        | number  | 7 |
-| hideOnSinglePage                   | 只有一页时隐藏      | boolean | false |
-| background                         | 使用页码背景样式    | boolean | false |
-| prevText / nextText               | 前后页按钮文字      | string  | 上一页 / 下一页 |
+| 参数                               | 说明                | 类型     | 默认值          |
+| ---------------------------------- | ------------------- | -------- | --------------- |
+| currentPage / v-model:current-page | 当前页码，从 1 开始 | number   | 1               |
+| pageSize / v-model:page-size       | 每页条数，正整数    | number   | 10              |
+| total                              | 总记录数            | number   | 0               |
+| disabled                           | 禁用页码和条数切换  | boolean  | false           |
+| pageSizes                          | 每页条数选项        | number[] | [10, 20, 50]    |
+| pagerCount                         | 显示页码数量        | number   | 7               |
+| hideOnSinglePage                   | 只有一页时隐藏      | boolean  | false           |
+| background                         | 使用页码背景样式    | boolean  | false           |
+| prevText / nextText                | 前后页按钮文字      | string   | 上一页 / 下一页 |
 
 ### 事件
 

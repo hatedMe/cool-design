@@ -1,4 +1,4 @@
-import { Component } from './component'
+import { Component } from "./component";
 export declare class RadioGroup extends Component {
-    value: string | number | boolean
+  value: string | number | boolean;
 }

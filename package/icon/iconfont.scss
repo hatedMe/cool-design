@@ -1,8 +1,9 @@
 @font-face {
   font-family: "iconfont"; /* Project id 514653 */
-  src: url('./fonts/iconfont.woff2?t=1632711203432') format('woff2'),
-       url('./fonts/iconfont.woff?t=1632711203432') format('woff'),
-       url('./fonts/iconfont.ttf?t=1632711203432') format('truetype');
+  src:
+    url("./fonts/iconfont.woff2?t=1632711203432") format("woff2"),
+    url("./fonts/iconfont.woff?t=1632711203432") format("woff"),
+    url("./fonts/iconfont.ttf?t=1632711203432") format("truetype");
 }
 
 .iconfont {
@@ -728,4 +729,3 @@
 .icon-tools:before {
   content: "\e78d";
 }
-

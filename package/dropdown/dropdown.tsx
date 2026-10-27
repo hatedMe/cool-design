@@ -1,3 +1,60 @@
 import { defineComponent, ref, type PropType } from "vue";
-export interface DropdownItem { command: string | number; label: string; disabled?: boolean; divided?: boolean }
-export default defineComponent({ name: "i-dropdown", props: { items: { type: Array as PropType<DropdownItem[]>, default: () => [] }, trigger: { type: String as PropType<"hover" | "click" | "contextmenu">, default: "hover" }, hideOnClick: { type: Boolean, default: true }, disabled: Boolean }, emits: ["command", "visible-change"], setup(props, { slots, emit }) { const open = ref(false); const toggle = () => { if (props.disabled) return; open.value = !open.value; emit("visible-change", open.value); }; return () => <span class="i-dropdown" onMouseenter={() => props.trigger === "hover" && (open.value = true)} onMouseleave={() => props.trigger === "hover" && (open.value = false)}><span onClick={() => props.trigger === "click" && toggle()} onContextmenu={(e) => { if (props.trigger === "contextmenu") { e.preventDefault(); toggle(); } }}>{slots.default?.() ?? "更多"}</span>{open.value && <ul class="i-dropdown__menu">{props.items.map((item) => <li class={{ "is-divided": item.divided }} key={String(item.command)}><button type="button" disabled={item.disabled} onClick={() => { if (item.disabled) return; emit("command", item.command); if (props.hideOnClick) open.value = false; }}>{item.label}</button></li>)}</ul>}</span>; } });
+export interface DropdownItem {
+  command: string | number;
+  label: string;
+  disabled?: boolean;
+  divided?: boolean;
+}
+export default defineComponent({
+  name: "i-dropdown",
+  props: {
+    items: { type: Array as PropType<DropdownItem[]>, default: () => [] },
+    trigger: { type: String as PropType<"hover" | "click" | "contextmenu">, default: "hover" },
+    hideOnClick: { type: Boolean, default: true },
+    disabled: Boolean
+  },
+  emits: ["command", "visible-change"],
+  setup(props, { slots, emit }) {
+    const open = ref(false);
+    const toggle = () => {
+      if (props.disabled) return;
+      open.value = !open.value;
+      emit("visible-change", open.value);
+    };
+    return () => (
+      <span
+        class="i-dropdown"
+        onMouseenter={() => props.trigger === "hover" && (open.value = true)}
+        onMouseleave={() => props.trigger === "hover" && (open.value = false)}>
+        <span
+          onClick={() => props.trigger === "click" && toggle()}
+          onContextmenu={(e) => {
+            if (props.trigger === "contextmenu") {
+              e.preventDefault();
+              toggle();
+            }
+          }}>
+          {slots.default?.() ?? "更多"}
+        </span>
+        {open.value && (
+          <ul class="i-dropdown__menu">
+            {props.items.map((item) => (
+              <li class={{ "is-divided": item.divided }} key={String(item.command)}>
+                <button
+                  type="button"
+                  disabled={item.disabled}
+                  onClick={() => {
+                    if (item.disabled) return;
+                    emit("command", item.command);
+                    if (props.hideOnClick) open.value = false;
+                  }}>
+                  {item.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </span>
+    );
+  }
+});

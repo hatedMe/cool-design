@@ -1,42 +1,42 @@
 name: 发布 npm 包
 
 on:
-    push:
-        branches: [main]
-    workflow_dispatch:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 concurrency:
-    group: npm-publish
-    cancel-in-progress: false
+  group: npm-publish
+  cancel-in-progress: false
 
 jobs:
-    publish:
-        runs-on: ubuntu-latest
-        permissions:
-            contents: write
-            id-token: write
-        steps:
-            - name: 检出代码
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-              with:
-                  fetch-depth: 0
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
 
-            - name: 配置 Node.js
-              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-              with:
-                  node-version: "24"
-                  registry-url: https://registry.npmjs.org
-                  package-manager-cache: false
+      - name: 配置 Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
 
-            - name: 启用项目指定的 pnpm
-              run: corepack enable && corepack prepare pnpm@10.33.0 --activate
+      - name: 启用项目指定的 pnpm
+        run: corepack enable && corepack prepare pnpm@10.33.0 --activate
 
-            - name: 安装依赖
-              run: pnpm install --frozen-lockfile
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
 
-            # release-it 会先递增版本并构建，再提交、打 tag、创建 GitHub Release 并发布 npm。
-            # 发布前请在 npm 包设置中将本工作流配置为 Trusted Publisher。
-            - name: 自动递增版本并发布
-              run: pnpm release --ci
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # release-it 会先递增版本并构建，再提交、打 tag、创建 GitHub Release 并发布 npm。
+      # 发布前请在 npm 包设置中将本工作流配置为 Trusted Publisher。
+      - name: 自动递增版本并发布
+        run: pnpm release --ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

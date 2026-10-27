@@ -1,62 +1,62 @@
 .i-link {
-    --i-link-color: var(--i-text);
-    --i-link-hover-color: var(--i-primary-hover);
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 0;
-    vertical-align: middle;
-    line-height: 1.5;
-    font-size: var(--i-font-size, 14px);
-    font-weight: 500;
-    color: var(--i-link-color);
-    text-decoration: none;
-    cursor: pointer;
-    box-sizing: border-box;
+  --i-link-color: var(--i-text);
+  --i-link-hover-color: var(--i-primary-hover);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  vertical-align: middle;
+  line-height: 1.5;
+  font-size: var(--i-font-size, 14px);
+  font-weight: 500;
+  color: var(--i-link-color);
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
 }
 .i-link--primary {
-    --i-link-color: var(--i-primary);
-    --i-link-hover-color: var(--i-primary-dark-2);
+  --i-link-color: var(--i-primary);
+  --i-link-hover-color: var(--i-primary-dark-2);
 }
 .i-link--success {
-    --i-link-color: var(--i-success);
-    --i-link-hover-color: var(--i-success-dark-2);
+  --i-link-color: var(--i-success);
+  --i-link-hover-color: var(--i-success-dark-2);
 }
 .i-link--warning {
-    --i-link-color: var(--i-warning);
-    --i-link-hover-color: var(--i-warning-dark-2);
+  --i-link-color: var(--i-warning);
+  --i-link-hover-color: var(--i-warning-dark-2);
 }
 .i-link--danger {
-    --i-link-color: var(--i-danger);
-    --i-link-hover-color: var(--i-danger-dark-2);
+  --i-link-color: var(--i-danger);
+  --i-link-hover-color: var(--i-danger-dark-2);
 }
 .i-link--info {
-    --i-link-color: var(--i-info);
-    --i-link-hover-color: var(--i-info-dark-2);
+  --i-link-color: var(--i-info);
+  --i-link-hover-color: var(--i-info-dark-2);
 }
 .i-link--small {
-    font-size: 12px;
+  font-size: 12px;
 }
 .i-link--large {
-    font-size: 16px;
+  font-size: 16px;
 }
 .i-link--underline-always,
 .i-link--underline-hover:hover:not(.i-link--disabled) {
-    text-decoration: underline;
-    text-underline-offset: 3px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .i-link:hover:not(.i-link--disabled) {
-    color: var(--i-link-hover-color);
+  color: var(--i-link-hover-color);
 }
 .i-link--disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .i-link--disabled:hover {
-    color: var(--i-link-color);
+  color: var(--i-link-color);
 }
 .i-link:focus-visible {
-    outline: 2px solid var(--i-primary);
-    outline-offset: 3px;
-    border-radius: 2px;
+  outline: 2px solid var(--i-primary);
+  outline-offset: 3px;
+  border-radius: 2px;
 }

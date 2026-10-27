@@ -3,25 +3,25 @@ import { h } from "vue";
 import { expect, test, vi } from "vitest";
 import Loading from "..";
 test("遮罩期间隔离内容交互，结束恢复，支持状态文案", async () => {
-    const action = vi.fn();
-    const w = mount(Loading, {
-        props: { loading: true, overlay: true, text: "加载用户" },
-        slots: { default: () => h("button", { onClick: action }, "删除") }
-    });
-    expect(w.get('[role="status"]').text()).toContain("加载用户");
-    expect(w.get(".i-loading__content").attributes("inert")).toBeDefined();
-    await w.get("button").trigger("click");
-    expect(action).not.toHaveBeenCalled();
-    await w.setProps({ loading: false });
-    expect(w.find('[role="status"]').exists()).toBe(false);
-    expect(w.get(".i-loading__content").attributes("inert")).toBeUndefined();
-    await w.get("button").trigger("click");
-    expect(action).toHaveBeenCalledTimes(1);
-    w.unmount();
+  const action = vi.fn();
+  const w = mount(Loading, {
+    props: { loading: true, overlay: true, text: "加载用户" },
+    slots: { default: () => h("button", { onClick: action }, "删除") }
+  });
+  expect(w.get('[role="status"]').text()).toContain("加载用户");
+  expect(w.get(".i-loading__content").attributes("inert")).toBeDefined();
+  await w.get("button").trigger("click");
+  expect(action).not.toHaveBeenCalled();
+  await w.setProps({ loading: false });
+  expect(w.find('[role="status"]').exists()).toBe(false);
+  expect(w.get(".i-loading__content").attributes("inert")).toBeUndefined();
+  await w.get("button").trigger("click");
+  expect(action).toHaveBeenCalledTimes(1);
+  w.unmount();
 });
 
 test("支持全屏加载层和自定义背景", () => {
-    const w = mount(Loading, { props: { fullscreen: true, background: "rgba(0,0,0,.2)" } });
-    expect(w.classes()).toContain("i-loading--fullscreen");
-    expect(w.attributes("style")).toContain("--i-loading-background");
+  const w = mount(Loading, { props: { fullscreen: true, background: "rgba(0,0,0,.2)" } });
+  expect(w.classes()).toContain("i-loading--fullscreen");
+  expect(w.attributes("style")).toContain("--i-loading-background");
 });

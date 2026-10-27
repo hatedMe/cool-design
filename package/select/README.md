@@ -32,28 +32,28 @@ Select 和 SelectOption 都支持 `disabled`；`clearable` 清空为 `undefined`
 
 ### 属性
 
-| 参数                 | 说明                          | 类型            | 默认值       |
-| -------------------- | ----------------------------- | --------------- | ------------ |
-| modelValue / v-model | 当前选中值                    | string / number / array | undefined / [] |
-| placeholder          | 未选择时的提示                | string          | 请选择       |
-| clearable            | 允许清空，清空为 undefined    | boolean         | false        |
-| disabled             | 禁用选择器                    | boolean         | false        |
-| size                 | 尺寸：small / default / large | string          | 继承全局尺寸 |
-| multiple             | 是否多选 | boolean | false |
-| name                 | 原生 select 名称 | string | — |
-| filterable           | 是否启用本地筛选 | boolean | false |
-| noDataText           | 没有选项时的提示 | string | 无数据 |
-| noMatchText          | 没有匹配项时的提示 | string | 无匹配数据 |
-| remote               | 是否启用远程选项 | boolean | false |
-| remoteMethod         | 根据查询词加载选项 | (query: string) => SelectRemoteOption[] / Promise<SelectRemoteOption[]> | — |
-| remoteLoading        | 远程加载中 | boolean | false |
-| virtualized          | 是否只渲染可视选项 | boolean | false |
-| itemHeight / height  | 虚拟选项行高和容器高度 | number | 34 / 240 |
-| remote               | 是否启用远程选项 | boolean | false |
-| remoteMethod         | 根据查询词加载选项 | (query: string) => SelectRemoteOption[] / Promise<SelectRemoteOption[]> | — |
-| remoteLoading        | 远程加载中 | boolean | false |
-| virtualized          | 是否只渲染可视选项 | boolean | false |
-| itemHeight / height  | 虚拟选项行高和容器高度 | number | 34 / 240 |
+| 参数                 | 说明                          | 类型                                                                    | 默认值         |
+| -------------------- | ----------------------------- | ----------------------------------------------------------------------- | -------------- |
+| modelValue / v-model | 当前选中值                    | string / number / array                                                 | undefined / [] |
+| placeholder          | 未选择时的提示                | string                                                                  | 请选择         |
+| clearable            | 允许清空，清空为 undefined    | boolean                                                                 | false          |
+| disabled             | 禁用选择器                    | boolean                                                                 | false          |
+| size                 | 尺寸：small / default / large | string                                                                  | 继承全局尺寸   |
+| multiple             | 是否多选                      | boolean                                                                 | false          |
+| name                 | 原生 select 名称              | string                                                                  | —              |
+| filterable           | 是否启用本地筛选              | boolean                                                                 | false          |
+| noDataText           | 没有选项时的提示              | string                                                                  | 无数据         |
+| noMatchText          | 没有匹配项时的提示            | string                                                                  | 无匹配数据     |
+| remote               | 是否启用远程选项              | boolean                                                                 | false          |
+| remoteMethod         | 根据查询词加载选项            | (query: string) => SelectRemoteOption[] / Promise<SelectRemoteOption[]> | —              |
+| remoteLoading        | 远程加载中                    | boolean                                                                 | false          |
+| virtualized          | 是否只渲染可视选项            | boolean                                                                 | false          |
+| itemHeight / height  | 虚拟选项行高和容器高度        | number                                                                  | 34 / 240       |
+| remote               | 是否启用远程选项              | boolean                                                                 | false          |
+| remoteMethod         | 根据查询词加载选项            | (query: string) => SelectRemoteOption[] / Promise<SelectRemoteOption[]> | —              |
+| remoteLoading        | 远程加载中                    | boolean                                                                 | false          |
+| virtualized          | 是否只渲染可视选项            | boolean                                                                 | false          |
+| itemHeight / height  | 虚拟选项行高和容器高度        | number                                                                  | 34 / 240       |
 
 ### 事件
 
