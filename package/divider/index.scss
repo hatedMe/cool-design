@@ -10,7 +10,7 @@
 .i-divider::after {
     content: "";
     flex: 1;
-    border-top: 1px solid var(--i-border);
+    border-top: 1px var(--i-divider-border-style, solid) var(--i-border);
 }
 .i-divider--left::before,
 .i-divider--right::after {
@@ -21,7 +21,7 @@
     vertical-align: middle;
     height: 1em;
     margin: 0 8px;
-    border-left: 1px solid var(--i-border);
+    border-left: 1px var(--i-divider-border-style, solid) var(--i-border);
 }
 .i-divider--vertical::before,
 .i-divider--vertical::after {

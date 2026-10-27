@@ -128,7 +128,7 @@ export const pages: Page[] = [
     component("space", "Space 间距", "基础组件", [
         ["basic", "工具栏间距", "使用水平或垂直间距组织桌面工具栏与操作组。"]
     ]),
-    component("divider", "Divider 分割线", "基础组件", [["basic", "内容分隔", "横向分割章节，竖向分隔行内操作。"]]),
+    component("divider", "Divider 分割线", "基础组件", [["basic", "内容分隔", "横向分割章节，支持文字、虚线和竖向分隔行内操作。"]]),
     {
         ...component("layout", "Layout 布局", "布局组件", [], ["Row", "Col"]),
         demos: [
