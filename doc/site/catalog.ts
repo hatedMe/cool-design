@@ -102,6 +102,22 @@ export const pages: Page[] = [
     component("button-group", "ButtonGroup 按钮组", "基础组件", [
         ["basic", "按钮组", "统一按钮类型并组合相近操作。"]
     ], ["Button", "ButtonGroup"]),
+    component("avatar", "Avatar 头像", "基础组件", [
+        ["basic", "基础用法", "使用 shape 和 size 设置头像的形状与大小。"],
+        ["types", "展示类型", "展示图片、图标和文字三种头像内容。"],
+        ["fallback", "回退行为", "图片加载失败后显示 fallback 内容并触发 error 事件。"],
+        ["fit", "适应容器", "对照不同 fit 值下图片在头像容器中的展示方式。"]
+    ]),
+    component("badge", "Badge 徽标", "基础组件", [
+        ["basic", "数量与状态", "展示数量上限、状态颜色和圆点徽标。"],
+        ["options", "隐藏、零值与偏移", "控制徽标隐藏、零值显示、自定义颜色和位置。"]
+    ]),
+    component("radio", "Radio 单选框", "表单组件", [
+        ["basic", "单选组", "使用 RadioGroup 管理受控值、名称和禁用选项。"]
+    ], ["Radio", "RadioGroup"]),
+    component("radio-group", "RadioGroup 单选组", "表单组件", [
+        ["basic", "受控单选组", "统一管理 Radio 的值、名称和禁用状态。"]
+    ], ["Radio", "RadioGroup"]),
     component("color", "Color 色彩", "基础组件", [["basic", "语义色与主题色阶", "切换全局主题，或修改主色观察派生色同步变化。"]], []),
     component("border", "Border 边框", "基础组件", [["basic", "边框、圆角与阴影", "对照线型、强弱层次、圆角和阴影；颜色随主题变化。"]], []),
     component("link", "Link 文字链接", "基础组件", [["basic", "导航与行内操作", "体验语义色、尺寸、下划线、图标和禁用行为。"]]),
@@ -145,20 +161,36 @@ export const pages: Page[] = [
         ["basic", "主题与尺寸", "局部配置作用于内部控件，切换主题也会作用于内部浮层。"]
     ]),
     component("input", "Input 输入框", "表单组件", [
-        ["basic", "输入与清空", "v-model 绑定字符串；清空、只读和禁用状态如下。"]
+        ["basic", "基础用法", "v-model 绑定字符串，支持占位文本。"],
+        ["states", "禁用、只读与清空", "比较 disabled、readonly 和 clearable 的行为。"],
+        ["password", "密码输入", "使用 show-password 切换密码可见性。"],
+        ["textarea", "文本域与长度统计", "使用 textarea、rows 和 show-word-limit 输入多行内容。"],
+        ["sizes", "尺寸与图标", "使用 small、default、large 和前后缀图标。"]
     ]),
     component("select", "Select 选择器", "表单组件", [
-        ["basic", "选择与清空", "基于原生单选控件，支持键盘选择，数字值会保留数字类型。"]
+        ["basic", "基础用法", "从 SelectOption 中选择单个值。"],
+        ["states", "禁用与清空", "比较禁用选项、禁用选择器和 clearable。"],
+        ["multiple", "多选", "使用 multiple 和数组模型选择多个值。"],
+        ["sizes", "尺寸", "使用 small、default、large 控制选择器高度。"]
     ]),
     component("select-option", "SelectOption 选项", "表单组件", [
         ["basic", "选项与禁用项", "在 Select 中使用，默认插槽优先于 label。"]
     ]),
     component("checkbox", "Checkbox 复选框", "表单组件", [
-        ["basic", "选中与半选", "半选只影响视觉状态，业务勾选结果由 v-model 管理。"]
+        ["basic", "基础用法", "单项布尔值、尺寸和标签内容。"],
+        ["states", "禁用与半选", "禁用选项和 indeterminate 状态。"],
+        ["group", "复选框组", "使用数组模型管理多项选择。"]
     ]),
-    component("switch", "Switch 开关", "表单组件", [["basic", "切换状态", "用于启用或停用设置，支持空格键操作。"]]),
+    component("checkbox-group", "CheckboxGroup 复选框组", "表单组件", [["basic", "数量限制", "使用 min 和 max 限制选中数量." ]], ["Checkbox", "CheckboxGroup"]),
+    component("switch", "Switch 开关", "表单组件", [
+        ["basic", "基础用法", "使用 Boolean v-model 切换状态。"],
+        ["options", "尺寸、文字与自定义值", "配置尺寸、状态文字、颜色和模型值。"],
+        ["async", "异步变更", "使用 beforeChange 阻止未确认的状态变化。"]
+    ]),
     component("form", "Form 表单", "表单组件", [
-        ["basic", "校验与提交", "提交时先调用 validate，校验通过后执行保存；重置恢复初始值。"]
+        ["basic", "典型表单", "组合 Input、Select、Checkbox 和 Switch 收集表单值。"],
+        ["inline", "行内表单与对齐", "使用 inline、labelPosition 和 labelWidth 控制布局。"],
+        ["validation", "表单校验", "展示必填、触发时机、异步规则和重置。"]
     ]),
     component("form-item", "FormItem 字段", "表单组件", [
         ["basic", "字段关联与校验提示", "prop 对应 model 和 rules 中的同名字段，标签与错误自动关联输入框。"]
