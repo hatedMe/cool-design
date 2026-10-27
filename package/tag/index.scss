@@ -48,6 +48,12 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
+.i-tag--round {
+    border-radius: 999px;
+}
+.i-tag--hit {
+    background: transparent;
+}
 .i-tag button {
     border: 0;
     border-radius: 3px;

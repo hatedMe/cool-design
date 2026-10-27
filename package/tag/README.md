@@ -16,6 +16,8 @@
 | color    | 自定义状态颜色                                    | string  | —            |
 | closable | 显示关闭按钮                                      | boolean | false        |
 | disabled | 禁止点击与关闭                                    | boolean | false        |
+| round    | 使用圆角胶囊样式                                  | boolean | false        |
+| hit      | 使用透明背景强调边框                              | boolean | false        |
 
 ### 事件
 

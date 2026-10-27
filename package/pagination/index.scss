@@ -21,6 +21,30 @@
 .i-pagination button {
     cursor: pointer;
 }
+.i-pagination__pager {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.i-pagination__pager button {
+    min-width: 32px;
+    padding: 0 8px;
+}
+.i-pagination__pager button.is-active {
+    border-color: var(--i-primary);
+    background: var(--i-primary);
+    color: var(--i-on-primary);
+}
+.i-pagination__ellipsis {
+    padding: 0 4px;
+}
+.i-pagination.is-background .i-pagination__pager button {
+    border: 0;
+    background: var(--i-bg-subtle);
+}
+.i-pagination.is-background .i-pagination__pager button.is-active {
+    background: var(--i-primary);
+}
 .i-pagination button:disabled {
     opacity: 0.4;
     cursor: not-allowed;

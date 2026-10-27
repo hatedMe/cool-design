@@ -11,6 +11,6 @@ const columns = [
 <template>
     <Space direction="vertical" align="stretch" :size="16">
         <Switch v-model="loading">显示加载遮罩</Switch>
-        <Table :data="[]" :columns="columns" :loading="loading" empty-text="暂无用户，请调整查询条件" />
+        <Table :data="[]" :columns="columns" :loading="loading" stripe border empty-text="暂无用户，请调整查询条件" />
     </Space>
 </template>

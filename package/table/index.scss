@@ -55,6 +55,13 @@
 .i-table__selected td {
     background: var(--i-bg-subtle);
 }
+.i-table.is-striped tbody tr:nth-child(even) td {
+    background: var(--i-bg-subtle);
+}
+.i-table.is-bordered th,
+.i-table.is-bordered td {
+    border-right: 1px solid var(--i-border);
+}
 .i-table .i-table__empty {
     text-align: center;
     padding: 16px 20px;

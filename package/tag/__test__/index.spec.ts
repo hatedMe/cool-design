@@ -14,3 +14,10 @@ test("保留复杂插槽，关闭仅发事件且不冒泡点击或自行移除",
     expect(w.emitted("close")).toHaveLength(1);
     w.unmount();
 });
+
+test("支持圆角和 hit 样式，禁用时不触发点击", async () => {
+    const w = mount(Tag, { props: { round: true, hit: true, disabled: true } });
+    expect(w.classes()).toEqual(expect.arrayContaining(["i-tag--round", "i-tag--hit"]));
+    await w.trigger("click");
+    expect(w.emitted("click")).toBeUndefined();
+});

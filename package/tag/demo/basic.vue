@@ -17,6 +17,8 @@ const visible = ref(true);
             <Tag effect="light">浅色</Tag>
             <Tag effect="plain">描边</Tag>
             <Tag effect="dark">实色</Tag>
+            <Tag type="success" round>圆角</Tag>
+            <Tag type="warning" hit>Hit</Tag>
         </Space>
         <Space>
             <Tag v-if="visible" closable @close="visible = false">可移除条件</Tag>

@@ -9,7 +9,9 @@ export default defineComponent({
         size: String as PropType<Size>,
         closable: Boolean,
         disabled: Boolean,
-        color: String
+        color: String,
+        round: Boolean,
+        hit: Boolean
     },
     emits: ["click", "close"],
     setup(props, { slots, emit }) {
@@ -21,7 +23,7 @@ export default defineComponent({
                     `i-tag--${props.type}`,
                     `i-tag--${props.effect}`,
                     `i-tag--${props.size || config.value.size}`,
-                    { "i-tag--disabled": props.disabled }
+                    { "i-tag--disabled": props.disabled, "i-tag--round": props.round, "i-tag--hit": props.hit }
                 ]}
                 style={props.color ? { "--i-tag-color": props.color } : undefined}
                 onClick={(event: MouseEvent) => {

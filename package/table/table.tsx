@@ -12,7 +12,10 @@ export default defineComponent({
         selection: Boolean,
         loading: Boolean,
         maxHeight: { type: Number, default: 440 },
-        emptyText: { type: String, default: "没有符合条件的数据" }
+        emptyText: { type: String, default: "没有符合条件的数据" },
+        stripe: Boolean,
+        border: Boolean,
+        showHeader: { type: Boolean, default: true }
     },
     emits: ["selection-change", "sort-change"],
     setup(props, { emit, slots, expose }) {
@@ -81,11 +84,11 @@ export default defineComponent({
             emit("sort-change", { ...sort.value });
         };
         return () => (
-            <div class="i-table" aria-busy={props.loading}>
+            <div class={{ "i-table": true, "is-striped": props.stripe, "is-bordered": props.border }} aria-busy={props.loading}>
                 <Loading loading={props.loading} overlay>
                     <div class="i-table__scroll" style={{ maxHeight: `${props.maxHeight}px` }}>
                         <table>
-                            <thead>
+                            {props.showHeader && <thead>
                                 <tr>
                                     {props.selection && (
                                         <th class="i-table__selection">
@@ -105,7 +108,7 @@ export default defineComponent({
                                         <th
                                             key={column.key}
                                             scope="col"
-                                            style={columnStyle(column, index)}
+                                            style={{ ...columnStyle(column, index), textAlign: column.headerAlign || column.align }}
                                             aria-sort={
                                                 column.sortable
                                                     ? sort.value.key === column.key && sort.value.order
@@ -134,7 +137,7 @@ export default defineComponent({
                                         </th>
                                     ))}
                                 </tr>
-                            </thead>
+                            </thead>}
                             <tbody>
                                 {props.data.map((row, index) => (
                                     <tr
@@ -156,7 +159,7 @@ export default defineComponent({
                                             </td>
                                         )}
                                         {props.columns.map((column, columnIndex) => (
-                                            <td key={column.key} style={columnStyle(column, columnIndex)}>
+                                            <td key={column.key} style={{ ...columnStyle(column, columnIndex), textAlign: column.align }}>
                                                 {slots[column.key]?.({ row, index }) ??
                                                     column.formatter?.(row as Record<string, unknown>) ??
                                                     String((row as Record<string, unknown>)[column.key] ?? "")}
