@@ -1,4 +1,5 @@
 import { defineComponent, nextTick, provide, watch, type PropType } from "vue";
+import type { Size } from "../config-provider/context";
 import { formKey, type Field } from "./context";
 import type { FormRule } from "./types";
 export default defineComponent({
@@ -6,6 +7,13 @@ export default defineComponent({
     props: {
         model: { type: Object as PropType<Record<string, unknown>>, required: true },
         rules: { type: Object as PropType<Record<string, FormRule[]>>, default: () => ({}) }
+        ,inline: Boolean,
+        labelPosition: { type: String as PropType<"left" | "right" | "top">, default: "right" },
+        labelWidth: [String, Number],
+        labelSuffix: String,
+        disabled: Boolean,
+        size: String as PropType<Size>,
+        showMessage: { type: Boolean, default: true }
     },
     emits: ["submit"],
     setup(props, { slots, expose, emit }) {
@@ -23,6 +31,8 @@ export default defineComponent({
             rules: () => props.rules,
             register: (key, field) => fields.set(key, field),
             unregister: (key) => fields.delete(key)
+            ,disabled: () => props.disabled,
+            size: () => props.size
         });
         expose({
             async validate() {
@@ -36,6 +46,11 @@ export default defineComponent({
                 }
                 return invalid < 0 && version === modelVersion;
             },
+            async validateField(props?: string | string[]) {
+                const keys = props ? (Array.isArray(props) ? props : [props]) : [...fields.keys()];
+                const results = await Promise.all(keys.map((key) => fields.get(key)?.validate()));
+                return results.every((result) => result !== false);
+            },
             resetFields() {
                 fields.forEach((field) => field.reset());
             },
@@ -45,7 +60,8 @@ export default defineComponent({
         });
         return () => (
             <form
-                class="i-form"
+                class={["i-form", props.inline && "is-inline", `i-form--label-${props.labelPosition}`]}
+                style={{ "--i-form-label-width": typeof props.labelWidth === "number" ? `${props.labelWidth}px` : props.labelWidth }}
                 novalidate
                 onSubmit={(event: Event) => {
                     event.preventDefault();

@@ -2,7 +2,27 @@
 
 ### 介绍
 
-从预设选项中选择一个值，支持字符串、数字值和清空操作。
+从预设选项中选择一个或多个值，支持字符串、数字值、禁用项、清空和本地筛选。
+
+## 基础用法
+
+默认是单选；使用 `SelectOption` 提供选项。
+
+## 禁用与清空
+
+Select 和 SelectOption 都支持 `disabled`；`clearable` 清空为 `undefined`（多选时为空数组）。
+
+## 多选
+
+设置 `multiple` 后，`v-model` 使用数组并保留数字选项的数字类型。
+
+## 筛选
+
+设置 `filterable` 显示筛选输入框；无匹配项时显示 `noMatchText`。
+
+## 尺寸
+
+支持 `small`、`default`、`large`，未设置时继承 ConfigProvider。
 
 ## API
 
@@ -10,11 +30,16 @@
 
 | 参数                 | 说明                          | 类型            | 默认值       |
 | -------------------- | ----------------------------- | --------------- | ------------ |
-| modelValue / v-model | 当前选中值                    | string / number | undefined    |
+| modelValue / v-model | 当前选中值                    | string / number / array | undefined / [] |
 | placeholder          | 未选择时的提示                | string          | 请选择       |
 | clearable            | 允许清空，清空为 undefined    | boolean         | false        |
 | disabled             | 禁用选择器                    | boolean         | false        |
 | size                 | 尺寸：small / default / large | string          | 继承全局尺寸 |
+| multiple             | 是否多选 | boolean | false |
+| name                 | 原生 select 名称 | string | — |
+| filterable           | 是否启用本地筛选 | boolean | false |
+| noDataText           | 没有选项时的提示 | string | 无数据 |
+| noMatchText          | 没有匹配项时的提示 | string | 无匹配数据 |
 
 ### 事件
 
@@ -49,4 +74,4 @@
 </Select>
 ```
 
-键盘和关闭行为遵循原生浏览器；不支持搜索、多选和远程选项。
+键盘和关闭行为遵循原生浏览器；筛选为本地过滤，不包含远程加载和分页。

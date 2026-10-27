@@ -22,7 +22,14 @@ const props = {
     isDot: {
         type: Boolean as PropType<boolean>,
         default: false
-    }
+    },
+    hidden: Boolean,
+    showZero: Boolean,
+    offset: {
+        type: Array as unknown as PropType<[number, number]>,
+        default: undefined
+    },
+    color: String
 };
 
 const isNumber = (value: unknown): boolean => typeof value === "number";
@@ -43,8 +50,16 @@ export default defineComponent({
         return () => (
             <div class={bem()}>
                 {slots.default?.()}
-                {(props.isDot || props.value !== "") && (
-                    <span class={[bem("tag", { [props.type]: true }), props.isDot && bem("dot")]}>{content.value}</span>
+                {!props.hidden && (props.isDot || (props.value !== "" && (props.showZero || props.value !== 0))) && (
+                    <span
+                        class={[bem("tag", { [props.type]: true }), props.isDot && bem("dot")]}
+                        style={{
+                            background: props.color,
+                            "--i-badge-offset-x": props.offset ? `${props.offset[0]}px` : undefined,
+                            "--i-badge-offset-y": props.offset ? `${props.offset[1]}px` : undefined
+                        }}
+                        data-offset={props.offset?.join(",")}
+                    >{content.value}</span>
                 )}
             </div>
         );

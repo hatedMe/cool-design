@@ -4,6 +4,18 @@
 
 组织桌面表单字段，管理必填与异步校验，并提供重置和清除校验能力。
 
+## 典型表单
+
+Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `model` 收集值，使用 `rules` 校验字段。
+
+## 行内表单与对齐
+
+通过 `inline` 使用紧凑布局；`labelPosition` 支持 `left`、`right`、`top`，`labelWidth` 控制标签宽度。`size` 和 `disabled` 可统一影响内部控件。
+
+## 表单校验
+
+规则支持必填、blur/change 触发和同步/异步 validator；校验失败时自动聚焦第一个错误字段。
+
 ## API
 
 ### 属性
@@ -12,6 +24,13 @@
 | ----- | ------------------------------ | -------------------------- | ------ |
 | model | 表单模型，必填，仅支持平面字段 | Record<string, unknown>    | —      |
 | rules | 字段校验规则                   | Record<string, FormRule[]> | {}     |
+| inline | 是否使用行内布局 | boolean | false |
+| labelPosition | 标签位置：left / right / top | string | right |
+| labelWidth | 标签宽度 | string / number | — |
+| labelSuffix | 标签后的后缀 | string | — |
+| disabled | 是否禁用内部字段 | boolean | false |
+| size | 内部控件尺寸 | string | — |
+| showMessage | 是否显示校验消息 | boolean | true |
 
 ### 事件
 
@@ -32,6 +51,7 @@
 | validate()      | 校验全部字段，失败时聚焦首个无效字段 | Promise<boolean> |
 | resetFields()   | 恢复字段注册时初值                   | void             |
 | clearValidate() | 清除错误并使旧异步结果失效           | void             |
+| validateField(props?) | 校验指定字段                  | Promise<boolean> |
 
 ### FormRule 校验规则
 

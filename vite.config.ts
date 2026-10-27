@@ -15,7 +15,7 @@ export default defineConfig({
                 "src/utils/with-install.ts",
                 "src/utils/overlay-stack.ts",
                 "src/utils/use-floating.ts",
-                "package/{button,button-group,row,col,config-provider,input,select,select-option,checkbox,switch,form,form-item,table,pagination,dialog,message,icon,space,divider,empty,loading,tag,tooltip,popconfirm,message-box,container,header,aside,main,footer,link}/**/*.{ts,tsx}"
+                "package/{button,button-group,avatar,badge,radio,radio-group,checkbox-group,row,col,config-provider,input,select,select-option,checkbox,switch,form,form-item,table,pagination,dialog,message,icon,space,divider,empty,loading,tag,tooltip,popconfirm,message-box,container,header,aside,main,footer,link}/**/*.{ts,tsx}"
             ],
             exclude: ["**/__test__/**"],
             outDir: "es"

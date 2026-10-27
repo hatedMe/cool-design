@@ -19,6 +19,20 @@ test("输入框支持受控值、清空和禁用", async () => {
     expect(w.find("button").attributes("disabled")).toBeDefined();
 });
 
+test("支持密码显示切换、文本域、长度统计和前后缀插槽", async () => {
+    const w = mount(Input, {
+        props: { modelValue: "secret", type: "password", showPassword: true, maxlength: 10, showWordLimit: true },
+        slots: { prefix: () => "前", suffix: () => "后" }
+    });
+    expect(w.find("input").attributes("type")).toBe("password");
+    expect(w.text()).toContain("6/10");
+    expect(w.text()).toContain("前");
+    await w.get('[aria-label="显示密码"]').trigger("click");
+    expect(w.find("input").attributes("type")).toBe("text");
+    const textarea = mount(Input, { props: { type: "textarea", modelValue: "多行", rows: 3 } });
+    expect(textarea.find("textarea").attributes("rows")).toBe("3");
+});
+
 test("选择器保留数字类型，清空得到 undefined", async () => {
     const w = mount(Select, {
         props: { modelValue: 1, clearable: true },

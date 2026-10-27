@@ -4,6 +4,18 @@
 
 在开启与关闭两种状态之间切换，适合账号状态和功能设置。
 
+## 基础用法
+
+`v-model` 默认使用 Boolean，也支持通过 `activeValue` 和 `inactiveValue` 使用自定义值。
+
+## 尺寸与文字
+
+支持 `small`、`default`、`large`，并可用 `activeText`、`inactiveText` 显示状态说明。
+
+## 异步变更
+
+`beforeChange` 可返回 Boolean 或 Promise；返回 false 或拒绝时保持原值。
+
 ## API
 
 ### 属性
@@ -12,6 +24,13 @@
 | -------------------- | -------- | ------- | ------ |
 | modelValue / v-model | 是否开启 | boolean | false  |
 | disabled             | 是否禁用 | boolean | false  |
+| loading              | 加载中并阻止操作 | boolean | false |
+| size                 | small / default / large | string | default |
+| activeValue / inactiveValue | 开启/关闭时的模型值 | boolean / string / number | true / false |
+| activeText / inactiveText | 状态文字 | string | — |
+| inlinePrompt         | 在轨道内显示文字 | boolean | false |
+| activeColor / inactiveColor | 开启/关闭颜色 | string | — |
+| beforeChange         | 变更前守卫 | `() => boolean \| Promise<boolean>` | — |
 
 ### 事件
 

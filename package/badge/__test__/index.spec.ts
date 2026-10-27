@@ -20,4 +20,14 @@ describe("test `Badge` component", () => {
         await wrapper.setProps({ isDot: false, value: "" });
         expect(wrapper.find(".i-badge__tag").exists()).toBe(false);
     });
+    test("支持隐藏、零值显示、偏移和自定义颜色", async () => {
+        const wrapper = mount(Badge, { props: { value: 0, showZero: false, offset: [4, 6], color: "#626aef" } });
+        expect(wrapper.find(".i-badge__tag").exists()).toBe(false);
+        await wrapper.setProps({ showZero: true });
+        expect(wrapper.get(".i-badge__tag").text()).toBe("0");
+        expect((wrapper.get(".i-badge__tag").element as HTMLElement).style.background).toBe("rgb(98, 106, 239)");
+        expect(wrapper.get(".i-badge__tag").attributes("data-offset")).toBe("4,6");
+        await wrapper.setProps({ hidden: true });
+        expect(wrapper.find(".i-badge__tag").exists()).toBe(false);
+    });
 });

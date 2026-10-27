@@ -11,12 +11,16 @@ export interface FormContext {
     rules: () => Record<string, FormRule[]>;
     register: (key: string, field: Field) => void;
     unregister: (key: string) => void;
+    disabled?: () => boolean;
+    size?: () => "small" | "default" | "large" | undefined;
 }
 export interface FieldContext {
     id: string;
     errorId: string;
     invalid: () => boolean;
     validate: (trigger: "blur" | "change") => void;
+    disabled?: () => boolean;
+    size?: () => "small" | "default" | "large" | undefined;
 }
 export const formKey: InjectionKey<FormContext> = Symbol("form");
 export const fieldKey: InjectionKey<FieldContext> = Symbol("field");

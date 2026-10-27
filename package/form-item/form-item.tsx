@@ -2,7 +2,7 @@ import { defineComponent, inject, nextTick, onBeforeUnmount, provide, ref, watch
 import { formKey, fieldKey, nextFieldId } from "../form/context";
 export default defineComponent({
     name: "i-form-item",
-    props: { prop: { type: String, required: true }, label: String },
+    props: { prop: { type: String, required: true }, label: String, required: Boolean, labelPosition: String, labelWidth: [String, Number], showMessage: { type: Boolean, default: true } },
     setup(props, { slots }) {
         const form = inject(formKey);
         const id = nextFieldId();
@@ -53,6 +53,8 @@ export default defineComponent({
             id,
             errorId,
             invalid: () => !!error.value,
+            disabled: () => !!form?.disabled?.(),
+            size: () => form?.size?.(),
             validate: (trigger) => {
                 nextTick(() => validate(trigger));
             }
@@ -79,15 +81,15 @@ export default defineComponent({
         return () => (
             <div ref={root} class={["i-form-item", { "i-form-item--error": !!error.value }]}>
                 {props.label && (
-                    <label class="i-form-item__label" for={id}>
-                        {props.label}
+                    <label class="i-form-item__label" for={id} style={{ width: typeof props.labelWidth === "number" ? `${props.labelWidth}px` : props.labelWidth }}>
+                        {props.required && <span aria-hidden="true" class="i-form-item__required">*</span>}{props.label}
                     </label>
                 )}
                 <div class="i-form-item__content">
                     {slots.default?.()}
-                    {error.value && (
+                    {error.value && props.showMessage && (
                         <div class="i-form-item__error" id={errorId} role="alert">
-                            {error.value}
+                            {slots.error?.({ error: error.value }) ?? error.value}
                         </div>
                     )}
                 </div>

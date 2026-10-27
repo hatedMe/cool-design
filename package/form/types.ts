@@ -6,6 +6,7 @@ export interface FormRule {
 }
 export interface FormInstance {
     validate(): Promise<boolean>;
+    validateField(props?: string | string[]): Promise<boolean>;
     resetFields(): void;
     clearValidate(): void;
 }

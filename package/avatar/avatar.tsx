@@ -1,4 +1,4 @@
-import { PropType, computed, defineComponent } from "vue";
+import { PropType, computed, defineComponent, ref } from "vue";
 import { createNamespace } from "../../src/utils/create";
 import Icon from "../icon";
 const [name, bem] = createNamespace("avatar");
@@ -16,6 +16,9 @@ export default defineComponent({
             type: String,
             default: ""
         },
+        src: String,
+        srcSet: String,
+        alt: { type: String, default: "" },
         /**
          * @description 形状
          * - `circle` 圆形
@@ -35,7 +38,9 @@ export default defineComponent({
             default: "cover"
         }
     },
-    setup(props, { slots }) {
+    emits: ["error"],
+    setup(props, { slots, emit }) {
+        const imageError = ref(false);
         const style = computed(() => {
             if (isNumber(props.size)) {
                 return {
@@ -54,9 +59,19 @@ export default defineComponent({
 
         return () => (
             <div class={classLists.value} style={style.value}>
-                {props.url && <img class={[bem("img"), bem("img", { [props.fit]: true })]} src={props.url} alt="" />}
-                {props.icon && <Icon type={props.icon} />}
-                {slots.default?.()}
+                {!imageError.value && (props.url || props.src) && (
+                    <img
+                        class={[bem("img"), bem("img", { [props.fit]: true })]}
+                        src={props.url || props.src}
+                        srcset={props.srcSet}
+                        alt={props.alt}
+                        onError={(event: Event) => {
+                            imageError.value = true;
+                            emit("error", event);
+                        }}
+                    />
+                )}
+                {imageError.value ? slots.fallback?.() : props.icon ? <Icon type={props.icon} /> : slots.default?.()}
             </div>
         );
     }

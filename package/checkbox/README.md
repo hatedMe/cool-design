@@ -2,7 +2,7 @@
 
 ### 介绍
 
-用于开启独立选项或勾选记录，支持选中、半选和禁用状态。
+用于开启独立选项或勾选记录，支持选中、半选、禁用、边框和 CheckboxGroup。
 
 ## API
 
@@ -13,6 +13,8 @@
 | modelValue / v-model | 是否勾选                   | boolean | false  |
 | disabled             | 是否禁用                   | boolean | false  |
 | indeterminate        | 是否显示半选，不改变模型值 | boolean | false  |
+| value                | 分组中的选项值 | string / number / boolean | — |
+| border               | 显示边框 | boolean | false |
 
 ### 事件
 
@@ -20,6 +22,10 @@
 | ----------------- | ------------ | ---------------- |
 | update:modelValue | 用户改变勾选 | checked: boolean |
 | change            | 用户改变勾选 | checked: boolean |
+
+## CheckboxGroup
+
+使用 `CheckboxGroup` 管理数组值，可通过 `min`、`max` 限制最少和最多选项；子项通过 `value` 指定数组成员。
 
 ### 插槽
 

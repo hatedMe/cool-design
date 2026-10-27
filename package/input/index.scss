@@ -14,6 +14,7 @@
     border-color: var(--i-primary);
 }
 .i-input input,
+.i-input textarea,
 .i-select select {
     width: 100%;
     min-width: 0;
@@ -26,6 +27,19 @@
     font: inherit;
     outline: none;
 }
+.i-input textarea {
+    resize: vertical;
+    padding-block: 8px;
+}
+.i-input__icon,
+.i-input__count {
+    color: var(--i-text-secondary);
+    font-size: 12px;
+    flex: none;
+}
+.i-input__icon { margin-inline: 8px; }
+.i-input__count { margin-inline: 4px 8px; }
+.i-input.is-textarea { height: auto; min-height: calc(var(--i-control-height) * 2); }
 .i-select option {
     background: var(--i-bg);
     color: var(--i-text);

@@ -25,6 +25,7 @@ import Input from "./input";
 import Select from "./select";
 import SelectOption from "./select-option";
 import Checkbox from "./checkbox";
+import CheckboxGroup from "./checkbox-group";
 import Switch from "./switch";
 import Form from "./form";
 import FormItem from "./form-item";
@@ -32,6 +33,10 @@ import Table from "./table";
 import Pagination from "./pagination";
 import Dialog from "./dialog";
 import Message from "./message";
+import Avatar from "./avatar";
+import Badge from "./badge";
+import Radio from "./radio";
+import RadioGroup from "./radio-group";
 import "../src/style/index.scss";
 export type { FormRule, FormInstance } from "./form";
 export type { TableColumn, SortChange } from "./table";
@@ -62,13 +67,18 @@ export {
     Select,
     SelectOption,
     Checkbox,
+    CheckboxGroup,
     Switch,
     Form,
     FormItem,
     Table,
     Pagination,
     Dialog,
-    Message
+    Message,
+    Avatar,
+    Badge,
+    Radio,
+    RadioGroup
 };
 const components = [
     Container,
@@ -95,13 +105,18 @@ const components = [
     Select,
     SelectOption,
     Checkbox,
+    CheckboxGroup,
     Switch,
     Form,
     FormItem,
     Table,
     Pagination,
     Dialog,
-    Message
+    Message,
+    Avatar,
+    Badge,
+    Radio,
+    RadioGroup
 ];
 export const install = (app: App) => {
     components.forEach((component) => app.use(component));

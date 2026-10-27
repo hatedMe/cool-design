@@ -5,6 +5,9 @@
     position: relative;
     cursor: pointer;
 }
+.i-switch--large { font-size: 16px; }
+.i-switch--small { font-size: 12px; }
+.i-switch__text { margin-left: 6px; color: var(--i-text-secondary); }
 .i-switch input {
     position: absolute;
     opacity: 0;
@@ -16,7 +19,7 @@
     width: 36px;
     height: 20px;
     border-radius: 10px;
-    background: var(--i-border);
+    background: var(--i-switch-off, var(--i-border));
     padding: 3px;
     pointer-events: none;
 }
@@ -29,7 +32,7 @@
     background: var(--i-bg);
 }
 .i-switch input:checked + .i-switch__track {
-    background: var(--i-primary);
+    background: var(--i-switch-on, var(--i-primary));
 }
 .i-switch input:checked + .i-switch__track::after {
     transform: translateX(16px);

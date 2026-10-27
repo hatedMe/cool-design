@@ -42,4 +42,15 @@ describe("test `Avatar` component", () => {
         expect(wrapper.get("img").attributes("src")).toBe("second.png");
         expect(wrapper.get("img").classes()).toContain("i-avatar__img--contain");
     });
+    test("图片失败后显示回退内容并触发 error", async () => {
+        const wrapper = mount(Avatar, {
+            props: { url: "broken.png", alt: "用户头像" },
+            slots: { fallback: "回退" }
+        });
+        expect(wrapper.get("img").attributes("alt")).toBe("用户头像");
+        await wrapper.get("img").trigger("error");
+        expect(wrapper.find("img").exists()).toBe(false);
+        expect(wrapper.text()).toContain("回退");
+        expect(wrapper.emitted("error")).toHaveLength(1);
+    });
 });

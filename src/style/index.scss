@@ -2,6 +2,9 @@
 @use "./palette.scss";
 @use "./border.scss";
 @use "../../package/button/index.scss" as *;
+@use "../../package/avatar/index.scss" as *;
+@use "../../package/badge/index.scss" as *;
+@use "../../package/radio/index.scss" as *;
 @use "../../package/button/group.scss" as *;
 @use "../../package/row/index.scss" as *;
 @use "../../package/col/index.scss" as *;

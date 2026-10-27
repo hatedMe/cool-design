@@ -35,6 +35,9 @@
         border: 1px solid $white;
         border-radius: 10px;
         transform: translateY(-50%) translateX(100%);
+        &[data-offset] {
+            transform: translate(var(--i-badge-offset-x, 0), var(--i-badge-offset-y, -50%)) translateX(100%);
+        }
     }
     &__dot {
         position: absolute;
