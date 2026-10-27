@@ -89,10 +89,19 @@ export const pages: Page[] = [
     })),
     component("button", "Button 按钮", "基础组件", [
         ["basic", "按钮类型", "用不同类型区分主要操作、普通操作和风险操作。"],
+        ["appearance", "朴素、文字、链接与形状", "组合 plain、text、link、round、circle 和 dashed 外观。"],
+        ["icons", "图标按钮", "使用内置图标类名、图标插槽或仅图标按钮。"],
+        ["group", "按钮组", "将相近操作组合为水平或垂直按钮组。"],
+        ["loading", "加载状态与自定义内容", "加载期间阻止点击，也可以通过 loading 插槽替换提示内容。"],
         ["sizes", "按钮尺寸", "PC 默认高度为 32px，也可使用小尺寸与大尺寸。"],
-        ["states", "禁用与加载", "禁用和加载状态都不会触发点击事件。"],
+        ["states", "禁用状态", "禁用按钮不会触发点击事件。"],
+        ["native", "原生标签与表单", "使用 nativeType 提交表单，也可以渲染为链接标签。"],
+        ["colors", "自定义颜色", "使用 color 设置按钮颜色，并与 plain、text 和 disabled 组合。"],
         ["events", "点击事件", "点击按钮，查看事件触发结果。"]
     ]),
+    component("button-group", "ButtonGroup 按钮组", "基础组件", [
+        ["basic", "按钮组", "统一按钮类型并组合相近操作。"]
+    ], ["Button", "ButtonGroup"]),
     component("color", "Color 色彩", "基础组件", [["basic", "语义色与主题色阶", "切换全局主题，或修改主色观察派生色同步变化。"]], []),
     component("border", "Border 边框", "基础组件", [["basic", "边框、圆角与阴影", "对照线型、强弱层次、圆角和阴影；颜色随主题变化。"]], []),
     component("link", "Link 文字链接", "基础组件", [["basic", "导航与行内操作", "体验语义色、尺寸、下划线、图标和禁用行为。"]]),

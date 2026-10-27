@@ -8,18 +8,19 @@
     font: inherit;
     cursor: pointer;
     white-space: nowrap;
+    transition: border-color 0.15s, background-color 0.15s, color 0.15s;
 }
 .i-button:hover:not(:disabled) {
     border-color: var(--i-primary);
     color: var(--i-primary);
 }
 .i-button--primary {
-    background: var(--i-primary);
+    background: var(--i-button-color, var(--i-primary));
     color: var(--i-on-primary);
-    border-color: var(--i-primary);
+    border-color: var(--i-button-color, var(--i-primary));
 }
 .i-button--primary:hover:not(:disabled) {
-    background: var(--i-primary-hover);
+    background: var(--i-button-color, var(--i-primary-hover));
     color: var(--i-on-primary);
 }
 .i-button--success {
@@ -30,6 +31,44 @@
 }
 .i-button--danger {
     color: var(--i-danger);
+}
+.i-button--info {
+    color: var(--i-text-secondary);
+}
+.i-button[style*="--i-button-color"] {
+    color: var(--i-button-color);
+    border-color: var(--i-button-color);
+}
+.i-button.is-plain {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+}
+.i-button.is-text,
+.i-button.is-link {
+    border-color: transparent;
+    background: transparent;
+}
+.i-button.is-link {
+    padding-inline: 2px;
+}
+.i-button.is-round {
+    border-radius: 999px;
+}
+.i-button.is-circle {
+    width: var(--i-control-height, 32px);
+    padding-inline: 0;
+    border-radius: 50%;
+}
+.i-button.is-dashed {
+    border-style: dashed;
+}
+.i-button__icon,
+.i-button__loading {
+    display: inline-flex;
+    align-items: center;
+    margin-inline-end: 6px;
+}
+.i-button.is-circle .i-button__icon {
+    margin-inline-end: 0;
 }
 .i-button:disabled {
     opacity: 0.5;

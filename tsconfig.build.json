@@ -3,6 +3,7 @@
     "include": [
         "package/index.ts",
         "package/button/**/*.ts",
+        "package/button-group/**/*.ts",
         "package/row/**/*.ts",
         "package/col/**/*.ts",
         "package/config-provider/**/*.ts",
@@ -18,6 +19,7 @@
         "package/dialog/**/*.ts",
         "package/message/**/*.ts",
         "package/button/**/*.tsx",
+        "package/button-group/**/*.tsx",
         "package/row/**/*.tsx",
         "package/col/**/*.tsx",
         "package/config-provider/**/*.tsx",

@@ -2,6 +2,7 @@
 @use "./palette.scss";
 @use "./border.scss";
 @use "../../package/button/index.scss" as *;
+@use "../../package/button/group.scss" as *;
 @use "../../package/row/index.scss" as *;
 @use "../../package/col/index.scss" as *;
 @use "../../package/input/index.scss" as *;

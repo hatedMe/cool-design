@@ -17,6 +17,7 @@ import type { App } from "vue";
 import { version as packageVersion } from "../package.json";
 export const version: string = packageVersion;
 import Button from "./button";
+import ButtonGroup from "./button-group";
 import Row from "./row";
 import Col from "./col";
 import ConfigProvider from "./config-provider";
@@ -53,6 +54,7 @@ export {
     Popconfirm,
     MessageBox,
     Button,
+    ButtonGroup,
     Row,
     Col,
     ConfigProvider,
@@ -85,6 +87,7 @@ const components = [
     Popconfirm,
     MessageBox,
     Button,
+    ButtonGroup,
     Row,
     Col,
     ConfigProvider,
