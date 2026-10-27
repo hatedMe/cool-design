@@ -37,6 +37,7 @@ import Avatar from "./avatar";
 import Badge from "./badge";
 import Radio from "./radio";
 import RadioGroup from "./radio-group";
+import { DatePicker, TimePicker, DateTimePicker, Calendar } from "./date-picker";
 import "../src/style/index.scss";
 export type { FormRule, FormInstance } from "./form";
 export type { TableColumn, SortChange } from "./table";
@@ -78,7 +79,11 @@ export {
     Avatar,
     Badge,
     Radio,
-    RadioGroup
+    RadioGroup,
+    DatePicker,
+    TimePicker,
+    DateTimePicker,
+    Calendar
 };
 const components = [
     Container,
@@ -116,7 +121,11 @@ const components = [
     Avatar,
     Badge,
     Radio,
-    RadioGroup
+    RadioGroup,
+    DatePicker,
+    TimePicker,
+    DateTimePicker,
+    Calendar
 ];
 export const install = (app: App) => {
     components.forEach((component) => app.use(component));
@@ -131,3 +140,4 @@ export type { Placement } from "../src/utils/use-floating";
 export { iconNames } from "./icon";
 export type { ColSize, ColSizeObject } from "./col";
 export type { LinkType, LinkUnderline } from "./link/link";
+export type { DatePickerType } from "./date-picker";

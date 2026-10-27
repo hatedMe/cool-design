@@ -167,6 +167,10 @@ export const pages: Page[] = [
         ["textarea", "文本域与长度统计", "使用 textarea、rows 和 show-word-limit 输入多行内容。"],
         ["sizes", "尺寸与图标", "使用 small、default、large 和前后缀图标。"]
     ]),
+    component("date-picker", "DatePicker 日期选择器", "表单组件", [["basic", "日期选择", "选择日期、日期时间以及日期范围。"]]),
+    component("time-picker", "TimePicker 时间选择器", "表单组件", [["basic", "时间选择", "选择时间或时间范围。"]]),
+    component("date-time-picker", "DateTimePicker 日期时间选择器", "表单组件", [["basic", "日期时间选择", "在同一个控件中选择日期和时间。"]]),
+    component("calendar", "Calendar 日历", "表单组件", [["basic", "日历选择", "按月浏览并选择日期。"]]),
     component("select", "Select 选择器", "表单组件", [
         ["basic", "基础用法", "从 SelectOption 中选择单个值。"],
         ["states", "禁用与清空", "比较禁用选项、禁用选择器和 clearable。"],
