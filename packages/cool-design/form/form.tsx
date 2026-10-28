@@ -26,13 +26,17 @@ export default defineComponent({
       { flush: 'sync', deep: true }
     );
     const fields = new Map<string, Field>();
+    const resetFields = () => {
+      fields.forEach((field) => field.reset());
+    };
     provide(formKey, {
       model: () => props.model!,
       rules: () => props.rules,
       register: (key, field) => fields.set(key, field),
       unregister: (key) => fields.delete(key),
       disabled: () => props.disabled,
-      size: () => props.size
+      size: () => props.size,
+      resetFields
     });
     expose({
       async validate() {
@@ -52,7 +56,7 @@ export default defineComponent({
         return results.every((result) => result !== false);
       },
       resetFields() {
-        fields.forEach((field) => field.reset());
+        resetFields();
       },
       clearValidate() {
         fields.forEach((field) => field.clear());

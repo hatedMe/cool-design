@@ -1,13 +1,19 @@
-export type ButtonType = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+import type { Component } from 'vue';
+
+export type ButtonType = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'text';
 export type ButtonSize = 'small' | 'default' | 'normal' | 'large';
+export type ButtonNativeType = 'button' | 'submit' | 'reset';
+export type ButtonGroupDirection = 'horizontal' | 'vertical';
 export interface IButtonProps {
   type?: ButtonType;
   size?: ButtonSize;
-  nativeType?: 'button' | 'submit' | 'reset';
+  nativeType?: ButtonNativeType;
   loading?: boolean;
+  autofocus?: boolean;
   disabled?: boolean;
   plain?: boolean;
   text?: boolean;
+  bg?: boolean;
   link?: boolean;
   round?: boolean;
   circle?: boolean;
@@ -16,9 +22,8 @@ export interface IButtonProps {
   color?: string;
   dark?: boolean;
   loadingIcon?: IconProp;
-  tag?: 'button' | 'a' | 'div';
+  tag?: string | Component;
   autoInsertSpace?: boolean;
   onClick?: (event: MouseEvent) => void;
 }
-import type { Component } from 'vue';
 export type IconProp = string | Component;

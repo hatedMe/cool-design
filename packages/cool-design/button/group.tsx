@@ -1,5 +1,6 @@
 import { defineComponent, provide, type InjectionKey, type PropType } from 'vue';
-import type { ButtonSize, ButtonType } from './types';
+import type { ButtonSize, ButtonType, ButtonGroupDirection } from './types';
+export type { ButtonGroupDirection } from './types';
 
 export interface ButtonGroupContext {
   type?: ButtonType;
@@ -12,7 +13,7 @@ export default defineComponent({
   props: {
     type: String as PropType<ButtonType>,
     size: String as PropType<ButtonSize>,
-    direction: { type: String as PropType<'horizontal' | 'vertical'>, default: 'horizontal' }
+    direction: { type: String as PropType<ButtonGroupDirection>, default: 'horizontal' }
   },
   setup(props, { slots }) {
     provide(buttonGroupKey, props);

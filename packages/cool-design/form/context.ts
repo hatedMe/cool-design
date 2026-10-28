@@ -13,6 +13,7 @@ export interface FormContext {
   unregister: (key: string) => void;
   disabled?: () => boolean;
   size?: () => 'small' | 'default' | 'large' | undefined;
+  resetFields?: () => void;
 }
 export interface FieldContext {
   id: string;
