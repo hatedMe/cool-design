@@ -85,12 +85,12 @@
     "./package.json": "./package.json",
     "./hooks": {
       "import": {
-        "types": "./es/packages/cool-design/index.d.ts",
-        "default": "./es/packages/cool-design/index.js"
+        "types": "./es/packages/cool-design/hooks.d.ts",
+        "default": "./es/packages/cool-design/hooks.js"
       },
       "require": {
-        "types": "./lib/packages/cool-design/index.d.cts",
-        "default": "./lib/packages/cool-design/index.cjs"
+        "types": "./lib/packages/cool-design/hooks.d.cts",
+        "default": "./lib/packages/cool-design/hooks.cjs"
       }
     },
     "./*": {

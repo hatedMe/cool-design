@@ -102,7 +102,9 @@
     "packages/cool-design/footer/**/*.ts",
     "packages/cool-design/footer/**/*.tsx",
     "packages/cool-design/link/**/*.ts",
-    "packages/cool-design/link/**/*.tsx"
+    "packages/cool-design/link/**/*.tsx",
+    "packages/cool-design/directives/**/*.ts",
+    "packages/cool-design/directives/**/*.tsx"
   ],
   "exclude": ["**/__test__/**"],
   "references": []
