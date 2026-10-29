@@ -5,6 +5,7 @@ import { Button, Space } from '../../index';
 <template>
   <Space>
     <Button type="primary" loading>加载中</Button>
+    <Button type="primary" loading loading-icon="icon-refresh">刷新中</Button>
     <Button type="primary" loading>
       <template #loading>
         <span class="custom-loading" aria-hidden="true">◌</span>

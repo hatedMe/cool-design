@@ -6,7 +6,9 @@ import { Button, Space } from '../../index';
   <Space>
     <Button color="#626aef">自定义颜色</Button>
     <Button color="#626aef" plain>朴素自定义色</Button>
+    <Button color="#626aef" link>链接自定义色</Button>
     <Button color="#626aef" text>文字自定义色</Button>
+    <Button color="#626aef" text bg>带背景文字色</Button>
     <Button color="#626aef" disabled>禁用自定义色</Button>
   </Space>
 </template>

@@ -1,75 +1,111 @@
 # Button 按钮
 
-### 介绍
+## 组件介绍
 
-按钮用于触发查询、保存、删除等操作，支持 Element Plus 常用的类型、外观、尺寸、禁用、加载和原生标签能力。
+Button 用于触发提交、保存、删除、跳转等操作。组件的属性、事件和插槽遵循通用 Button 组件规范，支持类型、尺寸、禁用、加载、图标、文字按钮、链接按钮、自定义颜色和自定义标签。
 
 ## 基础用法
 
-通过 `type` 区分主要操作、成功操作、警告操作、危险操作和信息操作；默认类型为 `default`。完整交互示例见文档站的“代码演示”。
+使用 `type` 区分按钮语义。可选值为 `default`、`primary`、`success`、`warning`、`danger`、`info`。
+
+## 朴素、圆角和虚线按钮
+
+`plain`、`round` 和 `dashed` 可以与任意按钮类型组合使用。
+
+## 禁用按钮
+
+设置 `disabled` 后，按钮不会触发 `click` 事件。设置 `loading` 也会阻止点击。
+
+## Link 按钮
+
+设置 `link` 显示无边框链接按钮，`type` 仍然决定按钮颜色。
+
+## Text 按钮
+
+设置 `text` 显示文字按钮。 `bg` 只对文字按钮生效，用于始终显示浅色背景。 `type="text"` 作为旧版 API 兼容写法，推荐使用 `text` 属性。
+
+## 图标按钮
+
+使用 `icon` 添加图标。图标按钮可以只显示图标，也可以同时显示文字。纯图标按钮必须提供 `aria-label`。
+
+也可以使用 `icon` 插槽自定义图标。
+
+## 按钮组
+
+使用 `ButtonGroup` 将多个按钮组合在一起。按钮组可以统一设置 `type`、`size` 和 `direction`，子按钮显式传入的属性优先级更高。
+
+## 加载按钮
+
+设置 `loading` 显示加载状态。可以使用 `loadingIcon` 或 `loading` 插槽自定义加载内容，`loading` 插槽优先级更高。
+
+## 尺寸
+
+`size` 支持 `large`、`default`、`small`。项目兼容值 `normal` 会映射为 `default`。
+
+## 自定义标签
+
+使用 `tag` 将按钮渲染为 `button`、`a`、`div` 或其他 Vue 组件。使用链接标签时，`href`、`target` 等原生属性会透传。
+
+## 自定义颜色
+
+使用 `color` 设置按钮颜色，组件会计算 hover 和 active 状态。 `color` 同样支持 `plain`、`link`、`text` 和 `bg` 组合。
+
+## 自动插入中文空格
+
+设置 `autoInsertSpace` 后，两个中文字符之间会自动增加视觉间距。
 
 ## API
 
-### 属性
+### Button 属性
 
-| 参数              | 说明                                                                                 | 类型                  | 默认值         |
-| ----------------- | ------------------------------------------------------------------------------------ | --------------------- | -------------- |
-| `type`            | 按钮类型：`default` / `primary` / `success` / `warning` / `danger` / `info` / `text` | `ButtonType`          | `default`      |
-| `size`            | 尺寸：`small` / `default` / `normal` / `large`；`normal` 等同 `default`              | `ButtonSize`          | 继承全局尺寸   |
-| `disabled`        | 禁用按钮                                                                             | `boolean`             | `false`        |
-| `loading`         | 加载状态，阻止点击                                                                   | `boolean`             | `false`        |
-| `autofocus`       | 自动获取焦点                                                                         | `boolean`             | `false`        |
-| `nativeType`      | 原生类型：`button` / `submit` / `reset`                                              | `ButtonNativeType`    | `button`       |
-| `plain`           | 朴素按钮                                                                             | `boolean`             | `false`        |
-| `text`            | 文字按钮                                                                             | `boolean`             | `false`        |
-| `bg`              | 文字按钮显示背景                                                                     | `boolean`             | `false`        |
-| `link`            | 链接样式按钮                                                                         | `boolean`             | `false`        |
-| `round`           | 圆角按钮                                                                             | `boolean`             | `false`        |
-| `circle`          | 圆形按钮                                                                             | `boolean`             | `false`        |
-| `dashed`          | 虚线边框按钮                                                                         | `boolean`             | `false`        |
-| `icon`            | 内置图标类名或图标组件，例如 `icon-search`                                           | `string \| Component` | —              |
-| `color`           | 自定义按钮颜色                                                                       | `string`              | —              |
-| `dark`            | 暗色模式兼容标记                                                                     | `boolean`             | `false`        |
-| `loadingIcon`     | 加载状态图标类名或图标组件                                                           | `string \| Component` | `icon-refresh` |
-| `tag`             | 渲染标签或组件                                                                       | `string \| Component` | `button`       |
-| `autoInsertSpace` | 两个中文字符之间自动插入空格                                                         | `boolean`             | `false`        |
+| 参数              | 说明                         | 类型                  | 默认值         |
+| ----------------- | ---------------------------- | --------------------- | -------------- |
+| `type`            | 按钮类型                     | `ButtonType`          | `default`      |
+| `size`            | 按钮尺寸                     | `ButtonSize`          | 继承全局尺寸   |
+| `plain`           | 是否为朴素按钮               | `boolean`             | `false`        |
+| `text`            | 是否为文字按钮               | `boolean`             | `false`        |
+| `bg`              | 文字按钮是否始终显示背景     | `boolean`             | `false`        |
+| `link`            | 是否为链接按钮               | `boolean`             | `false`        |
+| `round`           | 是否为圆角按钮               | `boolean`             | `false`        |
+| `circle`          | 是否为圆形按钮               | `boolean`             | `false`        |
+| `dashed`          | 是否使用虚线边框             | `boolean`             | `false`        |
+| `loading`         | 是否为加载状态               | `boolean`             | `false`        |
+| `loadingIcon`     | 加载图标                     | `string \| Component` | `icon-refresh` |
+| `disabled`        | 是否禁用按钮                 | `boolean`             | `false`        |
+| `autofocus`       | 是否自动获取焦点             | `boolean`             | `false`        |
+| `icon`            | 图标                         | `string \| Component` | —              |
+| `nativeType`      | 原生按钮类型                 | `ButtonNativeType`    | `button`       |
+| `autoInsertSpace` | 两个中文字符之间自动插入空格 | `boolean`             | `false`        |
+| `color`           | 自定义按钮颜色               | `string`              | —              |
+| `dark`            | 自定义颜色的暗色模式         | `boolean`             | `false`        |
+| `tag`             | 自定义渲染标签或组件         | `string \| Component` | `button`       |
 
-### 事件
+### Button 事件
 
-| 事件名  | 说明               | 回调参数            |
-| ------- | ------------------ | ------------------- |
-| `click` | 可用状态下点击按钮 | `event: MouseEvent` |
+| 事件名  | 说明           | 回调参数            |
+| ------- | -------------- | ------------------- |
+| `click` | 按钮可用时触发 | `event: MouseEvent` |
 
-### 插槽
+禁用或加载状态下不会触发 `click`。`form`、`href`、`aria-label`、`target` 等未声明的原生属性会透传。
 
-| 名称      | 说明         |
-| --------- | ------------ |
-| `default` | 按钮内容     |
-| `loading` | 加载状态内容 |
-| `icon`    | 图标内容     |
+### Button 插槽
 
-## 使用说明
+| 插槽名    | 说明                                 |
+| --------- | ------------------------------------ |
+| `default` | 按钮内容                             |
+| `icon`    | 自定义图标                           |
+| `loading` | 自定义加载内容，优先于 `loadingIcon` |
 
-默认插槽为按钮内容，`loading` 插槽用于替换加载提示，`icon` 插槽用于替换图标。未传 `loadingIcon` 时使用 `icon-refresh`。属性：`type`、`size`、`disabled`、`loading`、`autofocus`、`nativeType`、`plain`、`text`、`bg`、`link`、`round`、`circle`、`dashed`、`icon`、`color`、`dark`、`loadingIcon`、`tag`、`autoInsertSpace`。`normal` 映射 `default`。
+### ButtonGroup 属性
 
-事件 `click(event: MouseEvent)`；禁用、加载时不触发。form、aria-label、href 等原生属性透传。提交表单需显式 `native-type="submit"`；使用 `tag="a"` 时可以渲染链接。
+| 参数        | 说明             | 类型                   | 默认值       |
+| ----------- | ---------------- | ---------------------- | ------------ |
+| `type`      | 统一设置按钮类型 | `ButtonType`           | —            |
+| `size`      | 统一设置按钮尺寸 | `ButtonSize`           | 继承全局尺寸 |
+| `direction` | 按钮排列方向     | `ButtonGroupDirection` | `horizontal` |
 
-## ButtonGroup 按钮组
+### ButtonGroup 插槽
 
-`ButtonGroup` 将多个 Button 组合为水平或垂直的一组操作，并可统一设置 `type` 与 `size`。`direction` 支持 `horizontal` / `vertical`，默认值为 `horizontal`。
-
-### ButtonGroup API
-
-#### 属性
-
-| 参数        | 说明                                    | 类型                   | 默认值       |
-| ----------- | --------------------------------------- | ---------------------- | ------------ |
-| `type`      | 统一设置按钮类型                        | `ButtonType`           | —            |
-| `size`      | 统一设置按钮尺寸                        | `ButtonSize`           | 继承全局尺寸 |
-| `direction` | 按钮排列方向：`horizontal` / `vertical` | `ButtonGroupDirection` | `horizontal` |
-
-#### 插槽
-
-| 名称      | 说明              |
+| 插槽名    | 说明              |
 | --------- | ----------------- |
 | `default` | Button 子组件列表 |

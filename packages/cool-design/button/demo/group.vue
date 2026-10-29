@@ -9,8 +9,8 @@ import { Button, ButtonGroup } from '../../index';
       <Button>下一页</Button>
     </ButtonGroup>
     <ButtonGroup type="primary" direction="vertical">
-      <Button icon="icon-add" aria-label="新增" />
-      <Button icon="icon-delete" aria-label="删除" />
+      <Button icon="icon-add">新增</Button>
+      <Button icon="icon-delete">删除</Button>
     </ButtonGroup>
   </div>
 </template>
