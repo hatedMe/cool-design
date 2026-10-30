@@ -1,3 +1,14 @@
+.i-input__outside {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+.i-input__prepend,
+.i-input__append {
+  flex: none;
+  padding: 0 10px;
+  color: var(--i-text-secondary);
+}
 .i-input,
 .i-select {
   display: inline-flex;

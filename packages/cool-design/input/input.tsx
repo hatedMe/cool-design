@@ -1,4 +1,4 @@
-import { computed, defineComponent, nextTick, onMounted, ref, watch, type PropType } from 'vue';
+import { computed, defineComponent, h, markRaw, nextTick, onMounted, ref, toRaw, watch, type Component, type PropType } from 'vue';
 import { useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useComposition } from '../../hooks/index.ts';
@@ -6,7 +6,7 @@ export default defineComponent({
   name: 'i-input',
   inheritAttrs: false,
   props: {
-    modelValue: { type: String, default: '' },
+    modelValue: { type: [String, Number], default: '' },
     clearable: Boolean,
     disabled: Boolean,
     readonly: Boolean,
@@ -17,22 +17,49 @@ export default defineComponent({
     maxlength: [String, Number],
     minlength: [String, Number],
     showWordLimit: Boolean,
+    wordLimitPosition: { type: String as PropType<'inside' | 'outside'>, default: 'inside' },
     showPassword: Boolean,
-    prefixIcon: String,
-    suffixIcon: String,
+    prefixIcon: [String, Object] as PropType<string | Component>,
+    suffixIcon: [String, Object] as PropType<string | Component>,
+    clearIcon: [String, Object] as PropType<string | Component>,
     formatter: Function as PropType<(value: string) => string>,
+    countGraphemes: Function as PropType<(value: string) => number>,
+    inputStyle: [String, Object] as PropType<string | Record<string, string>>,
     parser: Function as PropType<(value: string) => string>,
-    autosize: [Boolean, Object] as PropType<boolean | { minRows?: number; maxRows?: number }>
+    autosize: [Boolean, Object] as PropType<boolean | { minRows?: number; maxRows?: number }>,
+    resize: String as PropType<'none' | 'both' | 'horizontal' | 'vertical'>,
+    validateEvent: { type: Boolean, default: true }
   },
-  emits: ['update:modelValue', 'change', 'blur', 'focus', 'input', 'clear'],
+  emits: [
+    'update:modelValue',
+    'change',
+    'blur',
+    'focus',
+    'input',
+    'clear',
+    'keydown',
+    'mouseenter',
+    'mouseleave',
+    'compositionstart',
+    'compositionupdate',
+    'compositionend'
+  ],
   setup(props, { attrs, emit, expose, slots }) {
     const field = useField();
     const config = useConfig();
     const input = ref<HTMLInputElement | HTMLTextAreaElement>();
     const passwordVisible = ref(false);
     const { isComposing, handleCompositionStart, handleCompositionEnd } = useComposition();
-    const displayValue = computed(() => (props.formatter ? props.formatter(props.modelValue) : props.modelValue));
+    const currentValue = ref(String(props.modelValue));
+    const lastChangedValue = ref(String(props.modelValue));
+    const displayValue = computed(() => {
+      const value = String(props.modelValue);
+      return props.formatter ? props.formatter(value) : value;
+    });
     const parseValue = (value: string) => (props.parser ? props.parser(value) : value);
+    const graphemeLength = (value: string) => props.countGraphemes?.(value) ?? Array.from(value).length;
+    const renderIcon = (icon: string | Component | undefined, fallback?: string) =>
+      typeof icon === 'string' ? <i class={['i-input__icon', icon]} aria-hidden='true' /> : icon ? h(markRaw(toRaw(icon))) : fallback;
     const resizeTextarea = () => {
       if (props.type !== 'textarea' || !props.autosize || !input.value || !(input.value instanceof HTMLTextAreaElement))
         return;
@@ -56,15 +83,31 @@ export default defineComponent({
         resizeTextarea();
       }
     );
+    const clear = () => {
+      if (props.disabled || props.readonly || !props.modelValue) return;
+      update('');
+      emit('change', '');
+      emit('clear');
+      input.value?.focus();
+    };
     expose({
       focus: () => input.value?.focus(),
       blur: () => input.value?.blur(),
-      clear: () => update('')
+      select: () => input.value?.select(),
+      resize: resizeTextarea,
+      clear
     });
     const update = (value: string) => {
+      currentValue.value = value;
       emit('update:modelValue', value);
       emit('input', value);
-      nextTick(() => field?.validate('change'));
+      if (props.validateEvent) nextTick(() => field?.validate('change'));
+    };
+    const handleChange = (value: string) => {
+      if (value !== lastChangedValue.value) {
+        lastChangedValue.value = value;
+        emit('change', value);
+      }
     };
     return () => {
       const isTextarea = props.type === 'textarea';
@@ -76,6 +119,7 @@ export default defineComponent({
           id={(attrs.id as string) || field?.id}
           ref={input}
           value={displayValue.value}
+          style={{ ...(typeof props.inputStyle === 'object' ? props.inputStyle : {}), ...(props.resize ? { resize: props.resize } : {}) }}
           rows={props.rows}
           maxlength={props.maxlength}
           minlength={props.minlength}
@@ -84,11 +128,17 @@ export default defineComponent({
           placeholder={props.placeholder}
           aria-invalid={field?.invalid() || undefined}
           aria-describedby={field?.invalid() ? field.errorId : undefined}
-          onCompositionstart={handleCompositionStart}
-          onCompositionend={(e: Event) => {
+          onCompositionstart={(e: CompositionEvent) => {
+            handleCompositionStart();
+            emit('compositionstart', e);
+          }}
+          onCompositionupdate={(e: CompositionEvent) => emit('compositionupdate', e)}
+          onCompositionend={(e: CompositionEvent) => {
             handleCompositionEnd();
+            emit('compositionend', e);
             if (!props.disabled && !props.readonly) update(parseValue((e.target as HTMLTextAreaElement).value));
           }}
+          onFocus={(e: FocusEvent) => emit('focus', e)}
           onInput={(e: Event) => {
             if (!isComposing.value && !props.disabled && !props.readonly) {
               update(parseValue((e.target as HTMLTextAreaElement).value));
@@ -96,10 +146,10 @@ export default defineComponent({
             }
           }}
           onChange={(e: Event) => {
-            if (!props.disabled && !props.readonly) emit('change', (e.target as HTMLInputElement).value);
+            if (!props.disabled && !props.readonly) handleChange((e.target as HTMLInputElement).value);
           }}
           onBlur={(e: FocusEvent) => {
-            field?.validate('blur');
+            if (props.validateEvent) field?.validate('blur');
             emit('blur', e);
           }}
         />
@@ -110,6 +160,7 @@ export default defineComponent({
           ref={input}
           type={inputType}
           value={displayValue.value}
+          style={props.inputStyle}
           maxlength={props.maxlength}
           minlength={props.minlength}
           disabled={props.disabled || field?.disabled?.()}
@@ -117,59 +168,75 @@ export default defineComponent({
           placeholder={props.placeholder}
           aria-invalid={field?.invalid() || undefined}
           aria-describedby={field?.invalid() ? field.errorId : undefined}
-          onCompositionstart={handleCompositionStart}
-          onCompositionend={(e: Event) => {
+          onCompositionstart={(e: CompositionEvent) => {
+            handleCompositionStart();
+            emit('compositionstart', e);
+          }}
+          onCompositionupdate={(e: CompositionEvent) => emit('compositionupdate', e)}
+          onCompositionend={(e: CompositionEvent) => {
             handleCompositionEnd();
+            emit('compositionend', e);
             if (!props.disabled && !props.readonly) update(parseValue((e.target as HTMLInputElement).value));
           }}
           onInput={(e: Event) => {
-            if (!isComposing.value && !props.disabled && !props.readonly) update((e.target as HTMLInputElement).value);
+            if (!isComposing.value && !props.disabled && !props.readonly) update(parseValue((e.target as HTMLInputElement).value));
           }}
           onChange={(e: Event) => {
-            if (!props.disabled && !props.readonly) emit('change', (e.target as HTMLInputElement).value);
+            if (!props.disabled && !props.readonly) handleChange((e.target as HTMLInputElement).value);
           }}
           onFocus={(e: FocusEvent) => emit('focus', e)}
+          onKeydown={(e: KeyboardEvent) => {
+            emit('keydown', e);
+            if (e.key === 'Enter') handleChange((e.target as HTMLInputElement).value);
+          }}
+          onMouseenter={(e: MouseEvent) => emit('mouseenter', e)}
+          onMouseleave={(e: MouseEvent) => emit('mouseleave', e)}
           onBlur={(e: FocusEvent) => {
-            field?.validate('blur');
+            if (props.validateEvent) field?.validate('blur');
             emit('blur', e);
           }}
         />
       );
-      return (
+      const count = `${graphemeLength(String(props.modelValue))}/${props.maxlength ?? '∞'}`;
+      const passwordToggle = props.showPassword && props.type === 'password' && (
+        <button
+          type='button'
+          aria-label={passwordVisible.value ? '隐藏密码' : '显示密码'}
+          onClick={() => (passwordVisible.value = !passwordVisible.value)}>
+          {slots['password-icon']?.({ visible: passwordVisible.value }) ?? (passwordVisible.value ? '隐藏' : '显示')}
+        </button>
+      );
+      const countNode = props.showWordLimit && <span class='i-input__count'>{count}</span>;
+      const wrapper = (
         <span class={['i-input', `i-control--${props.size || config.value.size}`, isTextarea && 'is-textarea']}>
-          {slots.prefix?.() ??
-            (props.prefixIcon && <i class={['i-input__icon', props.prefixIcon]} aria-hidden='true' />)}
+          {slots.prefix?.() ?? renderIcon(props.prefixIcon)}
           {control}
-          {props.showWordLimit && (
-            <span class='i-input__count'>
-              {props.modelValue.length}/{props.maxlength ?? '∞'}
-            </span>
-          )}
-          {props.showPassword && props.type === 'password' && (
-            <button
-              type='button'
-              aria-label={passwordVisible.value ? '隐藏密码' : '显示密码'}
-              onClick={() => (passwordVisible.value = !passwordVisible.value)}>
-              {passwordVisible.value ? '隐藏' : '显示'}
-            </button>
-          )}
-          {slots.suffix?.() ??
-            (props.suffixIcon && <i class={['i-input__icon', props.suffixIcon]} aria-hidden='true' />)}
+          {props.wordLimitPosition === 'inside' && countNode}
+          {passwordToggle}
+          {slots.suffix?.() ?? renderIcon(props.suffixIcon)}
           {props.clearable && props.modelValue && (
             <button
               type='button'
               aria-label='清空'
               disabled={props.disabled || props.readonly}
-              onClick={() => {
-                if (props.disabled || props.readonly) return;
-                update('');
-                emit('change', '');
-                emit('clear');
-                input.value?.focus();
-              }}>
-              ×
+              onClick={clear}>
+              {renderIcon(props.clearIcon, '×')}
             </button>
           )}
+        </span>
+      );
+      return props.wordLimitPosition === 'outside' && countNode ? (
+        <span class='i-input__outside'>
+          {slots.prepend?.() && <span class='i-input__prepend'>{slots.prepend()}</span>}
+          {wrapper}
+          {slots.append?.() && <span class='i-input__append'>{slots.append()}</span>}
+          {countNode}
+        </span>
+      ) : (
+        <span class='i-input__outside'>
+          {slots.prepend?.() && <span class='i-input__prepend'>{slots.prepend()}</span>}
+          {wrapper}
+          {slots.append?.() && <span class='i-input__append'>{slots.append()}</span>}
         </span>
       );
     };

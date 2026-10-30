@@ -30,7 +30,9 @@
 
 ## 图标与插槽
 
-支持 `prefix-icon`、`suffix-icon` 以及 `prefix`、`suffix` 插槽。
+支持 `prefix-icon`、`suffix-icon` 以及 `prefix`、`suffix` 插槽；同时支持 `prepend`、`append` 外置内容和 `password-icon` 密码图标插槽。
+
+`password-icon` 插槽参数为 `{ visible: boolean }`。
 
 ## 尺寸
 
@@ -52,11 +54,14 @@
 | rows                    | 文本域行数                               | number                    | 2            |
 | maxlength / minlength   | 原生长度限制                             | string / number           | —            |
 | showWordLimit           | 显示长度统计                             | boolean                   | false        |
+| wordLimitPosition       | 长度统计位置：inside / outside          | `inside` / `outside`     | inside       |
 | showPassword            | 显示密码切换                             | boolean                   | false        |
 | prefixIcon / suffixIcon | 图标字体类名                             | string                    | —            |
 | formatter               | 展示值格式化函数                         | (value: string) => string | —            |
 | parser                  | 输入值解析函数                           | (value: string) => string | —            |
 | autosize                | 文本域自适应高度，可配置 minRows/maxRows | boolean / object          | false        |
+| resize                  | 文本域调整方向：none / both / horizontal / vertical | string              | —            |
+| validateEvent           | 是否触发表单校验                         | boolean                   | true         |
 
 ### 事件
 
@@ -69,12 +74,25 @@
 | focus             | 输入框聚焦         | event: FocusEvent |
 | clear             | 点击清空           | —                 |
 
+### 插槽
+
+| 插槽          | 说明 |
+| ------------- | ---- |
+| prefix        | 输入内容前的内容 |
+| suffix        | 输入内容后的内容 |
+| prepend       | 输入框外部前置内容 |
+| append        | 输入框外部后置内容 |
+| password-icon | 密码切换图标，参数 `{ visible: boolean }` |
+
 ### 实例方法
 
 | 方法    | 说明       | 返回值 |
 | ------- | ---------- | ------ |
-| focus() | 聚焦输入框 | void   |
-| clear() | 清空输入框 | void   |
+| focus()  | 聚焦输入框 | void   |
+| blur()   | 取消聚焦   | void   |
+| select() | 选择输入内容 | void   |
+| resize() | 重新计算文本域高度 | void   |
+| clear()  | 清空输入框 | void   |
 
 ## 使用说明
 

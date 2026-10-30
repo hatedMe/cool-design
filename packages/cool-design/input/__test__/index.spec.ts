@@ -71,3 +71,100 @@ test('formatter 只改变展示值，parser 写入模型，textarea 支持 autos
   await w.get('textarea').setValue('¥5678');
   expect(w.emitted('update:modelValue')?.at(-1)).toEqual(['5678']);
 });
+
+test('普通输入框输入时应用 parser', async () => {
+  const w = mount(Input, {
+    props: {
+      modelValue: '1234',
+      formatter: (value: string) => `¥${value}`,
+      parser: (value: string) => value.replace(/^¥/, '')
+    }
+  });
+  await w.get('input').setValue('¥5678');
+  expect(w.emitted('update:modelValue')?.at(-1)).toEqual(['5678']);
+});
+
+test('textarea 聚焦时触发 focus 事件', async () => {
+  const w = mount(Input, { props: { type: 'textarea' } });
+  await w.get('textarea').trigger('focus');
+  expect(w.emitted('focus')).toHaveLength(1);
+});
+
+test('实例方法支持选择文本、调整高度和受限清空', async () => {
+  const w = mount(Input, { props: { modelValue: '内容', clearable: true } });
+  const exposed = w.vm as unknown as { select: () => void; resize: () => void; clear: () => void };
+  expect(() => exposed.select()).not.toThrow();
+  expect(() => exposed.resize()).not.toThrow();
+  exposed.clear();
+  expect(w.emitted('clear')).toHaveLength(1);
+  expect(w.emitted('change')?.at(-1)).toEqual(['']);
+
+  await w.setProps({ modelValue: '不可清空', disabled: true });
+  exposed.clear();
+  expect(w.emitted('update:modelValue')).toHaveLength(1);
+});
+
+test('支持 prepend、append、password-icon 和外置字数统计', async () => {
+  const w = mount(Input, {
+    props: { modelValue: 'secret', type: 'password', showPassword: true, maxlength: 10, showWordLimit: true, wordLimitPosition: 'outside' },
+    slots: {
+      prepend: () => '前置',
+      append: () => '后置',
+      'password-icon': ({ visible }: { visible: boolean }) => (visible ? '已显示' : '未显示')
+    }
+  });
+  expect(w.text()).toContain('前置');
+  expect(w.text()).toContain('后置');
+  expect(w.text()).toContain('未显示');
+  expect(w.find('.i-input__count').exists()).toBe(true);
+  await w.get('button').trigger('click');
+  expect(w.text()).toContain('已显示');
+});
+
+test('textarea 支持 resize 属性', () => {
+  const w = mount(Input, { props: { type: 'textarea', resize: 'none' } });
+  expect(w.get('textarea').attributes('style')).toContain('resize: none');
+});
+
+test('支持自定义字符计数和输入样式', () => {
+  const w = mount(Input, {
+    props: {
+      modelValue: '😀',
+      maxlength: 2,
+      showWordLimit: true,
+      countGraphemes: (value: string) => Array.from(value).length,
+      inputStyle: { color: 'red' }
+    }
+  });
+  expect(w.find('.i-input__count').text()).toBe('1/2');
+  expect(w.get('input').attributes('style')).toContain('color: red');
+});
+
+test('支持组件形式的前缀、后缀和清空图标', async () => {
+  const Icon = { setup: () => () => '图标' };
+  const w = mount(Input, {
+    props: { modelValue: '内容', clearable: true, prefixIcon: Icon, suffixIcon: Icon, clearIcon: Icon },
+  });
+  expect(w.text()).toContain('图标');
+  await w.get('[aria-label="清空"]').trigger('click');
+  expect(w.text()).toContain('图标');
+});
+
+test('透传原生属性并发出键盘和组合输入事件', async () => {
+  const w = mount(Input, { attrs: { name: 'username', autocomplete: 'off', inputmode: 'email' } });
+  expect(w.get('input').attributes()).toMatchObject({ name: 'username', autocomplete: 'off', inputmode: 'email' });
+  await w.get('input').trigger('keydown', { key: 'a' });
+  await w.get('input').trigger('compositionupdate');
+  expect(w.emitted('keydown')).toHaveLength(1);
+  expect(w.emitted('compositionupdate')).toHaveLength(1);
+});
+
+test('change 仅在值变化后由 Enter 或失焦触发一次', async () => {
+  const w = mount(Input, { props: { modelValue: '' } });
+  await w.get('input').setValue('新值');
+  await w.get('input').trigger('keydown', { key: 'Enter' });
+  await w.get('input').trigger('change');
+  expect(w.emitted('change')).toHaveLength(1);
+  await w.get('input').trigger('blur');
+  expect(w.emitted('change')).toHaveLength(1);
+});
