@@ -1,0 +1,32 @@
+@import './iconfont.scss';
+.i-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  line-height: 1;
+  flex-shrink: 0;
+  vertical-align: middle;
+  font-size: 16px;
+  color: inherit;
+  fill: currentColor;
+}
+.i-icon--small {
+  font-size: 14px;
+}
+.i-icon--large {
+  font-size: 20px;
+}
+.i-icon svg {
+  width: 1em;
+  height: 1em;
+}
+.i-icon.is-loading {
+  animation: i-icon-rotate 2s linear infinite;
+}
+@keyframes i-icon-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}

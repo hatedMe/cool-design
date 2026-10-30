@@ -1,0 +1,36 @@
+.i-message {
+  position: fixed;
+  z-index: 2100;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 18px;
+  border: 1px solid var(--i-success);
+  border-radius: var(--i-radius);
+  background: var(--i-bg);
+  color: var(--i-success);
+  box-shadow: var(--i-shadow);
+  max-width: calc(100vw - 32px);
+}
+.i-message--error {
+  border-color: var(--i-danger);
+  color: var(--i-danger);
+}
+.i-message--warning {
+  border-color: var(--i-warning);
+  color: var(--i-warning);
+}
+.i-message--info {
+  border-color: var(--i-border);
+  color: var(--i-text-secondary);
+}
+.i-message button {
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 18px;
+}

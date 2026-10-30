@@ -1,0 +1,57 @@
+.i-dialog__mask {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgb(10 22 40 / 48%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+.i-dialog {
+  width: 480px;
+  max-width: 100%;
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  border: 1px solid var(--i-border);
+  border-radius: 10px;
+  background: var(--i-bg);
+  color: var(--i-text);
+  box-shadow: var(--i-shadow);
+}
+.i-dialog--center {
+  align-self: center;
+}
+.i-dialog__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--i-border);
+}
+.i-dialog__header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.i-dialog__header button {
+  background: none;
+  border: 0;
+  color: var(--i-text-secondary);
+  font-size: 24px;
+  cursor: pointer;
+}
+.i-dialog__header button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.i-dialog__body {
+  padding: 24px;
+}
+.i-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--i-border);
+}

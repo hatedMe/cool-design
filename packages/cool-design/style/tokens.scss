@@ -1,0 +1,53 @@
+:root,
+.i-config-provider {
+  --i-on-primary: #fff;
+  --i-primary: #2463eb;
+  --i-primary-hover: #1d4ed8;
+  --i-success: #16815d;
+  --i-warning: #b77909;
+  --i-danger: #d73d4a;
+  --i-text: #203047;
+  --i-text-secondary: #65748a;
+  --i-text-muted: #8794a6;
+  --i-bg: #fff;
+  --i-bg-page: #f3f6fa;
+  --i-bg-subtle: #f7f9fc;
+  --i-border: #dce3ed;
+  --i-radius: 6px;
+  --i-shadow: 0 12px 40px rgb(26 43 68 / 16%);
+  --i-control-height: 32px;
+  --i-space: 8px;
+  --i-font-size: 14px;
+}
+.i-config-provider[data-theme='dark'] {
+  color-scheme: dark;
+  --i-on-primary: #13213b;
+  --i-primary: #7aa9ff;
+  --i-primary-hover: #a0c1ff;
+  --i-success: #64d5a6;
+  --i-warning: #f0bf65;
+  --i-danger: #ff8793;
+  --i-text: #e0e8f4;
+  --i-text-secondary: #a6b4c9;
+  --i-text-muted: #8190a6;
+  --i-bg: #1c2738;
+  --i-bg-page: #131c2b;
+  --i-bg-subtle: #233147;
+  --i-border: #36445a;
+}
+.i-config-provider {
+  color: var(--i-text);
+  font:
+    var(--i-font-size) / 1.5 'Microsoft YaHei',
+    'PingFang SC',
+    sans-serif;
+}
+.i-config-provider *,
+.i-config-provider *::before,
+.i-config-provider *::after {
+  box-sizing: border-box;
+}
+.i-config-provider :focus-visible {
+  outline: 2px solid var(--i-primary);
+  outline-offset: 3px;
+}

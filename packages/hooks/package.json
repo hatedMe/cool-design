@@ -1,0 +1,11 @@
+{
+  "name": "@cool-design/hooks",
+  "version": "1.2.0",
+  "private": true,
+  "type": "module",
+  "main": "../../lib/packages/hooks/index.cjs",
+  "module": "../../es/packages/hooks/index.js",
+  "types": "../../es/packages/hooks/index.d.ts",
+  "exports": { ".": { "types": "../../es/packages/hooks/index.d.ts", "import": "../../es/packages/hooks/index.js", "require": "../../lib/packages/hooks/index.cjs" } },
+  "peerDependencies": { "vue": "^3.2.47" }
+}

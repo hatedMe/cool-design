@@ -1,0 +1,68 @@
+.i-tag {
+  --i-tag-color: var(--i-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 2px 8px;
+  border: 1px solid var(--i-tag-color);
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--i-tag-color);
+  background: var(--i-bg-subtle);
+  vertical-align: middle;
+}
+.i-tag--success {
+  --i-tag-color: var(--i-success);
+}
+.i-tag--warning {
+  --i-tag-color: var(--i-warning);
+}
+.i-tag--danger {
+  --i-tag-color: var(--i-danger);
+}
+.i-tag--info {
+  --i-tag-color: var(--i-text-secondary);
+}
+.i-tag--plain {
+  background: var(--i-bg);
+}
+.i-tag--dark {
+  background: var(--i-tag-color);
+  color: var(--i-bg);
+}
+.i-tag--dark.i-tag--primary {
+  color: var(--i-on-primary);
+}
+.i-tag--small {
+  padding: 0 6px;
+  line-height: 18px;
+}
+.i-tag--large {
+  padding: 3px 10px;
+  line-height: 24px;
+  font-size: 14px;
+}
+.i-tag--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.i-tag--round {
+  border-radius: 999px;
+}
+.i-tag--hit {
+  background: transparent;
+}
+.i-tag button {
+  border: 0;
+  border-radius: 3px;
+  padding: 0 2px;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.i-tag button:disabled {
+  cursor: not-allowed;
+}

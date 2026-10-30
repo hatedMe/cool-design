@@ -1,0 +1,80 @@
+import { computed, defineComponent, ref, type PropType } from 'vue';
+export interface AutocompleteSuggestion {
+  value: string;
+  [key: string]: unknown;
+}
+export default defineComponent({
+  name: 'i-autocomplete',
+  props: {
+    modelValue: { type: String, default: '' },
+    suggestions: { type: Array as PropType<(string | AutocompleteSuggestion)[]>, default: () => [] },
+    fetchSuggestions: Function as PropType<(query: string, cb: (items: AutocompleteSuggestion[]) => void) => void>,
+    placeholder: String,
+    disabled: Boolean,
+    clearable: Boolean,
+    triggerOnFocus: { type: Boolean, default: true }
+  },
+  emits: ['update:modelValue', 'input', 'change', 'select', 'clear', 'focus', 'blur'],
+  setup(props, { emit }) {
+    const focused = ref(false);
+    const items = ref<AutocompleteSuggestion[]>([]);
+    const normalize = (item: string | AutocompleteSuggestion) => (typeof item === 'string' ? { value: item } : item);
+    const query = (value: string) => {
+      emit('update:modelValue', value);
+      emit('input', value);
+      if (props.fetchSuggestions) props.fetchSuggestions(value, (result) => (items.value = result));
+      else
+        items.value = props.suggestions
+          .map(normalize)
+          .filter((item) => !value || item.value.toLowerCase().includes(value.toLowerCase()));
+    };
+    const visible = computed(() => focused.value && items.value.length > 0);
+    return () => (
+      <span class='i-autocomplete'>
+        <input
+          value={props.modelValue}
+          placeholder={props.placeholder}
+          disabled={props.disabled}
+          onInput={(e: Event) => query((e.target as HTMLInputElement).value)}
+          onFocus={(e: FocusEvent) => {
+            focused.value = true;
+            emit('focus', e);
+            if (props.triggerOnFocus) query(props.modelValue);
+          }}
+          onBlur={(e: FocusEvent) => {
+            setTimeout(() => (focused.value = false), 120);
+            emit('blur', e);
+          }}
+          onChange={() => emit('change', props.modelValue)}
+        />
+        {props.clearable && props.modelValue && (
+          <button
+            type='button'
+            aria-label='清空'
+            onClick={() => {
+              query('');
+              emit('clear');
+            }}>
+            ×
+          </button>
+        )}
+        {visible.value && (
+          <ul class='i-autocomplete__list'>
+            {items.value.map((item) => (
+              <li
+                key={item.value}
+                onMousedown={(e: MouseEvent) => {
+                  e.preventDefault();
+                  emit('update:modelValue', item.value);
+                  emit('select', item);
+                  focused.value = false;
+                }}>
+                {item.value}
+              </li>
+            ))}
+          </ul>
+        )}
+      </span>
+    );
+  }
+});

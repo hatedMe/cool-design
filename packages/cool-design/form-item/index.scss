@@ -1,0 +1,13 @@
+.i-form-item {
+  margin-bottom: 20px;
+}
+.i-form-item__label {
+  display: block;
+  margin-bottom: 7px;
+  font-weight: 500;
+}
+.i-form-item__error {
+  color: var(--i-danger);
+  font-size: 12px;
+  margin-top: 5px;
+}

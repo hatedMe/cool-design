@@ -2,6 +2,7 @@
 node_modules
 /dist
 /lib
+/es
 .history
 
 
@@ -17,10 +18,13 @@ pnpm-debug.log*
 
 # Editor directories and files
 .idea
-.vscode
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 *.tgz
+
+.superpowers
+AGENTS.md
+/docs

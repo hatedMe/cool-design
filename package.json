@@ -1,47 +1,111 @@
 {
   "name": "cool-design",
-  "version": "1.1.0",
+  "version": "1.4.0",
+  "type": "module",
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint --fix",
-    "lib": "vue-cli-service build --mode production --target lib --name index --dest lib package/index.js",
-    "release": "release-it"
+    "dev": "vite --config vite.docs.config.ts",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "build": "node scripts/build.mjs",
+    "preview": "vite preview --config vite.docs.config.ts",
+    "dev:docs": "vite --config vite.docs.config.ts",
+    "build:docs": "vite build --config vite.docs.config.ts",
+    "preview:docs": "vite preview --config vite.docs.config.ts",
+    "preview:examples": "vite preview --config vite.examples.config.ts",
+    "typecheck:docs": "vue-tsc --noEmit -p tsconfig.docs.json",
+    "release": "release-it",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.build.json",
+    "typecheck:legacy": "vue-tsc --noEmit -p tsconfig.json",
+    "dev:examples": "vite --config vite.examples.config.ts",
+    "build:examples": "vite build --config vite.examples.config.ts"
   },
   "files": [
-    "lib",
-    "types"
+    "es",
+    "lib"
   ],
-  "types": "types/index.d.ts",
-  "dependencies": {
-    "core-js": "^3.6.5",
-    "vue": "^2.6.11"
+  "types": "./es/packages/cool-design/index.d.ts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hatedMe/cool-design.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
-    "@babel/plugin-syntax-jsx": "^7.14.5",
-    "@vue/babel-plugin-transform-vue-jsx": "^1.2.1",
-    "@vue/cli-plugin-babel": "~4.5.0",
-    "@vue/cli-plugin-eslint": "~4.5.0",
-    "@vue/cli-service": "~4.5.0",
-    "@vue/eslint-config-standard": "^5.1.2",
-    "babel-eslint": "^10.1.0",
-    "babel-plugin-syntax-jsx": "^6.18.0",
-    "babel-plugin-transform-vue-jsx": "^3.7.0",
-    "eslint": "^6.7.2",
-    "eslint-plugin-import": "^2.20.2",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.0",
-    "eslint-plugin-vue": "^6.2.2",
-    "highlight.js": "^11.2.0",
-    "markdown-it": "^12.2.0",
-    "markdown-it-anchor": "^8.3.1",
-    "markdown-it-container": "^3.0.0",
+    "@eslint/js": "^10.0.1",
+    "@types/markdown-it": "^14.2.0",
+    "@vitejs/plugin-vue": "^4.3.2",
+    "@vitejs/plugin-vue-jsx": "^3.0.2",
+    "@vue/test-utils": "^2.4.1",
+    "chalk": "^5.3.0",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vue": "^10.12.0",
+    "globals": "^17.13.0",
+    "highlight.js": "^11.12.0",
+    "jsdom": "^22.1.0",
+    "markdown-it": "^15.0.3",
+    "prettier": "^3.2.4",
     "release-it": "^14.11.6",
-    "sass": "1.30.0",
-    "sass-loader": "10.1.1",
-    "transliteration": "^2.2.0",
-    "vue-router": "^3.5.2",
-    "vue-template-compiler": "^2.6.11"
+    "sass": "^1.66.1",
+    "typescript": "^5.1.6",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^4.4.9",
+    "vite-plugin-dts": "^3.5.2",
+    "vitest": "^0.34.3",
+    "vue": "^3.2.47",
+    "vue-eslint-parser": "^10.4.1",
+    "vue-tsc": "^1.8.8"
+  },
+  "peerDependencies": {
+    "vue": "^3.2.47"
+  },
+  "main": "./lib/packages/cool-design/index.cjs",
+  "module": "./es/packages/cool-design/index.js",
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./es/packages/cool-design/index.d.ts",
+        "default": "./es/packages/cool-design/index.js"
+      },
+      "require": {
+        "types": "./lib/packages/cool-design/index.d.cts",
+        "default": "./lib/packages/cool-design/index.cjs"
+      }
+    },
+    "./style.css": "./es/style.css",
+    "./package.json": "./package.json",
+    "./hooks": {
+      "import": {
+        "types": "./es/packages/cool-design/hooks.d.ts",
+        "default": "./es/packages/cool-design/hooks.js"
+      },
+      "require": {
+        "types": "./lib/packages/cool-design/hooks.d.cts",
+        "default": "./lib/packages/cool-design/hooks.cjs"
+      }
+    },
+    "./*": {
+      "import": {
+        "types": "./es/packages/cool-design/*/index.d.ts",
+        "default": "./es/packages/cool-design/*/index.js"
+      },
+      "require": {
+        "types": "./lib/packages/cool-design/*/index.d.cts",
+        "default": "./lib/packages/cool-design/*/index.cjs"
+      }
+    }
+  },
+  "packageManager": "pnpm@10.33.0",
+  "dependencies": {
+    "async-validator": "^4.2.5"
   }
 }
