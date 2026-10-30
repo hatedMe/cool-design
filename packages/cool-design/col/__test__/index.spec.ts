@@ -41,3 +41,14 @@ test('嵌套 Row 各自提供动态 gutter，不相互覆盖', async () => {
   expect((cols[1].element as HTMLElement).style.paddingLeft).toBe('8px');
   w.unmount();
 });
+
+test('normalizes non-finite responsive values', () => {
+  const w = mount(Col, { props: { span: Number.NaN, sm: { span: Number.POSITIVE_INFINITY } } });
+  expect(w.classes()).toContain('i-col-0');
+  expect(w.classes()).toContain('i-col-sm-0');
+});
+
+test('ignores null responsive configuration', () => {
+  const wrapper = mount(Col, { props: { sm: null } });
+  expect(wrapper.exists()).toBe(true);
+});

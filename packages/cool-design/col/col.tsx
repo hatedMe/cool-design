@@ -2,7 +2,7 @@ import { computed, defineComponent, h, inject, type PropType } from 'vue';
 import { rowKeys } from '../row/row';
 import type { ColSize } from './types';
 const responsive = { type: [Number, Object] as PropType<ColSize>, default: undefined };
-const units = (value: number) => Math.max(0, Math.min(24, Math.trunc(value)));
+const units = (value: number) => (Number.isFinite(value) ? Math.max(0, Math.min(24, Math.trunc(value))) : 0);
 export default defineComponent({
   name: 'i-col',
   props: {
@@ -30,7 +30,8 @@ export default defineComponent({
       for (const breakpoint of ['xs', 'sm', 'md', 'lg', 'xl'] as const) {
         const value = props[breakpoint];
         if (value === undefined) continue;
-        const values = typeof value === 'number' ? { span: value } : value;
+        const values =
+          typeof value === 'number' ? { span: value } : value && typeof value === 'object' ? value : {};
         for (const key of ['span', 'offset', 'push', 'pull'] as const) {
           const amount = values[key];
           if (amount !== undefined)
@@ -41,7 +42,9 @@ export default defineComponent({
         props.tag,
         {
           class: classes,
-          style: { paddingLeft: `${gutter.value / 2}px`, paddingRight: `${gutter.value / 2}px` }
+          style: gutter.value
+            ? { paddingLeft: `${gutter.value / 2}px`, paddingRight: `${gutter.value / 2}px` }
+            : undefined
         },
         slots.default?.()
       );

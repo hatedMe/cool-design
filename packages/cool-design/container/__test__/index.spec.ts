@@ -70,10 +70,19 @@ test('五个容器渲染默认插槽、保留原生属性，并使用文档约�
     expect(region.attributes('id')).toBe('region');
     expect(region.attributes('aria-label')).toBe('业务区域');
     expect(region.classes()).toContain('custom-region');
-    if (tag === 'header' || tag === 'footer') expect((region.element as HTMLElement).style.height).toBe('60px');
-    if (tag === 'aside') expect((region.element as HTMLElement).style.width).toBe('300px');
+    if (tag === 'header' || tag === 'footer') expect((region.element as HTMLElement).style.height).toBe('');
+    if (tag === 'aside') expect((region.element as HTMLElement).style.width).toBe('');
     w.unmount();
   }
+});
+
+test('显式尺寸仍转换为 px', () => {
+  const header = mount(Header, { props: { height: 72 } });
+  const aside = mount(Aside, { props: { width: 240 } });
+  const footer = mount(Footer, { props: { height: '80px' } });
+  expect((header.element as HTMLElement).style.height).toBe('72px');
+  expect((aside.element as HTMLElement).style.width).toBe('240px');
+  expect((footer.element as HTMLElement).style.height).toBe('80px');
 });
 
 test('嵌套容器分别判断方向，不将后代页头误判为父容器的直接区域', () => {

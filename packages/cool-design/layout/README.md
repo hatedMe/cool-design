@@ -47,7 +47,7 @@ import 'cool-design/style.css';
 | ------- | --------------------- | ------------------------------------------------------------------ | ------ |
 | gutter  | 相邻列的间距，单位 px | number                                                             | 0      |
 | justify | 水平排列方式          | start / end / center / space-around / space-between / space-evenly | start  |
-| align   | 垂直对齐方式          | top / center / bottom                                              | top    |
+| align   | 垂直对齐方式          | top / middle / bottom / center（center 为项目兼容别名）             | —      |
 | tag     | 自定义根元素标签      | string                                                             | div    |
 
 #### Row Slots
