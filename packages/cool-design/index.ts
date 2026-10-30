@@ -24,7 +24,7 @@ import ConfigProvider from './config-provider';
 import Input from './input';
 import Select from './select';
 import SelectOption from './select-option';
-import Checkbox from './checkbox';
+import Checkbox, { CheckboxButton } from './checkbox';
 import CheckboxGroup from './checkbox-group';
 import Switch from './switch';
 import Form from './form';
@@ -97,6 +97,7 @@ export {
   Select,
   SelectOption,
   Checkbox,
+  CheckboxButton,
   CheckboxGroup,
   Switch,
   Form,
@@ -165,6 +166,7 @@ const components = [
   Select,
   SelectOption,
   Checkbox,
+  CheckboxButton,
   CheckboxGroup,
   Switch,
   Form,

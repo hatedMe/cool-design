@@ -321,6 +321,9 @@ export const pages: Page[] = [
     ['states', '禁用与半选', '禁用选项和 indeterminate 状态。'],
     ['group', '复选框组', '使用数组模型管理多项选择。']
   ]),
+  component('checkbox-button', 'CheckboxButton 复选框按钮', '表单组件', [
+    ['basic', '按钮用法', '独立使用或在 CheckboxGroup 中使用按钮样式。']
+  ]),
   component(
     'checkbox-group',
     'CheckboxGroup 复选框组',
