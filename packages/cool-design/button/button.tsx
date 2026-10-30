@@ -67,7 +67,8 @@ export default defineComponent({
           h(
             'span',
             { class: 'i-button__loading', 'aria-hidden': 'true' },
-            slots.loading?.() ?? h(Icon, { icon: props.loadingIcon || 'icon-refresh', class: 'i-button__icon' })
+            slots.loading?.() ??
+              h(Icon, { icon: props.loadingIcon || 'icon-refresh', class: ['i-button__icon', 'is-loading'] })
           ),
         !props.loading &&
           (slots.icon?.() ??

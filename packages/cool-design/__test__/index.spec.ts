@@ -1,5 +1,6 @@
 import { createApp } from 'vue';
 import { describe, expect, test } from 'vitest';
+import { version as packageVersion } from '../../../package.json';
 import UI, * as components from '../index';
 
 describe('公开入口', () => {
@@ -10,6 +11,6 @@ describe('公开入口', () => {
     expect(app.component('i-button')).toBe(components.Button);
     expect(app.component('i-row')).toBe(components.Row);
     expect(app.component('i-col')).toBe(components.Col);
-    expect(UI.version).toBe('1.2.0');
+    expect(UI.version).toBe(packageVersion);
   });
 });

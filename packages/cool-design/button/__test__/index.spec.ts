@@ -102,6 +102,7 @@ describe('test `Button` component', () => {
   test('loading 默认使用项目 Icon，且 loading 插槽优先', () => {
     const defaultLoading = mount(Button, { props: { loading: true } });
     expect(defaultLoading.find('.i-button__loading .i-icon').classes()).toContain('icon-refresh');
+    expect(defaultLoading.find('.i-button__loading .i-icon').classes()).toContain('is-loading');
     expect(defaultLoading.find('.i-button__loading').text()).toBe('');
 
     const slottedLoading = mount(Button, {

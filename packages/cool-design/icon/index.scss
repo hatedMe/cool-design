@@ -22,3 +22,11 @@
   width: 1em;
   height: 1em;
 }
+.i-icon.is-loading {
+  animation: i-icon-rotate 2s linear infinite;
+}
+@keyframes i-icon-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
