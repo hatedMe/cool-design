@@ -145,6 +145,13 @@ export const pages: Page[] = [
     ['Radio', 'RadioGroup']
   ),
   component(
+    'radio-button',
+    'RadioButton 单选按钮',
+    '表单组件',
+    [['basic', '按钮单选组', '使用 RadioButton 构建按钮样式的受控单选组。']],
+    ['RadioButton', 'RadioGroup']
+  ),
+  component(
     'color',
     'Color 色彩',
     '基础组件',

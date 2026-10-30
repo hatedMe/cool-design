@@ -11,6 +11,7 @@ RadioGroup 管理一组 Radio 的受控值、原生名称和整体禁用状态�
 | modelValue | 当前选中值     | string / number / boolean | —      |
 | name       | 统一的原生名称 | string                    | —      |
 | disabled   | 禁用整个组     | boolean                   | false  |
+| size       | 统一尺寸       | small / default / large  | —      |
 
 ### 事件
 

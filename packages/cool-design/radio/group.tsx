@@ -5,6 +5,7 @@ export interface RadioGroupContext {
   modelValue: RadioValue | undefined;
   name?: string;
   disabled: boolean;
+  size?: string;
   update: (value: RadioValue) => void;
 }
 export const radioGroupKey: InjectionKey<RadioGroupContext> = Symbol('radio-group');
@@ -14,7 +15,8 @@ export default defineComponent({
   props: {
     modelValue: [String, Number, Boolean] as PropType<RadioValue>,
     name: String,
-    disabled: Boolean
+    disabled: Boolean,
+    size: String
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { emit, slots }) {
@@ -27,6 +29,9 @@ export default defineComponent({
       },
       get disabled() {
         return props.disabled;
+      },
+      get size() {
+        return props.size;
       },
       update: (value) => {
         emit('update:modelValue', value);

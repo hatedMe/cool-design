@@ -13,7 +13,16 @@
     color: $white;
   }
 
+  &--small {
+    font-size: 12px;
+  }
+
+  &--large {
+    font-size: 16px;
+  }
+
   &--is-disabled {
+    pointer-events: none;
     cursor: not-allowed;
     color: lighten($disable, 0%);
     background-color: lighten($primary, 0%);

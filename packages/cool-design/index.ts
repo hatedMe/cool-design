@@ -37,6 +37,7 @@ import Avatar from './avatar';
 import Badge from './badge';
 import Radio from './radio';
 import RadioGroup from './radio-group';
+import RadioButton from './radio-button';
 import { DatePicker, TimePicker, DateTimePicker, Calendar } from './date-picker';
 import Autocomplete from './autocomplete';
 import ColorPicker from './color-picker';
@@ -108,6 +109,7 @@ export {
   Badge,
   Radio,
   RadioGroup,
+  RadioButton,
   DatePicker,
   TimePicker,
   DateTimePicker,
@@ -175,6 +177,7 @@ const components = [
   Badge,
   Radio,
   RadioGroup,
+  RadioButton,
   DatePicker,
   TimePicker,
   DateTimePicker,

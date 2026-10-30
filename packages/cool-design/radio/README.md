@@ -19,10 +19,12 @@ Radio 用于在互斥选项中选择一个值；RadioGroup 用于管理同一组
 | 参数       | 说明           | 类型                      | 默认值 |
 | ---------- | -------------- | ------------------------- | ------ |
 | modelValue | 当前选中值     | string / number / boolean | —      |
-| value      | 当前选项值     | string / number / boolean | true   |
-| disabled   | 禁用选项       | boolean                   | false  |
-| name       | 原生单选组名称 | string                    | —      |
-| border     | 显示边框       | boolean                   | false  |
+| value      | 当前选项值；未传时使用 label | string / number / boolean | —      |
+| label      | Element Plus 兼容选项值     | string / number / boolean | —      |
+| disabled   | 禁用选项                    | boolean                   | false  |
+| name       | 原生单选组名称              | string                    | —      |
+| border     | 显示边框                    | boolean                   | false  |
+| size       | 尺寸                        | small / default / large  | —      |
 
 ### RadioGroup 属性
 

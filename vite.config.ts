@@ -17,7 +17,7 @@ export default defineConfig({
         'src/utils/with-install.ts',
         'src/utils/overlay-stack.ts',
         'src/utils/use-floating.ts',
-        'packages/cool-design/{button,button-group,avatar,badge,radio,radio-group,checkbox-group,row,col,config-provider,input,select,select-option,checkbox,switch,form,form-item,table,pagination,dialog,message,icon,space,divider,empty,loading,tag,tooltip,popconfirm,message-box,container,header,aside,main,footer,link,date-picker,time-picker,date-time-picker,calendar,autocomplete,color-picker,slider,transfer,tree-select,upload,card,descriptions,image,result,skeleton,tree,timeline,statistic,menu,breadcrumb,tabs,dropdown,steps,page-header,alert,drawer,notification,popover,watermark,directives}/**/*.{ts,tsx}'
+        'packages/cool-design/{button,button-group,avatar,badge,radio,radio-group,radio-button,checkbox-group,row,col,config-provider,input,select,select-option,checkbox,switch,form,form-item,table,pagination,dialog,message,icon,space,divider,empty,loading,tag,tooltip,popconfirm,message-box,container,header,aside,main,footer,link,date-picker,time-picker,date-time-picker,calendar,autocomplete,color-picker,slider,transfer,tree-select,upload,card,descriptions,image,result,skeleton,tree,timeline,statistic,menu,breadcrumb,tabs,dropdown,steps,page-header,alert,drawer,notification,popover,watermark,directives}/**/*.{ts,tsx}'
       ],
       exclude: ['**/__test__/**'],
       outDir: 'es'
