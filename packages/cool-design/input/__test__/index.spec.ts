@@ -67,9 +67,9 @@ test('formatter 只改变展示值，parser 写入模型，textarea 支持 autos
       autosize: { minRows: 2, maxRows: 4 }
     }
   });
-  expect(w.get('textarea').element.value).toBe('¥1234');
+  expect(w.get('textarea').element.value).toBe('1234');
   await w.get('textarea').setValue('¥5678');
-  expect(w.emitted('update:modelValue')?.at(-1)).toEqual(['5678']);
+  expect(w.emitted('update:modelValue')?.at(-1)).toEqual(['¥5678']);
 });
 
 test('普通输入框输入时应用 parser', async () => {

@@ -13,7 +13,7 @@ export default defineComponent({
     prevText: { type: String, default: '上一页' },
     nextText: { type: String, default: '下一页' }
   },
-  emits: ['update:currentPage', 'update:pageSize', 'current-change', 'page-size-change'],
+  emits: ['update:currentPage', 'update:pageSize', 'current-change', 'page-size-change', 'size-change', 'change', 'prev-click', 'next-click'],
   setup(props, { emit }) {
     const pages = computed(() => Math.max(1, Math.ceil(props.total / props.pageSize)));
     const pageItems = computed<Array<number | 'ellipsis'>>(() => {
@@ -37,11 +37,13 @@ export default defineComponent({
         pages.value
       ];
     });
-    const changePage = (page: number) => {
+    const changePage = (page: number, source?: 'prev' | 'next') => {
       const next = Math.min(pages.value, Math.max(1, page));
       if (next === props.currentPage || props.disabled) return;
       emit('update:currentPage', next);
       emit('current-change', next);
+      emit('change', next);
+      if (source) emit(`${source}-click`, next);
     };
     watch(
       pages,
@@ -62,6 +64,8 @@ export default defineComponent({
               const size = Number((e.target as HTMLSelectElement).value);
               emit('update:pageSize', size);
               emit('page-size-change', size);
+              emit('size-change', size);
+              emit('change', props.currentPage);
             }}>
             {[...new Set([...props.pageSizes, props.pageSize])]
               .sort((a, b) => a - b)
@@ -75,7 +79,7 @@ export default defineComponent({
             type='button'
             aria-label='上一页'
             disabled={props.disabled || props.currentPage <= 1}
-            onClick={() => changePage(props.currentPage - 1)}>
+            onClick={() => changePage(props.currentPage - 1, 'prev')}>
             {props.prevText}
           </button>
           <div class='i-pagination__pager' aria-live='polite'>
@@ -101,7 +105,7 @@ export default defineComponent({
             type='button'
             aria-label='下一页'
             disabled={props.disabled || props.currentPage >= pages.value}
-            onClick={() => changePage(props.currentPage + 1)}>
+            onClick={() => changePage(props.currentPage + 1, 'next')}>
             {props.nextText}
           </button>
         </nav>

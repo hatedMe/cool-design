@@ -52,7 +52,8 @@ describe('InputNumber', () => {
     await wrapper.get('input').trigger('blur');
     expect(wrapper.emitted('focus')).toHaveLength(1);
     expect(wrapper.emitted('blur')).toHaveLength(1);
-    expect(() => (wrapper.vm as any).focus()).not.toThrow();
-    expect(() => (wrapper.vm as any).blur()).not.toThrow();
+    const instance = wrapper.vm as unknown as { focus: () => void; blur: () => void };
+    expect(() => instance.focus()).not.toThrow();
+    expect(() => instance.blur()).not.toThrow();
   });
 });

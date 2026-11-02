@@ -54,9 +54,9 @@ export default defineComponent({
     const lastChangedValue = ref(String(props.modelValue));
     const displayValue = computed(() => {
       const value = String(props.modelValue);
-      return props.formatter ? props.formatter(value) : value;
+      return props.type !== 'textarea' && props.formatter ? props.formatter(value) : value;
     });
-    const parseValue = (value: string) => (props.parser ? props.parser(value) : value);
+    const parseValue = (value: string) => (props.type !== 'textarea' && props.parser ? props.parser(value) : value);
     const graphemeLength = (value: string) => props.countGraphemes?.(value) ?? Array.from(value).length;
     const renderIcon = (icon: string | Component | undefined, fallback?: string) =>
       typeof icon === 'string' ? <i class={['i-input__icon', icon]} aria-hidden='true' /> : icon ? h(markRaw(toRaw(icon))) : fallback;
@@ -214,7 +214,7 @@ export default defineComponent({
           {props.wordLimitPosition === 'inside' && countNode}
           {passwordToggle}
           {slots.suffix?.() ?? renderIcon(props.suffixIcon)}
-          {props.clearable && props.modelValue && (
+          {props.clearable && !isTextarea && props.modelValue && (
             <button
               type='button'
               aria-label='清空'

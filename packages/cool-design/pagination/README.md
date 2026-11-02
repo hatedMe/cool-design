@@ -27,10 +27,14 @@
 | update:currentPage | 切换页码或页码越界修正         | page: number |
 | update:pageSize    | 改变每页条数；页面负责重置页码 | size: number |
 | current-change     | 页码改变后触发                 | page: number |
-| page-size-change   | 每页条数改变后触发             | size: number |
+| page-size-change   | 兼容事件：每页条数改变后触发   | size: number |
+| size-change        | 每页条数改变后触发             | size: number |
+| change             | 页码或每页条数改变后触发       | page: number |
+| prev-click         | 点击上一页后触发               | page: number |
+| next-click         | 点击下一页后触发               | page: number |
 
 ## 使用说明
 
 属性 currentPage: number（默认 1）、pageSize: number（默认 10，正整数）、total: number（默认 0）、disabled。页码从 1 开始。
 
-事件 update:currentPage(page)、current-change(page)、update:pageSize(size)、page-size-change(size)。改变大小由页面先将页码设为 1 再请求一次。总数缩小导致越界时通知父级修正页码。页码过多时使用省略号。
+事件 update:currentPage(page)、current-change(page)、update:pageSize(size)、size-change(size)、change(page)。`page-size-change(size)` 作为兼容事件保留；改变大小由页面先将页码设为 1 再请求一次。总数缩小导致越界时通知父级修正页码。页码过多时使用省略号。
