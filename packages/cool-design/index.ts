@@ -22,6 +22,7 @@ import Row from './row';
 import Col from './col';
 import ConfigProvider from './config-provider';
 import Input from './input';
+import InputNumber from './input-number';
 import Select from './select';
 import SelectOption from './select-option';
 import Checkbox, { CheckboxButton } from './checkbox';
@@ -94,6 +95,7 @@ export {
   Col,
   ConfigProvider,
   Input,
+  InputNumber,
   Select,
   SelectOption,
   Checkbox,
@@ -163,6 +165,7 @@ const components = [
   Col,
   ConfigProvider,
   Input,
+  InputNumber,
   Select,
   SelectOption,
   Checkbox,

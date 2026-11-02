@@ -269,6 +269,9 @@ export const pages: Page[] = [
     ['formatter', '格式化与自适应', '使用 formatter/parser 和 autosize 处理金额与多行文本。'],
     ['sizes', '尺寸与图标', '使用 small、default、large 和前后缀图标。']
   ]),
+  component('input-number', 'InputNumber 计数器', '表单组件', [
+    ['basic', '基础用法', '输入数值并使用步长控制。']
+  ]),
   component('date-picker', 'DatePicker 日期选择器', '表单组件', [
     ['basic', '日期选择', '选择日期、日期时间以及日期范围。']
   ]),

@@ -2,61 +2,74 @@
 
 .i-input-number {
   display: inline-flex;
-  justify-content: space-between;
-  align-items: center;
+  align-items: stretch;
   height: 32px;
   border: 1px solid $disable;
   border-radius: 4px;
-  padding: 0px;
+  overflow: hidden;
+  background: #fff;
 
-  &:hover {
-    border: 1px solid $primary;
+  &:hover,
+  &:focus-within {
+    border-color: $primary;
   }
 
-  &--disable {
+  &--disabled {
     cursor: not-allowed;
+    background-color: lighten($disable-hover, 3%);
+    color: $disable-active;
   }
 
-  &__action {
-    height: 32px;
+  &__increase,
+  &__decrease {
     width: 32px;
-    line-height: 32px;
-
-    text-align: center;
+    padding: 0;
+    border: 0;
     color: $disable-active;
-    font-size: $font-size-xl;
     background-color: lighten($disable-hover, 3%);
+    cursor: pointer;
+    font-size: $font-size-xl;
 
-    &:first-child {
-      border-radius: 4px 0px 0px 4px;
-      border-right: 1px solid $disable;
-    }
-
-    &:last-child {
-      border-radius: 0px 4px 4px 0px;
-      border-left: 1px solid $disable;
-    }
-
-    &:hover {
+    &:hover:not(:disabled) {
       color: $primary-active;
     }
 
-    &--disable {
+    &:disabled {
       cursor: not-allowed;
+      color: $disable;
     }
   }
 
-  &__input {
-    width: 80px;
-    height: 32px;
-    outline: none;
-    border: none;
-    text-align: center;
+  &__controls {
+    display: inline-flex;
+    flex-direction: column;
+    width: 24px;
 
-    &--disable {
-      cursor: not-allowed;
-      color: $disable-active;
-      background-color: lighten($disable-hover, 3%);
+    .i-input-number__increase,
+    .i-input-number__decrease {
+      width: 24px;
+      height: 16px;
+      line-height: 16px;
+      font-size: $font-size-sm;
     }
+  }
+
+  input {
+    width: 80px;
+    min-width: 0;
+    padding: 0 8px;
+    border: 0;
+    outline: none;
+    text-align: center;
+    color: inherit;
+    background: transparent;
+  }
+
+  &.i-control--large {
+    height: 40px;
+  }
+
+  &.i-control--small {
+    height: 24px;
   }
 }
