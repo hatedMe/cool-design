@@ -4,7 +4,7 @@ import { Select, SelectOption } from '../../index';
 const values = ref<(string | number)[]>([1]);
 </script>
 <template>
-  <Select v-model="values" multiple clearable>
+  <Select v-model="values" multiple :multiple-limit="2" clearable>
     <SelectOption :value="1" label="启用" />
     <SelectOption :value="2" label="停用" />
     <SelectOption value="other" label="其他" />
