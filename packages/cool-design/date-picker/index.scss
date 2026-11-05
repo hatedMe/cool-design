@@ -23,6 +23,9 @@
   &__separator {
     color: #909399;
   }
+  &__formatted {
+    display: none;
+  }
   &__clear {
     border: 0;
     background: transparent;
@@ -30,7 +33,98 @@
     color: #909399;
     font-size: 16px;
   }
+  &__dropdown {
+    display: flex;
+    padding: 8px;
+    border: 1px solid var(--i-border-color, #dcdfe6);
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  &__panel {
+    display: flex;
+    gap: 8px;
+  }
+  &__column {
+    display: flex;
+    flex-direction: column;
+    width: 56px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  &__option {
+    min-height: 32px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    &:hover,
+    &.is-selected {
+      background: var(--i-color-primary-light-9, #ecf5ff);
+      color: var(--i-color-primary, #409eff);
+    }
+    &.is-disabled,
+    &:disabled {
+      background: transparent;
+      color: #c0c4cc;
+      cursor: not-allowed;
+    }
+  }
 }
+.i-date-picker__dropdown {
+  width: 320px;
+  padding: 12px;
+  border: 1px solid var(--i-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+}
+.i-date-picker__calendar-panel {
+  width: 100%;
+}
+.i-date-picker__range-panels {
+  display: flex;
+  gap: 16px;
+}
+.i-date-picker__range-panels .i-date-picker__calendar-panel {
+  min-width: 280px;
+}
+.i-date-picker__panel-header {
+  display: grid;
+  grid-template-columns: 32px 1fr 32px;
+  align-items: center;
+  margin-bottom: 8px;
+  text-align: center;
+  button { border: 0; background: transparent; cursor: pointer; font-size: 20px; }
+}
+.i-date-picker__week,
+.i-date-picker__grid,
+.i-date-picker__panel {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  align-items: center;
+  text-align: center;
+}
+.i-date-picker__week { color: #909399; font-size: 12px; }
+.i-date-picker__week:has(.i-date-picker__week-number),
+.i-date-picker__grid.has-week-number { grid-template-columns: repeat(8, 1fr); }
+.i-date-picker__week-number-row { min-height: 32px; color: #909399; font-size: 12px; }
+.i-date-picker__grid button,
+.i-date-picker__panel button {
+  min-height: 32px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  &:hover, &.is-selected { background: #ecf5ff; color: var(--i-color-primary, #409eff); }
+  &:disabled { color: #c0c4cc; cursor: not-allowed; }
+}
+.i-date-picker__grid button.is-other-month { color: #c0c4cc; }
+.i-date-picker__grid button.is-in-range { border-radius: 0; background: #ecf5ff; }
+.i-date-picker__grid button.is-start-date,
+.i-date-picker__grid button.is-end-date { border-radius: 50%; background: var(--i-color-primary, #409eff); color: #fff; }
+.i-date-picker__panel { grid-template-columns: repeat(4, 1fr); }
 .i-calendar {
   width: 320px;
   padding: 12px;

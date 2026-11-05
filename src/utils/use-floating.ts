@@ -31,6 +31,7 @@ export type Placement =
 type BasePlacement = 'top' | 'bottom' | 'left' | 'right';
 type AppendTo = string | HTMLElement | undefined;
 export type FloatingReference = HTMLElement | { getBoundingClientRect: () => DOMRect };
+export type FloatingOptions = { offset?: number; placement?: Placement };
 
 interface FloatingController {
   target: ComputedRef<HTMLElement>;
@@ -51,12 +52,14 @@ export function useFloating(options: {
   reference: Ref<FloatingReference | undefined>;
   floating: Ref<HTMLElement | undefined>;
   placement: () => Placement;
+  fallbackPlacements?: () => Placement[] | undefined;
   close: () => void;
   trapFocus?: boolean;
   offset?: () => number;
   appendTo?: () => AppendTo;
   zIndex?: () => number | undefined;
   closeOnOutside?: () => boolean;
+  options?: () => FloatingOptions | undefined;
 }): FloatingController {
   const host = inject(overlayKey, undefined);
   const token = Symbol('floating');
@@ -99,7 +102,8 @@ export function useFloating(options: {
     const p = panel.getBoundingClientRect();
     const width = document.documentElement.clientWidth || window.innerWidth;
     const height = document.documentElement.clientHeight || window.innerHeight;
-    const gap = Math.max(0, options.offset?.() ?? 8);
+    const configured = options.options?.();
+    const gap = Math.max(0, configured?.offset ?? options.offset?.() ?? 8);
     const available = {
       top: a.top - gap,
       bottom: height - a.bottom - gap,
@@ -107,11 +111,23 @@ export function useFloating(options: {
       right: width - a.right - gap
     };
     const opposite: Record<BasePlacement, BasePlacement> = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' };
-    const requested = options.placement();
-    const [requestedSide, align] = placementParts(requested);
+    const requested = configured?.placement ?? options.placement();
+    const [requestedSide, requestedAlign] = placementParts(requested);
     let side = requestedSide;
-    const extent = side === 'top' || side === 'bottom' ? p.height : p.width;
-    if (available[side] < extent && available[opposite[side]] > available[side]) side = opposite[side];
+    let align = requestedAlign;
+    const candidates = [requested, ...(options.fallbackPlacements?.() || [])];
+    const fits = (candidate: Placement) => {
+      const [candidateSide] = placementParts(candidate);
+      const extent = candidateSide === 'top' || candidateSide === 'bottom' ? p.height : p.width;
+      return available[candidateSide] >= extent;
+    };
+    const selected = candidates.find(fits);
+    if (selected) {
+      [side, align] = placementParts(selected);
+    } else {
+      const extent = side === 'top' || side === 'bottom' ? p.height : p.width;
+      if (available[side] < extent && available[opposite[side]] > available[side]) side = opposite[side];
+    }
     const actualPlacement = align ? `${side}-${align}` as Placement : side;
     let x = a.left + (a.width - p.width) / 2;
     let y = a.top + (a.height - p.height) / 2;
