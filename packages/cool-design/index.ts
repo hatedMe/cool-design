@@ -229,4 +229,5 @@ export * from './hooks';
 export type { ColSize, ColSizeObject } from './col';
 export type { LinkType, LinkUnderline } from './link/link';
 export type { DatePickerType } from './date-picker';
+export type { UploadStatus, UploadRawFile, UploadFile, UploadUserFile, UploadFiles, UploadRequestOptions } from './upload';
 export { Notify } from './notification';
