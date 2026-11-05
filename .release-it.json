@@ -1,11 +1,13 @@
 {
   "$schema": "https://unpkg.com/release-it@14/schema/release-it.json",
+  "increment": "minor",
   "hooks": {
     "after:bump": "pnpm build"
   },
   "git": {
+    "commit": true,
     "commitMessage": "chore(release): v${version} [skip ci]",
-    "tagName": "v${version}",
+    "tag": false,
     "push": true
   },
   "npm": {
@@ -13,6 +15,6 @@
     "skipChecks": true
   },
   "github": {
-    "release": true
+    "release": false
   }
 }

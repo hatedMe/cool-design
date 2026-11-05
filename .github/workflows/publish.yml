@@ -34,7 +34,7 @@ jobs:
       - name: 安装依赖
         run: pnpm install --frozen-lockfile
 
-      # release-it 会先递增版本并构建，再提交、打 tag、创建 GitHub Release 并发布 npm。
+      # release-it 会先递增 minor 版本并构建，再提交、推送并发布 npm。
       # 发布前请在 npm 包设置中将本工作流配置为 Trusted Publisher。
       - name: 自动递增版本并发布
         run: pnpm release --ci
