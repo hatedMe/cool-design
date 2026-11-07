@@ -59,7 +59,8 @@ export default defineComponent({
     };
     const commitValue = (value: number) => {
       if (props.disabled) return;
-      const next = props.clearable && value <= currentValue.value && currentValue.value < value + 1 ? 0 : normalizeValue(value, props.max, props.allowHalf);
+      const normalized = normalizeValue(value, props.max, props.allowHalf);
+      const next = props.clearable && (normalized === currentValue.value || (props.allowHalf && normalized === Math.floor(currentValue.value))) ? 0 : normalized;
       currentValue.value = next;
       initialValue.value = next;
       emit('update:modelValue', next);
@@ -68,7 +69,8 @@ export default defineComponent({
     expose({ setCurrentValue, resetCurrentValue });
 
     const activeValue = computed(() => hoverValue.value || currentValue.value);
-    const getColor = (index: number) => {
+    const getColor = (index: number, selected: boolean) => {
+      if (!selected) return props.disabled ? props.disabledVoidColor : props.voidColor;
       const colors = Array.isArray(props.colors) ? props.colors : props.colors ? [props.colors] : [];
       if (!colors.length) return undefined;
       const value = activeValue.value;
@@ -99,12 +101,22 @@ export default defineComponent({
             <span
               class={bem('item')}
               role='radio'
-              aria-checked={selected || half ? 'true' : 'false'}
+              aria-checked={selected ? 'true' : 'false'}
               aria-disabled={props.disabled ? 'true' : undefined}
+              aria-label={`${itemValue}${half ? '（半星）' : ''}分`}
               tabindex={props.disabled ? -1 : 0}
               data-half={half ? 'true' : undefined}
-              onClick={() => commitValue(half ? itemValue - 0.5 : itemValue)}
-              onMouseenter={() => !props.disabled && (hoverValue.value = itemValue)}
+              onClick={(event: MouseEvent) => {
+                const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+                const value = props.allowHalf && event.clientX - rect.left < rect.width / 2 ? itemValue - 0.5 : itemValue;
+                commitValue(value);
+              }}
+              onMouseenter={(event: MouseEvent) => {
+                if (!props.disabled) {
+                  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+                  hoverValue.value = props.allowHalf && event.clientX - rect.left < rect.width / 2 ? itemValue - 0.5 : itemValue;
+                }
+              }}
               onMouseleave={() => (hoverValue.value = 0)}
               onKeydown={(event: KeyboardEvent) => {
                 if (event.key === 'Enter' || event.key === ' ') {
@@ -112,7 +124,7 @@ export default defineComponent({
                   commitValue(itemValue);
                 }
               }}>
-              <Icon class={bem('icon', { half })} icon={icon} color={getColor(index)} size={props.size} aria-hidden='true' />
+              <Icon class={bem('icon', { half })} icon={icon} color={getColor(index, selected || half)} size={props.size} aria-hidden='true' />
             </span>
           );
         })}

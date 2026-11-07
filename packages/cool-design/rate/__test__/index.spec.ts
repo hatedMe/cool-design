@@ -61,7 +61,37 @@ describe('Rate', () => {
   test('supports half selection and clearable selection', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 2.5, allowHalf: true, clearable: true } });
     expect(wrapper.findAll('[data-half="true"]')).toHaveLength(1);
-    await wrapper.findAll('[role="radio"]')[1].trigger('click');
+    const secondItem = wrapper.findAll('[role="radio"]')[1];
+    Object.defineProperty(secondItem.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
+    await secondItem.trigger('click', { clientX: 75 });
     expect(wrapper.emitted('change')).toContainEqual([0]);
+  });
+
+  test('uses the horizontal position for half-star hover and click without exceeding bounds', async () => {
+    const wrapper = mount(Rate, { props: { allowHalf: true, max: 3 } });
+    const item = wrapper.findAll('[role="radio"]')[1];
+    Object.defineProperty(item.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
+    await item.trigger('mouseenter', { clientX: 25 });
+    expect(wrapper.findAll('[data-half="true"]')).toHaveLength(1);
+    await item.trigger('mouseleave');
+    await item.trigger('click', { clientX: 75 });
+    expect(wrapper.emitted('change')).toContainEqual([2]);
+    const thirdItem = wrapper.findAll('[role="radio"]')[2];
+    Object.defineProperty(thirdItem.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
+    await thirdItem.trigger('click', { clientX: 0 });
+    expect(wrapper.emitted('change')).toContainEqual([2.5]);
+  });
+
+  test('applies void colors to empty items and disabled void colors when disabled', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 1, voidColor: 'red', disabledVoidColor: 'blue' } });
+    expect(wrapper.findAll('.i-rate__icon')[1].attributes('style')).toContain('color: red');
+    await wrapper.setProps({ disabled: true });
+    expect(wrapper.findAll('.i-rate__icon')[1].attributes('style')).toContain('color: blue');
+  });
+
+  test('does not mark a half star as a fully selected radio', () => {
+    const wrapper = mount(Rate, { props: { modelValue: 1.5, allowHalf: true } });
+    expect(wrapper.findAll('[aria-checked="true"]')).toHaveLength(1);
+    expect(wrapper.findAll('[data-half="true"]')).toHaveLength(1);
   });
 });
