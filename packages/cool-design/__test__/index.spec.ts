@@ -1,4 +1,4 @@
-import { createApp } from 'vue';
+import { createApp, h } from 'vue';
 import { describe, expect, test } from 'vitest';
 import { version as packageVersion } from '../../../package.json';
 import UI, * as components from '../index';
@@ -15,10 +15,12 @@ describe('公开入口', () => {
     expect(app.component('i-rate')).toBe(components.Rate);
     expect(UI.version).toBe(packageVersion);
 
-    const standalone = createApp({});
+    const container = document.createElement('div');
+    const standalone = createApp({ render: () => h(components.Rate, { modelValue: 3 }) });
     standalone.use(components.Rate);
     expect(standalone.component('i-rate')).toBe(components.Rate);
-    const mounted = standalone.mount(document.createElement('div'));
-    expect(mounted).toBeDefined();
+    standalone.mount(container);
+    expect(container.querySelector('[role="radiogroup"]')).toBeTruthy();
+    expect(container.querySelectorAll('[role="radio"]')).toHaveLength(5);
   });
 });
