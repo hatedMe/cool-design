@@ -14,5 +14,11 @@ describe('公开入口', () => {
     expect(components.Rate).toBeDefined();
     expect(app.component('i-rate')).toBe(components.Rate);
     expect(UI.version).toBe(packageVersion);
+
+    const standalone = createApp({});
+    standalone.use(components.Rate);
+    expect(standalone.component('i-rate')).toBe(components.Rate);
+    const mounted = standalone.mount(document.createElement('div'));
+    expect(mounted).toBeDefined();
   });
 });

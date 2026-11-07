@@ -38,7 +38,7 @@
 
 ## 只读与清零
 
-不传 `modelValue` 更新事件或设置 `disabled` 即可只读展示。设置 `clearable` 后再次点击当前评分可以清零。
+设置 `disabled` 可只读展示并禁止鼠标和键盘交互。设置 `clearable` 后再次点击当前评分可以清零。
 
 ## API
 
@@ -48,7 +48,7 @@
 | --- | --- | --- | --- |
 | modelValue | 当前评分 | `number` | `0` |
 | max | 最大评分 | `number` | `5` |
-| size | 尺寸 | `large` / `default` / `small` | `default` |
+| size | 尺寸 | `RateSize`（`large` / `default` / `small`） | `default` |
 | disabled | 禁用交互 | `boolean` | `false` |
 | allowHalf | 允许半星 | `boolean` | `false` |
 | lowThreshold | 低分阈值 | `number` | `2` |
@@ -56,7 +56,7 @@
 | colors | 评分颜色 | `string` / `string[]` / `RateThresholdMap<string>` | — |
 | voidColor | 空评分颜色 | `string` | — |
 | disabledVoidColor | 禁用时空评分颜色 | `string` | — |
-| icons | 评分图标 | `RateIcon[]` / `RateThresholdMap<RateIcon>` | `star` |
+| icons | 评分图标 | `RateIconMap` | `star` |
 | voidIcon | 空评分图标 | `RateIcon` | `star` |
 | disabledVoidIcon | 禁用时空评分图标 | `RateIcon` | `star` |
 | showText | 显示辅助文字 | `boolean` | `false` |

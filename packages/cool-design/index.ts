@@ -233,5 +233,5 @@ export type { ColSize, ColSizeObject } from './col';
 export type { LinkType, LinkUnderline } from './link/link';
 export type { DatePickerType } from './date-picker';
 export type { UploadBeforeResult, UploadData, UploadDataRecord, UploadDataValue, UploadFile, UploadFiles, UploadProgressEvent, UploadRawFile, UploadRequestOptions, UploadStatus, UploadUserFile } from './upload';
-export type { RateColor, RateExposed, RateIcon, RateProps, RateSize } from './rate';
+export type { RateColor, RateExposed, RateIcon, RateIconMap, RateProps, RateSize, RateThresholdMap } from './rate';
 export { Notify } from './notification';
