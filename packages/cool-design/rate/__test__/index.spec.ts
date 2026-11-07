@@ -105,4 +105,26 @@ describe('Rate', () => {
     await wrapper.findAll('[role="radio"]')[1].trigger('keydown', { key: 'ArrowLeft' });
     expect(wrapper.emitted('change')).toContainEqual([1.5]);
   });
+
+  test('resolves array colors and icons by threshold', () => {
+    const wrapper = mount(Rate, { props: { modelValue: 3, colors: ['red', 'orange', 'green'], icons: ['low', 'medium', 'high'] } });
+    expect(wrapper.find('.i-rate__icon').attributes('style')).toContain('color: orange');
+    expect(wrapper.findAll('.i-rate__icon')).toHaveLength(5);
+  });
+
+  test('resolves object thresholds and excluded scores', () => {
+    const wrapper = mount(Rate, { props: { modelValue: 4, colors: { 2: 'red', 4: 'orange', 5: 'green' } } });
+    expect(wrapper.find('.i-rate__icon').attributes('style')).toContain('color: orange');
+    const excluded = mount(Rate, { props: { modelValue: 4, colors: { 2: 'red', 4: 'orange', 5: 'green', excluded: [4] } } });
+    expect(excluded.find('.i-rate__icon').attributes('style') || '').not.toContain('color: orange');
+  });
+
+  test('renders custom icons, score template, text color, and size classes', () => {
+    const CustomIcon = { template: '<b class="custom-icon" />' };
+    const wrapper = mount(Rate, { props: { modelValue: 2, voidIcon: CustomIcon, showScore: true, textColor: 'purple', scoreTemplate: 'Score: {value}', size: 'small' } });
+    expect(wrapper.findAll('.custom-icon')).toHaveLength(3);
+    expect(wrapper.get('.i-rate__text').text()).toBe('Score: 2');
+    expect(wrapper.get('.i-rate__text').attributes('style')).toContain('color: purple');
+    expect(wrapper.classes()).toContain('i-rate--small');
+  });
 });

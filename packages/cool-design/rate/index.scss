@@ -1,26 +1,32 @@
 @import '../style/base.scss';
 
 .i-rate {
-  display: block;
-  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  color: $warning;
+  cursor: pointer;
 
-  &--disabled {
-    cursor: not-allowed;
+  &--large { height: 40px; }
+  &--small { height: 24px; }
+  &--disabled { cursor: not-allowed; opacity: 0.6; }
+
+  &__item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    &:not(:last-child) { margin-right: 8px; }
+    &:hover .i-rate__icon { color: var(--i-rate-active-color, $warning); }
   }
 
   &__icon {
-    font-size: 18px;
-    color: transparent;
-    -webkit-text-stroke: 0.5px $disable-hover;
+    font-size: 20px;
+    color: var(--i-rate-void-color, transparent);
+    -webkit-text-stroke: 0.5px var(--i-rate-void-color, $disable-hover);
+    &--half { background: linear-gradient(90deg, var(--i-rate-active-color, $warning) 50%, transparent 50%); background-clip: text; -webkit-text-fill-color: transparent; }
   }
 
-  &__item {
-    &:not(:last-child) {
-      padding-right: 8px;
-    }
-  }
-
-  // &__icon--hover {
-  //     -webkit-text-fill-color: rgb(243, 17, 130);
-  // }
+  &__text { margin-left: 8px; color: var(--i-rate-text-color, currentColor); }
+  &--large &__icon { font-size: 24px; }
+  &--small &__icon { font-size: 16px; }
 }

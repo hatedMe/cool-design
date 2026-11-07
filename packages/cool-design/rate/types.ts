@@ -1,7 +1,9 @@
 import type { Component } from 'vue';
 
-export type RateColor = string | string[];
+export type RateThresholdMap<T> = Record<number, T> & { excluded?: number[] };
+export type RateColor = string | string[] | RateThresholdMap<string>;
 export type RateIcon = string | Component;
+export type RateIconMap = RateIcon[] | RateThresholdMap<RateIcon>;
 export type RateSize = 'large' | 'default' | 'small' | string | number;
 
 export interface RateProps {
@@ -15,7 +17,7 @@ export interface RateProps {
   colors?: RateColor;
   voidColor?: string;
   disabledVoidColor?: string;
-  icons?: RateIcon[];
+  icons?: RateIconMap;
   voidIcon?: RateIcon;
   disabledVoidIcon?: RateIcon;
   showText?: boolean;

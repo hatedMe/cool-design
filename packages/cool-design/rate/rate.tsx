@@ -13,10 +13,10 @@ const props = {
   allowHalf: Boolean,
   lowThreshold: { type: Number, default: 2 },
   highThreshold: { type: Number, default: 4 },
-  colors: { type: [String, Array] as PropType<RateColor>, default: undefined },
+  colors: { type: [String, Array, Object] as PropType<RateColor>, default: undefined },
   voidColor: String,
   disabledVoidColor: String,
-  icons: { type: Array as PropType<RateIcon[]>, default: undefined },
+  icons: { type: [Array, Object] as PropType<RateIcon[] | Record<number, RateIcon>>, default: undefined },
   voidIcon: { type: [String, Object, Function] as PropType<RateIcon>, default: 'star' },
   disabledVoidIcon: { type: [String, Object, Function] as PropType<RateIcon>, default: 'star' },
   showText: Boolean,
@@ -71,12 +71,21 @@ export default defineComponent({
     expose({ setCurrentValue, resetCurrentValue });
 
     const activeValue = computed(() => hoverValue.value || currentValue.value);
-    const getColor = (index: number, selected: boolean) => {
-      if (!selected) return props.disabled ? props.disabledVoidColor : props.voidColor;
-      const colors = Array.isArray(props.colors) ? props.colors : props.colors ? [props.colors] : [];
-      if (!colors.length) return undefined;
-      const value = activeValue.value;
-      return colors[value <= props.lowThreshold ? 0 : value <= props.highThreshold ? 1 : 2] || colors[index];
+    const resolveThreshold = <T,>(value: T | T[] | Record<number, T> | undefined, score: number, fallback?: T) => {
+      if (Array.isArray(value)) return value[score <= props.lowThreshold ? 0 : score <= props.highThreshold ? 1 : 2] ?? fallback;
+      if (value && typeof value === 'object') {
+        const excluded = (value as Record<string, T | number[]>).excluded as number[] | undefined;
+        if (excluded?.includes(score)) return fallback;
+        const entries = Object.entries(value as Record<string, T>).filter(([key]) => key !== 'excluded').sort(([a], [b]) => Number(a) - Number(b));
+        return entries.reduce<T | undefined>((result, [threshold, item]) => score >= Number(threshold) ? item : result, undefined) ?? fallback;
+      }
+      return value ?? fallback;
+    };
+    const getColor = (selected: boolean) => selected ? resolveThreshold(props.colors, activeValue.value) : props.disabled ? props.disabledVoidColor : props.voidColor;
+    const getIcon = (index: number, selected: boolean, half: boolean) => {
+      if (!selected && !half) return props.disabled ? props.disabledVoidIcon : props.voidIcon;
+      if (Array.isArray(props.icons)) return props.icons[index] ?? 'star';
+      return resolveThreshold(props.icons, activeValue.value, 'star');
     };
     const displayText = computed(() => {
       const value = activeValue.value;
@@ -87,7 +96,7 @@ export default defineComponent({
       <div
         {...attrs}
         id={props.id}
-        class={[bem(), props.disabled && bem('', { disabled: true }), typeof props.size === 'string' && props.size !== 'default' && `i-rate--${props.size}`]}
+        class={[bem(), `i-rate--${props.size === 'default' ? 'default' : props.size}`, props.disabled && bem('', { disabled: true })]}
         role='radiogroup'
         aria-label={props.ariaLabel}
         aria-valuenow={currentValue.value}
@@ -98,7 +107,6 @@ export default defineComponent({
           const itemValue = index + 1;
           const selected = activeValue.value >= itemValue;
           const half = props.allowHalf && activeValue.value === itemValue - 0.5;
-          const icon = selected || half ? props.icons?.[index] ?? 'star' : props.disabled ? props.disabledVoidIcon : props.voidIcon;
           return (
             <span
               class={bem('item')}
@@ -129,7 +137,7 @@ export default defineComponent({
                   commitValue(currentValue.value + (event.key === 'ArrowRight' ? 0.5 : -0.5));
                 }
               }}>
-              <Icon class={bem('icon', { half })} icon={icon} color={getColor(index, selected || half)} size={props.size} aria-hidden='true' />
+              <Icon class={bem('icon', { half })} icon={getIcon(index, selected, half)} color={getColor(selected || half)} size={props.size} aria-hidden='true' />
             </span>
           );
         })}
