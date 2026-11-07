@@ -89,9 +89,20 @@ describe('Rate', () => {
     expect(wrapper.findAll('.i-rate__icon')[1].attributes('style')).toContain('color: blue');
   });
 
-  test('does not mark a half star as a fully selected radio', () => {
+  test('clears an integer when its left half is selected', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 2, allowHalf: true, clearable: true } });
+    const item = wrapper.findAll('[role="radio"]')[1];
+    Object.defineProperty(item.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
+    await item.trigger('click', { clientX: 25 });
+    expect(wrapper.emitted('change')).toContainEqual([0]);
+  });
+
+  test('announces the current half value and supports half-step keyboard changes', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 1.5, allowHalf: true } });
-    expect(wrapper.findAll('[aria-checked="true"]')).toHaveLength(1);
-    expect(wrapper.findAll('[data-half="true"]')).toHaveLength(1);
+    expect(wrapper.find('[data-half="true"]').attributes('aria-label')).toBe('1.5分（半星）');
+    await wrapper.findAll('[role="radio"]')[1].trigger('keydown', { key: 'ArrowRight' });
+    expect(wrapper.emitted('change')).toContainEqual([2]);
+    await wrapper.findAll('[role="radio"]')[1].trigger('keydown', { key: 'ArrowLeft' });
+    expect(wrapper.emitted('change')).toContainEqual([1.5]);
   });
 });

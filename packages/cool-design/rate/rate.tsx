@@ -60,7 +60,9 @@ export default defineComponent({
     const commitValue = (value: number) => {
       if (props.disabled) return;
       const normalized = normalizeValue(value, props.max, props.allowHalf);
-      const next = props.clearable && (normalized === currentValue.value || (props.allowHalf && normalized === Math.floor(currentValue.value))) ? 0 : normalized;
+      const isSameRating = normalized === currentValue.value;
+      const isAdjacentHalf = props.allowHalf && ((Number.isInteger(currentValue.value) && normalized === currentValue.value - 0.5) || (!Number.isInteger(currentValue.value) && normalized === Math.floor(currentValue.value)));
+      const next = props.clearable && (isSameRating || isAdjacentHalf) ? 0 : normalized;
       currentValue.value = next;
       initialValue.value = next;
       emit('update:modelValue', next);
@@ -103,7 +105,7 @@ export default defineComponent({
               role='radio'
               aria-checked={selected ? 'true' : 'false'}
               aria-disabled={props.disabled ? 'true' : undefined}
-              aria-label={`${itemValue}${half ? '（半星）' : ''}分`}
+              aria-label={`${half ? itemValue - 0.5 : itemValue}分${half ? '（半星）' : ''}`}
               tabindex={props.disabled ? -1 : 0}
               data-half={half ? 'true' : undefined}
               onClick={(event: MouseEvent) => {
@@ -122,6 +124,9 @@ export default defineComponent({
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
                   commitValue(itemValue);
+                } else if (props.allowHalf && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+                  event.preventDefault();
+                  commitValue(currentValue.value + (event.key === 'ArrowRight' ? 0.5 : -0.5));
                 }
               }}>
               <Icon class={bem('icon', { half })} icon={icon} color={getColor(index, selected || half)} size={props.size} aria-hidden='true' />
