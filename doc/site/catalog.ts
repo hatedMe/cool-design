@@ -306,6 +306,7 @@ export const pages: Page[] = [
     ['basic', '选择颜色', '选择颜色并使用预定义色板。']
   ]),
   component('slider', 'Slider 滑块', '表单组件', [['basic', '数值滑块', '通过滑块选择数值。']]),
+  component('rate', 'Rate 评分', '表单组件', [['basic', '评分用法', '支持整数、半星、辅助文字、分数和清零。']]),
   component('transfer', 'Transfer 穿梭框', '表单组件', [['basic', '选项转移', '在两个列表之间移动选项。']]),
   component('tree-select', 'TreeSelect 树形选择', '表单组件', [['basic', '树形选择', '从层级数据中选择节点。']]),
   component('upload', 'Upload 上传', '表单组件', [['basic', '文件上传', '选择文件并展示上传状态。']]),

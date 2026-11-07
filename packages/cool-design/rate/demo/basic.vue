@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import Rate from '../index';
+import { Rate } from '../../index';
 
 const value = ref(3);
 const halfValue = ref(2.5);
