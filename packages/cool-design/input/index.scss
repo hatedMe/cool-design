@@ -1,0 +1,88 @@
+.i-input__outside {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+.i-input__prepend,
+.i-input__append {
+  flex: none;
+  padding: 0 10px;
+  color: var(--i-text-secondary);
+}
+.i-input,
+.i-select {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  width: 100%;
+  height: var(--i-control-height);
+  background: var(--i-bg);
+  border: 1px solid var(--i-border);
+  border-radius: var(--i-radius);
+}
+.i-input:focus-within,
+.i-select:focus-within {
+  border-color: var(--i-primary);
+}
+.i-input input,
+.i-input textarea,
+.i-select select {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  border-radius: inherit;
+  padding: 0 10px;
+  background: transparent;
+  color: var(--i-text);
+  font: inherit;
+  outline: none;
+}
+.i-input textarea {
+  resize: vertical;
+  padding-block: 8px;
+}
+.i-input__icon,
+.i-input__count {
+  color: var(--i-text-secondary);
+  font-size: 12px;
+  flex: none;
+}
+.i-input__icon {
+  margin-inline: 8px;
+}
+.i-input__count {
+  margin-inline: 4px 8px;
+}
+.i-input.is-textarea {
+  height: auto;
+  min-height: calc(var(--i-control-height) * 2);
+}
+.i-select option {
+  background: var(--i-bg);
+  color: var(--i-text);
+}
+.i-input:has([aria-invalid='true']),
+.i-select:has([aria-invalid='true']) {
+  border-color: var(--i-danger);
+}
+.i-input button,
+.i-select button {
+  border: 0;
+  background: transparent;
+  color: var(--i-text-secondary);
+  cursor: pointer;
+  padding: 0 8px;
+}
+.i-input input:disabled,
+.i-select select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.i-control--small {
+  height: 28px;
+  font-size: 12px;
+}
+.i-control--large {
+  height: 40px;
+}

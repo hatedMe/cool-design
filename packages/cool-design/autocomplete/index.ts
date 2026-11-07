@@ -1,0 +1,5 @@
+import { withInstall } from '../../../src/utils/with-install';
+import Component from './autocomplete';
+export const Autocomplete = withInstall(Component);
+export default Autocomplete;
+export type { AutocompleteSuggestion } from './autocomplete';

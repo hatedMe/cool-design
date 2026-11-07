@@ -1,0 +1,29 @@
+.i-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: var(--i-text-secondary);
+  font-size: var(--i-font-size);
+}
+.i-divider::before,
+.i-divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1px var(--i-divider-border-style, solid) var(--i-border);
+}
+.i-divider--left::before,
+.i-divider--right::after {
+  flex: 0 0 24px;
+}
+.i-divider--vertical {
+  display: inline-block;
+  vertical-align: middle;
+  height: 1em;
+  margin: 0 8px;
+  border-left: 1px var(--i-divider-border-style, solid) var(--i-border);
+}
+.i-divider--vertical::before,
+.i-divider--vertical::after {
+  display: none;
+}

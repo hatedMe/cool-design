@@ -1,0 +1,103 @@
+# Input 输入框
+
+### 介绍
+
+用于输入文本，支持单行输入、密码、文本域、双向绑定、清空、只读和表单校验。
+
+## 基础用法
+
+使用 `v-model` 绑定字符串。
+
+## 禁用状态
+
+通过 `disabled` 禁止编辑和清空；`readonly` 只读但保留内容展示。
+
+## 一键清空
+
+设置 `clearable` 显示清空按钮。
+
+## 密码输入
+
+设置 `type="password"` 和 `show-password` 显示密码切换按钮。
+
+## 文本域
+
+设置 `type="textarea"`，并用 `rows` 控制初始行数。
+
+## 格式化与自适应高度
+
+`formatter` 控制输入框展示内容，`parser` 将展示内容转换回 `v-model`；文本域设置 `autosize` 或 `{ minRows, maxRows }` 自动调整高度。
+
+## 图标与插槽
+
+支持 `prefix-icon`、`suffix-icon` 以及 `prefix`、`suffix` 插槽；同时支持 `prepend`、`append` 外置内容和 `password-icon` 密码图标插槽。
+
+`password-icon` 插槽参数为 `{ visible: boolean }`。
+
+## 尺寸
+
+支持 `small`、`default`、`large`，未设置时继承 ConfigProvider。
+
+## API
+
+### 属性
+
+| 参数                    | 说明                                     | 类型                      | 默认值       |
+| ----------------------- | ---------------------------------------- | ------------------------- | ------------ |
+| modelValue / v-model    | 输入内容                                 | string                    | 空字符串     |
+| placeholder             | 占位提示                                 | string                    | —            |
+| clearable               | 允许清空                                 | boolean                   | false        |
+| disabled                | 禁止输入和清空                           | boolean                   | false        |
+| readonly                | 只读，禁止清空                           | boolean                   | false        |
+| size                    | 尺寸：small / default / large            | string                    | 继承全局尺寸 |
+| type                    | text / password / textarea / search      | string                    | text         |
+| rows                    | 文本域行数                               | number                    | 2            |
+| maxlength / minlength   | 原生长度限制                             | string / number           | —            |
+| showWordLimit           | 显示长度统计                             | boolean                   | false        |
+| wordLimitPosition       | 长度统计位置：inside / outside          | `inside` / `outside`     | inside       |
+| showPassword            | 显示密码切换                             | boolean                   | false        |
+| prefixIcon / suffixIcon | 图标字体类名                             | string                    | —            |
+| formatter               | 展示值格式化函数                         | (value: string) => string | —            |
+| parser                  | 输入值解析函数                           | (value: string) => string | —            |
+| autosize                | 文本域自适应高度，可配置 minRows/maxRows | boolean / object          | false        |
+| resize                  | 文本域调整方向：none / both / horizontal / vertical | string              | —            |
+| validateEvent           | 是否触发表单校验                         | boolean                   | true         |
+
+### 事件
+
+| 事件名            | 说明               | 回调参数          |
+| ----------------- | ------------------ | ----------------- |
+| update:modelValue | 输入或清空         | value: string     |
+| change            | 原生 change 或清空 | value: string     |
+| blur              | 输入框失焦         | event: FocusEvent |
+| input             | 输入内容变化       | value: string     |
+| focus             | 输入框聚焦         | event: FocusEvent |
+| clear             | 点击清空           | —                 |
+
+### 插槽
+
+| 插槽          | 说明 |
+| ------------- | ---- |
+| prefix        | 输入内容前的内容 |
+| suffix        | 输入内容后的内容 |
+| prepend       | 输入框外部前置内容 |
+| append        | 输入框外部后置内容 |
+| password-icon | 密码切换图标，参数 `{ visible: boolean }` |
+
+### 实例方法
+
+| 方法    | 说明       | 返回值 |
+| ------- | ---------- | ------ |
+| focus()  | 聚焦输入框 | void   |
+| blur()   | 取消聚焦   | void   |
+| select() | 选择输入内容 | void   |
+| resize() | 重新计算文本域高度 | void   |
+| clear()  | 清空输入框 | void   |
+
+## 使用说明
+
+`v-model` 为字符串，默认空字符串。属性：clearable、disabled、readonly、placeholder、size。id、name、maxlength、aria-label 等原生属性透传到 input。
+
+事件：`update:modelValue(value: string)` 在输入和清空时触发；`change(value: string)` 在原生 change 或清空时触发；`blur(event: FocusEvent)`。实例方法 focus()。禁用、只读不能编辑和清空。在 FormItem 内自动关联标签和错误。
+
+示例：`<Input v-model="name" clearable placeholder="请输入姓名" />`。`formatter` 只改变展示值，`parser` 将用户输入转换为模型值；文本域设置 `autosize` 可根据内容自动调整高度。

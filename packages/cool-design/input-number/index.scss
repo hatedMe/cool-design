@@ -1,0 +1,75 @@
+@import '../style/base.scss';
+
+.i-input-number {
+  display: inline-flex;
+  align-items: stretch;
+  height: 32px;
+  border: 1px solid $disable;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+
+  &:hover,
+  &:focus-within {
+    border-color: $primary;
+  }
+
+  &--disabled {
+    cursor: not-allowed;
+    background-color: lighten($disable-hover, 3%);
+    color: $disable-active;
+  }
+
+  &__increase,
+  &__decrease {
+    width: 32px;
+    padding: 0;
+    border: 0;
+    color: $disable-active;
+    background-color: lighten($disable-hover, 3%);
+    cursor: pointer;
+    font-size: $font-size-xl;
+
+    &:hover:not(:disabled) {
+      color: $primary-active;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      color: $disable;
+    }
+  }
+
+  &__controls {
+    display: inline-flex;
+    flex-direction: column;
+    width: 24px;
+
+    .i-input-number__increase,
+    .i-input-number__decrease {
+      width: 24px;
+      height: 16px;
+      line-height: 16px;
+      font-size: $font-size-sm;
+    }
+  }
+
+  input {
+    width: 80px;
+    min-width: 0;
+    padding: 0 8px;
+    border: 0;
+    outline: none;
+    text-align: center;
+    color: inherit;
+    background: transparent;
+  }
+
+  &.i-control--large {
+    height: 40px;
+  }
+
+  &.i-control--small {
+    height: 24px;
+  }
+}
