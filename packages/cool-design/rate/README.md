@@ -6,25 +6,29 @@
 
 ## 基础用法
 
-示例中的 `Rate` 需要从 `cool-design/rate` 显式导入。
+示例中的 `Rate` 需要从 `cool-design/rate` 显式导入：
+
+```ts
+import Rate from 'cool-design/rate';
+```
 
 ```vue
-<i-rate v-model="value" />
+<Rate v-model="value" />
 ```
 
 ## 半星、尺寸与禁用
 
 ```vue
-<i-rate v-model="value" allow-half />
-<i-rate :model-value="3" size="large" />
-<i-rate :model-value="4" disabled />
+<Rate v-model="value" allow-half />
+<Rate :model-value="3" size="large" />
+<Rate :model-value="4" disabled />
 ```
 
 ## 辅助文字和分数
 
 ```vue
-<i-rate v-model="value" show-text :texts="['很差', '较差', '一般', '较好', '很好']" />
-<i-rate v-model="value" show-score score-template="{value} 分" />
+<Rate v-model="value" show-text :texts="['很差', '较差', '一般', '较好', '很好']" />
+<Rate v-model="value" show-score score-template="{value} 分" />
 ```
 
 同时设置 `showText` 和 `showScore` 时优先显示分数。
@@ -33,7 +37,7 @@
 
 ```vue
 <Rate :model-value="3" :icons="['icon-collection_fill', 'icon-browse_fill', 'icon-coupons_fill']" />
-<i-rate :model-value="4" :colors="['#f56c6c', '#e6a23c', '#67c23a']" />
+<Rate :model-value="4" :colors="['#f56c6c', '#e6a23c', '#67c23a']" />
 ```
 
 `icons` 和 `colors` 支持三元素数组或按阈值分段的对象；对象可以使用 `excluded` 排除指定评分。

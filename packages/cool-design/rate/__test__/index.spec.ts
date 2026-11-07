@@ -13,7 +13,8 @@ describe('Rate', () => {
   test('normalizes modelValue to the valid range and supports max', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 8, max: 3 } });
     expect(wrapper.get('[role="radiogroup"]').attributes('aria-valuenow')).toBe('3');
-    expect(wrapper.findAll('[aria-checked="true"]')).toHaveLength(3);
+    expect(wrapper.findAll('[aria-checked="true"]')).toHaveLength(1);
+    expect(wrapper.find('[aria-checked="true"]').attributes('aria-label')).toBe('3分');
 
     await wrapper.setProps({ modelValue: -2, max: 4 });
     expect(wrapper.get('[role="radiogroup"]').attributes('aria-valuenow')).toBe('0');
@@ -62,6 +63,7 @@ describe('Rate', () => {
     const wrapper = mount(Rate, { props: { modelValue: 2.5, allowHalf: true, clearable: true } });
     expect(wrapper.findAll('[data-half="true"]')).toHaveLength(1);
     expect(wrapper.find('[data-half="true"]').attributes('aria-checked')).toBe('true');
+    expect(wrapper.findAll('[aria-checked="true"]')).toHaveLength(1);
     expect(wrapper.find('.i-rate__icon--half').exists()).toBe(true);
     const secondItem = wrapper.findAll('[role="radio"]')[1];
     Object.defineProperty(secondItem.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });

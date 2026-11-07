@@ -113,8 +113,9 @@ export default defineComponent({
         title={props.label}>
         {Array.from({ length: Math.max(0, Math.floor(props.max)) }, (_, index) => {
           const itemValue = index + 1;
-          const selected = activeValue.value >= itemValue;
+          const selected = activeValue.value === itemValue;
           const half = props.allowHalf && activeValue.value === itemValue - 0.5;
+          const filled = activeValue.value >= itemValue;
           return (
             <span
               class={bem('item')}
@@ -145,7 +146,7 @@ export default defineComponent({
                   commitValue(currentValue.value + (event.key === 'ArrowRight' ? 0.5 : -0.5));
                 }
               }}>
-              <Icon class={bem('icon', { half })} icon={getIcon(selected, half)} color={getColor(selected || half)} size={props.size} aria-hidden='true' style={{ '--i-rate-active-color': getColor(true), '--i-rate-void-color': props.disabled ? props.disabledVoidColor : props.voidColor } as Record<string, string | undefined>} />
+              <Icon class={bem('icon', { half })} icon={getIcon(filled || selected, half)} color={getColor(filled || selected || half)} size={props.size} aria-hidden='true' style={{ '--i-rate-active-color': getColor(true), '--i-rate-void-color': props.disabled ? props.disabledVoidColor : props.voidColor } as Record<string, string | undefined>} />
             </span>
           );
         })}
