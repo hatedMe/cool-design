@@ -61,6 +61,8 @@ describe('Rate', () => {
   test('supports half selection and clearable selection', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 2.5, allowHalf: true, clearable: true } });
     expect(wrapper.findAll('[data-half="true"]')).toHaveLength(1);
+    expect(wrapper.find('[data-half="true"]').attributes('aria-checked')).toBe('true');
+    expect(wrapper.find('.i-rate__icon--half').exists()).toBe(true);
     const secondItem = wrapper.findAll('[role="radio"]')[1];
     Object.defineProperty(secondItem.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
     await secondItem.trigger('click', { clientX: 75 });

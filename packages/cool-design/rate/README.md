@@ -6,6 +6,8 @@
 
 ## 基础用法
 
+示例中的 `Rate` 需要从 `cool-design/rate` 显式导入。
+
 ```vue
 <i-rate v-model="value" />
 ```
@@ -30,7 +32,7 @@
 ## 自定义图标与颜色
 
 ```vue
-<i-rate :model-value="3" :icons="['star', 'heart', 'medal']" />
+<Rate :model-value="3" :icons="['icon-collection_fill', 'icon-browse_fill', 'icon-coupons_fill']" />
 <i-rate :model-value="4" :colors="['#f56c6c', '#e6a23c', '#67c23a']" />
 ```
 
@@ -56,9 +58,9 @@
 | colors | 评分颜色 | `string` / `string[]` / `RateThresholdMap<string>` | — |
 | voidColor | 空评分颜色 | `string` | — |
 | disabledVoidColor | 禁用时空评分颜色 | `string` | — |
-| icons | 评分图标 | `RateIconMap` | `star` |
-| voidIcon | 空评分图标 | `RateIcon` | `star` |
-| disabledVoidIcon | 禁用时空评分图标 | `RateIcon` | `star` |
+| icons | 评分图标 | `RateIconMap` | `icon-collection_fill` |
+| voidIcon | 空评分图标 | `RateIcon` | `icon-collection_fill` |
+| disabledVoidIcon | 禁用时空评分图标 | `RateIcon` | `icon-collection_fill` |
 | showText | 显示辅助文字 | `boolean` | `false` |
 | showScore | 显示分数 | `boolean` | `false` |
 | textColor | 文本颜色 | `string` | — |

@@ -17,8 +17,8 @@ const props = {
   voidColor: String,
   disabledVoidColor: String,
   icons: { type: [Array, Object] as PropType<RateIcon[] | Record<number, RateIcon>>, default: undefined },
-  voidIcon: { type: [String, Object, Function] as PropType<RateIcon>, default: 'star' },
-  disabledVoidIcon: { type: [String, Object, Function] as PropType<RateIcon>, default: 'star' },
+  voidIcon: { type: [String, Object, Function] as PropType<RateIcon>, default: 'icon-collection_fill' },
+  disabledVoidIcon: { type: [String, Object, Function] as PropType<RateIcon>, default: 'icon-collection_fill' },
   showText: Boolean,
   showScore: Boolean,
   textColor: String,
@@ -93,7 +93,7 @@ export default defineComponent({
       : props.disabled ? props.disabledVoidColor : props.voidColor;
     const getIcon = (selected: boolean, half: boolean) => {
       if (!selected && !half) return props.disabled ? props.disabledVoidIcon : props.voidIcon;
-      return resolveThreshold(props.icons, activeValue.value, 'star');
+      return resolveThreshold(props.icons, activeValue.value, 'icon-collection_fill');
     };
     const displayText = computed(() => {
       const value = activeValue.value;
@@ -119,7 +119,7 @@ export default defineComponent({
             <span
               class={bem('item')}
               role='radio'
-              aria-checked={selected ? 'true' : 'false'}
+              aria-checked={selected || half ? 'true' : 'false'}
               aria-disabled={props.disabled ? 'true' : undefined}
               aria-label={`${half ? itemValue - 0.5 : itemValue}分${half ? '（半星）' : ''}`}
               tabindex={props.disabled ? -1 : 0}
