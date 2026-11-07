@@ -1,6 +1,6 @@
 {
   "name": "cool-design",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite --config vite.docs.config.ts",
