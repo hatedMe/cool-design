@@ -24,7 +24,7 @@ const files = ref<UploadFiles>([]);
 
 ### 自动上传
 
-传入 `action` 后，文件选择完成会自动使用 `POST` 请求上传；可通过 `headers`、`data`、`name` 和 `with-credentials` 配置请求。
+文件选择完成后默认使用 `POST` 请求上传，`action` 默认值为 `#`；可通过 `headers`、`data`、`name` 和 `with-credentials` 配置请求。
 
 ```vue
 <Upload v-model:file-list="files" action="/api/upload" name="file" />
@@ -74,12 +74,13 @@ const uploadRef = ref<{ submit: () => Promise<unknown> }>();
 
 | 属性名 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| action | 上传地址；使用 `http-request` 时可作为自定义请求的地址参数 | `string` | — |
-| headers | 上传请求头 | `Record<string, string>` | — |
+| action | 上传地址；使用 `http-request` 时可作为自定义请求的地址参数 | `string` | `#` |
+| headers | 上传请求头 | `Record<string, string \| number \| null \| undefined> \| Headers` | — |
 | method | 上传请求方法 | `string` | `POST` |
 | multiple | 是否支持多选 | `boolean` | `false` |
-| data | 上传时附带的额外数据 | `Record<string, unknown>` | — |
+| data | 上传时附带的额外数据，支持 Promise、函数、Blob、数组和文件名元组 | `UploadData` | — |
 | name | 上传文件的字段名 | `string` | `file` |
+| crossorigin | 图片列表图片的跨域属性 | `'anonymous' \| 'use-credentials' \| ''` | `''` |
 | with-credentials | 是否携带跨域凭据 | `boolean` | `false` |
 | show-file-list | 是否显示文件列表 | `boolean` | `true` |
 | drag | 是否启用拖拽上传 | `boolean` | `false` |
@@ -92,15 +93,15 @@ const uploadRef = ref<{ submit: () => Promise<unknown> }>();
 | disabled | 是否禁用选择和删除 | `boolean` | `false` |
 | limit | 最大文件数量 | `number` | — |
 | directory | 是否选择目录 | `boolean` | `false` |
-| before-upload | 上传前钩子，返回 `false` 或拒绝 Promise 会跳过该文件；无返回值视为允许 | `(file: UploadRawFile) => void \| boolean \| Promise<void \| boolean>` | — |
+| before-upload | 上传前钩子，支持拒绝或返回新的 `File` / `Blob` | `(file: UploadRawFile) => void \| null \| boolean \| File \| Blob \| Promise<void \| null \| boolean \| File \| Blob>` | — |
 | before-remove | 删除前钩子，返回 `false` 或拒绝 Promise 会阻止删除 | `(file: UploadFile, files: UploadFiles) => boolean \| Promise<boolean>` | — |
 | on-preview | 预览回调 | `(file: UploadFile) => void \| Promise<boolean \| void>` | — |
-| on-remove | 删除回调 | `(...args: any[]) => void \| Promise<boolean \| void>` | — |
-| on-success | 上传成功回调 | `(...args: any[]) => void \| Promise<boolean \| void>` | — |
-| on-error | 上传失败回调 | `(...args: any[]) => void \| Promise<boolean \| void>` | — |
-| on-progress | 上传进度回调 | `(...args: any[]) => void \| Promise<boolean \| void>` | — |
-| on-change | 文件列表变化回调 | `(...args: any[]) => void \| Promise<boolean \| void>` | — |
-| on-exceed | 超出 `limit` 时回调 | `(...args: any[]) => void \| Promise<boolean \| void>` | — |
+| on-remove | 删除回调 | `(file: UploadFile, files: UploadFiles) => void \| Promise<boolean \| void>` | — |
+| on-success | 上传成功回调 | `(response: unknown, file: UploadFile, files: UploadFiles) => void \| Promise<boolean \| void>` | — |
+| on-error | 上传失败回调 | `(error: Error, file: UploadFile, files: UploadFiles) => void \| Promise<boolean \| void>` | — |
+| on-progress | 上传进度回调 | `(event: UploadProgressEvent, file: UploadFile, files: UploadFiles) => void \| Promise<boolean \| void>` | — |
+| on-change | 文件列表变化回调 | `(file: UploadFile, files: UploadFiles) => void \| Promise<boolean \| void>` | — |
+| on-exceed | 超出 `limit` 时回调 | `(files: UploadRawFile[], fileList: UploadFiles) => void \| Promise<boolean \| void>` | — |
 
 `model-value` 与 `file-list` 同时提供时，`file-list` 优先作为受控数据源。
 
@@ -111,9 +112,9 @@ const uploadRef = ref<{ submit: () => Promise<unknown> }>();
 | update:modelValue | 非受控列表更新 | `files: UploadFiles` |
 | update:file-list | 受控列表更新 | `files: UploadFiles` |
 | change | 文件添加、状态变化或列表变化 | `file: UploadFile, files: UploadFiles` |
-| success | 上传成功 | `file: UploadFile, files: UploadFiles` |
-| error | 上传失败 | `error: unknown, file: UploadFile, files: UploadFiles` |
-| progress | 上传进度 | `event: { percent: number }, file: UploadFile, files: UploadFiles` |
+| success | 上传成功 | `response: unknown, file: UploadFile, files: UploadFiles` |
+| error | 上传失败 | `error: Error, file: UploadFile, files: UploadFiles` |
+| progress | 上传进度 | `event: UploadProgressEvent, file: UploadFile, files: UploadFiles` |
 | remove | 文件移除 | `file: UploadFile, files: UploadFiles` |
 | exceed | 超出数量限制 | `files: UploadRawFile[], fileList: UploadFiles` |
 
@@ -126,7 +127,7 @@ const uploadRef = ref<{ submit: () => Promise<unknown> }>();
 | default | 默认触发按钮内容 | — |
 | trigger | 自定义触发内容 | `choose: () => void` |
 | tip | 文件选择区域下方的提示内容 | — |
-| file | 自定义文件列表项 | `file: UploadFile` |
+| file | 自定义文件列表项 | `file: UploadFile, index: number` |
 
 ### 实例方法
 
@@ -140,15 +141,16 @@ const uploadRef = ref<{ submit: () => Promise<unknown> }>();
 
 ### 类型
 
-以下类型可从 `cool-design` 导入；`UploadRequest`、`UploadRequestHandle` 和 `UploadRequestResult` 是内部组合类型，未从包入口导出。自定义请求可直接按 `UploadRequestOptions` 标注参数：
+以下类型可从 `cool-design` 导入。before-upload 返回转换文件时，列表展示名称仍保留原始选择文件名，转换文件仅用于实际上传。`UploadRequest`、`UploadRequestHandle` 和 `UploadRequestResult` 是内部组合类型，未从包入口导出；自定义请求可直接按 `UploadRequestOptions` 标注参数。`submit()` 返回 Promise 是本项目保留的扩展行为，不是 Element Plus 的完全一致契约。`UploadDataValue` 中的 `string[]` 表示多个普通字段值，`[string | Blob, string]` 表示带文件名的字段；项目按 Element Plus 的 tuple 优先规则处理长度为 2 的二元数组，因此长度为 2 的字符串数组会按 filename tuple 解释：
 
 ```ts
  type UploadStatus = 'ready' | 'uploading' | 'success' | 'fail';
 
- interface UploadRawFile extends File {
+ type UploadRawFile = Omit<File, 'webkitRelativePath'> & {
    uid: number;
    isDirectory?: boolean;
- }
+   readonly webkitRelativePath?: string;
+ };
 
  interface UploadFile {
    name: string;
@@ -164,18 +166,23 @@ const uploadRef = ref<{ submit: () => Promise<unknown> }>();
  type UploadUserFile = Omit<UploadFile, 'uid' | 'status'> &
    Partial<Pick<UploadFile, 'uid' | 'status'>>;
  type UploadFiles = UploadFile[];
+ type UploadDataValue = string | number | boolean | Blob | string[] | [string | Blob, string];
+ type UploadDataRecord = Record<string, UploadDataValue>;
+ interface UploadProgressEvent extends ProgressEvent {
+   percent: number;
+ }
 
  interface UploadRequestOptions {
    action: string;
    method: string;
-   headers?: Record<string, string>;
-   data?: Record<string, unknown>;
+   headers?: Record<string, string | number | null | undefined> | Headers;
+   data: UploadDataRecord;
    filename: string;
    file: UploadRawFile;
    withCredentials: boolean;
-   onProgress: (event: { percent: number }) => void;
+   onProgress: (event: UploadProgressEvent) => void;
    onSuccess: (response: unknown) => void;
-   onError: (error: unknown) => void;
+   onError: (error: Error) => void;
  }
 
  interface UploadRequestHandle {

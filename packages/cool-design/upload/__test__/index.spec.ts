@@ -12,6 +12,19 @@ const select = async (wrapper: ReturnType<typeof mount>, files: File[]) => {
   await input.trigger('change');
 };
 
+test('拖拽区域支持 Enter 和 Space 键盘触发选择', async () => {
+  const wrapper = mount(Upload, { props: { drag: true } });
+  const input = wrapper.get('input').element as HTMLInputElement;
+  const click = vi.spyOn(input, 'click');
+  const enter = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+  const space = new KeyboardEvent('keydown', { key: ' ', cancelable: true });
+  wrapper.element.dispatchEvent(enter);
+  wrapper.element.dispatchEvent(space);
+  expect(click).toHaveBeenCalledTimes(2);
+  expect(enter.defaultPrevented).toBe(true);
+  expect(space.defaultPrevented).toBe(true);
+});
+
 test('默认渲染文件输入、按钮和默认插槽', () => {
   const wrapper = mount(Upload, { slots: { default: () => '上传文件' } });
   const input = wrapper.get('input[type="file"]');
@@ -24,8 +37,96 @@ test('默认渲染文件输入、按钮和默认插槽', () => {
   expect(wrapper.get('ul').classes()).toContain('i-upload__list');
 });
 
+test('没有 action 时默认使用当前页面地址上传并触发 Element Plus success 参数', async () => {
+  const xhrInstances: Array<{ upload: { onprogress?: (event: ProgressEvent) => void }; open: ReturnType<typeof vi.fn>; send: ReturnType<typeof vi.fn>; setRequestHeader: ReturnType<typeof vi.fn>; onload?: () => void }> = [];
+  class MockXHR {
+    upload = {};
+    open = vi.fn();
+    send = vi.fn(() => { this.onload?.(); });
+    setRequestHeader = vi.fn();
+    onload?: () => void;
+    onerror?: () => void;
+    status = 200;
+    response = '{"ok":true}';
+    constructor() { xhrInstances.push(this); }
+  }
+  vi.stubGlobal('XMLHttpRequest', MockXHR);
+  const onSuccess = vi.fn();
+  const wrapper = mount(Upload, { props: { onSuccess } });
+  await select(wrapper, [new File(['x'], 'x.txt')]);
+  await vi.waitFor(() => expect(wrapper.emitted('success')).toBeTruthy());
+  expect(xhrInstances[0].open).toHaveBeenCalledWith('POST', '#', true);
+  expect(onSuccess).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ name: 'x.txt' }), expect.any(Array));
+  expect(wrapper.emitted('success')?.[0]).toEqual([expect.anything(), expect.objectContaining({ name: 'x.txt' }), expect.any(Array)]);
+  vi.unstubAllGlobals();
+});
+
+test('默认请求将字符串二元数组按 filename tuple 处理', async () => {
+  let xhr: { send: ReturnType<typeof vi.fn> } | undefined;
+  class MockXHR {
+    upload = {};
+    open = vi.fn();
+    send = vi.fn((body: FormData) => { xhr = this; void body; });
+    setRequestHeader = vi.fn();
+    status = 200;
+    response = '{}';
+    responseText = '{}';
+    onload?: () => void;
+    onerror?: () => void;
+  }
+  vi.stubGlobal('XMLHttpRequest', MockXHR);
+  const wrapper = mount(Upload, { props: { action: '/upload', data: { attachment: ['text', 'file.txt'] as [string, string] } } });
+  await select(wrapper, [new File(['x'], 'source.txt')]);
+  await vi.waitFor(() => expect(xhr).toBeTruthy());
+  const value = xhr?.send.mock.calls[0][0] as FormData;
+  expect(value.getAll('attachment')).toHaveLength(1);
+  expect(value.get('attachment')).toBeInstanceOf(Blob);
+  expect((value.get('attachment') as File).name).toBe('file.txt');
+  vi.unstubAllGlobals();
+});
+
+test('默认请求透传真实进度并保留 Blob 和文件名数据', async () => {
+  let xhr: { upload: { onprogress?: (event: ProgressEvent) => void }; onload?: () => void } | undefined;
+  class MockXHR {
+    upload: { onprogress?: (event: ProgressEvent) => void } = {};
+    open = vi.fn();
+    send = vi.fn(() => { xhr = this; });
+    setRequestHeader = vi.fn();
+    onload?: () => void;
+    status = 200;
+    response = '{}';
+  }
+  vi.stubGlobal('XMLHttpRequest', MockXHR);
+  const onProgress = vi.fn();
+  const blob = new Blob(['value']);
+  const wrapper = mount(Upload, { props: { action: '/upload', data: { blob, names: ['a', 'b', 'c'] }, onProgress } });
+  await select(wrapper, [new File(['x'], 'x.txt')]);
+  await vi.waitFor(() => expect(xhr).toBeTruthy());
+  xhr?.upload.onprogress?.({ lengthComputable: true, loaded: 1, total: 2 } as ProgressEvent);
+  expect(onProgress).toHaveBeenCalledWith(expect.objectContaining({ percent: 50 }), expect.anything(), expect.any(Array));
+  const body = (xhr as unknown as { send: ReturnType<typeof vi.fn> }).send.mock.calls[0][0] as FormData;
+  expect(body.get('blob')).toBeInstanceOf(Blob);
+  expect(body.getAll('names')).toEqual(['a', 'b', 'c']);
+  xhr?.onload?.();
+  await vi.waitFor(() => expect(wrapper.emitted('success')).toBeTruthy());
+  vi.unstubAllGlobals();
+});
+
+test('选择同一文件前清空 input，before-upload 返回 File 时上传转换后的文件', async () => {
+  const request = vi.fn().mockResolvedValue(undefined);
+  const converted = new File(['converted'], 'converted.txt');
+  const wrapper = mount(Upload, { props: { action: '/upload', httpRequest: request, beforeUpload: () => converted } });
+  const input = wrapper.get('input').element as HTMLInputElement;
+  const click = vi.spyOn(input, 'click');
+  await wrapper.get('button').trigger('click');
+  expect(input.value).toBe('');
+  expect(click).toHaveBeenCalledOnce();
+  await select(wrapper, [new File(['raw'], 'raw.txt')]);
+  expect(request).toHaveBeenCalledWith(expect.objectContaining({ file: converted }));
+});
+
 test('选择文件时生成 ready 文件并按 modelValue 回写', async () => {
-  const wrapper = mount(Upload);
+  const wrapper = mount(Upload, { props: { autoUpload: false } });
   const raw = new File(['hello'], 'hello.txt', { type: 'text/plain' });
 
   await select(wrapper, [raw]);
@@ -48,7 +149,8 @@ test('modelValue 变化同步列表，file-list 是受控主入口并优先', as
 
   await wrapper.setProps({
     fileList: [first],
-    modelValue: [{ name: 'ignored.txt', uid: 12, status: 'ready' }]
+    modelValue: [{ name: 'ignored.txt', uid: 12, status: 'ready' }],
+    autoUpload: false
   });
 
   expect(wrapper.text()).toContain('controlled.txt');
@@ -62,6 +164,40 @@ test('modelValue 变化同步列表，file-list 是受控主入口并优先', as
     expect.arrayContaining([expect.objectContaining({ name: 'added.txt', status: 'ready' })])
   );
   expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+});
+
+test('受控列表等值回写不会取消活动请求', async () => {
+  const handle = { cancel: vi.fn(), promise: new Promise<unknown>(() => undefined) };
+  const wrapper = mount(Upload, { props: { fileList: [], action: '/upload', autoUpload: false, httpRequest: () => handle } });
+  await (wrapper.vm as { handleStart: (file: File) => void }).handleStart(new File(['x'], 'active.txt'));
+  void (wrapper.vm as { submit: () => Promise<unknown> }).submit();
+  await vi.waitFor(() => expect(handle.cancel).not.toHaveBeenCalled());
+  const current = (wrapper.emitted('update:file-list')?.at(-1)?.[0] as UploadFile[]).map((file) => ({ ...file }));
+  await wrapper.setProps({ fileList: current });
+  expect(handle.cancel).not.toHaveBeenCalled();
+});
+
+test('无 uid 的受控文件重排时保持对应 uid', async () => {
+  const wrapper = mount(Upload, { props: { fileList: [{ name: 'a.txt', status: 'ready' as const }, { name: 'b.txt', status: 'ready' as const }], autoUpload: false } });
+  const first = wrapper.findAll('li').map((item) => Number(item.attributes('data-uid')));
+  await wrapper.setProps({ fileList: [{ name: 'b.txt', status: 'ready' as const }, { name: 'a.txt', status: 'ready' as const }] });
+  const second = wrapper.findAll('li').map((item) => Number(item.attributes('data-uid')));
+  expect(second).toEqual([first[1], first[0]]);
+});
+
+test('无 uid 的受控文件改名时保持稳定 uid', async () => {
+  const wrapper = mount(Upload, { props: { fileList: [{ name: 'before.txt', status: 'ready' as const }], autoUpload: false } });
+  const firstUid = Number(wrapper.find('li').attributes('data-uid'));
+  await wrapper.setProps({ fileList: [{ name: 'after.txt', status: 'ready' as const }] });
+  expect(Number(wrapper.find('li').attributes('data-uid'))).toBe(firstUid);
+});
+
+test('无 uid 的受控文件回写时保持稳定 uid', async () => {
+  const wrapper = mount(Upload, { props: { fileList: [{ name: 'plain.txt', status: 'ready' as const }], autoUpload: false } });
+  const firstUid = Number(wrapper.find('li').attributes('data-uid'));
+  await wrapper.setProps({ fileList: [{ name: 'plain.txt', status: 'ready' as const }] });
+  expect(Number(wrapper.find('li').attributes('data-uid'))).toBe(firstUid);
+  expect(wrapper.findAll('li')).toHaveLength(1);
 });
 
 test('uid 稳定且多文件唯一，disabled 时不选择或删除', async () => {
@@ -93,8 +229,23 @@ test('uid 稳定且多文件唯一，disabled 时不选择或删除', async () =
 });
 
 test('默认请求使用 POST、file 字段并透传上传配置', async () => {
-  const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) });
+  const fetchMock = vi.fn();
   vi.stubGlobal('fetch', fetchMock);
+  class MockXHR {
+    upload = {};
+    open = vi.fn();
+    send = vi.fn(() => { this.status = 200; this.response = '{"ok":true}'; this.responseText = this.response; this.onload?.(); });
+    setRequestHeader = vi.fn();
+    onload?: () => void;
+    onerror?: () => void;
+    onabort?: () => void;
+    status = 0;
+    response = '';
+    responseText = '';
+    withCredentials = false;
+    abort = vi.fn();
+  }
+  vi.stubGlobal('XMLHttpRequest', MockXHR);
   const wrapper = mount(Upload, {
     props: {
       action: '/upload',
@@ -107,11 +258,42 @@ test('默认请求使用 POST、file 字段并透传上传配置', async () => {
   });
   await select(wrapper, [new File(['x'], 'x.txt')]);
   await vi.waitFor(() => expect(wrapper.emitted('success')).toBeTruthy());
-  expect(fetchMock).toHaveBeenCalledWith('/upload', expect.objectContaining({ method: 'PUT', headers: { Authorization: 'token' }, credentials: 'include' }));
-  const body = fetchMock.mock.calls[0][1]?.body as FormData;
-  expect(body.get('asset')).toBeInstanceOf(File);
-  expect(body.get('folder')).toBe('tmp');
+  expect(fetchMock).not.toHaveBeenCalled();
+  expect(wrapper.emitted('success')?.[0]?.[0]).toEqual({ ok: true });
   fetchMock.mockRestore();
+});
+
+test('自定义请求未传 data 时收到空对象', async () => {
+  let requestData: unknown;
+  const wrapper = mount(Upload, { props: { action: '/upload', autoUpload: false, httpRequest: (options: { data: unknown }) => { requestData = options.data; return Promise.resolve(undefined); } } });
+  await select(wrapper, [new File(['x'], 'empty-data.txt')]);
+  await (wrapper.vm as { submit: () => Promise<unknown> }).submit();
+  expect(requestData).toEqual({});
+});
+
+test('自定义请求返回 void 时等待回调 response', async () => {
+  const wrapper = mount(Upload, { props: { action: '/upload', httpRequest: ({ onSuccess }: { onSuccess: (response: unknown) => void }) => { setTimeout(() => onSuccess({ id: 2 }), 0); } } });
+  await select(wrapper, [new File(['x'], 'callback.txt')]);
+  await vi.waitFor(() => expect(wrapper.emitted('success')).toBeTruthy());
+  expect(wrapper.emitted('success')?.[0]?.[0]).toEqual({ id: 2 });
+});
+
+test('自定义请求 Promise 返回值会作为 success response', async () => {
+  const wrapper = mount(Upload, { props: { action: '/upload', httpRequest: () => Promise.resolve({ id: 1 }) } });
+  await select(wrapper, [new File(['x'], 'promise.txt')]);
+  await vi.waitFor(() => expect(wrapper.emitted('success')).toBeTruthy());
+  const file = wrapper.emitted('success')?.[0]?.[1] as UploadFile;
+  expect(wrapper.emitted('success')?.[0]?.[0]).toEqual({ id: 1 });
+  expect(file.response).toEqual({ id: 1 });
+});
+
+test('data 函数会在自定义请求前解析并传入结果', async () => {
+  const data = { userId: 1 };
+  const request = vi.fn().mockResolvedValue({ ok: true });
+  const wrapper = mount(Upload, { props: { action: '/upload', data: () => Promise.resolve(data), httpRequest: request } });
+  await select(wrapper, [new File(['x'], 'data.txt')]);
+  await vi.waitFor(() => expect(request).toHaveBeenCalled());
+  expect(request.mock.calls[0][0].data).toEqual(data);
 });
 
 test('自定义请求接收完整协议并通过回调驱动状态', async () => {
@@ -132,7 +314,50 @@ test('自定义请求接收完整协议并通过回调驱动状态', async () =>
   await vi.waitFor(() => expect(wrapper.emitted('success')).toBeTruthy());
   expect(options).toMatchObject({ file: raw, action: '/upload', method: 'POST', filename: 'file', withCredentials: false });
   expect(options?.onProgress).toBeTypeOf('function');
-  expect((wrapper.emitted('success')?.[0]?.[0] as UploadFile).response).toEqual({ id: 1 });
+  expect(wrapper.emitted('success')?.[0]?.[0]).toEqual({ id: 1 });
+  expect((wrapper.emitted('success')?.[0]?.[1] as UploadFile).response).toEqual({ id: 1 });
+});
+
+test('父组件复制列表后仍能收到转换后的 raw 和 size', async () => {
+  let parentList: UploadFile[] = [];
+  const converted = new File(['converted'], 'converted.txt');
+  const request = vi.fn().mockResolvedValue(undefined);
+  const wrapper = mount(Upload, { props: { fileList: parentList, autoUpload: false, beforeUpload: () => converted, httpRequest: request, 'onUpdate:fileList': (list: UploadFile[]) => { parentList = list.map((file) => ({ ...file })); } } });
+  await select(wrapper, [new File(['source'], 'source.txt')]);
+  await vi.waitFor(() => expect(parentList[0]?.raw).toBe(converted));
+  expect(parentList[0]?.size).toBe(converted.size);
+});
+
+test('before-upload 转换后保留展示名称且不额外触发 change', async () => {
+  const converted = new File(['converted'], 'converted.txt');
+  const request = vi.fn().mockResolvedValue(undefined);
+  const wrapper = mount(Upload, { props: { autoUpload: false, beforeUpload: () => converted, httpRequest: request } });
+  await select(wrapper, [new File(['source'], 'source.txt')]);
+  const changes = wrapper.emitted('change') || [];
+  expect(changes).toHaveLength(1);
+  expect((changes[0][0] as UploadFile).name).toBe('source.txt');
+  expect((wrapper.vm as { handleStart: (file: File) => void }).handleStart).toBeTypeOf('function');
+});
+
+test('before-upload 返回 Blob 时保留目录元数据', async () => {
+  const wrapper = mount(Upload, { props: { directory: true, autoUpload: false, beforeUpload: () => new Blob(['converted'], { type: 'text/plain' }) } });
+  const raw = new File(['source'], 'a.txt') as UploadRawFile;
+  Object.defineProperty(raw, 'webkitRelativePath', { value: 'folder/a.txt' });
+  await select(wrapper, [raw]);
+  const file = wrapper.emitted('change')?.[0]?.[0] as UploadFile;
+  expect(file.raw?.webkitRelativePath).toBe('folder/a.txt');
+  expect(file.raw?.isDirectory).toBe(true);
+  expect(file.raw?.size).toBe(9);
+});
+
+test('before-upload 拒绝后先经历 ready 再移除并触发 remove', async () => {
+  const onRemove = vi.fn();
+  const wrapper = mount(Upload, { props: { autoUpload: false, beforeUpload: () => false, onRemove } });
+  await select(wrapper, [new File(['x'], 'rejected.txt')]);
+  expect(wrapper.emitted('change')?.map((event) => (event[0] as UploadFile).status)).toEqual(['ready']);
+  await vi.waitFor(() => expect(wrapper.emitted('remove')).toBeTruthy());
+  expect(onRemove).toHaveBeenCalledWith(expect.objectContaining({ name: 'rejected.txt' }), []);
+  expect(wrapper.findAll('li')).toHaveLength(0);
 });
 
 test('auto-upload=false 时 submit 才上传，before-upload 可阻止请求', async () => {
@@ -158,6 +383,14 @@ test('limit 超出不部分加入且触发 prop 与 emit，multiple=false 只接
   expect(wrapper.findAll('li')).toHaveLength(0);
   expect(wrapper.emitted('exceed')).toHaveLength(1);
   expect(onExceed).toHaveBeenCalled();
+});
+
+test('limit=0 不启用数量限制，multiple=false 仍只接收一个文件', async () => {
+  const onExceed = vi.fn();
+  const wrapper = mount(Upload, { props: { limit: 0, multiple: false, autoUpload: false, onExceed } });
+  await select(wrapper, [new File(['1'], 'one.txt'), new File(['2'], 'two.txt')]);
+  expect(wrapper.findAll('li')).toHaveLength(1);
+  expect(onExceed).not.toHaveBeenCalled();
 });
 
 test('失败上传仍触发 change，before-remove=false 不删除', async () => {
@@ -238,6 +471,13 @@ test('带 promise 句柄 abort 不悬挂且底层 resolve 不触发 success', as
   expect(wrapper.emitted('error')).toBeUndefined();
   expect(wrapper.find('em').text()).toBe('ready');
   expect(abort).toHaveBeenCalledOnce();
+});
+
+test('before-upload 返回 null 时视为允许', async () => {
+  const request = vi.fn().mockResolvedValue(undefined);
+  const wrapper = mount(Upload, { props: { action: '/upload', httpRequest: request, beforeUpload: () => null } });
+  await select(wrapper, [new File(['x'], 'null-result.txt')]);
+  expect(request).toHaveBeenCalledOnce();
 });
 
 test('before-upload 无返回值时允许上传且类型可用', async () => {
@@ -354,6 +594,7 @@ test('拖拽添加文件、目录属性和目录文件类型信息', async () =>
   expect(wrapper.get('input').attributes('webkitdirectory')).toBeDefined();
   expect(wrapper.text()).toContain('folder.txt');
   expect((wrapper.emitted('change')?.[0]?.[0] as UploadFile).raw?.isDirectory).toBe(true);
+  expect((wrapper.emitted('change')?.[0]?.[0] as UploadFile).raw?.webkitRelativePath).toBe('folder/folder.txt');
 });
 
 test('图片列表渲染缩略图、file 插槽和预览回调', async () => {
