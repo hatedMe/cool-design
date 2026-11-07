@@ -1,7 +1,7 @@
 import { computed, defineComponent, ref, watch, type PropType } from 'vue';
 import { createNamespace } from '../../../src/utils/create';
 import { Icon } from '../icon';
-import type { RateColor, RateIcon, RateProps, RateSize } from './types';
+import type { RateColor, RateIcon, RateSize } from './types';
 
 const [name, bem] = createNamespace('rate');
 
@@ -91,7 +91,7 @@ export default defineComponent({
     const getColor = (selected: boolean) => selected
       ? resolveThreshold(props.colors, activeValue.value, activeColor)
       : props.disabled ? props.disabledVoidColor : props.voidColor;
-    const getIcon = (index: number, selected: boolean, half: boolean) => {
+    const getIcon = (selected: boolean, half: boolean) => {
       if (!selected && !half) return props.disabled ? props.disabledVoidIcon : props.voidIcon;
       return resolveThreshold(props.icons, activeValue.value, 'star');
     };
@@ -145,7 +145,7 @@ export default defineComponent({
                   commitValue(currentValue.value + (event.key === 'ArrowRight' ? 0.5 : -0.5));
                 }
               }}>
-              <Icon class={bem('icon', { half })} icon={getIcon(index, selected, half)} color={getColor(selected || half)} size={props.size} aria-hidden='true' style={{ '--i-rate-active-color': getColor(true), '--i-rate-void-color': props.disabled ? props.disabledVoidColor : props.voidColor } as Record<string, string | undefined>} />
+              <Icon class={bem('icon', { half })} icon={getIcon(selected, half)} color={getColor(selected || half)} size={props.size} aria-hidden='true' style={{ '--i-rate-active-color': getColor(true), '--i-rate-void-color': props.disabled ? props.disabledVoidColor : props.voidColor } as Record<string, string | undefined>} />
             </span>
           );
         })}

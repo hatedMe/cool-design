@@ -11,6 +11,8 @@ describe('公开入口', () => {
     expect(app.component('i-button')).toBe(components.Button);
     expect(app.component('i-row')).toBe(components.Row);
     expect(app.component('i-col')).toBe(components.Col);
+    expect(components.Rate).toBeDefined();
+    expect(app.component('i-rate')).toBe(components.Rate);
     expect(UI.version).toBe(packageVersion);
   });
 });

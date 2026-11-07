@@ -39,6 +39,7 @@ import Badge from './badge';
 import Radio from './radio';
 import RadioGroup from './radio-group';
 import RadioButton from './radio-button';
+import Rate from './rate';
 import { DatePicker, TimePicker, DateTimePicker, Calendar } from './date-picker';
 import Autocomplete from './autocomplete';
 import ColorPicker from './color-picker';
@@ -113,6 +114,7 @@ export {
   Radio,
   RadioGroup,
   RadioButton,
+  Rate,
   DatePicker,
   TimePicker,
   DateTimePicker,
@@ -183,6 +185,7 @@ const components = [
   Radio,
   RadioGroup,
   RadioButton,
+  Rate,
   DatePicker,
   TimePicker,
   DateTimePicker,
@@ -230,4 +233,5 @@ export type { ColSize, ColSizeObject } from './col';
 export type { LinkType, LinkUnderline } from './link/link';
 export type { DatePickerType } from './date-picker';
 export type { UploadBeforeResult, UploadData, UploadDataRecord, UploadDataValue, UploadFile, UploadFiles, UploadProgressEvent, UploadRawFile, UploadRequestOptions, UploadStatus, UploadUserFile } from './upload';
+export type { RateColor, RateExposed, RateIcon, RateProps, RateSize } from './rate';
 export { Notify } from './notification';
