@@ -72,19 +72,27 @@ export default defineComponent({
 
     const activeValue = computed(() => hoverValue.value || currentValue.value);
     const resolveThreshold = <T,>(value: T | T[] | Record<number, T> | undefined, score: number, fallback?: T) => {
-      if (Array.isArray(value)) return value[score <= props.lowThreshold ? 0 : score <= props.highThreshold ? 1 : 2] ?? fallback;
+      if (Array.isArray(value)) {
+        const segment = score <= props.lowThreshold ? 0 : score <= props.highThreshold ? 1 : 2;
+        return value[segment] ?? value[value.length - 1] ?? fallback;
+      }
       if (value && typeof value === 'object') {
         const excluded = (value as Record<string, T | number[]>).excluded as number[] | undefined;
         if (excluded?.includes(score)) return fallback;
-        const entries = Object.entries(value as Record<string, T>).filter(([key]) => key !== 'excluded').sort(([a], [b]) => Number(a) - Number(b));
-        return entries.reduce<T | undefined>((result, [threshold, item]) => score >= Number(threshold) ? item : result, undefined) ?? fallback;
+        const entries = Object.entries(value as Record<string, T>)
+          .filter(([key]) => key !== 'excluded')
+          .sort(([a], [b]) => Number(a) - Number(b));
+        const matched = entries.reduce<T | undefined>((result, [threshold, item]) => score >= Number(threshold) ? item : result, undefined);
+        return matched ?? entries[0]?.[1] ?? fallback;
       }
       return value ?? fallback;
     };
-    const getColor = (selected: boolean) => selected ? resolveThreshold(props.colors, activeValue.value) : props.disabled ? props.disabledVoidColor : props.voidColor;
+    const activeColor = '#f7ba2a';
+    const getColor = (selected: boolean) => selected
+      ? resolveThreshold(props.colors, activeValue.value, activeColor)
+      : props.disabled ? props.disabledVoidColor : props.voidColor;
     const getIcon = (index: number, selected: boolean, half: boolean) => {
       if (!selected && !half) return props.disabled ? props.disabledVoidIcon : props.voidIcon;
-      if (Array.isArray(props.icons)) return props.icons[index] ?? 'star';
       return resolveThreshold(props.icons, activeValue.value, 'star');
     };
     const displayText = computed(() => {
@@ -137,11 +145,12 @@ export default defineComponent({
                   commitValue(currentValue.value + (event.key === 'ArrowRight' ? 0.5 : -0.5));
                 }
               }}>
-              <Icon class={bem('icon', { half })} icon={getIcon(index, selected, half)} color={getColor(selected || half)} size={props.size} aria-hidden='true' />
+              <Icon class={bem('icon', { half })} icon={getIcon(index, selected, half)} color={getColor(selected || half)} size={props.size} aria-hidden='true' style={{ '--i-rate-active-color': getColor(true), '--i-rate-void-color': props.disabled ? props.disabledVoidColor : props.voidColor } as Record<string, string | undefined>} />
             </span>
           );
         })}
-        {(props.showText || props.showScore) && <span class={bem('text')} style={{ color: props.textColor }}>{props.showScore ? displayText.value : props.texts[Math.max(0, Math.ceil(activeValue.value) - 1)]}</span>}
+        {props.showScore && <span class={bem('score')} style={{ color: props.textColor }}>{displayText.value}</span>}
+        {!props.showScore && props.showText && <span class={bem('text')} style={{ color: props.textColor }}>{props.texts[Math.max(0, Math.ceil(activeValue.value) - 1)]}</span>}
       </div>
     );
   }

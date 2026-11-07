@@ -21,12 +21,13 @@
 
   &__icon {
     font-size: 20px;
-    color: var(--i-rate-void-color, transparent);
+    color: var(--i-rate-void-color, $disable-hover);
     -webkit-text-stroke: 0.5px var(--i-rate-void-color, $disable-hover);
-    &--half { background: linear-gradient(90deg, var(--i-rate-active-color, $warning) 50%, transparent 50%); background-clip: text; -webkit-text-fill-color: transparent; }
+    &--half { background: linear-gradient(90deg, var(--i-rate-active-color, $warning) 50%, var(--i-rate-void-color, $disable-hover) 50%); background-clip: text; -webkit-text-fill-color: transparent; }
   }
 
-  &__text { margin-left: 8px; color: var(--i-rate-text-color, currentColor); }
+  &__text,
+  &__score { margin-left: 8px; color: var(--i-rate-text-color, currentColor); }
   &--large &__icon { font-size: 24px; }
   &--small &__icon { font-size: 16px; }
 }

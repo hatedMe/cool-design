@@ -110,6 +110,8 @@ describe('Rate', () => {
     const wrapper = mount(Rate, { props: { modelValue: 3, colors: ['red', 'orange', 'green'], icons: ['low', 'medium', 'high'] } });
     expect(wrapper.find('.i-rate__icon').attributes('style')).toContain('color: orange');
     expect(wrapper.findAll('.i-rate__icon')).toHaveLength(5);
+    expect(wrapper.find('.i-rate__icon').classes()).toContain('medium');
+    expect(wrapper.findAll('.i-rate__icon')[2].classes()).toContain('medium');
   });
 
   test('resolves object thresholds and excluded scores', () => {
@@ -123,8 +125,15 @@ describe('Rate', () => {
     const CustomIcon = { template: '<b class="custom-icon" />' };
     const wrapper = mount(Rate, { props: { modelValue: 2, voidIcon: CustomIcon, showScore: true, textColor: 'purple', scoreTemplate: 'Score: {value}', size: 'small' } });
     expect(wrapper.findAll('.custom-icon')).toHaveLength(3);
-    expect(wrapper.get('.i-rate__text').text()).toBe('Score: 2');
-    expect(wrapper.get('.i-rate__text').attributes('style')).toContain('color: purple');
+    expect(wrapper.get('.i-rate__score').text()).toBe('Score: 2');
+    expect(wrapper.get('.i-rate__score').attributes('style')).toContain('color: purple');
     expect(wrapper.classes()).toContain('i-rate--small');
+  });
+
+  test('showScore takes precedence over showText and defaults selected color', () => {
+    const wrapper = mount(Rate, { props: { modelValue: 2, showText: true, showScore: true, texts: ['one', 'two'], scoreTemplate: '{value}' } });
+    expect(wrapper.find('.i-rate__score').exists()).toBe(true);
+    expect(wrapper.find('.i-rate__text').exists()).toBe(false);
+    expect(wrapper.find('.i-rate__icon').attributes('style')).toContain('color: rgb(247, 186, 42)');
   });
 });
