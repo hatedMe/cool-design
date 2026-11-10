@@ -22,7 +22,7 @@ const props = {
   showText: Boolean,
   showScore: Boolean,
   textColor: String,
-  texts: { type: Array as PropType<string[]>, default: () => ['bad', 'poor', 'fair', 'good', 'great'] },
+  texts: { type: Array as PropType<string[]>, default: () => ['Extremely bad', 'Disappointed', 'Fair', 'Satisfied', 'Surprise'] },
   scoreTemplate: { type: String, default: '{value}' },
   clearable: Boolean,
   id: String,
@@ -49,10 +49,8 @@ export default defineComponent({
   setup(props, { attrs, emit, expose }) {
     const currentValue = ref(normalizeValue(props.modelValue, props.max));
     const hoverValue = ref(0);
-    const initialValue = ref(currentValue.value);
     watch(() => [props.modelValue, props.max], () => {
       currentValue.value = normalizeValue(props.modelValue, props.max);
-      initialValue.value = currentValue.value;
     });
 
     const setCurrentValue = (value: number) => {
@@ -60,17 +58,16 @@ export default defineComponent({
     };
     const resetCurrentValue = () => {
       hoverValue.value = 0;
-      currentValue.value = initialValue.value;
+      currentValue.value = normalizeValue(props.modelValue, props.max);
     };
     const commitValue = (value: number) => {
       if (props.disabled) return;
       const normalized = normalizeValue(interactionValue(value, props.allowHalf), props.max);
-      const next = props.clearable && normalized === currentValue.value ? 0 : normalized;
-      if (next === currentValue.value) return;
+      const next = props.clearable && normalized === normalizeValue(props.modelValue, props.max) ? 0 : normalized;
+      const changed = next !== currentValue.value;
       currentValue.value = next;
-      initialValue.value = next;
       emit('update:modelValue', next);
-      emit('change', next);
+      if (changed) emit('change', next);
     };
     expose({ setCurrentValue, resetCurrentValue });
 
@@ -87,14 +84,20 @@ export default defineComponent({
           .filter(([key]) => key !== 'excluded')
           .map(([threshold, item]) => [Number(threshold), item] as const)
           .sort(([a], [b]) => a - b);
-        const matched = entries.find(([threshold]) => score <= threshold);
-        if (!matched) return entries[entries.length - 1]?.[1] as T | undefined ?? fallback;
-        const item = matched[1];
-        if (item && typeof item === 'object' && 'value' in item) {
-          const thresholdValue = item as RateThresholdValue<T>;
-          return thresholdValue.excluded ? fallback : thresholdValue.value;
+        const itemValue = (item: T | RateThresholdValue<T>): T | undefined => {
+          if (item && typeof item === 'object' && 'value' in item) {
+            const thresholdValue = item as RateThresholdValue<T>;
+            return thresholdValue.excluded ? undefined : thresholdValue.value;
+          }
+          return item as T;
+        };
+        const matched = entries.find(([threshold, item]) => score <= threshold && itemValue(item) !== undefined);
+        if (matched) return itemValue(matched[1]) ?? fallback;
+        for (const [, item] of entries) {
+          const resolved = itemValue(item);
+          if (resolved !== undefined) return resolved;
         }
-        return item as T;
+        return fallback;
       }
       return value ?? fallback;
     };
@@ -124,19 +127,20 @@ export default defineComponent({
         id={props.id}
         class={[bem(), `i-rate--${props.size === 'default' ? 'default' : props.size}`, props.disabled && bem('', { disabled: true })]}
         role='slider'
-        aria-label={props.ariaLabel || props.label}
+        aria-label={props.ariaLabel || props.label || 'rating'}
         title={props.label}
         data-role='rate-slider'
-        aria-valuetext={String(props.disabled ? props.modelValue : currentValue.value)}
+        aria-valuetext={props.showText || props.showScore ? displayText.value : undefined}
         aria-valuenow={currentValue.value}
         aria-valuemin='0'
         aria-valuemax={Math.max(0, Number(props.max) || 0)}
         aria-disabled={props.disabled ? 'true' : undefined}
-        tabindex={props.disabled ? -1 : 0}
+        {...(!props.disabled ? { tabindex: 0 } : {})}
         onKeydown={handleKeydown}>
         {Array.from({ length: Math.max(0, Math.ceil(props.max)) }, (_, index) => {
           const itemValue = index + 1;
           const selected = activeValue.value === itemValue;
+          const partial = activeValue.value > itemValue - 1 && activeValue.value < itemValue;
           const half = props.allowHalf && activeValue.value === itemValue - 0.5;
           const filled = activeValue.value >= itemValue;
           return (
@@ -157,7 +161,7 @@ export default defineComponent({
               }}
               onMouseleave={() => (hoverValue.value = 0)}
               onKeydown={() => undefined}>
-              <Icon class={bem('icon', { half })} icon={getIcon(filled || selected, half)} color={getColor(filled || selected || half)} size={props.size} aria-hidden='true' style={{ '--i-rate-active-color': getColor(true), '--i-rate-void-color': props.disabled ? props.disabledVoidColor : props.voidColor } as Record<string, string | undefined>} />
+              <Icon class={bem('icon', { half: half || partial })} icon={getIcon(filled || selected, half || partial)} color={getColor(filled || selected || half || partial)} size={props.size} aria-hidden='true' style={{ '--i-rate-active-color': getColor(true), '--i-rate-fill-color': getColor(true), '--i-rate-void-color': props.disabled ? (props.disabledVoidColor || 'var(--el-rate-disabled-void-color, #c0c4cc)') : props.voidColor, '--i-rate-text-color': props.textColor } as Record<string, string | undefined>} />
             </span>
           );
         })}

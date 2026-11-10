@@ -40,7 +40,7 @@ import Rate from 'cool-design/rate';
 <Rate :model-value="4" :colors="['#f56c6c', '#e6a23c', '#67c23a']" />
 ```
 
-`icons` 和 `colors` 支持三元素数组或按阈值分段的对象；对象可以使用 `excluded` 排除指定评分。
+`icons` 和 `colors` 支持三元素数组或按阈值分段的对象；对象值可写为 `{ value, excluded: true }` 以跳过当前阈值，也兼容旧式 `excluded` 评分数组。
 
 ## 只读与清零
 
@@ -68,12 +68,12 @@ import Rate from 'cool-design/rate';
 | showText | 显示辅助文字 | `boolean` | `false` |
 | showScore | 显示分数 | `boolean` | `false` |
 | textColor | 文本颜色 | `string` | — |
-| texts | 辅助文字列表 | `string[]` | `['bad', 'poor', 'fair', 'good', 'great']` |
+| texts | 辅助文字列表 | `string[]` | `['Extremely bad', 'Disappointed', 'Fair', 'Satisfied', 'Surprise']` |
 | scoreTemplate | 分数模板，`{value}` 替换为评分 | `string` | `{value}` |
 | clearable | 允许再次点击清零 | `boolean` | `false` |
 | id | 根元素 ID | `string` | — |
 | ariaLabel | 无障碍标签 | `string` | — |
-| label | 根元素标题 | `string` | — |
+| label | 弃用的无障碍标签别名（同时保留 `title`） | `string` | — |
 
 ### 事件
 

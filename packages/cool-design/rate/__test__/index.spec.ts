@@ -17,7 +17,7 @@ describe('Rate', () => {
   test('normalizes modelValue to the valid range and supports max', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 8, max: 3 } });
     expect(wrapper.get('[role="slider"]').attributes('aria-valuenow')).toBe('3');
-    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('3');
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBeUndefined();
 
     await wrapper.setProps({ modelValue: -2, max: 4 });
     expect(wrapper.get('[role="slider"]').attributes('aria-valuenow')).toBe('0');
@@ -39,7 +39,7 @@ describe('Rate', () => {
     const item = wrapper.get('.i-rate__item');
     const slider = wrapper.get('[role="slider"]');
     expect(slider.attributes('aria-disabled')).toBe('true');
-    expect(slider.attributes('tabindex')).toBe('-1');
+    expect(slider.attributes('tabindex')).toBeUndefined();
     await item.trigger('click');
     expect(wrapper.emitted('change')).toBeUndefined();
     expect(wrapper.emitted('update:modelValue')).toBeUndefined();
@@ -66,7 +66,7 @@ describe('Rate', () => {
   test('supports half selection and clearable selection', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 2.5, allowHalf: true, clearable: true } });
     expect(wrapper.findAll('[data-half="true"]')).toHaveLength(1);
-    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('2.5');
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBeUndefined();
     expect(wrapper.find('.i-rate__icon--half').exists()).toBe(true);
     const secondItem = wrapper.findAll('.i-rate__item')[1];
     Object.defineProperty(secondItem.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
@@ -106,7 +106,7 @@ describe('Rate', () => {
 
   test('announces the current half value and supports half-step keyboard changes', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 1.5, allowHalf: true } });
-    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('1.5');
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBeUndefined();
     await wrapper.get('[role="slider"]').trigger('keydown', { key: 'ArrowRight' });
     expect(wrapper.emitted('change')).toContainEqual([2]);
     await wrapper.get('[role="slider"]').trigger('keydown', { key: 'ArrowLeft' });
@@ -148,9 +148,9 @@ describe('Rate', () => {
     const wrapper = mount(Rate, { props: { modelValue: 3.7, disabled: true } });
     const slider = wrapper.get('[role="slider"]');
     expect(slider.attributes('aria-valuenow')).toBe('3.7');
-    expect(slider.attributes('aria-valuetext')).toBe('3.7');
+    expect(slider.attributes('aria-valuetext')).toBeUndefined();
     expect(slider.attributes('aria-disabled')).toBe('true');
-    expect(slider.attributes('tabindex')).toBe('-1');
+    expect(slider.attributes('tabindex')).toBeUndefined();
   });
 
   test('uses Element Plus threshold boundaries and object entries', () => {
@@ -160,11 +160,11 @@ describe('Rate', () => {
     expect(object.find('.i-rate__icon').attributes('style')).not.toContain('red');
   });
 
-  test('does not emit change when selecting the current value', async () => {
+  test('emits update without change when selecting the current value', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 2 } });
     await wrapper.findAll('.i-rate__item')[1].trigger('click');
     expect(wrapper.emitted('change')).toBeUndefined();
-    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+    expect(wrapper.emitted('update:modelValue')).toEqual([[2]]);
   });
 
   test('supports root slider keyboard control and spaced score templates', async () => {
