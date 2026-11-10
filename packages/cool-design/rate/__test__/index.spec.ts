@@ -138,11 +138,11 @@ describe('Rate', () => {
     expect(wrapper.classes()).toContain('i-rate--small');
   });
 
-  test('showScore takes precedence over showText and defaults selected color', () => {
+  test('showScore takes precedence over showText without overriding global fill color', () => {
     const wrapper = mount(Rate, { props: { modelValue: 2, showText: true, showScore: true, texts: ['one', 'two'], scoreTemplate: '{value}' } });
     expect(wrapper.find('.i-rate__score').exists()).toBe(true);
     expect(wrapper.find('.i-rate__text').exists()).toBe(false);
-    expect(wrapper.find('.i-rate__icon').attributes('style')).toContain('color: rgb(247, 186, 42)');
+    expect(wrapper.find('.i-rate__icon').attributes('style')).not.toContain('color: rgb(247, 186, 42)');
   });
 
   test('preserves decimal model values and exposes slider semantics', () => {
