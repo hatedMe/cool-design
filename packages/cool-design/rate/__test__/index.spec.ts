@@ -183,10 +183,10 @@ describe('Rate', () => {
     await item.trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[0]]);
     await item.trigger('click');
-    expect(wrapper.emitted('update:modelValue')).toEqual([[0], [2]]);
+    expect(wrapper.emitted('update:modelValue')).toEqual([[0], [0]]);
     await wrapper.setProps({ modelValue: 0 });
     await item.trigger('click');
-    expect(wrapper.emitted('update:modelValue')).toEqual([[0], [2], [2]]);
+    expect(wrapper.emitted('update:modelValue')).toEqual([[0], [0], [2]]);
   });
 
   test('renders arbitrary decimal partial fill and disabled colors', () => {
@@ -230,7 +230,7 @@ describe('Rate', () => {
     const third = wrapper.findAll('.i-rate__item')[2];
     await third.trigger('click');
     await third.trigger('click');
-    expect(wrapper.emitted('update:modelValue')).toEqual([[3], [0]]);
+    expect(wrapper.emitted('update:modelValue')).toEqual([[3], [3]]);
   });
 
   test('does not show partial fill for an interactive decimal without allowHalf', () => {

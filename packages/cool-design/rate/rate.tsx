@@ -63,7 +63,7 @@ export default defineComponent({
     const commitValue = (value: number) => {
       if (props.disabled) return;
       const normalized = normalizeValue(interactionValue(value, props.allowHalf), props.max);
-      const next = props.clearable && normalized === currentValue.value ? 0 : normalized;
+      const next = props.clearable && normalized === normalizeValue(props.modelValue, props.max) ? 0 : normalized;
       const changed = next !== currentValue.value;
       currentValue.value = next;
       emit('update:modelValue', next);
