@@ -1,4 +1,5 @@
-import { computed, defineComponent, ref, watch, type PropType } from 'vue';
+import { computed, defineComponent, inject, ref, watch, type PropType } from 'vue';
+import { formKey } from '../form/context';
 import { createNamespace } from '../../../src/utils/create';
 import { Icon } from '../icon';
 import type { RateColor, RateIcon, RateIconMap, RateSize, RateThresholdValue } from './types';
@@ -47,6 +48,9 @@ export default defineComponent({
   props,
   emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, expose }) {
+    const form = inject(formKey, undefined);
+    const isDisabled = computed(() => props.disabled || Boolean(form?.disabled?.()));
+    const effectiveSize = computed(() => props.size !== 'default' ? props.size : (form?.size?.() || props.size));
     const currentValue = ref(normalizeValue(props.modelValue, props.max));
     const hoverValue = ref(0);
     watch(() => [props.modelValue, props.max], () => {
@@ -61,7 +65,7 @@ export default defineComponent({
       currentValue.value = normalizeValue(props.modelValue, props.max);
     };
     const commitValue = (value: number) => {
-      if (props.disabled) return;
+      if (isDisabled.value) return;
       const normalized = normalizeValue(interactionValue(value, props.allowHalf), props.max);
       const next = props.clearable && normalized === props.modelValue ? 0 : normalized;
       const changed = next !== props.modelValue;
@@ -73,8 +77,8 @@ export default defineComponent({
 
     const activeValue = computed(() => hoverValue.value || currentValue.value);
     const displayText = computed(() => {
-      const scoreValue = props.disabled ? props.modelValue : activeValue.value;
-      const textValue = props.disabled ? currentValue.value : activeValue.value;
+      const scoreValue = isDisabled.value ? props.modelValue : activeValue.value;
+      const textValue = isDisabled.value ? currentValue.value : activeValue.value;
       return props.showScore
         ? props.scoreTemplate.replace(/\{\s*value\s*\}/, String(scoreValue))
         : textValue > 0 ? props.texts[Math.max(0, Math.ceil(textValue) - 1)] || '' : '';
@@ -106,13 +110,13 @@ export default defineComponent({
     const activeColor = '#f7ba2a';
     const getColor = (selected: boolean) => selected
       ? resolveThreshold(props.colors, activeValue.value, activeColor)
-      : props.disabled ? props.disabledVoidColor : props.voidColor;
+      : isDisabled.value ? props.disabledVoidColor : props.voidColor;
     const getIcon = (selected: boolean, half: boolean) => {
-      if (!selected && !half) return props.disabled ? props.disabledVoidIcon : props.voidIcon;
+      if (!selected && !half) return isDisabled.value ? props.disabledVoidIcon : props.voidIcon;
       return resolveThreshold(props.icons, activeValue.value, 'icon-collection_fill');
     };
     const handleKeydown = (event: KeyboardEvent) => {
-      if (props.disabled) return;
+      if (isDisabled.value) return;
       const direction = ['ArrowRight', 'ArrowUp'].includes(event.key) ? 1 : ['ArrowLeft', 'ArrowDown'].includes(event.key) ? -1 : 0;
       if (!direction) return;
       const nextValue = normalizeValue(interactionValue(currentValue.value + direction * (props.allowHalf ? 0.5 : 1), props.allowHalf), props.max);
@@ -125,7 +129,7 @@ export default defineComponent({
       <div
         {...attrs}
         id={props.id}
-        class={[bem(), `i-rate--${props.size === 'default' ? 'default' : props.size}`, props.disabled && bem('', { disabled: true })]}
+        class={[bem(), `i-rate--${effectiveSize.value === 'default' ? 'default' : effectiveSize.value}`, isDisabled.value && bem('', { disabled: true })]}
         role='slider'
         aria-label={props.ariaLabel || props.label || 'rating'}
         title={props.label}
@@ -134,20 +138,20 @@ export default defineComponent({
         aria-valuenow={currentValue.value}
         aria-valuemin='0'
         aria-valuemax={Math.max(0, Number(props.max) || 0)}
-        aria-disabled={props.disabled ? 'true' : undefined}
-        {...(!props.disabled ? { tabindex: 0 } : {})}
+        aria-disabled={isDisabled.value ? 'true' : undefined}
+        {...(!isDisabled.value ? { tabindex: 0 } : {})}
         onKeydown={handleKeydown}>
         {Array.from({ length: Math.max(0, Math.ceil(props.max)) }, (_, index) => {
           const itemValue = index + 1;
           const selected = activeValue.value === itemValue;
-          const partial = (props.allowHalf || props.disabled) && activeValue.value > itemValue - 1 && activeValue.value < itemValue;
+          const partial = (props.allowHalf || isDisabled.value) && activeValue.value > itemValue - 1 && activeValue.value < itemValue;
           const partialPercent = Math.round((activeValue.value - (itemValue - 1)) * 100);
           const half = props.allowHalf && activeValue.value === itemValue - 0.5;
           const filled = activeValue.value >= itemValue;
           return (
             <span
               class={bem('item')}
-              aria-disabled={props.disabled ? 'true' : undefined}
+              aria-disabled={isDisabled.value ? 'true' : undefined}
               data-half={half ? 'true' : undefined}
               onClick={(event: MouseEvent) => {
                 const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
@@ -155,7 +159,7 @@ export default defineComponent({
                 commitValue(value);
               }}
               onMouseenter={(event: MouseEvent) => {
-                if (!props.disabled) {
+                if (!isDisabled.value) {
                   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
                   hoverValue.value = props.allowHalf && event.clientX - rect.left < rect.width / 2 ? itemValue - 0.5 : itemValue;
                 }
@@ -165,7 +169,7 @@ export default defineComponent({
                 currentValue.value = normalizeValue(props.modelValue, props.max);
               }}
               onKeydown={() => undefined}>
-              <Icon class={bem('icon', { filled: filled || selected, half: half || partial, partial: partial && !half })} icon={getIcon(filled || selected, half || partial)} color={props.colors ? getColor(filled || selected || half || partial) : undefined} size={props.size} aria-hidden='true' style={{ '--i-rate-fill-percent': `${partialPercent}%`, '--i-rate-active-color': props.colors ? getColor(true) : undefined, '--i-rate-fill-color': props.colors ? getColor(true) : 'var(--el-rate-fill-color, var(--i-rate-active-color, $warning))', '--i-rate-void-color': props.disabled ? (props.disabledVoidColor || 'var(--el-rate-disabled-void-color, var(--el-fill-color, #c0c4cc))') : props.voidColor, '--i-rate-disabled-void-color': props.disabledVoidColor || 'var(--el-rate-disabled-void-color, var(--el-fill-color, #c0c4cc))', '--i-rate-text-color': props.textColor } as Record<string, string | undefined>} />
+              <Icon class={bem('icon', { filled: filled || selected, half: half || partial, partial: partial && !half })} icon={getIcon(filled || selected, half || partial)} color={props.colors ? getColor(filled || selected || half || partial) : undefined} size={effectiveSize.value} aria-hidden='true' style={{ '--i-rate-fill-percent': `${partialPercent}%`, '--i-rate-active-color': props.colors ? getColor(true) : undefined, '--i-rate-fill-color': props.colors ? getColor(true) : 'var(--el-rate-fill-color, var(--i-rate-active-color, $warning))', '--i-rate-void-color': props.disabled ? (props.disabledVoidColor || 'var(--el-rate-disabled-void-color, var(--el-fill-color, #c0c4cc))') : props.voidColor, '--i-rate-disabled-void-color': props.disabledVoidColor || 'var(--el-rate-disabled-void-color, var(--el-fill-color, #c0c4cc))', '--i-rate-text-color': props.textColor } as Record<string, string | undefined>} />
             </span>
           );
         })}

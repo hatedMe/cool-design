@@ -1,8 +1,52 @@
 import { mount } from '@vue/test-utils';
+import { defineComponent, h, provide } from 'vue';
 import { describe, expect, test } from 'vitest';
+import { formKey } from '../../form/context';
 import Rate from '..';
 
 describe('Rate', () => {
+  test('inherits disabled and size from the Form context', () => {
+    const Host = defineComponent({
+      setup() {
+        provide(formKey, {
+          model: () => ({}),
+          rules: () => ({}),
+          register: () => undefined,
+          unregister: () => undefined,
+          disabled: () => true,
+          size: () => 'small'
+        });
+        return () => h(Rate);
+      }
+    });
+    const wrapper = mount(Host);
+    const slider = wrapper.get('[role="slider"]');
+    expect(slider.attributes('aria-disabled')).toBe('true');
+    expect(slider.attributes('tabindex')).toBeUndefined();
+    expect(slider.classes()).toContain('i-rate--small');
+  });
+
+  test('local disabled and size override the Form context', () => {
+    const Host = defineComponent({
+      setup() {
+        provide(formKey, {
+          model: () => ({}),
+          rules: () => ({}),
+          register: () => undefined,
+          unregister: () => undefined,
+          disabled: () => false,
+          size: () => 'large'
+        });
+        return () => h(Rate, { disabled: true, size: 'small' });
+      }
+    });
+    const wrapper = mount(Host);
+    const slider = wrapper.get('[role="slider"]');
+    expect(slider.attributes('aria-disabled')).toBe('true');
+    expect(slider.attributes('tabindex')).toBeUndefined();
+    expect(slider.classes()).toContain('i-rate--small');
+  });
+
   test('uses the root slider as the only focusable rating control', () => {
     const wrapper = mount(Rate);
     const slider = wrapper.get('[role="slider"]');
