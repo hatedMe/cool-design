@@ -26,6 +26,24 @@ describe('Rate', () => {
     expect(slider.classes()).toContain('i-rate--small');
   });
 
+  test('uses disabled void colors from the Form context', () => {
+    const Host = defineComponent({
+      setup() {
+        provide(formKey, {
+          model: () => ({}),
+          rules: () => ({}),
+          register: () => undefined,
+          unregister: () => undefined,
+          disabled: () => true,
+          size: () => 'default'
+        });
+        return () => h(Rate, { modelValue: 1 });
+      }
+    });
+    const wrapper = mount(Host);
+    expect(wrapper.find('.i-rate__icon').attributes('style')).toContain('--i-rate-void-color: var(--el-rate-disabled-void-color');
+  });
+
   test('local disabled and size override the Form context', () => {
     const Host = defineComponent({
       setup() {
