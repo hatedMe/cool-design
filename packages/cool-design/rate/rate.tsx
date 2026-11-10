@@ -115,8 +115,10 @@ export default defineComponent({
       if (props.disabled) return;
       const direction = ['ArrowRight', 'ArrowUp'].includes(event.key) ? 1 : ['ArrowLeft', 'ArrowDown'].includes(event.key) ? -1 : 0;
       if (!direction) return;
+      const nextValue = normalizeValue(interactionValue(currentValue.value + direction * (props.allowHalf ? 0.5 : 1), props.allowHalf), props.max);
+      if (nextValue === currentValue.value) return;
       event.preventDefault();
-      commitValue(currentValue.value + direction * (props.allowHalf ? 0.5 : 1));
+      commitValue(nextValue);
     };
 
     return () => (
@@ -158,7 +160,10 @@ export default defineComponent({
                   hoverValue.value = props.allowHalf && event.clientX - rect.left < rect.width / 2 ? itemValue - 0.5 : itemValue;
                 }
               }}
-              onMouseleave={() => (hoverValue.value = 0)}
+              onMouseleave={() => {
+                hoverValue.value = 0;
+                currentValue.value = normalizeValue(props.modelValue, props.max);
+              }}
               onKeydown={() => undefined}>
               <Icon class={bem('icon', { filled: filled || selected, half: half || partial, partial: partial && !half })} icon={getIcon(filled || selected, half || partial)} color={props.colors ? getColor(filled || selected || half || partial) : undefined} size={props.size} aria-hidden='true' style={{ '--i-rate-fill-percent': `${partialPercent}%`, '--i-rate-active-color': props.colors ? getColor(true) : undefined, '--i-rate-fill-color': props.colors ? getColor(true) : 'var(--el-rate-fill-color, var(--i-rate-active-color, $warning))', '--i-rate-void-color': props.disabled ? (props.disabledVoidColor || 'var(--el-rate-disabled-void-color, var(--el-fill-color, #c0c4cc))') : props.voidColor, '--i-rate-disabled-void-color': props.disabledVoidColor || 'var(--el-rate-disabled-void-color, var(--el-fill-color, #c0c4cc))', '--i-rate-text-color': props.textColor } as Record<string, string | undefined>} />
             </span>

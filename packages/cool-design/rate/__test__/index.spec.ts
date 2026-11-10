@@ -180,6 +180,27 @@ describe('Rate', () => {
     expect(object.find('.i-rate__icon').attributes('style')).not.toContain('red');
   });
 
+  test('emits no events when keyboard movement is clamped at a boundary', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 0, max: 3 } });
+    const slider = wrapper.get('[role="slider"]');
+    await slider.trigger('keydown', { key: 'ArrowLeft' });
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+    expect(wrapper.emitted('change')).toBeUndefined();
+
+    await wrapper.setProps({ modelValue: 3 });
+    await slider.trigger('keydown', { key: 'ArrowRight' });
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+    expect(wrapper.emitted('change')).toBeUndefined();
+  });
+
+  test('restores the controlled modelValue after hover leaves a stale internal value', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 2 } });
+    await wrapper.findAll('.i-rate__item')[2].trigger('click');
+    await wrapper.findAll('.i-rate__item')[3].trigger('mouseenter', { clientX: 80 });
+    await wrapper.findAll('.i-rate__item')[3].trigger('mouseleave');
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuenow')).toBe('2');
+  });
+
   test('emits update without change when selecting the current value', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 2 } });
     await wrapper.findAll('.i-rate__item')[1].trigger('click');
