@@ -225,12 +225,24 @@ describe('Rate', () => {
     expect(wrapper.findAll('.i-rate__item')).toHaveLength(0);
   });
 
-  test('clearable uses the visible value when controlled props lag', async () => {
+  test('clearable follows the controlled modelValue when props lag', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 2, clearable: true } });
     const third = wrapper.findAll('.i-rate__item')[2];
     await third.trigger('click');
     await third.trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[3], [0]]);
+  });
+
+  test('does not show partial fill for an interactive decimal without allowHalf', () => {
+    const wrapper = mount(Rate, { props: { modelValue: 3.25 } });
+    expect(wrapper.find('.i-rate__icon--partial').exists()).toBe(false);
+  });
+
+  test('uses a distinct disabled void icon by default', () => {
+    const wrapper = mount(Rate, { props: { disabled: true } });
+    const icons = wrapper.findAll('.i-rate__icon');
+    expect(icons[0].classes()).toContain('icon-browse_fill');
+    expect(icons[0].classes()).not.toContain('icon-collection_fill');
   });
 
   test('empty text has no aria-valuetext at zero', () => {

@@ -18,7 +18,7 @@ const props = {
   disabledVoidColor: String,
   icons: { type: [Array, Object] as PropType<RateIconMap>, default: undefined },
   voidIcon: { type: [String, Object, Function] as PropType<RateIcon>, default: 'icon-collection_fill' },
-  disabledVoidIcon: { type: [String, Object, Function] as PropType<RateIcon>, default: 'icon-collection_fill' },
+  disabledVoidIcon: { type: [String, Object, Function] as PropType<RateIcon>, default: 'icon-browse_fill' },
   showText: Boolean,
   showScore: Boolean,
   textColor: String,
@@ -142,7 +142,7 @@ export default defineComponent({
         {Array.from({ length: Math.max(0, Math.ceil(props.max)) }, (_, index) => {
           const itemValue = index + 1;
           const selected = activeValue.value === itemValue;
-          const partial = activeValue.value > itemValue - 1 && activeValue.value < itemValue;
+          const partial = (props.allowHalf || props.disabled) && activeValue.value > itemValue - 1 && activeValue.value < itemValue;
           const partialPercent = Math.round((activeValue.value - (itemValue - 1)) * 100);
           const half = props.allowHalf && activeValue.value === itemValue - 0.5;
           const filled = activeValue.value >= itemValue;
@@ -164,7 +164,7 @@ export default defineComponent({
               }}
               onMouseleave={() => (hoverValue.value = 0)}
               onKeydown={() => undefined}>
-              <Icon class={bem('icon', { half: half || partial, partial: partial && !half })} icon={getIcon(filled || selected, half || partial)} color={getColor(filled || selected || half || partial)} size={props.size} aria-hidden='true' style={{ '--i-rate-fill-percent': `${partialPercent}%`, '--i-rate-active-color': getColor(true), '--i-rate-fill-color': getColor(true), '--i-rate-void-color': props.disabled ? (props.disabledVoidColor || 'var(--el-rate-disabled-void-color, #c0c4cc)') : props.voidColor, '--i-rate-disabled-void-color': props.disabledVoidColor || 'var(--el-rate-disabled-void-color, #c0c4cc)', '--i-rate-text-color': props.textColor } as Record<string, string | undefined>} />
+              <Icon class={bem('icon', { half: half || partial, partial: partial && !half })} icon={getIcon(filled || selected, half || partial)} color={getColor(filled || selected || half || partial)} size={props.size} aria-hidden='true' style={{ '--i-rate-fill-percent': `${partialPercent}%`, '--i-rate-active-color': getColor(true), '--i-rate-fill-color': props.colors ? getColor(true) : undefined, '--i-rate-void-color': props.disabled ? (props.disabledVoidColor || 'var(--el-rate-disabled-void-color, #c0c4cc)') : props.voidColor, '--i-rate-disabled-void-color': props.disabledVoidColor || 'var(--el-rate-disabled-void-color, #c0c4cc)', '--i-rate-text-color': props.textColor } as Record<string, string | undefined>} />
             </span>
           );
         })}
