@@ -73,10 +73,11 @@ export default defineComponent({
 
     const activeValue = computed(() => hoverValue.value || currentValue.value);
     const displayText = computed(() => {
-      const value = props.disabled ? props.modelValue : activeValue.value;
+      const scoreValue = props.disabled ? props.modelValue : activeValue.value;
+      const textValue = props.disabled ? currentValue.value : activeValue.value;
       return props.showScore
-        ? props.scoreTemplate.replace(/\{\s*value\s*\}/, String(value))
-        : value > 0 ? props.texts[Math.max(0, Math.ceil(value) - 1)] || '' : '';
+        ? props.scoreTemplate.replace(/\{\s*value\s*\}/, String(scoreValue))
+        : textValue > 0 ? props.texts[Math.max(0, Math.ceil(textValue) - 1)] || '' : '';
     });
     const resolveThreshold = <T,>(value: T | T[] | Record<number, T | RateThresholdValue<T>> | undefined, score: number, fallback?: T) => {
       if (Array.isArray(value)) {

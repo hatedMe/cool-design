@@ -16,7 +16,7 @@
     display: inline-flex;
     align-items: center;
     &:not(:last-child) { margin-right: 8px; }
-    &:hover .i-rate__icon { color: var(--i-rate-active-color, $warning); }
+    &:hover .i-rate__icon { color: var(--i-rate-fill-color, var(--el-rate-fill-color, var(--i-rate-active-color, $warning))); }
   }
 
   &__icon {

@@ -147,6 +147,23 @@ describe('Rate', () => {
     expect(wrapper.findAll('.i-rate__icon')[0].attributes('style')).toContain('--i-rate-fill-color');
   });
 
+  test('uses clamped text for disabled showText and raw value for showScore', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 8, max: 5, disabled: true, showText: true } });
+    expect(wrapper.get('.i-rate__text').text()).toBe('Surprise');
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('Surprise');
+    await wrapper.setProps({ showText: false, showScore: true, scoreTemplate: 'Score: {value}' });
+    expect(wrapper.get('.i-rate__score').text()).toBe('Score: 8');
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('Score: 8');
+  });
+
+  test('keeps filled class when hovering selected icons', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 2 } });
+    const icon = wrapper.findAll('.i-rate__icon')[0];
+    expect(icon.classes()).toContain('i-rate__icon--filled');
+    await wrapper.findAll('.i-rate__item')[0].trigger('mouseenter', { clientX: 80 });
+    expect(icon.classes()).toContain('i-rate__icon--filled');
+  });
+
   test('preserves decimal model values and exposes slider semantics', () => {
     const wrapper = mount(Rate, { props: { modelValue: 3.7, disabled: true } });
     const slider = wrapper.get('[role="slider"]');
