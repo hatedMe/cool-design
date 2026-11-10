@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { defineComponent, h, provide } from 'vue';
 import { describe, expect, test } from 'vitest';
-import { fieldKey, formKey } from '../../form/context';
+import { formKey } from '../../form/context';
 import FormItem from '../../form-item';
 import Rate from '..';
 
