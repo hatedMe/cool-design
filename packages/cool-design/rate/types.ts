@@ -1,6 +1,10 @@
 import type { Component } from 'vue';
 
-export type RateThresholdMap<T> = Record<number, T> & { excluded?: number[] };
+export interface RateThresholdValue<T> {
+  value: T;
+  excluded?: boolean;
+}
+export type RateThresholdMap<T> = Record<number, T | RateThresholdValue<T>> & { excluded?: number[] };
 export type RateColor = string | string[] | RateThresholdMap<string>;
 export type RateIcon = string | Component;
 export type RateIconMap = RateIcon[] | RateThresholdMap<RateIcon>;

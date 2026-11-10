@@ -12,22 +12,22 @@ describe('Rate', () => {
 
   test('normalizes modelValue to the valid range and supports max', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 8, max: 3 } });
-    expect(wrapper.get('[role="radiogroup"]').attributes('aria-valuenow')).toBe('3');
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuenow')).toBe('3');
     expect(wrapper.findAll('[aria-checked="true"]')).toHaveLength(1);
     expect(wrapper.find('[aria-checked="true"]').attributes('aria-label')).toBe('3分');
 
     await wrapper.setProps({ modelValue: -2, max: 4 });
-    expect(wrapper.get('[role="radiogroup"]').attributes('aria-valuenow')).toBe('0');
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuenow')).toBe('0');
     expect(wrapper.findAll('[aria-checked="true"]')).toHaveLength(0);
     expect(wrapper.findAll('[role="radio"]')).toHaveLength(4);
   });
 
   test('supports size and passes accessibility attributes to the group', () => {
     const wrapper = mount(Rate, { props: { size: 'large', id: 'rating', ariaLabel: '评分', label: '产品评分' } });
-    const group = wrapper.get('[role="radiogroup"]');
+    const group = wrapper.get('[role="slider"]');
     expect(group.attributes('id')).toBe('rating');
     expect(group.attributes('aria-label')).toBe('评分');
-    expect(group.attributes('title')).toBe('产品评分');
+    expect(group.attributes('tabindex')).toBe('0');
     expect(wrapper.classes()).toContain('i-rate--large');
   });
 
@@ -53,10 +53,10 @@ describe('Rate', () => {
     const exposed = wrapper.vm as unknown as { setCurrentValue: (value: number) => void; resetCurrentValue: () => void };
     exposed.setCurrentValue(4);
     await wrapper.vm.$nextTick();
-    expect(wrapper.get('[role="radiogroup"]').attributes('aria-valuenow')).toBe('4');
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuenow')).toBe('4');
     exposed.resetCurrentValue();
     await wrapper.vm.$nextTick();
-    expect(wrapper.get('[role="radiogroup"]').attributes('aria-valuenow')).toBe('2');
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuenow')).toBe('2');
   });
 
   test('supports half selection and clearable selection', async () => {
@@ -68,7 +68,7 @@ describe('Rate', () => {
     const secondItem = wrapper.findAll('[role="radio"]')[1];
     Object.defineProperty(secondItem.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
     await secondItem.trigger('click', { clientX: 75 });
-    expect(wrapper.emitted('change')).toContainEqual([0]);
+    expect(wrapper.emitted('change')).toContainEqual([2]);
   });
 
   test('uses the horizontal position for half-star hover and click without exceeding bounds', async () => {
@@ -98,7 +98,7 @@ describe('Rate', () => {
     const item = wrapper.findAll('[role="radio"]')[1];
     Object.defineProperty(item.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
     await item.trigger('click', { clientX: 25 });
-    expect(wrapper.emitted('change')).toContainEqual([0]);
+    expect(wrapper.emitted('change')).toContainEqual([1.5]);
   });
 
   test('announces the current half value and supports half-step keyboard changes', async () => {
@@ -139,5 +139,38 @@ describe('Rate', () => {
     expect(wrapper.find('.i-rate__score').exists()).toBe(true);
     expect(wrapper.find('.i-rate__text').exists()).toBe(false);
     expect(wrapper.find('.i-rate__icon').attributes('style')).toContain('color: rgb(247, 186, 42)');
+  });
+
+  test('preserves decimal model values and exposes slider semantics', () => {
+    const wrapper = mount(Rate, { props: { modelValue: 3.7, disabled: true } });
+    const slider = wrapper.get('[role="slider"]');
+    expect(slider.attributes('aria-valuenow')).toBe('3.7');
+    expect(slider.attributes('aria-valuetext')).toBe('3.7');
+    expect(slider.attributes('aria-disabled')).toBe('true');
+    expect(slider.attributes('tabindex')).toBe('-1');
+  });
+
+  test('uses Element Plus threshold boundaries and object entries', () => {
+    const wrapper = mount(Rate, { props: { modelValue: 4, colors: ['red', 'orange', 'green'] } });
+    expect(wrapper.find('.i-rate__icon').attributes('style')).toContain('color: green');
+    const object = mount(Rate, { props: { modelValue: 2, colors: { 2: { value: 'red', excluded: true }, 4: 'green' } as any } });
+    expect(object.find('.i-rate__icon').attributes('style')).not.toContain('red');
+  });
+
+  test('does not emit change when selecting the current value', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 2 } });
+    await wrapper.findAll('[role="radio"]')[1].trigger('click');
+    expect(wrapper.emitted('change')).toBeUndefined();
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  });
+
+  test('supports root slider keyboard control and spaced score templates', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 2, scoreTemplate: 'Score: { value }' } });
+    const slider = wrapper.get('[role="slider"]');
+    await slider.trigger('keydown', { key: 'ArrowRight' });
+    expect(wrapper.emitted('change')).toContainEqual([3]);
+    expect(wrapper.find('.i-rate__score').exists()).toBe(false);
+    await wrapper.setProps({ showScore: true });
+    expect(wrapper.get('.i-rate__score').text()).toBe('Score: 3');
   });
 });

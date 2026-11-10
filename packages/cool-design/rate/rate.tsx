@@ -1,7 +1,7 @@
 import { computed, defineComponent, ref, watch, type PropType } from 'vue';
 import { createNamespace } from '../../../src/utils/create';
 import { Icon } from '../icon';
-import type { RateColor, RateIcon, RateSize } from './types';
+import type { RateColor, RateIcon, RateIconMap, RateSize, RateThresholdValue } from './types';
 
 const [name, bem] = createNamespace('rate');
 
@@ -16,13 +16,13 @@ const props = {
   colors: { type: [String, Array, Object] as PropType<RateColor>, default: undefined },
   voidColor: String,
   disabledVoidColor: String,
-  icons: { type: [Array, Object] as PropType<RateIcon[] | Record<number, RateIcon>>, default: undefined },
+  icons: { type: [Array, Object] as PropType<RateIconMap>, default: undefined },
   voidIcon: { type: [String, Object, Function] as PropType<RateIcon>, default: 'icon-collection_fill' },
   disabledVoidIcon: { type: [String, Object, Function] as PropType<RateIcon>, default: 'icon-collection_fill' },
   showText: Boolean,
   showScore: Boolean,
   textColor: String,
-  texts: { type: Array as PropType<string[]>, default: () => [] },
+  texts: { type: Array as PropType<string[]>, default: () => ['bad', 'poor', 'fair', 'good', 'great'] },
   scoreTemplate: { type: String, default: '{value}' },
   clearable: Boolean,
   id: String,
@@ -30,10 +30,15 @@ const props = {
   label: String
 };
 
-const normalizeValue = (value: number, max: number, allowHalf: boolean) => {
-  const normalizedMax = Math.max(0, Math.floor(max));
+const normalizeValue = (value: number, max: number) => {
+  const normalizedMax = Math.max(0, Number(max) || 0);
+  const numericValue = Number(value);
+  return Math.min(normalizedMax, Math.max(0, Number.isFinite(numericValue) ? numericValue : 0));
+};
+
+const interactionValue = (value: number, allowHalf: boolean) => {
   const step = allowHalf ? 0.5 : 1;
-  return Math.min(normalizedMax, Math.max(0, Math.round((Number(value) || 0) / step) * step));
+  return Math.round(value / step) * step;
 };
 
 export default defineComponent({
@@ -42,16 +47,16 @@ export default defineComponent({
   props,
   emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, expose }) {
-    const currentValue = ref(normalizeValue(props.modelValue, props.max, props.allowHalf));
+    const currentValue = ref(normalizeValue(props.modelValue, props.max));
     const hoverValue = ref(0);
     const initialValue = ref(currentValue.value);
-    watch(() => [props.modelValue, props.max, props.allowHalf], () => {
-      currentValue.value = normalizeValue(props.modelValue, props.max, props.allowHalf);
+    watch(() => [props.modelValue, props.max], () => {
+      currentValue.value = normalizeValue(props.modelValue, props.max);
       initialValue.value = currentValue.value;
     });
 
     const setCurrentValue = (value: number) => {
-      currentValue.value = normalizeValue(value, props.max, props.allowHalf);
+      currentValue.value = normalizeValue(value, props.max);
     };
     const resetCurrentValue = () => {
       hoverValue.value = 0;
@@ -59,10 +64,9 @@ export default defineComponent({
     };
     const commitValue = (value: number) => {
       if (props.disabled) return;
-      const normalized = normalizeValue(value, props.max, props.allowHalf);
-      const isSameRating = normalized === currentValue.value;
-      const isAdjacentHalf = props.allowHalf && ((Number.isInteger(currentValue.value) && normalized === currentValue.value - 0.5) || (!Number.isInteger(currentValue.value) && normalized === Math.floor(currentValue.value)));
-      const next = props.clearable && (isSameRating || isAdjacentHalf) ? 0 : normalized;
+      const normalized = normalizeValue(interactionValue(value, props.allowHalf), props.max);
+      const next = props.clearable && normalized === currentValue.value ? 0 : normalized;
+      if (next === currentValue.value) return;
       currentValue.value = next;
       initialValue.value = next;
       emit('update:modelValue', next);
@@ -71,19 +75,26 @@ export default defineComponent({
     expose({ setCurrentValue, resetCurrentValue });
 
     const activeValue = computed(() => hoverValue.value || currentValue.value);
-    const resolveThreshold = <T,>(value: T | T[] | Record<number, T> | undefined, score: number, fallback?: T) => {
+    const resolveThreshold = <T,>(value: T | T[] | Record<number, T | RateThresholdValue<T>> | undefined, score: number, fallback?: T) => {
       if (Array.isArray(value)) {
-        const segment = score <= props.lowThreshold ? 0 : score <= props.highThreshold ? 1 : 2;
-        return value[segment] ?? value[value.length - 1] ?? fallback;
+        const segment = score < props.lowThreshold ? 0 : score < props.highThreshold ? 1 : 2;
+        return value[Math.min(segment, value.length - 1)] ?? fallback;
       }
       if (value && typeof value === 'object') {
-        const excluded = (value as Record<string, T | number[]>).excluded as number[] | undefined;
-        if (excluded?.includes(score)) return fallback;
-        const entries = Object.entries(value as Record<string, T>)
+        const legacyExcluded = (value as Record<string, unknown>).excluded;
+        if (Array.isArray(legacyExcluded) && legacyExcluded.includes(score)) return fallback;
+        const entries = Object.entries(value)
           .filter(([key]) => key !== 'excluded')
-          .sort(([a], [b]) => Number(a) - Number(b));
-        const matched = entries.reduce<T | undefined>((result, [threshold, item]) => score >= Number(threshold) ? item : result, undefined);
-        return matched ?? entries[0]?.[1] ?? fallback;
+          .map(([threshold, item]) => [Number(threshold), item] as const)
+          .sort(([a], [b]) => a - b);
+        const matched = entries.find(([threshold]) => score <= threshold);
+        if (!matched) return entries[entries.length - 1]?.[1] as T | undefined ?? fallback;
+        const item = matched[1];
+        if (item && typeof item === 'object' && 'value' in item) {
+          const thresholdValue = item as RateThresholdValue<T>;
+          return thresholdValue.excluded ? fallback : thresholdValue.value;
+        }
+        return item as T;
       }
       return value ?? fallback;
     };
@@ -96,22 +107,33 @@ export default defineComponent({
       return resolveThreshold(props.icons, activeValue.value, 'icon-collection_fill');
     };
     const displayText = computed(() => {
-      const value = activeValue.value;
-      return props.scoreTemplate.replace('{value}', String(value));
+      const value = props.disabled ? props.modelValue : activeValue.value;
+      return props.scoreTemplate.replace(/\{\s*value\s*\}/g, String(value));
     });
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (props.disabled) return;
+      const direction = ['ArrowRight', 'ArrowUp'].includes(event.key) ? 1 : ['ArrowLeft', 'ArrowDown'].includes(event.key) ? -1 : 0;
+      if (!direction) return;
+      event.preventDefault();
+      commitValue(currentValue.value + direction * (props.allowHalf ? 0.5 : 1));
+    };
 
     return () => (
       <div
         {...attrs}
         id={props.id}
         class={[bem(), `i-rate--${props.size === 'default' ? 'default' : props.size}`, props.disabled && bem('', { disabled: true })]}
-        role='radiogroup'
-        aria-label={props.ariaLabel}
+        role='slider'
+        aria-label={props.ariaLabel || props.label}
+        data-role='rate-slider'
+        aria-valuetext={String(props.disabled ? props.modelValue : currentValue.value)}
         aria-valuenow={currentValue.value}
         aria-valuemin='0'
-        aria-valuemax={Math.max(0, Math.floor(props.max))}
-        title={props.label}>
-        {Array.from({ length: Math.max(0, Math.floor(props.max)) }, (_, index) => {
+        aria-valuemax={Math.max(0, Number(props.max) || 0)}
+        aria-disabled={props.disabled ? 'true' : undefined}
+        tabindex={props.disabled ? -1 : 0}
+        onKeydown={handleKeydown}>
+        {Array.from({ length: Math.max(0, Math.ceil(props.max)) }, (_, index) => {
           const itemValue = index + 1;
           const selected = activeValue.value === itemValue;
           const half = props.allowHalf && activeValue.value === itemValue - 0.5;
@@ -137,21 +159,13 @@ export default defineComponent({
                 }
               }}
               onMouseleave={() => (hoverValue.value = 0)}
-              onKeydown={(event: KeyboardEvent) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  commitValue(itemValue);
-                } else if (props.allowHalf && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
-                  event.preventDefault();
-                  commitValue(currentValue.value + (event.key === 'ArrowRight' ? 0.5 : -0.5));
-                }
-              }}>
+              onKeydown={() => undefined}>
               <Icon class={bem('icon', { half })} icon={getIcon(filled || selected, half)} color={getColor(filled || selected || half)} size={props.size} aria-hidden='true' style={{ '--i-rate-active-color': getColor(true), '--i-rate-void-color': props.disabled ? props.disabledVoidColor : props.voidColor } as Record<string, string | undefined>} />
             </span>
           );
         })}
         {props.showScore && <span class={bem('score')} style={{ color: props.textColor }}>{displayText.value}</span>}
-        {!props.showScore && props.showText && <span class={bem('text')} style={{ color: props.textColor }}>{props.texts[Math.max(0, Math.ceil(activeValue.value) - 1)]}</span>}
+        {!props.showScore && props.showText && <span class={bem('text')} style={{ color: props.textColor }}>{activeValue.value > 0 ? props.texts[Math.max(0, Math.ceil(activeValue.value) - 1)] : ''}</span>}
       </div>
     );
   }
