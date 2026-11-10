@@ -23,6 +23,22 @@ describe('Rate', () => {
     expect(rate.attributes('aria-labelledby')).toBe(label.attributes('id'));
     expect(rate.attributes('aria-label')).toBeUndefined();
   });
+  test('keeps the default accessible name when FormItem has no label', () => {
+    const Root = defineComponent({
+      components: { FormItem, Rate },
+      setup() {
+        const model = { score: 3 };
+        provide(formKey, { model: () => model, rules: () => ({}), register: () => undefined, unregister: () => undefined });
+        return { model };
+      },
+      template: '<FormItem prop="score"><Rate v-model="model.score" /></FormItem>'
+    });
+    const wrapper = mount(Root);
+    const rate = wrapper.get('[role="slider"]');
+    expect(wrapper.find('label').exists()).toBe(false);
+    expect(rate.attributes('aria-labelledby')).toBeUndefined();
+    expect(rate.attributes('aria-label')).toBe('rating');
+  });
   test('inherits disabled and size from the Form context', () => {
     const Host = defineComponent({
       setup() {

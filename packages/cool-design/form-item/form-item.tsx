@@ -14,7 +14,7 @@ export default defineComponent({
   setup(props, { slots }) {
     const form = inject(formKey);
     const id = nextFieldId();
-    const labelId = `${id}-label`;
+    const labelId = props.label ? `${id}-label` : undefined;
     const errorId = `${id}-error`;
     const error = ref('');
     const root = ref<HTMLElement>();
