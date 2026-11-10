@@ -3,23 +3,26 @@ import { describe, expect, test } from 'vitest';
 import Rate from '..';
 
 describe('Rate', () => {
-  test('renders five focusable rating items by default', () => {
+  test('uses the root slider as the only focusable rating control', () => {
     const wrapper = mount(Rate);
-    const items = wrapper.findAll('[role="radio"]');
+    const slider = wrapper.get('[role="slider"]');
+    const items = wrapper.findAll('.i-rate__item');
+    expect(slider.attributes('tabindex')).toBe('0');
     expect(items).toHaveLength(5);
-    expect(items.every((item) => item.attributes('tabindex') === '0')).toBe(true);
+    expect(items.every((item) => item.attributes('role') === undefined)).toBe(true);
+    expect(items.every((item) => item.attributes('tabindex') === undefined)).toBe(true);
+    expect(items.every((item) => item.attributes('aria-checked') === undefined)).toBe(true);
   });
 
   test('normalizes modelValue to the valid range and supports max', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 8, max: 3 } });
     expect(wrapper.get('[role="slider"]').attributes('aria-valuenow')).toBe('3');
-    expect(wrapper.findAll('[aria-checked="true"]')).toHaveLength(1);
-    expect(wrapper.find('[aria-checked="true"]').attributes('aria-label')).toBe('3分');
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('3');
 
     await wrapper.setProps({ modelValue: -2, max: 4 });
     expect(wrapper.get('[role="slider"]').attributes('aria-valuenow')).toBe('0');
     expect(wrapper.findAll('[aria-checked="true"]')).toHaveLength(0);
-    expect(wrapper.findAll('[role="radio"]')).toHaveLength(4);
+    expect(wrapper.findAll('.i-rate__item')).toHaveLength(4);
   });
 
   test('supports size and passes accessibility attributes to the group', () => {
@@ -33,9 +36,10 @@ describe('Rate', () => {
 
   test('does not change or focus items when disabled', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 2, disabled: true } });
-    const item = wrapper.get('[role="radio"]');
-    expect(item.attributes('aria-disabled')).toBe('true');
-    expect(item.attributes('tabindex')).toBe('-1');
+    const item = wrapper.get('.i-rate__item');
+    const slider = wrapper.get('[role="slider"]');
+    expect(slider.attributes('aria-disabled')).toBe('true');
+    expect(slider.attributes('tabindex')).toBe('-1');
     await item.trigger('click');
     expect(wrapper.emitted('change')).toBeUndefined();
     expect(wrapper.emitted('update:modelValue')).toBeUndefined();
@@ -43,7 +47,7 @@ describe('Rate', () => {
 
   test('emits update:modelValue and change when selecting an item', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 1 } });
-    await wrapper.findAll('[role="radio"]')[2].trigger('click');
+    await wrapper.findAll('.i-rate__item')[2].trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[3]]);
     expect(wrapper.emitted('change')).toEqual([[3]]);
   });
@@ -62,10 +66,9 @@ describe('Rate', () => {
   test('supports half selection and clearable selection', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 2.5, allowHalf: true, clearable: true } });
     expect(wrapper.findAll('[data-half="true"]')).toHaveLength(1);
-    expect(wrapper.find('[data-half="true"]').attributes('aria-checked')).toBe('true');
-    expect(wrapper.findAll('[aria-checked="true"]')).toHaveLength(1);
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('2.5');
     expect(wrapper.find('.i-rate__icon--half').exists()).toBe(true);
-    const secondItem = wrapper.findAll('[role="radio"]')[1];
+    const secondItem = wrapper.findAll('.i-rate__item')[1];
     Object.defineProperty(secondItem.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
     await secondItem.trigger('click', { clientX: 75 });
     expect(wrapper.emitted('change')).toContainEqual([2]);
@@ -73,14 +76,14 @@ describe('Rate', () => {
 
   test('uses the horizontal position for half-star hover and click without exceeding bounds', async () => {
     const wrapper = mount(Rate, { props: { allowHalf: true, max: 3 } });
-    const item = wrapper.findAll('[role="radio"]')[1];
+    const item = wrapper.findAll('.i-rate__item')[1];
     Object.defineProperty(item.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
     await item.trigger('mouseenter', { clientX: 25 });
     expect(wrapper.findAll('[data-half="true"]')).toHaveLength(1);
     await item.trigger('mouseleave');
     await item.trigger('click', { clientX: 75 });
     expect(wrapper.emitted('change')).toContainEqual([2]);
-    const thirdItem = wrapper.findAll('[role="radio"]')[2];
+    const thirdItem = wrapper.findAll('.i-rate__item')[2];
     Object.defineProperty(thirdItem.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
     await thirdItem.trigger('click', { clientX: 0 });
     expect(wrapper.emitted('change')).toContainEqual([2.5]);
@@ -95,7 +98,7 @@ describe('Rate', () => {
 
   test('clears an integer when its left half is selected', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 2, allowHalf: true, clearable: true } });
-    const item = wrapper.findAll('[role="radio"]')[1];
+    const item = wrapper.findAll('.i-rate__item')[1];
     Object.defineProperty(item.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
     await item.trigger('click', { clientX: 25 });
     expect(wrapper.emitted('change')).toContainEqual([1.5]);
@@ -103,10 +106,10 @@ describe('Rate', () => {
 
   test('announces the current half value and supports half-step keyboard changes', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 1.5, allowHalf: true } });
-    expect(wrapper.find('[data-half="true"]').attributes('aria-label')).toBe('1.5分（半星）');
-    await wrapper.findAll('[role="radio"]')[1].trigger('keydown', { key: 'ArrowRight' });
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('1.5');
+    await wrapper.get('[role="slider"]').trigger('keydown', { key: 'ArrowRight' });
     expect(wrapper.emitted('change')).toContainEqual([2]);
-    await wrapper.findAll('[role="radio"]')[1].trigger('keydown', { key: 'ArrowLeft' });
+    await wrapper.get('[role="slider"]').trigger('keydown', { key: 'ArrowLeft' });
     expect(wrapper.emitted('change')).toContainEqual([1.5]);
   });
 
@@ -159,7 +162,7 @@ describe('Rate', () => {
 
   test('does not emit change when selecting the current value', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 2 } });
-    await wrapper.findAll('[role="radio"]')[1].trigger('click');
+    await wrapper.findAll('.i-rate__item')[1].trigger('click');
     expect(wrapper.emitted('change')).toBeUndefined();
     expect(wrapper.emitted('update:modelValue')).toBeUndefined();
   });

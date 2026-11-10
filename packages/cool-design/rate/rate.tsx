@@ -142,11 +142,7 @@ export default defineComponent({
           return (
             <span
               class={bem('item')}
-              role='radio'
-              aria-checked={selected || half ? 'true' : 'false'}
               aria-disabled={props.disabled ? 'true' : undefined}
-              aria-label={`${half ? itemValue - 0.5 : itemValue}分${half ? '（半星）' : ''}`}
-              tabindex={props.disabled ? -1 : 0}
               data-half={half ? 'true' : undefined}
               onClick={(event: MouseEvent) => {
                 const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
