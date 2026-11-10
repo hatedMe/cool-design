@@ -19,9 +19,18 @@ describe('Rate', () => {
     const wrapper = mount(Root);
     const label = wrapper.get('label');
     const rate = wrapper.get('[role="slider"]');
+    expect(label.attributes('for')).toBeTruthy();
+    expect(rate.attributes('id')).toBeTruthy();
+    expect(rate.attributes('aria-labelledby')).toBeTruthy();
     expect(label.attributes('for')).toBe(rate.attributes('id'));
     expect(rate.attributes('aria-labelledby')).toBe(label.attributes('id'));
     expect(rate.attributes('aria-label')).toBeUndefined();
+  });
+  test('preserves explicit aria attributes passed to Rate', () => {
+    const wrapper = mount(Rate, { attrs: { 'aria-label': 'custom rating', 'aria-labelledby': 'custom-label' } });
+    const slider = wrapper.get('[role="slider"]');
+    expect(slider.attributes('aria-label')).toBe('custom rating');
+    expect(slider.attributes('aria-labelledby')).toBe('custom-label');
   });
   test('keeps the default accessible name when FormItem has no label', () => {
     const Root = defineComponent({
