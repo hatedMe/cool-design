@@ -176,4 +176,52 @@ describe('Rate', () => {
     await wrapper.setProps({ showScore: true });
     expect(wrapper.get('.i-rate__score').text()).toBe('Score: 3');
   });
+
+  test('uses the controlled model value for clearable decisions', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 2, clearable: true } });
+    const item = wrapper.findAll('.i-rate__item')[1];
+    await item.trigger('click');
+    expect(wrapper.emitted('update:modelValue')).toEqual([[0]]);
+    await item.trigger('click');
+    expect(wrapper.emitted('update:modelValue')).toEqual([[0], [0]]);
+    await wrapper.setProps({ modelValue: 0 });
+    await item.trigger('click');
+    expect(wrapper.emitted('update:modelValue')).toEqual([[0], [0], [2]]);
+  });
+
+  test('renders arbitrary decimal partial fill and disabled colors', () => {
+    const wrapper = mount(Rate, { props: { modelValue: 3.25, disabled: true } });
+    const partial = wrapper.findAll('.i-rate__icon--partial');
+    expect(partial).toHaveLength(1);
+    expect(partial[0].attributes('style')).toContain('--i-rate-fill-percent: 25%');
+    expect(partial[0].attributes('style')).toContain('--i-rate-disabled-void-color');
+  });
+
+  test('exposes text and score through aria-valuetext', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 2, showText: true, texts: ['one', 'two'] } });
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('two');
+    await wrapper.setProps({ showScore: true, scoreTemplate: 'Score: {value}' });
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('Score: 2');
+    await wrapper.setProps({ showText: false, showScore: false });
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBeUndefined();
+  });
+
+  test('resetCurrentValue follows the current modelValue and handles max bounds', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 2 } });
+    const exposed = wrapper.vm as unknown as { resetCurrentValue: () => void };
+    await wrapper.setProps({ modelValue: 4 });
+    exposed.resetCurrentValue();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuenow')).toBe('4');
+    await wrapper.setProps({ modelValue: 3.7, max: 3.5 });
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuenow')).toBe('3.5');
+  });
+
+  test('uses ariaLabel over label and handles empty max values', () => {
+    const wrapper = mount(Rate, { props: { ariaLabel: 'accessible rating', label: 'legacy label', max: 0 } });
+    const slider = wrapper.get('[role="slider"]');
+    expect(slider.attributes('aria-label')).toBe('accessible rating');
+    expect(slider.attributes('title')).toBe('legacy label');
+    expect(wrapper.findAll('.i-rate__item')).toHaveLength(0);
+  });
 });

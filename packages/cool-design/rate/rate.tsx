@@ -72,6 +72,12 @@ export default defineComponent({
     expose({ setCurrentValue, resetCurrentValue });
 
     const activeValue = computed(() => hoverValue.value || currentValue.value);
+    const displayText = computed(() => {
+      const value = props.disabled ? normalizeValue(props.modelValue, props.max) : activeValue.value;
+      return props.showScore
+        ? props.scoreTemplate.replace(/\{\s*value\s*\}/g, String(value))
+        : props.texts[Math.max(0, Math.ceil(value) - 1)] || '';
+    });
     const resolveThreshold = <T,>(value: T | T[] | Record<number, T | RateThresholdValue<T>> | undefined, score: number, fallback?: T) => {
       if (Array.isArray(value)) {
         const segment = score < props.lowThreshold ? 0 : score < props.highThreshold ? 1 : 2;
@@ -109,10 +115,6 @@ export default defineComponent({
       if (!selected && !half) return props.disabled ? props.disabledVoidIcon : props.voidIcon;
       return resolveThreshold(props.icons, activeValue.value, 'icon-collection_fill');
     };
-    const displayText = computed(() => {
-      const value = props.disabled ? props.modelValue : activeValue.value;
-      return props.scoreTemplate.replace(/\{\s*value\s*\}/g, String(value));
-    });
     const handleKeydown = (event: KeyboardEvent) => {
       if (props.disabled) return;
       const direction = ['ArrowRight', 'ArrowUp'].includes(event.key) ? 1 : ['ArrowLeft', 'ArrowDown'].includes(event.key) ? -1 : 0;
@@ -141,6 +143,7 @@ export default defineComponent({
           const itemValue = index + 1;
           const selected = activeValue.value === itemValue;
           const partial = activeValue.value > itemValue - 1 && activeValue.value < itemValue;
+          const partialPercent = Math.round((activeValue.value - (itemValue - 1)) * 100);
           const half = props.allowHalf && activeValue.value === itemValue - 0.5;
           const filled = activeValue.value >= itemValue;
           return (
@@ -161,7 +164,7 @@ export default defineComponent({
               }}
               onMouseleave={() => (hoverValue.value = 0)}
               onKeydown={() => undefined}>
-              <Icon class={bem('icon', { half: half || partial })} icon={getIcon(filled || selected, half || partial)} color={getColor(filled || selected || half || partial)} size={props.size} aria-hidden='true' style={{ '--i-rate-active-color': getColor(true), '--i-rate-fill-color': getColor(true), '--i-rate-void-color': props.disabled ? (props.disabledVoidColor || 'var(--el-rate-disabled-void-color, #c0c4cc)') : props.voidColor, '--i-rate-text-color': props.textColor } as Record<string, string | undefined>} />
+              <Icon class={bem('icon', { half: half || partial, partial: partial && !half })} icon={getIcon(filled || selected, half || partial)} color={getColor(filled || selected || half || partial)} size={props.size} aria-hidden='true' style={{ '--i-rate-fill-percent': `${partialPercent}%`, '--i-rate-active-color': getColor(true), '--i-rate-fill-color': getColor(true), '--i-rate-void-color': props.disabled ? (props.disabledVoidColor || 'var(--el-rate-disabled-void-color, #c0c4cc)') : props.voidColor, '--i-rate-disabled-void-color': props.disabledVoidColor || 'var(--el-rate-disabled-void-color, #c0c4cc)', '--i-rate-text-color': props.textColor } as Record<string, string | undefined>} />
             </span>
           );
         })}

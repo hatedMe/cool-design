@@ -87,7 +87,7 @@ import Rate from 'cool-design/rate';
 | 方法名 | 说明 | 参数 |
 | --- | --- | --- |
 | setCurrentValue | 设置当前评分并归一化 | `value: number` |
-| resetCurrentValue | 恢复最近一次提交的评分 | — |
+| resetCurrentValue | 恢复当前 `modelValue`（受控值） | — |
 
 ### 插槽
 
