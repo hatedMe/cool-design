@@ -110,7 +110,8 @@ describe('Rate', () => {
     await wrapper.get('[role="slider"]').trigger('keydown', { key: 'ArrowRight' });
     expect(wrapper.emitted('change')).toContainEqual([2]);
     await wrapper.get('[role="slider"]').trigger('keydown', { key: 'ArrowLeft' });
-    expect(wrapper.emitted('change')).toContainEqual([1.5]);
+    expect(wrapper.emitted('change')).not.toContainEqual([1.5]);
+    expect(wrapper.emitted('update:modelValue')).toContainEqual([1.5]);
   });
 
   test('resolves array colors and icons by threshold', () => {
@@ -248,5 +249,18 @@ describe('Rate', () => {
   test('empty text has no aria-valuetext at zero', () => {
     const wrapper = mount(Rate, { props: { modelValue: 0, showText: true, texts: ['one'] } });
     expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBeUndefined();
+  });
+
+  test('clearable compares the raw modelValue when it exceeds max', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 8, max: 5, clearable: true } });
+    await wrapper.findAll('.i-rate__item')[4].trigger('click');
+    expect(wrapper.emitted('update:modelValue')).toEqual([[5]]);
+    expect(wrapper.emitted('change')).toEqual([[5]]);
+  });
+
+  test('disabled score templates preserve the raw modelValue', () => {
+    const wrapper = mount(Rate, { props: { modelValue: 8, max: 5, disabled: true, showScore: true, scoreTemplate: 'Score: {value}' } });
+    expect(wrapper.get('.i-rate__score').text()).toBe('Score: 8');
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('Score: 8');
   });
 });

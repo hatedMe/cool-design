@@ -63,8 +63,8 @@ export default defineComponent({
     const commitValue = (value: number) => {
       if (props.disabled) return;
       const normalized = normalizeValue(interactionValue(value, props.allowHalf), props.max);
-      const next = props.clearable && normalized === normalizeValue(props.modelValue, props.max) ? 0 : normalized;
-      const changed = next !== currentValue.value;
+      const next = props.clearable && normalized === props.modelValue ? 0 : normalized;
+      const changed = next !== props.modelValue;
       currentValue.value = next;
       emit('update:modelValue', next);
       if (changed) emit('change', next);
@@ -73,7 +73,7 @@ export default defineComponent({
 
     const activeValue = computed(() => hoverValue.value || currentValue.value);
     const displayText = computed(() => {
-      const value = props.disabled ? normalizeValue(props.modelValue, props.max) : activeValue.value;
+      const value = props.disabled ? props.modelValue : activeValue.value;
       return props.showScore
         ? props.scoreTemplate.replace(/\{\s*value\s*\}/g, String(value))
         : value > 0 ? props.texts[Math.max(0, Math.ceil(value) - 1)] || '' : '';

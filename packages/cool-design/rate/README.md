@@ -64,7 +64,7 @@ import Rate from 'cool-design/rate';
 | disabledVoidColor | 禁用时空评分颜色 | `string` | — |
 | icons | 评分图标 | `RateIconMap` | `icon-collection_fill` |
 | voidIcon | 空评分图标 | `RateIcon` | `icon-collection_fill` |
-| disabledVoidIcon | 禁用时空评分图标 | `RateIcon` | `icon-collection_fill` |
+| disabledVoidIcon | 禁用时空评分图标 | `RateIcon` | `icon-browse_fill` |
 | showText | 显示辅助文字 | `boolean` | `false` |
 | showScore | 显示分数 | `boolean` | `false` |
 | textColor | 文本颜色 | `string` | — |
