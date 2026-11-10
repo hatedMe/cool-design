@@ -125,6 +125,7 @@ export default defineComponent({
         class={[bem(), `i-rate--${props.size === 'default' ? 'default' : props.size}`, props.disabled && bem('', { disabled: true })]}
         role='slider'
         aria-label={props.ariaLabel || props.label}
+        title={props.label}
         data-role='rate-slider'
         aria-valuetext={String(props.disabled ? props.modelValue : currentValue.value)}
         aria-valuenow={currentValue.value}

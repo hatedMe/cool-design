@@ -68,7 +68,7 @@ import Rate from 'cool-design/rate';
 | showText | 显示辅助文字 | `boolean` | `false` |
 | showScore | 显示分数 | `boolean` | `false` |
 | textColor | 文本颜色 | `string` | — |
-| texts | 辅助文字列表 | `string[]` | `[]` |
+| texts | 辅助文字列表 | `string[]` | `['bad', 'poor', 'fair', 'good', 'great']` |
 | scoreTemplate | 分数模板，`{value}` 替换为评分 | `string` | `{value}` |
 | clearable | 允许再次点击清零 | `boolean` | `false` |
 | id | 根元素 ID | `string` | — |

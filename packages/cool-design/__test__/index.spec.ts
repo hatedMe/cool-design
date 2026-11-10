@@ -20,7 +20,7 @@ describe('公开入口', () => {
     standalone.use(components.Rate);
     expect(standalone.component('i-rate')).toBe(components.Rate);
     standalone.mount(container);
-    expect(container.querySelector('[role="radiogroup"]')).toBeTruthy();
-    expect(container.querySelectorAll('[role="radio"]')).toHaveLength(5);
+    expect(container.querySelector('[role="slider"]')).toBeTruthy();
+    expect(container.querySelectorAll('.i-rate__item')).toHaveLength(5);
   });
 });
