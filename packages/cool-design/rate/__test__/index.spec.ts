@@ -263,4 +263,23 @@ describe('Rate', () => {
     expect(wrapper.get('.i-rate__score').text()).toBe('Score: 8');
     expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('Score: 8');
   });
+
+  test('replaces only the first score template placeholder', () => {
+    const wrapper = mount(Rate, { props: { modelValue: 3, showScore: true, scoreTemplate: '{ value } / {value}' } });
+    expect(wrapper.get('.i-rate__score').text()).toBe('3 / {value}');
+  });
+
+  test('allows the global fill color variable when colors are omitted', () => {
+    const wrapper = mount(Rate, { props: { modelValue: 2 } });
+    expect(wrapper.find('.i-rate__icon').attributes('style')).not.toContain('color: rgb(247, 186, 42)');
+  });
+
+  test('does not fall back to unrelated excluded threshold entries', () => {
+    const wrapper = mount(Rate, { props: {
+      modelValue: 3,
+      colors: { 2: { value: 'red', excluded: true }, 4: { value: 'green', excluded: true } }
+    } });
+    expect(wrapper.find('.i-rate__icon').attributes('style')).not.toContain('green');
+    expect(wrapper.find('.i-rate__icon').attributes('style')).not.toContain('red');
+  });
 });
