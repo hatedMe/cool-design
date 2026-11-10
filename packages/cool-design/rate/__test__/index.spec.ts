@@ -183,10 +183,10 @@ describe('Rate', () => {
     await item.trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[0]]);
     await item.trigger('click');
-    expect(wrapper.emitted('update:modelValue')).toEqual([[0], [0]]);
+    expect(wrapper.emitted('update:modelValue')).toEqual([[0], [2]]);
     await wrapper.setProps({ modelValue: 0 });
     await item.trigger('click');
-    expect(wrapper.emitted('update:modelValue')).toEqual([[0], [0], [2]]);
+    expect(wrapper.emitted('update:modelValue')).toEqual([[0], [2], [2]]);
   });
 
   test('renders arbitrary decimal partial fill and disabled colors', () => {
@@ -223,5 +223,18 @@ describe('Rate', () => {
     expect(slider.attributes('aria-label')).toBe('accessible rating');
     expect(slider.attributes('title')).toBe('legacy label');
     expect(wrapper.findAll('.i-rate__item')).toHaveLength(0);
+  });
+
+  test('clearable uses the visible value when controlled props lag', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 2, clearable: true } });
+    const third = wrapper.findAll('.i-rate__item')[2];
+    await third.trigger('click');
+    await third.trigger('click');
+    expect(wrapper.emitted('update:modelValue')).toEqual([[3], [0]]);
+  });
+
+  test('empty text has no aria-valuetext at zero', () => {
+    const wrapper = mount(Rate, { props: { modelValue: 0, showText: true, texts: ['one'] } });
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBeUndefined();
   });
 });

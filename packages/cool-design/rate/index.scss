@@ -21,10 +21,10 @@
 
   &__icon {
     font-size: 20px;
-    color: var(--i-rate-void-color, var(--el-rate-void-color, $disable-hover));
-    -webkit-text-stroke: 0.5px var(--i-rate-void-color, var(--el-rate-void-color, $disable-hover));
+    color: var(--i-rate-void-color, var(--i-rate-disabled-void-color, var(--el-rate-disabled-void-color, var(--el-rate-void-color, $disable-hover))));
+    -webkit-text-stroke: 0.5px var(--i-rate-void-color, var(--i-rate-disabled-void-color, var(--el-rate-disabled-void-color, var(--el-rate-void-color, $disable-hover))));
     &--half,
-    &--partial { position: relative; background: linear-gradient(90deg, var(--i-rate-fill-color, var(--el-rate-fill-color, var(--i-rate-active-color, $warning))) var(--i-rate-fill-percent, 50%), var(--i-rate-void-color, var(--el-rate-void-color, $disable-hover)) var(--i-rate-fill-percent, 50%)); background-clip: text; -webkit-text-fill-color: transparent; }
+    &--partial { position: relative; background: linear-gradient(90deg, var(--i-rate-fill-color, var(--el-rate-fill-color, var(--i-rate-active-color, $warning))) var(--i-rate-fill-percent, 50%), var(--i-rate-void-color, var(--i-rate-disabled-void-color, var(--el-rate-disabled-void-color, var(--el-rate-void-color, $disable-hover)))) var(--i-rate-fill-percent, 50%)); background-clip: text; -webkit-text-fill-color: transparent; }
   }
 
   &__text,

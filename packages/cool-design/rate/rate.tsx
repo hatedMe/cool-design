@@ -63,7 +63,7 @@ export default defineComponent({
     const commitValue = (value: number) => {
       if (props.disabled) return;
       const normalized = normalizeValue(interactionValue(value, props.allowHalf), props.max);
-      const next = props.clearable && normalized === normalizeValue(props.modelValue, props.max) ? 0 : normalized;
+      const next = props.clearable && normalized === currentValue.value ? 0 : normalized;
       const changed = next !== currentValue.value;
       currentValue.value = next;
       emit('update:modelValue', next);
@@ -76,7 +76,7 @@ export default defineComponent({
       const value = props.disabled ? normalizeValue(props.modelValue, props.max) : activeValue.value;
       return props.showScore
         ? props.scoreTemplate.replace(/\{\s*value\s*\}/g, String(value))
-        : props.texts[Math.max(0, Math.ceil(value) - 1)] || '';
+        : value > 0 ? props.texts[Math.max(0, Math.ceil(value) - 1)] || '' : '';
     });
     const resolveThreshold = <T,>(value: T | T[] | Record<number, T | RateThresholdValue<T>> | undefined, score: number, fallback?: T) => {
       if (Array.isArray(value)) {
@@ -132,7 +132,7 @@ export default defineComponent({
         aria-label={props.ariaLabel || props.label || 'rating'}
         title={props.label}
         data-role='rate-slider'
-        aria-valuetext={props.showText || props.showScore ? displayText.value : undefined}
+        aria-valuetext={(props.showText || props.showScore) && displayText.value ? displayText.value : undefined}
         aria-valuenow={currentValue.value}
         aria-valuemin='0'
         aria-valuemax={Math.max(0, Number(props.max) || 0)}
