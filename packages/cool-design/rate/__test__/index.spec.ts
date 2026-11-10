@@ -143,6 +143,8 @@ describe('Rate', () => {
     expect(wrapper.find('.i-rate__score').exists()).toBe(true);
     expect(wrapper.find('.i-rate__text').exists()).toBe(false);
     expect(wrapper.find('.i-rate__icon').attributes('style')).not.toContain('color: rgb(247, 186, 42)');
+    expect(wrapper.findAll('.i-rate__icon')[0].classes()).toContain('i-rate__icon--filled');
+    expect(wrapper.findAll('.i-rate__icon')[0].attributes('style')).toContain('--i-rate-fill-color');
   });
 
   test('preserves decimal model values and exposes slider semantics', () => {
