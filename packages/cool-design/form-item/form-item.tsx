@@ -1,4 +1,4 @@
-import { defineComponent, inject, nextTick, onBeforeUnmount, provide, ref, watch } from 'vue';
+import { computed, defineComponent, inject, nextTick, onBeforeUnmount, provide, ref, watch } from 'vue';
 import Schema, { type Rules } from 'async-validator';
 import { formKey, fieldKey, nextFieldId } from '../form/context';
 export default defineComponent({
@@ -14,7 +14,7 @@ export default defineComponent({
   setup(props, { slots }) {
     const form = inject(formKey);
     const id = nextFieldId();
-    const labelId = props.label ? `${id}-label` : undefined;
+    const labelId = computed(() => (props.label ? `${id}-label` : undefined));
     const errorId = `${id}-error`;
     const error = ref('');
     const root = ref<HTMLElement>();
@@ -87,7 +87,8 @@ export default defineComponent({
     };
     provide(fieldKey, {
       id,
-      labelId,
+      labelId: undefined,
+      getLabelId: () => labelId.value,
       errorId,
       invalid: () => !!error.value,
       disabled: () => !!form?.disabled?.(),
@@ -119,7 +120,7 @@ export default defineComponent({
       <div ref={root} class={['i-form-item', { 'i-form-item--error': !!error.value }]}>
         {props.label && (
           <label
-            id={labelId}
+            id={labelId.value}
             class='i-form-item__label'
             for={id}
             style={{

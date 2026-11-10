@@ -132,8 +132,8 @@ export default defineComponent({
         id={props.id || field?.id}
         class={[bem(), `i-rate--${effectiveSize.value === 'default' ? 'default' : effectiveSize.value}`, isDisabled.value && bem('', { disabled: true })]}
         role='slider'
-        aria-label={props.ariaLabel || props.label || (field?.labelId ? undefined : 'rating')}
-        aria-labelledby={!props.ariaLabel && !props.label ? field?.labelId : undefined}
+        aria-label={props.ariaLabel || props.label || (field?.getLabelId?.() ? undefined : 'rating')}
+        aria-labelledby={!props.ariaLabel && !props.label ? field?.getLabelId?.() : undefined}
         title={props.label}
         data-role='rate-slider'
         aria-valuetext={(props.showText || props.showScore) && displayText.value ? displayText.value : undefined}
