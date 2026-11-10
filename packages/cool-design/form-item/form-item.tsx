@@ -14,6 +14,7 @@ export default defineComponent({
   setup(props, { slots }) {
     const form = inject(formKey);
     const id = nextFieldId();
+    const labelId = `${id}-label`;
     const errorId = `${id}-error`;
     const error = ref('');
     const root = ref<HTMLElement>();
@@ -86,6 +87,7 @@ export default defineComponent({
     };
     provide(fieldKey, {
       id,
+      labelId,
       errorId,
       invalid: () => !!error.value,
       disabled: () => !!form?.disabled?.(),
@@ -117,6 +119,7 @@ export default defineComponent({
       <div ref={root} class={['i-form-item', { 'i-form-item--error': !!error.value }]}>
         {props.label && (
           <label
+            id={labelId}
             class='i-form-item__label'
             for={id}
             style={{

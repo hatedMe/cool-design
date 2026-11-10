@@ -17,6 +17,7 @@ export interface FormContext {
 }
 export interface FieldContext {
   id: string;
+  labelId?: string;
   errorId: string;
   invalid: () => boolean;
   validate: (trigger: 'blur' | 'change') => void;

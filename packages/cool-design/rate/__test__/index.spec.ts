@@ -1,10 +1,28 @@
 import { mount } from '@vue/test-utils';
 import { defineComponent, h, provide } from 'vue';
 import { describe, expect, test } from 'vitest';
-import { formKey } from '../../form/context';
+import { fieldKey, formKey } from '../../form/context';
+import FormItem from '../../form-item';
 import Rate from '..';
 
 describe('Rate', () => {
+  test('inherits the FormItem field id and label association', () => {
+    const Root = defineComponent({
+      components: { FormItem, Rate },
+      setup() {
+        const model = { score: 3 };
+        provide(formKey, { model: () => model, rules: () => ({}), register: () => undefined, unregister: () => undefined });
+        return { model };
+      },
+      template: '<FormItem prop="score" label="评分"><Rate v-model="model.score" /></FormItem>'
+    });
+    const wrapper = mount(Root);
+    const label = wrapper.get('label');
+    const rate = wrapper.get('[role="slider"]');
+    expect(label.attributes('for')).toBe(rate.attributes('id'));
+    expect(rate.attributes('aria-labelledby')).toBe(label.attributes('id'));
+    expect(rate.attributes('aria-label')).toBeUndefined();
+  });
   test('inherits disabled and size from the Form context', () => {
     const Host = defineComponent({
       setup() {

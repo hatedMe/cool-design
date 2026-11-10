@@ -1,5 +1,5 @@
 import { computed, defineComponent, inject, ref, watch, type PropType } from 'vue';
-import { formKey } from '../form/context';
+import { fieldKey, formKey } from '../form/context';
 import { createNamespace } from '../../../src/utils/create';
 import { Icon } from '../icon';
 import type { RateColor, RateIcon, RateIconMap, RateSize, RateThresholdValue } from './types';
@@ -49,6 +49,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, expose }) {
     const form = inject(formKey, undefined);
+    const field = inject(fieldKey, undefined);
     const isDisabled = computed(() => props.disabled ?? Boolean(form?.disabled?.()));
     const effectiveSize = computed(() => props.size ?? form?.size?.() ?? 'default');
     const currentValue = ref(normalizeValue(props.modelValue, props.max));
@@ -128,10 +129,11 @@ export default defineComponent({
     return () => (
       <div
         {...attrs}
-        id={props.id}
+        id={props.id || field?.id}
         class={[bem(), `i-rate--${effectiveSize.value === 'default' ? 'default' : effectiveSize.value}`, isDisabled.value && bem('', { disabled: true })]}
         role='slider'
-        aria-label={props.ariaLabel || props.label || 'rating'}
+        aria-label={props.ariaLabel || props.label || (field?.labelId ? undefined : 'rating')}
+        aria-labelledby={!props.ariaLabel && !props.label ? field?.labelId : undefined}
         title={props.label}
         data-role='rate-slider'
         aria-valuetext={(props.showText || props.showScore) && displayText.value ? displayText.value : undefined}
