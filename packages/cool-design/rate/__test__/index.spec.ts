@@ -44,6 +44,27 @@ describe('Rate', () => {
     expect(wrapper.find('.i-rate__icon').attributes('style')).toContain('--i-rate-void-color: var(--el-rate-disabled-void-color');
   });
 
+  test('explicit false and default override Form disabled and size', () => {
+    const Host = defineComponent({
+      setup() {
+        provide(formKey, {
+          model: () => ({}),
+          rules: () => ({}),
+          register: () => undefined,
+          unregister: () => undefined,
+          disabled: () => true,
+          size: () => 'small'
+        });
+        return () => h(Rate, { disabled: false, size: 'default' });
+      }
+    });
+    const wrapper = mount(Host);
+    const slider = wrapper.get('[role="slider"]');
+    expect(slider.attributes('aria-disabled')).toBeUndefined();
+    expect(slider.attributes('tabindex')).toBe('0');
+    expect(slider.classes()).toContain('i-rate--default');
+  });
+
   test('local disabled and size override the Form context', () => {
     const Host = defineComponent({
       setup() {

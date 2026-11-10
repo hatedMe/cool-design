@@ -9,8 +9,8 @@ const [name, bem] = createNamespace('rate');
 const props = {
   modelValue: { type: Number, default: 0 },
   max: { type: Number, default: 5 },
-  size: { type: [String, Number] as PropType<RateSize>, default: 'default' },
-  disabled: Boolean,
+  size: { type: [String, Number] as PropType<RateSize>, default: undefined },
+  disabled: { type: Boolean, default: undefined },
   allowHalf: Boolean,
   lowThreshold: { type: Number, default: 2 },
   highThreshold: { type: Number, default: 4 },
@@ -49,8 +49,8 @@ export default defineComponent({
   emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, expose }) {
     const form = inject(formKey, undefined);
-    const isDisabled = computed(() => props.disabled || Boolean(form?.disabled?.()));
-    const effectiveSize = computed(() => props.size !== 'default' ? props.size : (form?.size?.() || props.size));
+    const isDisabled = computed(() => props.disabled ?? Boolean(form?.disabled?.()));
+    const effectiveSize = computed(() => props.size ?? form?.size?.() ?? 'default');
     const currentValue = ref(normalizeValue(props.modelValue, props.max));
     const hoverValue = ref(0);
     watch(() => [props.modelValue, props.max], () => {
