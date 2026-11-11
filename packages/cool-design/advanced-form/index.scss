@@ -111,40 +111,7 @@
 .i-slider__number {
   width: 70px;
 }
-.i-transfer {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.i-transfer__panel {
-  width: 220px;
-  height: 280px;
-  border: 1px solid #dcdfe6;
-}
-.i-transfer__panel header {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px;
-  background: #f5f7fa;
-}
-.i-transfer__panel > input {
-  margin: 8px;
-  width: calc(100% - 16px);
-}
-.i-transfer__items {
-  height: 220px;
-  overflow: auto;
-  padding: 8px;
-}
-.i-transfer__items label {
-  display: block;
-  padding: 4px;
-}
-.i-transfer__buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+
 .i-tree-select__dropdown {
   padding: 8px;
 }
