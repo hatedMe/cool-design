@@ -8,6 +8,31 @@
 .i-table__scroll {
   overflow: auto;
 }
+.i-table__scroll.has-always-scrollbar {
+  scrollbar-gutter: stable;
+}
+.i-table__scroll.has-custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--i-border) transparent;
+}
+.i-table__scroll.has-custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.i-table__scroll.has-custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--i-border);
+  border-radius: 4px;
+}
+.i-table__scroll.has-custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.i-table.is-resizing,
+.i-table.is-resizing * {
+  user-select: none;
+}
+.i-table.is-flexible table {
+  width: auto;
+}
 .i-table table {
   width: 100%;
   border-collapse: separate;
@@ -40,6 +65,10 @@
   font: inherit;
   cursor: pointer;
 }
+.i-table th button:focus-visible {
+  outline: 2px solid var(--i-primary);
+  outline-offset: 2px;
+}
 .i-table .i-table__selection {
   position: sticky;
   left: 0;
@@ -66,4 +95,150 @@
   text-align: center;
   padding: 16px 20px;
   color: var(--i-text-muted);
+}
+.i-table:not(.is-fit) table {
+  width: max-content;
+  min-width: 100%;
+}
+.i-table.is-large th,
+.i-table.is-large td {
+  padding: 15px 20px;
+}
+.i-table.is-small th,
+.i-table.is-small td {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+.i-table tr.is-current td {
+  background: var(--i-bg-subtle);
+  box-shadow: inset 2px 0 0 var(--i-primary);
+}
+.i-table__cell-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.i-table__editor {
+  width: 100%;
+  height: var(--i-control-height);
+  padding: 0 8px;
+  color: var(--i-text);
+  background: var(--i-bg);
+  border: 1px solid var(--i-primary);
+  border-radius: var(--i-radius);
+  outline: none;
+}
+.i-table thead th .i-table__resize-handle {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 5;
+}
+.i-table thead th .i-table__resize-handle:hover,
+.i-table thead th .i-table__resize-handle:focus-visible {
+  background: var(--i-primary);
+  outline: none;
+}
+.i-table thead th .i-table__resize-handle:active {
+  background: var(--i-primary-hover);
+}
+.i-table__expand-toggle {
+  background: none;
+  border: 0;
+  padding: 0 4px;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.i-table__expand-icon {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+.i-table__expand-icon.is-expanded {
+  transform: rotate(90deg);
+}
+.i-table__expand-toggle:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.i-table__indent {
+  display: inline-block;
+}
+.i-table__tree-placeholder {
+  display: inline-block;
+  width: 18px;
+}
+.i-table__expanded-row td {
+  background: var(--i-bg-subtle);
+}
+.i-table__summary td {
+  background: var(--i-bg-subtle);
+  font-weight: 500;
+}
+.i-table__filter-trigger {
+  margin-left: 6px;
+  color: var(--i-text-muted);
+  vertical-align: middle;
+}
+.i-table__filter-trigger.is-active {
+  color: var(--i-primary);
+}
+.i-table__filter-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+}
+.i-table__filter-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 10;
+  min-width: 140px;
+  padding: 8px 12px;
+  background: var(--i-bg);
+  border: 1px solid var(--i-border);
+  border-radius: var(--i-radius);
+  box-shadow: var(--i-shadow);
+  font-weight: 400;
+}
+.i-table__filter-panel.is-top {
+  top: auto;
+  bottom: 100%;
+}
+.i-table__filter-panel.is-left {
+  top: 0;
+  right: 100%;
+}
+.i-table__filter-panel.is-right {
+  top: 0;
+  right: auto;
+  left: 100%;
+}
+.i-table__filter-panel .i-checkbox {
+  display: flex;
+  margin: 4px 0;
+}
+.i-table__filter-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 4px 0;
+}
+.i-table__filter-option.is-active {
+  color: var(--i-primary);
+}
+.i-table__filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--i-border);
+}
+.i-table__filter-actions .is-primary {
+  color: var(--i-primary);
 }

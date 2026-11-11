@@ -8,18 +8,18 @@ const records = [
   { id: 1003, name: '周远', department: '运营支持', status: '停用' }
 ];
 const columns: TableColumn[] = [
-  { key: 'id', title: '用户 ID', width: 140, fixed: 'left', sortable: true },
+  { key: 'id', title: '用户 ID', width: 140, fixed: 'left', sortable: 'custom' },
   { key: 'name', title: '姓名', width: 140 },
   { key: 'department', title: '所属部门', width: 180 },
   { key: 'status', title: '账号状态', width: 140 },
   { key: 'action', title: '操作', width: 160, fixed: 'right' }
 ];
-const sort = ref<SortChange>({ key: '', order: null });
+const sort = ref<SortChange>({ column: null, prop: '', order: null });
 const selected = ref<object[]>([]);
 const action = ref('');
 const table = ref<{ clearSelection(): void }>();
 const rows = computed(() =>
-  sort.value.order ? [...records].sort((a, b) => (a.id - b.id) * (sort.value.order === 'asc' ? 1 : -1)) : records
+  sort.value.order ? [...records].sort((a, b) => (a.id - b.id) * (sort.value.order === 'ascending' ? 1 : -1)) : records
 );
 </script>
 

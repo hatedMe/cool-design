@@ -269,9 +269,7 @@ export const pages: Page[] = [
     ['formatter', '格式化与自适应', '使用 formatter/parser 和 autosize 处理金额与多行文本。'],
     ['sizes', '尺寸与图标', '使用 small、default、large 和前后缀图标。']
   ]),
-  component('input-number', 'InputNumber 计数器', '表单组件', [
-    ['basic', '基础用法', '输入数值并使用步长控制。']
-  ]),
+  component('input-number', 'InputNumber 计数器', '表单组件', [['basic', '基础用法', '输入数值并使用步长控制。']]),
   component('date-picker', 'DatePicker 日期选择器', '表单组件', [
     ['basic', '日期选择', '选择日期、日期时间以及日期范围。']
   ]),
@@ -351,7 +349,8 @@ export const pages: Page[] = [
   ]),
   component('table', 'Table 表格', '数据展示', [
     ['basic', '选择、排序与操作列', '表头可排序，行可勾选；排序由页面处理。列插槽用于状态与操作。'],
-    ['states', '空态与加载', '无数据时显示空态，loading 遮罩阻止数据区域交互。']
+    ['states', '空态与加载', '无数据时显示空态，loading 遮罩阻止数据区域交互。'],
+    ['advanced', '拖拽列宽、编辑与列显隐', '拖拽表头边缘调整列宽，双击编辑单元格，编程式控制列显示与顺序。']
   ]),
   component('pagination', 'Pagination 分页', '数据展示', [
     ['basic', '分页与每页条数', '页码从 1 开始；改变条数时，由页面把页码重置为 1。']

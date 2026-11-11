@@ -59,8 +59,8 @@ const feedback = ref<{ type: 'success' | 'error'; message: string }>();
 let requestId = 0;
 let alive = true;
 const columns: TableColumn[] = [
-  { key: 'id', title: '用户 ID', width: 150, fixed: 'left', sortable: true },
-  { key: 'name', title: '姓名', sortable: true },
+  { key: 'id', title: '用户 ID', width: 150, fixed: 'left', sortable: 'custom' },
+  { key: 'name', title: '姓名', sortable: 'custom' },
   { key: 'status', title: '账号状态', width: 180 },
   { key: 'action', title: '操作', width: 200, fixed: 'right' }
 ];
@@ -115,8 +115,8 @@ function setPageSize(size: number) {
   void loadUsers();
 }
 function sort(change: SortChange) {
-  query.sortBy = change.key;
-  query.order = change.order;
+  query.sortBy = change.prop;
+  query.order = change.order === 'ascending' ? 'asc' : change.order === 'descending' ? 'desc' : null;
   query.page = 1;
   void loadUsers();
 }
