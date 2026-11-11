@@ -1,16 +1,18 @@
 .i-tag {
   --i-tag-color: var(--i-primary);
+  --i-tag-bg-color: color-mix(in srgb, var(--i-tag-color) 12%, var(--i-bg, #fff));
+  --i-tag-border-color: var(--i-tag-color);
   display: inline-flex;
   align-items: center;
   gap: 4px;
   max-width: 100%;
   padding: 2px 8px;
-  border: 1px solid var(--i-tag-color);
+  border: 1px solid var(--i-tag-border-color);
   border-radius: 4px;
   font-size: 12px;
   line-height: 20px;
   color: var(--i-tag-color);
-  background: var(--i-bg-subtle);
+  background: var(--i-tag-bg-color);
   vertical-align: middle;
 }
 .i-tag--success {
@@ -52,7 +54,12 @@
   border-radius: 999px;
 }
 .i-tag--hit {
+  border-color: var(--i-tag-color);
   background: transparent;
+}
+.i-tag--disable-transitions,
+.i-tag--disable-transitions * {
+  transition: none !important;
 }
 .i-tag button {
   border: 0;

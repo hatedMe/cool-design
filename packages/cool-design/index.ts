@@ -66,6 +66,7 @@ import Drawer from './drawer';
 import { Notification } from './notification';
 import Popover from './popover';
 import Watermark from './watermark';
+import Progress from './progress';
 import { installDirectives } from './directives';
 export { ClickOutside, InfiniteScroll, LoadingDirective, directives, installDirectives } from './directives';
 import './style/index.scss';
@@ -143,7 +144,8 @@ export {
   Drawer,
   Notification,
   Popover,
-  Watermark
+  Watermark,
+  Progress
 };
 const components = [
   Container,
@@ -214,7 +216,8 @@ const components = [
   Drawer,
   Notification,
   Popover,
-  Watermark
+  Watermark,
+  Progress
 ];
 export const install = (app: App) => {
   components.forEach((component) => app.use(component));
@@ -224,7 +227,7 @@ export default { version, install };
 
 export { useMessageBox } from './message-box';
 export type { MessageBoxAction, MessageBoxOptions } from './message-box';
-export type { TagType } from './tag/tag';
+export type { TagEffect, TagType } from './tag/tag';
 export type { Placement } from '../../src/utils/use-floating';
 
 export { iconNames } from './icon';

@@ -1,13 +1,15 @@
 import { defineComponent, type PropType } from 'vue';
 import { useConfig, type Size } from '../config-provider/context';
 export type TagType = 'primary' | 'success' | 'warning' | 'danger' | 'info';
+export type TagEffect = 'light' | 'plain' | 'dark';
 export default defineComponent({
   name: 'i-tag',
   props: {
     type: { type: String as PropType<TagType>, default: 'primary' },
-    effect: { type: String as PropType<'light' | 'plain' | 'dark'>, default: 'light' },
+    effect: { type: String as PropType<TagEffect>, default: 'light' },
     size: String as PropType<Size>,
     closable: Boolean,
+    disableTransitions: Boolean,
     disabled: Boolean,
     color: String,
     round: Boolean,
@@ -23,9 +25,18 @@ export default defineComponent({
           `i-tag--${props.type}`,
           `i-tag--${props.effect}`,
           `i-tag--${props.size || config.value.size}`,
-          { 'i-tag--disabled': props.disabled, 'i-tag--round': props.round, 'i-tag--hit': props.hit }
+          {
+            'i-tag--disabled': props.disabled,
+            'i-tag--round': props.round,
+            'i-tag--hit': props.hit,
+            'i-tag--disable-transitions': props.disableTransitions
+          }
         ]}
-        style={props.color ? { '--i-tag-color': props.color } : undefined}
+        style={
+          props.color
+            ? { '--i-tag-color': props.color, '--i-tag-bg-color': props.color, '--i-tag-border-color': props.color }
+            : undefined
+        }
         onClick={(event: MouseEvent) => {
           if (!props.disabled) emit('click', event);
         }}>
