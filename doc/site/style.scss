@@ -30,6 +30,21 @@ body {
     background: var(--i-bg-subtle);
     line-height: 1.8;
     tab-size: 4;
+    // The component reset enables wrapping for preformatted content. Keep
+    // documentation source code on one line so nested indentation remains
+    // visually aligned and long lines can scroll horizontally.
+    white-space: pre;
+    word-break: normal;
+    word-wrap: normal;
+    overflow-wrap: normal;
+  }
+  pre code {
+    display: block;
+    white-space: inherit;
+  }
+  pre code span {
+    display: inline;
+    vertical-align: baseline;
   }
 }
 .docs-content {
