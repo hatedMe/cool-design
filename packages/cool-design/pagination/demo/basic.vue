@@ -11,7 +11,12 @@ function changeSize(value: number) {
 
 <template>
   <Space direction="vertical" align="stretch" :size="16">
-    <Pagination v-model:current-page="page" :page-size="size" :total="156" @update:page-size="changeSize" />
+    <Pagination
+      v-model:current-page="page"
+      :page-size="size"
+      :total="156"
+      layout="total, sizes, prev, pager, next"
+      @update:page-size="changeSize" />
     <span role="status">当前第 {{ page }} 页，每页 {{ size }} 条</span>
   </Space>
 </template>

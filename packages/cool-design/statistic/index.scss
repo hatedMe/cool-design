@@ -1,0 +1,22 @@
+.i-statistic {
+  color: var(--i-text);
+}
+
+.i-statistic__title {
+  margin-bottom: 4px;
+  color: var(--i-text-secondary);
+  font-size: 13px;
+}
+
+.i-statistic__content {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.i-statistic__prefix,
+.i-statistic__suffix {
+  font-size: 14px;
+}

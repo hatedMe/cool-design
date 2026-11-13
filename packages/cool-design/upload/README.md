@@ -68,8 +68,126 @@ const uploadRef = ref<{ submit: () => Promise<unknown> }>();
 
 `http-request` 接收 `UploadRequestOptions`，调用 `onProgress`、`onSuccess` 或 `onError` 通知组件请求状态。自定义请求不依赖真实服务端时，也可以在 demo 中使用本地异步函数模拟上传。
 
-## API
+```vue
+<script setup lang="ts">
+import { ref } from 'vue';
+import { Upload } from 'cool-design';
+import type { UploadRequestOptions, UploadProgressEvent } from 'cool-design';
 
+const message = ref('等待上传');
+const httpRequest = ({ file, onProgress, onSuccess }: UploadRequestOptions) => {
+  let percent = 0;
+  const timer = window.setInterval(() => {
+    percent += 25;
+    onProgress(Object.assign(new ProgressEvent('progress'), { percent }) as UploadProgressEvent);
+    if (percent >= 100) {
+      window.clearInterval(timer);
+      onSuccess({ name: file.name });
+      message.value = `${file.name} 上传成功`;
+    }
+  }, 100);
+  return { abort: () => window.clearInterval(timer) };
+};
+</script>
+
+<template>
+  <Upload :http-request="httpRequest">
+    <button type="button">选择文件</button>
+    <template #tip><p>{{ message }}</p></template>
+  </Upload>
+</template>
+```
+
+### 限制上传数量
+
+通过 `limit` 限制文件数量，`on-exceed` 可以接管超出限制后的行为。例如下面的示例会清空旧文件并使用新文件替换：
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue';
+import { Upload } from 'cool-design';
+import type { UploadRawFile } from 'cool-design';
+
+const upload = ref<{ clearFiles: () => void; handleStart: (file: UploadRawFile) => void }>();
+const handleExceed = (files: UploadRawFile[]) => {
+  upload.value?.clearFiles();
+  const file = files[0];
+  if (file) {
+    file.uid = Date.now();
+    upload.value?.handleStart(file);
+  }
+};
+</script>
+
+<template>
+  <Upload ref="upload" :limit="1" :auto-upload="false" @exceed="handleExceed">
+    <button type="button">选择文件</button>
+  </Upload>
+</template>
+```
+
+### 图片列表
+
+设置 `list-type="picture"` 或 `list-type="picture-card"` 显示图片缩略图；通过 `file` 插槽可以自定义列表项：
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue';
+import { Upload } from 'cool-design';
+import type { UploadFiles } from 'cool-design';
+
+const files = ref<UploadFiles>([{ name: 'cover.png', uid: 1, status: 'success', url: '/images/cover.png' }]);
+</script>
+
+<template>
+  <Upload v-model:file-list="files" list-type="picture" :auto-upload="false">
+    <button type="button">选择图片</button>
+    <template #file="{ file }"><strong>{{ file.name }}</strong></template>
+  </Upload>
+</template>
+```
+
+### 拖拽上传
+
+设置 `drag` 开启拖拽区域。拖拽区域同时支持点击选择，配合 `multiple` 可一次添加多个文件：
+
+```vue
+<Upload drag multiple action="/api/upload">
+  <p>将文件拖到此处，或点击选择</p>
+  <template #tip><p>单个文件大小不超过 2MB</p></template>
+</Upload>
+```
+
+### 目录上传
+
+设置 `directory` 后，文件选择器只允许选择目录；目录内的文件会以列表项形式展示：
+
+```vue
+<Upload directory multiple :auto-upload="false">
+  <button type="button">选择目录</button>
+</Upload>
+```
+
+### 头像上传
+
+头像场景可以隐藏文件列表，并通过 `before-upload` 校验类型和大小：
+
+```vue
+<script setup lang="ts">
+import { Upload } from 'cool-design';
+import type { UploadRawFile } from 'cool-design';
+
+const beforeUpload = (file: UploadRawFile) => file.type.startsWith('image/') && file.size / 1024 / 1024 < 2;
+</script>
+
+<template>
+  <Upload :show-file-list="false" :before-upload="beforeUpload" action="/api/avatar">
+    <button type="button">选择头像</button>
+  </Upload>
+</template>
+```
+
+## API
 ### 属性
 
 | 属性名 | 说明 | 类型 | 默认值 |

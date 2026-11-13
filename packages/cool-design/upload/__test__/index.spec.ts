@@ -62,11 +62,11 @@ test('没有 action 时默认使用当前页面地址上传并触发 Element Plu
 });
 
 test('默认请求将字符串二元数组按 filename tuple 处理', async () => {
-  let xhr: { send: ReturnType<typeof vi.fn> } | undefined;
+  const send = vi.fn((body: FormData) => { void body; });
   class MockXHR {
     upload = {};
     open = vi.fn();
-    send = vi.fn((body: FormData) => { xhr = this; void body; });
+    send = send;
     setRequestHeader = vi.fn();
     status = 200;
     response = '{}';
@@ -77,8 +77,8 @@ test('默认请求将字符串二元数组按 filename tuple 处理', async () =
   vi.stubGlobal('XMLHttpRequest', MockXHR);
   const wrapper = mount(Upload, { props: { action: '/upload', data: { attachment: ['text', 'file.txt'] as [string, string] } } });
   await select(wrapper, [new File(['x'], 'source.txt')]);
-  await vi.waitFor(() => expect(xhr).toBeTruthy());
-  const value = xhr?.send.mock.calls[0][0] as FormData;
+  await vi.waitFor(() => expect(send).toHaveBeenCalled());
+  const value = send.mock.calls[0][0] as FormData;
   expect(value.getAll('attachment')).toHaveLength(1);
   expect(value.get('attachment')).toBeInstanceOf(Blob);
   expect((value.get('attachment') as File).name).toBe('file.txt');
@@ -86,22 +86,26 @@ test('默认请求将字符串二元数组按 filename tuple 处理', async () =
 });
 
 test('默认请求透传真实进度并保留 Blob 和文件名数据', async () => {
-  let xhr: { upload: { onprogress?: (event: ProgressEvent) => void }; onload?: () => void } | undefined;
+  const instances: Array<{ upload: { onprogress?: (event: ProgressEvent) => void }; onload?: () => void }> = [];
   class MockXHR {
     upload: { onprogress?: (event: ProgressEvent) => void } = {};
     open = vi.fn();
-    send = vi.fn(() => { xhr = this; });
+    send = vi.fn();
     setRequestHeader = vi.fn();
     onload?: () => void;
     status = 200;
     response = '{}';
+    constructor() {
+      instances.push(this);
+    }
   }
   vi.stubGlobal('XMLHttpRequest', MockXHR);
   const onProgress = vi.fn();
   const blob = new Blob(['value']);
   const wrapper = mount(Upload, { props: { action: '/upload', data: { blob, names: ['a', 'b', 'c'] }, onProgress } });
   await select(wrapper, [new File(['x'], 'x.txt')]);
-  await vi.waitFor(() => expect(xhr).toBeTruthy());
+  await vi.waitFor(() => expect(instances[0]).toBeTruthy());
+  const xhr = instances[0];
   xhr?.upload.onprogress?.({ lengthComputable: true, loaded: 1, total: 2 } as ProgressEvent);
   expect(onProgress).toHaveBeenCalledWith(expect.objectContaining({ percent: 50 }), expect.anything(), expect.any(Array));
   const body = (xhr as unknown as { send: ReturnType<typeof vi.fn> }).send.mock.calls[0][0] as FormData;

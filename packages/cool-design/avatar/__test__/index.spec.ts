@@ -53,4 +53,13 @@ describe('test `Avatar` component', () => {
     expect(wrapper.text()).toContain('回退');
     expect(wrapper.emitted('error')).toHaveLength(1);
   });
+  test('默认圆形与 default 尺寸，地址变化后清除失败状态', async () => {
+    const wrapper = mount(Avatar, { props: { size: 'default', src: 'broken.png' } });
+    expect(wrapper.classes()).toContain('i-avatar--circle');
+    expect(wrapper.classes()).toContain('i-avatar--default');
+    await wrapper.get('img').trigger('error');
+    expect(wrapper.find('img').exists()).toBe(false);
+    await wrapper.setProps({ src: 'fixed.png' });
+    expect(wrapper.get('img').attributes('src')).toBe('fixed.png');
+  });
 });

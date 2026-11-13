@@ -21,3 +21,11 @@ test('支持自定义图片尺寸和插槽', () => {
   expect(w.get('img').attributes('style')).toContain('width: 96px');
   expect(w.get('strong').text()).toBe('暂无订单');
 });
+
+test('内置插画随 image-size 缩放，image 插槽可替换', () => {
+  const w = mount(Empty, { props: { imageSize: '120px' } });
+  expect(w.get('svg').attributes('style')).toContain('width: 120px');
+  const custom = mount(Empty, { slots: { image: () => h('i', { class: 'custom-image' }) } });
+  expect(custom.find('svg').exists()).toBe(false);
+  expect(custom.find('.custom-image').exists()).toBe(true);
+});

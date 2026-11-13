@@ -128,7 +128,8 @@ export const pages: Page[] = [
   ]),
   component('badge', 'Badge 徽标', '基础组件', [
     ['basic', '数量与状态', '展示数量上限、状态颜色和圆点徽标。'],
-    ['options', '隐藏、零值与偏移', '控制徽标隐藏、零值显示、自定义颜色和位置。']
+    ['options', '隐藏、零值与偏移', '控制徽标隐藏、零值显示、自定义颜色和位置。'],
+    ['content', '自定义内容', '使用 content 插槽替换徽标文本。']
   ]),
   component(
     'radio',
@@ -290,13 +291,72 @@ export const pages: Page[] = [
   component('popover', 'Popover 弹出框', '反馈组件', [['basic', '补充说明', '展示目标元素的补充内容。']]),
   component('watermark', 'Watermark 水印', '反馈组件', [['basic', '内容水印', '为内容添加重复水印。']]),
   component('card', 'Card 卡片', '数据展示', [['basic', '卡片内容', '使用标题、内容和底部插槽组织信息。']]),
-  component('descriptions', 'Descriptions 描述列表', '数据展示', [['basic', '详情信息', '以标签和值的形式展示详情。']]),
+  component(
+    'descriptions',
+    'Descriptions 描述列表',
+    '数据展示',
+    [
+      ['basic', '详情信息', '以标签和值的形式展示详情。'],
+      ['item', '子组件与边框', '使用 DescriptionsItem 配置标签、跨列和自定义标签。'],
+      ['vertical', '纵向排列', '纵向展示标签与内容，并控制列数和尺寸。']
+    ],
+    ['Descriptions', 'DescriptionsItem']
+  ),
+  {
+    imports: ['DescriptionsItem'],
+    id: 'components/descriptions-item',
+    title: 'DescriptionsItem 描述项',
+    group: '数据展示',
+    markdown:
+      '# DescriptionsItem 描述项\n\n### 介绍\n\nDescriptions 的子组件，声明单个标签与内容。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| label | 标签文本 | `string` | — |\n| span | 横跨列数 | `number` | `1` |\n| rowspan | 横跨行数（横向） | `number` | `1` |\n| width | 内容列宽度 | `string` / `number` | — |\n| min-width | 内容列最小宽度 | `string` / `number` | — |\n| label-width | 标签宽度 | `string` / `number` | — |\n| align | 内容对齐：`left` / `center` / `right` | `string` | — |\n| label-align | 标签对齐：`left` / `center` / `right` | `string` | — |\n| class-name | 内容单元格类名 | `string` | — |\n| label-class-name | 标签单元格类名 | `string` | — |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| default | 内容 |\n| label | 自定义标签 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/descriptions/demo/item.vue',
+        'item',
+        '子组件与边框',
+        '使用 DescriptionsItem 配置标签、跨列和自定义标签。'
+      )
+    ]
+  },
   component('image', 'Image 图片', '数据展示', [['basic', '图片展示', '展示图片并处理加载失败。']]),
-  component('result', 'Result 结果', '数据展示', [['basic', '操作结果', '反馈成功结果。']]),
-  component('skeleton', 'Skeleton 骨架屏', '数据展示', [['basic', '加载占位', '数据加载时展示骨架。']]),
+  component('result', 'Result 结果', '数据展示', [
+    ['basic', '操作结果', '反馈成功结果。'],
+    ['status', '状态与操作', '展示成功、警告和失败状态，并在 extra 中放置后续操作。'],
+    ['http', '异常状态页', '使用 404、403、500 展示页面级异常。']
+  ]),
+  component(
+    'skeleton',
+    'Skeleton 骨架屏',
+    '数据展示',
+    [
+      ['basic', '加载占位', '数据加载时展示骨架，加载完成后切换为真实内容。'],
+      ['loading', '节流与数量', '使用 throttle 避免短暂加载闪烁，使用 count 渲染多块骨架。'],
+      ['item', '自定义模板', '使用 template 插槽和 SkeletonItem 组合占位形状。']
+    ],
+    ['Skeleton', 'SkeletonItem']
+  ),
+  {
+    imports: ['SkeletonItem'],
+    id: 'components/skeleton-item',
+    title: 'SkeletonItem 骨架项',
+    group: '数据展示',
+    markdown:
+      '# SkeletonItem 骨架项\n\n### 介绍\n\nSkeleton 的子组件，在 template 插槽中组合占位形状。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| variant | 占位形状：`p` / `text` / `h1` / `h3` / `caption` / `button` / `image` / `circle` / `rect` | `string` | `text` |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/skeleton/demo/item.vue',
+        'item',
+        '自定义模板',
+        '使用 template 插槽和 SkeletonItem 组合占位形状。'
+      )
+    ]
+  },
   component('tree', 'Tree 树形控件', '数据展示', [['basic', '层级数据', '展开并勾选树节点。']]),
   component('timeline', 'Timeline 时间线', '数据展示', [['basic', '事件记录', '按时间展示事件。']]),
-  component('statistic', 'Statistic 统计数值', '数据展示', [['basic', '统计指标', '突出展示数值指标。']]),
+  component('statistic', 'Statistic 统计数值', '数据展示', [
+    ['basic', '统计指标', '突出展示数值指标。'],
+    ['format', '格式化', '配置精度、分隔符、前后缀和自定义格式化函数。']
+  ]),
   component('autocomplete', 'Autocomplete 自动补全', '表单组件', [
     ['basic', '建议项补全', '根据输入内容展示静态建议项。']
   ]),
@@ -310,7 +370,14 @@ export const pages: Page[] = [
   ]),
   component('transfer', 'Transfer 穿梭框', '表单组件', [['basic', '选项转移', '在两个列表之间移动选项。']]),
   component('tree-select', 'TreeSelect 树形选择', '表单组件', [['basic', '树形选择', '从层级数据中选择节点。']]),
-  component('upload', 'Upload 上传', '表单组件', [['basic', '文件上传', '选择文件并展示上传状态。']]),
+  component('upload', 'Upload 上传', '表单组件', [
+    ['basic', '基础上传与自定义请求', '组合受控文件列表、拖拽区域、手动提交和自定义请求。'],
+    ['limit', '限制上传数量', '通过 limit 限制文件数量，并在超出时替换之前的文件。'],
+    ['picture', '图片列表', '使用 picture 列表展示缩略图，并处理预览与删除。'],
+    ['drag', '拖拽上传', '启用拖拽区域，支持多文件选择和上传进度。'],
+    ['directory', '目录上传', '选择目录并在列表中展示目录内的文件。'],
+    ['avatar', '头像上传', '使用 before-upload 校验文件类型和大小，并隐藏文件列表。']
+  ]),
   component('select', 'Select 选择器', '表单组件', [
     ['basic', '基础用法', '从 SelectOption 中选择单个值。'],
     ['states', '禁用与清空', '比较禁用选项、禁用选择器和 clearable。'],
@@ -356,7 +423,8 @@ export const pages: Page[] = [
     ['advanced', '拖拽列宽、编辑与列显隐', '拖拽表头边缘调整列宽，双击编辑单元格，编程式控制列显示与顺序。']
   ]),
   component('pagination', 'Pagination 分页', '数据展示', [
-    ['basic', '分页与每页条数', '页码从 1 开始；改变条数时，由页面把页码重置为 1。']
+    ['basic', '分页与每页条数', '页码从 1 开始；改变条数时，由页面把页码重置为 1。'],
+    ['layout', '布局与总数', '使用 layout 组合模块，使用 page-count 直接指定总页数。']
   ]),
   component('tag', 'Tag 标签', '数据展示', [
     ['basic', '状态与可关闭标签', 'close 事件仅通知页面，由页面移除对应标签。'],

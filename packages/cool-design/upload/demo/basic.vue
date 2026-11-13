@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Upload } from '../../index';
-import type { UploadFile, UploadFiles, UploadRequestOptions } from '../index';
+import type { UploadFile, UploadFiles, UploadProgressEvent, UploadRequestOptions } from '../index';
 
 interface UploadInstance {
   submit: () => Promise<unknown[]>;
@@ -15,7 +15,7 @@ const httpRequest = ({ file, onProgress, onSuccess }: UploadRequestOptions): Pro
   let percent = 0;
   const timer = window.setInterval(() => {
     percent += 25;
-    onProgress({ percent });
+    onProgress(Object.assign(new ProgressEvent('progress'), { percent }) as UploadProgressEvent);
     if (percent >= 100) {
       window.clearInterval(timer);
       onSuccess({ name: file.name, local: true });
@@ -29,7 +29,7 @@ const handleChange = (file: UploadFile, list: UploadFiles) => {
   message.value = `${file.name}：${file.status}（${list.length}/3）`;
 };
 
-const handleSuccess = (file: UploadFile) => {
+const handleSuccess = (_response: unknown, file: UploadFile) => {
   message.value = `${file.name} 上传成功`;
 };
 

@@ -3,28 +3,32 @@ import type { PropType } from 'vue';
 import { createNamespace } from '../../../src/utils/create';
 const [name, bem] = createNamespace('badge');
 
-export type Type = 'primary' | 'success' | 'warning' | 'danger' | 'info';
+export type BadgeType = 'primary' | 'success' | 'warning' | 'danger' | 'info';
 
 const props = {
   value: {
     type: [String, Number] as PropType<string | number>,
     default: ''
   },
-  /** @description 最大值 */
+  /** @description 最大值，超过显示 `{max}+` */
   max: {
     type: Number as PropType<number>,
     default: 99
   },
   type: {
-    type: String as PropType<Type>,
-    default: 'warning'
+    type: String as PropType<BadgeType>,
+    default: 'danger'
   },
   isDot: {
     type: Boolean as PropType<boolean>,
     default: false
   },
   hidden: Boolean,
-  showZero: Boolean,
+  showZero: {
+    type: Boolean as PropType<boolean>,
+    default: true
+  },
+  /** 兼容扩展：徽标位置偏移 `[x, y]`，单位 px */
   offset: {
     type: Array as unknown as PropType<[number, number]>,
     default: undefined
@@ -47,10 +51,18 @@ export default defineComponent({
       return `${value}`;
     });
 
+    const visible = computed(
+      () =>
+        !props.hidden &&
+        (slots.content != null ||
+          props.isDot ||
+          (props.value !== '' && (props.showZero || props.value !== 0)))
+    );
+
     return () => (
       <div class={bem()}>
         {slots.default?.()}
-        {!props.hidden && (props.isDot || (props.value !== '' && (props.showZero || props.value !== 0))) && (
+        {visible.value && (
           <span
             class={[bem('tag', { [props.type]: true }), props.isDot && bem('dot')]}
             style={{
@@ -59,7 +71,7 @@ export default defineComponent({
               '--i-badge-offset-y': props.offset ? `${props.offset[1]}px` : undefined
             }}
             data-offset={props.offset?.join(',')}>
-            {content.value}
+            {slots.content?.() ?? content.value}
           </span>
         )}
       </div>

@@ -362,6 +362,7 @@ onBeforeUnmount(() => {
               :page-size="query.pageSize"
               :total="total"
               :disabled="loading"
+              layout="total, sizes, prev, pager, next, jumper"
               @update:current-page="setPage"
               @update:page-size="setPageSize" />
           </section>

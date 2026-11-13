@@ -48,10 +48,10 @@ import Transfer from './transfer';
 import TreeSelect from './tree-select';
 import Upload from './upload';
 import Card from './card';
-import Descriptions from './descriptions';
+import Descriptions, { DescriptionsItem } from './descriptions';
 import Image from './image';
 import Result from './result';
-import Skeleton from './skeleton';
+import Skeleton, { SkeletonItem } from './skeleton';
 import Tree from './tree';
 import Timeline from './timeline';
 import Statistic from './statistic';
@@ -128,9 +128,11 @@ export {
   Upload,
   Card,
   Descriptions,
+  DescriptionsItem,
   Image,
   Result,
   Skeleton,
+  SkeletonItem,
   Tree,
   Timeline,
   Statistic,
@@ -200,9 +202,11 @@ const components = [
   Upload,
   Card,
   Descriptions,
+  DescriptionsItem,
   Image,
   Result,
   Skeleton,
+  SkeletonItem,
   Tree,
   Timeline,
   Statistic,

@@ -1,10 +1,10 @@
-import { PropType, computed, defineComponent, ref } from 'vue';
+import { PropType, computed, defineComponent, h, ref, watch, type Component } from 'vue';
 import { createNamespace } from '../../../src/utils/create';
 import Icon from '../icon';
 const [name, bem] = createNamespace('avatar');
 
 export type AvatarShape = 'circle' | 'square';
-export type AvatarSize = 'large' | 'medium' | 'small' | number;
+export type AvatarSize = 'large' | 'default' | 'medium' | 'small' | number;
 export type AvatarFit = 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
 
 const isNumber = (value: unknown): boolean => typeof value === 'number';
@@ -12,11 +12,15 @@ const isNumber = (value: unknown): boolean => typeof value === 'number';
 export default defineComponent({
   name,
   props: {
+    /** 兼容别名，等价于 `src` */
     url: {
       type: String,
       default: ''
     },
-    src: String,
+    src: {
+      type: String,
+      default: ''
+    },
     srcSet: String,
     alt: { type: String, default: '' },
     /**
@@ -26,13 +30,13 @@ export default defineComponent({
      */
     shape: {
       type: String as PropType<AvatarShape>,
-      default: 'square'
+      default: 'circle'
     },
     size: {
       type: [String, Number] as PropType<AvatarSize>,
       default: 'large'
     },
-    icon: String,
+    icon: [String, Object, Function] as PropType<string | Component>,
     fit: {
       type: String as PropType<AvatarFit>,
       default: 'cover'
@@ -41,6 +45,12 @@ export default defineComponent({
   emits: ['error'],
   setup(props, { slots, emit }) {
     const imageError = ref(false);
+    const src = computed(() => props.src || props.url);
+
+    watch(src, () => {
+      imageError.value = false;
+    });
+
     const style = computed(() => {
       if (isNumber(props.size)) {
         return {
@@ -58,22 +68,34 @@ export default defineComponent({
       })
     );
 
-    return () => (
-      <div class={classLists.value} style={style.value}>
-        {!imageError.value && (props.url || props.src) && (
-          <img
-            class={[bem('img'), bem('img', { [props.fit]: true })]}
-            src={props.url || props.src}
-            srcset={props.srcSet}
-            alt={props.alt}
-            onError={(event: Event) => {
-              imageError.value = true;
-              emit('error', event);
-            }}
-          />
-        )}
-        {imageError.value ? slots.fallback?.() : props.icon ? <Icon type={props.icon} /> : slots.default?.()}
-      </div>
-    );
+    const renderIcon = () => {
+      if (!props.icon) return undefined;
+      if (typeof props.icon !== 'string') return h(props.icon);
+      return <Icon type={props.icon} />;
+    };
+
+    return () => {
+      const showImage = !imageError.value && !!src.value;
+      return (
+        <div class={classLists.value} style={style.value}>
+          {showImage && (
+            <img
+              class={[bem('img'), bem('img', { [props.fit]: true })]}
+              src={src.value}
+              srcset={props.srcSet}
+              alt={props.alt}
+              onError={(event: Event) => {
+                imageError.value = true;
+                emit('error', event);
+              }}
+            />
+          )}
+          {!showImage &&
+            (imageError.value
+              ? (slots.fallback?.() ?? renderIcon() ?? slots.default?.())
+              : (renderIcon() ?? slots.default?.()))}
+        </div>
+      );
+    };
   }
 });

@@ -4,6 +4,7 @@ import { describe, expect, test } from 'vitest';
 import { formKey } from '../../form/context';
 import FormItem from '../../form-item';
 import Rate from '..';
+import type { RateColor } from '..';
 
 describe('Rate', () => {
   test('inherits the FormItem field id and label association', () => {
@@ -302,7 +303,7 @@ describe('Rate', () => {
   test('uses Element Plus threshold boundaries and object entries', () => {
     const wrapper = mount(Rate, { props: { modelValue: 4, colors: ['red', 'orange', 'green'] } });
     expect(wrapper.find('.i-rate__icon').attributes('style')).toContain('color: green');
-    const object = mount(Rate, { props: { modelValue: 2, colors: { 2: { value: 'red', excluded: true }, 4: 'green' } as any } });
+    const object = mount(Rate, { props: { modelValue: 2, colors: { 2: { value: 'red', excluded: true }, 4: 'green' } as RateColor } });
     expect(object.find('.i-rate__icon').attributes('style')).not.toContain('red');
   });
 

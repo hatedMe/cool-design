@@ -36,12 +36,17 @@
 @use '../link/index.scss' as *;
 @use '../date-picker/index.scss' as *;
 @use '../advanced-form/index.scss' as *;
+@use '../upload/index.scss' as *;
 @use '../slider/index.scss' as *;
 @use '../data-display/index.scss' as *;
 @use '../navigation/index.scss' as *;
 @use '../feedback/index.scss' as *;
 @use '../rate/index.scss' as *;
 @use '../progress/index.scss' as *;
+@use '../skeleton/index.scss' as *;
+@use '../descriptions/index.scss' as *;
+@use '../result/index.scss' as *;
+@use '../statistic/index.scss' as *;
 
 @use './display.scss';
 

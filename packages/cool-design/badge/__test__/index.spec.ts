@@ -30,4 +30,11 @@ describe('test `Badge` component', () => {
     await wrapper.setProps({ hidden: true });
     expect(wrapper.find('.i-badge__tag').exists()).toBe(false);
   });
+  test('默认 danger 类型、零值显示，content 插槽替换徽标文本', async () => {
+    const wrapper = mount(Badge, { props: { value: 0 }, slots: { default: '零值' } });
+    expect(wrapper.get('.i-badge__tag').classes()).toContain('i-badge__tag--danger');
+    expect(wrapper.get('.i-badge__tag').text()).toBe('0');
+    const custom = mount(Badge, { props: { value: 12 }, slots: { content: '新品' } });
+    expect(custom.get('.i-badge__tag').text()).toBe('新品');
+  });
 });
