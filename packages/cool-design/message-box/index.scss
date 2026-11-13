@@ -1,0 +1,18 @@
+.i-message-box__message {
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.i-message-box--success .i-message-box__message {
+  color: var(--i-success);
+}
+.i-message-box--warning .i-message-box__message {
+  color: var(--i-warning);
+}
+.i-message-box--error .i-message-box__message {
+  color: var(--i-danger);
+}
+.i-message-box__error {
+  color: var(--i-danger);
+  margin: 12px 0 0;
+}

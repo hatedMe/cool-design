@@ -1,0 +1,97 @@
+.i-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  cursor: pointer;
+}
+.i-switch--large {
+  font-size: 16px;
+  --i-switch-height: 24px;
+  --i-switch-action-size: 18px;
+  --i-switch-radius: 12px;
+}
+.i-switch--small {
+  font-size: 12px;
+  --i-switch-width: 28px;
+  --i-switch-height: 16px;
+  --i-switch-action-size: 10px;
+  --i-switch-radius: 8px;
+}
+.i-switch__active,
+.i-switch__inactive {
+  color: var(--i-text-secondary);
+  margin: 0 6px;
+}
+.i-switch__active,
+.i-switch__inactive {
+  opacity: 0.5;
+}
+.i-switch__active.is-active,
+.i-switch__inactive.is-active {
+  opacity: 1;
+}
+.i-switch input {
+  position: absolute;
+  opacity: 0;
+  width: var(--i-switch-width, 36px);
+  height: var(--i-switch-height, 20px);
+  margin: 0;
+}
+.i-switch__track {
+  width: var(--i-switch-width, 36px);
+  height: var(--i-switch-height, 20px);
+  box-sizing: border-box;
+  border-radius: var(--i-switch-radius, 10px);
+  background: var(--i-switch-off-color, var(--i-switch-off, var(--i-border)));
+  border: 1px solid var(--i-switch-border-color, var(--i-switch-border, transparent));
+  padding: 3px;
+  pointer-events: none;
+  position: relative;
+}
+.i-switch__prompt {
+  position: absolute;
+  inset: 0 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  line-height: 14px;
+}
+.i-switch__action {
+  position: relative;
+  z-index: 1;
+  width: var(--i-switch-action-size, 14px);
+  height: var(--i-switch-action-size, 14px);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--i-bg);
+}
+.i-switch__action-icon {
+  font-size: 10px;
+}
+.i-switch__loading {
+  position: absolute;
+  inset: 5px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: i-switch-spin 0.8s linear infinite;
+}
+@keyframes i-switch-spin {
+  to { transform: rotate(360deg); }
+}
+.i-switch input:checked ~ .i-switch__track {
+  background: var(--i-switch-on-color, var(--i-switch-on, var(--i-primary)));
+}
+.i-switch__track.is-active .i-switch__action {
+  transform: translateX(calc(var(--i-switch-width, 36px) - var(--i-switch-action-size, 14px) - 8px));
+}
+.i-switch input:focus-visible ~ .i-switch__track {
+  outline: 2px solid var(--i-primary);
+  outline-offset: 3px;
+}
+.i-switch input:disabled ~ .i-switch__track {
+  opacity: 0.5;
+}

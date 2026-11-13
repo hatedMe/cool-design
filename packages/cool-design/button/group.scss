@@ -1,0 +1,31 @@
+.i-button-group {
+  display: inline-flex;
+  vertical-align: middle;
+}
+.i-button-group--vertical {
+  flex-direction: column;
+}
+.i-button-group:not(.i-button-group--vertical) > .i-button + .i-button {
+  margin-left: -1px;
+  border-radius: 0;
+}
+.i-button-group:not(.i-button-group--vertical) > .i-button:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.i-button-group:not(.i-button-group--vertical) > .i-button:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.i-button-group--vertical > .i-button + .i-button {
+  margin-top: -1px;
+  border-radius: 0;
+}
+.i-button-group--vertical > .i-button:first-child {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.i-button-group--vertical > .i-button:last-child {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}

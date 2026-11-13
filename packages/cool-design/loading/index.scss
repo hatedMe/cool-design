@@ -1,0 +1,55 @@
+.i-loading {
+  position: relative;
+  min-width: 0;
+}
+.i-loading__status {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  color: var(--i-primary);
+  font-size: var(--i-font-size);
+}
+.i-loading--overlay[aria-busy='true'] {
+  min-height: 96px;
+}
+.i-loading--overlay > .i-loading__status {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: var(--i-loading-background, var(--i-bg));
+  opacity: 0.92;
+}
+.i-loading--fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: var(--i-loading-background, var(--i-bg));
+}
+.i-loading--fullscreen > .i-loading__status {
+  position: fixed;
+  inset: 0;
+}
+.i-loading--overlay[aria-busy='true'] > .i-loading__content {
+  pointer-events: none;
+  user-select: none;
+}
+.i-loading__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: i-loading-spin 0.8s linear infinite;
+}
+@keyframes i-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .i-loading__spinner {
+    animation: none;
+  }
+}
