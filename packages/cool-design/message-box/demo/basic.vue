@@ -24,7 +24,8 @@ async function beforeConfirm() {
     message="删除后无法恢复，确定继续吗？"
     :before-confirm="beforeConfirm"
     @confirm="result = '用户已删除'"
-    @cancel="result = '已取消删除'">
+    @cancel="result = '已取消删除'"
+    @close="result = '已取消删除'">
     <p>删除后无法恢复，确定继续吗？</p>
     <Checkbox v-model="simulateFailure">模拟请求失败（失败后可取消并重试）</Checkbox>
   </MessageBox>

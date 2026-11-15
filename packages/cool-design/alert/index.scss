@@ -2,49 +2,93 @@
 
 .i-alert {
   position: relative;
+  display: flex;
   align-items: center;
+  gap: 8px;
   width: 100%;
   padding: 8px 16px;
   box-sizing: border-box;
   border-radius: 4px;
-  letter-spacing: 1px;
   overflow: hidden;
   opacity: 1;
-  background-color: #fff;
   transition: opacity 0.2s;
-  &--hide {
-    display: none;
+  &--primary {
+    color: var(--i-primary, #2463eb);
+    background-color: var(--i-primary-light-9, #ecf1fe);
   }
-  &__title {
-    &--wight {
-      font-size: 15px;
-      font-weight: 700;
+  &--success {
+    color: var(--i-success, #16815d);
+    background-color: var(--i-success-light-9, #e9f6f0);
+  }
+  &--warning {
+    color: var(--i-warning, #b77909);
+    background-color: var(--i-warning-light-9, #fdf6ec);
+  }
+  &--info {
+    color: var(--i-info, #65748a);
+    background-color: var(--i-info-light-9, #f4f4f5);
+  }
+  &--error {
+    color: var(--i-danger, #d73d4a);
+    background-color: var(--i-danger-light-9, #fef0f0);
+  }
+  &.is-dark {
+    color: #fff;
+    &.i-alert--primary {
+      background-color: var(--i-primary, #2463eb);
+    }
+    &.i-alert--success {
+      background-color: var(--i-success, #16815d);
+    }
+    &.i-alert--warning {
+      background-color: var(--i-warning, #b77909);
+    }
+    &.i-alert--info {
+      background-color: var(--i-info, #65748a);
+    }
+    &.i-alert--error {
+      background-color: var(--i-danger, #d73d4a);
+    }
+    .i-alert__close {
+      color: #fff;
     }
   }
+  &.is-center {
+    justify-content: center;
+    text-align: center;
+  }
+  &__icon {
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+  &__title {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  &.is-with-description &__title {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  &__description {
+    margin: 4px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+  }
   &__close {
-    position: absolute;
-    right: 16px;
-    color: #909399;
-  }
-  &__desc {
-    margin-top: 8px;
-    width: 90%;
-    font-weight: 12px;
-  }
-  &__info {
-    color: #909399;
-    background-color: #f4f4f5;
-  }
-  &__success {
-    color: #67c23a;
-    background-color: #f0f9eb;
-  }
-  &__warning {
-    color: #e6a23c;
-    background-color: #fdf6ec;
-  }
-  &__error {
-    color: #f56c6c;
-    background-color: #fef0f0;
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0.7;
+    &:hover {
+      opacity: 1;
+    }
   }
 }

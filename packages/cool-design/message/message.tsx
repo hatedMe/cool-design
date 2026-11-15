@@ -1,11 +1,15 @@
 import { defineComponent, onBeforeUnmount, watch, type PropType } from 'vue';
+export type MessageType = 'primary' | 'success' | 'warning' | 'info' | 'error';
 export default defineComponent({
   name: 'i-message',
   props: {
-    type: { type: String as PropType<'success' | 'warning' | 'info' | 'error'>, default: 'success' },
+    type: { type: String as PropType<MessageType>, default: 'info' },
     message: { type: String, required: true },
-    duration: { type: Number, default: 4000 },
-    showClose: { type: Boolean, default: true }
+    duration: { type: Number, default: 3000 },
+    showClose: { type: Boolean, default: false },
+    dangerouslyUseHTMLString: Boolean,
+    center: Boolean,
+    customClass: { type: String, default: '' }
   },
   emits: ['close'],
   setup(props, { emit }) {
@@ -23,8 +27,10 @@ export default defineComponent({
     );
     onBeforeUnmount(clear);
     return () => (
-      <div class={['i-message', `i-message--${props.type}`]} role={props.type === 'error' ? 'alert' : 'status'}>
-        <span>{props.message}</span>
+      <div
+        class={['i-message', `i-message--${props.type}`, { 'is-center': props.center }, props.customClass]}
+        role={props.type === 'error' ? 'alert' : 'status'}>
+        {props.dangerouslyUseHTMLString ? <span innerHTML={props.message} /> : <span>{props.message}</span>}
         {props.showClose && (
           <button
             type='button'

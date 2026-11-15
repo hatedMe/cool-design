@@ -1,4 +1,5 @@
-import { defineComponent } from 'vue';
+import { defineComponent, onBeforeUnmount, watch } from 'vue';
+import { lockScroll, unlockScroll } from './scroll-lock';
 export default defineComponent({
   name: 'i-loading',
   props: {
@@ -6,9 +7,22 @@ export default defineComponent({
     text: { type: String, default: '正在加载…' },
     overlay: Boolean,
     fullscreen: Boolean,
-    background: { type: String, default: '' }
+    background: { type: String, default: '' },
+    lock: Boolean,
+    customClass: { type: String, default: '' }
   },
   setup(props, { slots }) {
+    watch(
+      () => props.loading && props.fullscreen && props.lock,
+      (shouldLock, wasLocked) => {
+        if (shouldLock && !wasLocked) lockScroll();
+        if (!shouldLock && wasLocked) unlockScroll();
+      },
+      { immediate: true }
+    );
+    onBeforeUnmount(() => {
+      if (props.loading && props.fullscreen && props.lock) unlockScroll();
+    });
     const block = (event: Event) => {
       if (props.loading && props.overlay) {
         event.preventDefault();
@@ -17,7 +31,11 @@ export default defineComponent({
     };
     return () => (
       <div
-        class={['i-loading', { 'i-loading--overlay': props.overlay, 'i-loading--fullscreen': props.fullscreen }]}
+        class={[
+          'i-loading',
+          { 'i-loading--overlay': props.overlay, 'i-loading--fullscreen': props.fullscreen },
+          props.customClass
+        ]}
         style={props.background && props.loading ? { '--i-loading-background': props.background } : undefined}
         aria-busy={props.loading}>
         {slots.default && (

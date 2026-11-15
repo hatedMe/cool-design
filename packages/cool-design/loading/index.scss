@@ -2,6 +2,9 @@
   position: relative;
   min-width: 0;
 }
+.i-loading-service > .i-loading {
+  height: 100%;
+}
 .i-loading__status {
   display: flex;
   gap: 8px;

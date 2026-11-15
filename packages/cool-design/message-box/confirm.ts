@@ -11,7 +11,8 @@ import {
 import ConfigProvider from '../config-provider';
 import { useConfig, type Config } from '../config-provider/context';
 import Box from './message-box';
-import type { MessageBoxAction, MessageBoxOptions } from './types';
+import type { MessageBoxAction, MessageBoxOptions, MessageBoxPromptResult } from './types';
+
 function open(
   message: string,
   title: string,
@@ -19,23 +20,33 @@ function open(
   context: AppContext | null,
   config?: ComputedRef<Config>,
   register?: (close: () => void) => () => void
-): Promise<MessageBoxAction> {
+): Promise<'confirm' | MessageBoxPromptResult> {
   const container = document.createElement('div');
   document.body.appendChild(container);
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let settled = false;
     let unregister = () => {};
-    const finish = (action: MessageBoxAction) => {
-      if (settled) return;
-      settled = true;
+    const cleanup = () => {
       unregister();
       queueMicrotask(() => {
         render(null, container);
         container.remove();
-        resolve(action);
       });
     };
-    unregister = register?.(() => finish('cancel')) || unregister;
+    const finishConfirm = (value?: string) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      if (options.showInput) resolve({ value: value ?? '', action: 'confirm' });
+      else resolve('confirm');
+    };
+    const finishReject = (action: 'cancel' | 'close') => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(action);
+    };
+    unregister = register?.(() => finishReject('cancel')) || unregister;
     const Root = defineComponent({
       setup: () => () =>
         h(
@@ -47,8 +58,9 @@ function open(
               modelValue: true,
               message,
               title,
-              onConfirm: () => finish('confirm'),
-              onCancel: () => finish('cancel')
+              onConfirm: (value?: string) => finishConfirm(value),
+              onCancel: () => finishReject('cancel'),
+              onClose: () => finishReject('close')
             })
         )
     });
@@ -57,8 +69,38 @@ function open(
     render(vnode, container);
   });
 }
-export const confirm = (message: string, title = '操作确认', options: MessageBoxOptions = {}) =>
-  open(message, title, options, null);
+
+export const msgbox = (
+  options: MessageBoxOptions & { message: string; title?: string },
+  appContext: AppContext | null = null
+): Promise<'confirm' | MessageBoxPromptResult> => {
+  const { message, title = '操作确认', ...rest } = options;
+  return open(message, title, rest, appContext);
+};
+
+export const alert = (
+  message: string,
+  title = '操作确认',
+  options: MessageBoxOptions = {},
+  appContext: AppContext | null = null
+): Promise<'confirm'> =>
+  open(message, title, { showCancelButton: false, ...options }, appContext) as Promise<'confirm'>;
+
+export const confirm = (
+  message: string,
+  title = '操作确认',
+  options: MessageBoxOptions = {},
+  appContext: AppContext | null = null
+): Promise<'confirm'> => open(message, title, options, appContext) as Promise<'confirm'>;
+
+export const prompt = (
+  message: string,
+  title = '操作确认',
+  options: MessageBoxOptions = {},
+  appContext: AppContext | null = null
+): Promise<MessageBoxPromptResult> =>
+  open(message, title, { showInput: true, ...options }, appContext) as Promise<MessageBoxPromptResult>;
+
 export function useMessageBox() {
   const context = getCurrentInstance()?.appContext || null;
   const config = useConfig();
@@ -67,11 +109,22 @@ export function useMessageBox() {
     pending.forEach((close) => close());
     pending.clear();
   });
+  const register = (close: () => void) => {
+    pending.add(close);
+    return () => pending.delete(close);
+  };
   return {
+    msgbox: (options: MessageBoxOptions & { message: string; title?: string }) => {
+      const { message, title = '操作确认', ...rest } = options;
+      return open(message, title, rest, context, config, register);
+    },
+    alert: (message: string, title = '操作确认', options: MessageBoxOptions = {}) =>
+      open(message, title, { showCancelButton: false, ...options }, context, config, register) as Promise<'confirm'>,
     confirm: (message: string, title = '操作确认', options: MessageBoxOptions = {}) =>
-      open(message, title, options, context, config, (close) => {
-        pending.add(close);
-        return () => pending.delete(close);
-      })
+      open(message, title, options, context, config, register) as Promise<'confirm'>,
+    prompt: (message: string, title = '操作确认', options: MessageBoxOptions = {}) =>
+      open(message, title, { showInput: true, ...options }, context, config, register) as Promise<MessageBoxPromptResult>
   };
 }
+
+export type { MessageBoxAction };

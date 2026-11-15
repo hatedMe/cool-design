@@ -18,8 +18,8 @@ export function withInstall<T extends Component>(opt: T) {
 
 export type sfcInstall<T> = T & Plugin;
 export type sfcInstallWithContext<T> = T & { _context: AppContext };
-export function withFunctionInstall<T>(fn: sfcInstall<T>, name: string) {
-  fn.install = (app: App) => {
+export function withFunctionInstall<T>(fn: T, name: string) {
+  (fn as sfcInstall<T>).install = (app: App) => {
     (fn as sfcInstallWithContext<T>)._context = app._context;
     app.config.globalProperties[`${name}`] = fn;
   };

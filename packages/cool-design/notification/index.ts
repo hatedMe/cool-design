@@ -9,4 +9,4 @@ export const Notify = withFunctionInstall(notify, '$notify');
 export const Notification = withInstall(NotificationComponent);
 export default Notify;
 
-export type { NotificationOptions, NotificationType } from './types';
+export type { NotificationHandle, NotificationOptions, NotificationPosition, NotificationType } from './types';

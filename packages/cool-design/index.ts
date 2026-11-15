@@ -230,7 +230,14 @@ export const install = (app: App) => {
 export default { version, install };
 
 export { useMessageBox } from './message-box';
-export type { MessageBoxAction, MessageBoxOptions } from './message-box';
+export type {
+  MessageBoxAction,
+  MessageBoxBeforeClose,
+  MessageBoxInstance,
+  MessageBoxOptions,
+  MessageBoxPromptResult,
+  MessageBoxType
+} from './message-box';
 export type { TagEffect, TagType } from './tag/tag';
 export type { Placement } from '../../src/utils/use-floating';
 
@@ -263,3 +270,13 @@ export type {
   RateThresholdValue
 } from './rate';
 export { Notify } from './notification';
+export type {
+  NotificationHandle,
+  NotificationOptions,
+  NotificationPosition,
+  NotificationType
+} from './notification';
+export { ElMessage } from './message';
+export type { MessageHandle, MessageOptions, MessagePlacement, MessageType } from './message';
+export type { LoadingInstance, LoadingServiceOptions } from './loading';
+export type { AlertEffect, AlertType } from './alert';

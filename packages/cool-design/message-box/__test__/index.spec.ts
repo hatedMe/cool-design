@@ -47,17 +47,26 @@ test('函数确认与取消都返回明确结果并独立卸载', async () => {
   const second = MessageBox.confirm('确认删除？');
   await flushPromises();
   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-  await expect(second).resolves.toBe('cancel');
+  await expect(second).rejects.toBe('close');
   expect(document.querySelector('[role="dialog"]')).toBeNull();
   expect(document.body.style.overflow).toBe('');
 });
 test('组合式调用继承响应式主题，调用者卸载取消并清理弹窗', async () => {
-  let result: Promise<'confirm' | 'cancel'> | undefined;
+  let result: Promise<'confirm'> | undefined;
   const dark = ref(true);
   const Child = defineComponent({
     setup() {
       const box = useMessageBox();
-      return () => h('button', { onClick: () => (result = box.confirm('确认操作？')) }, '打开');
+      return () =>
+        h(
+          'button',
+          {
+            onClick: () => {
+              result = box.confirm('确认操作？');
+            }
+          },
+          '打开'
+        );
     }
   });
   const w = mount(
@@ -74,9 +83,12 @@ test('组合式调用继承响应式主题，调用者卸载取消并清理弹�
   dark.value = false;
   await flushPromises();
   expect(provider.getAttribute('data-theme')).toBe('light');
+  // 提前附加原生捕获，避免拒绝发生在断言附加之前被判定为未处理
+  result?.catch(() => {});
+  const assertion = expect(result).rejects.toBe('cancel');
   w.unmount();
   wrappers.pop();
-  await expect(result).resolves.toBe('cancel');
+  await assertion;
   expect(document.querySelector('.i-message-box')).toBeNull();
 });
 
