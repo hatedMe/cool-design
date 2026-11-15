@@ -279,12 +279,188 @@ export const pages: Page[] = [
     ['basic', '日期时间选择', '在同一个控件中选择日期和时间。']
   ]),
   component('calendar', 'Calendar 日历', '表单组件', [['basic', '日历选择', '按月浏览并选择日期。']]),
-  component('menu', 'Menu 菜单', '导航组件', [['basic', '页面导航', '使用菜单项切换页面区域。']]),
-  component('breadcrumb', 'Breadcrumb 面包屑', '导航组件', [['basic', '层级导航', '展示当前页面路径。']]),
-  component('tabs', 'Tabs 标签页', '导航组件', [['basic', '内容切换', '在多个面板之间切换。']]),
-  component('dropdown', 'Dropdown 下拉菜单', '导航组件', [['basic', '操作菜单', '收纳常用操作。']]),
-  component('steps', 'Steps 步骤条', '导航组件', [['basic', '流程步骤', '展示当前流程进度。']]),
-  component('page-header', 'PageHeader 页头', '导航组件', [['basic', '详情页头', '提供返回、标题和扩展操作。']]),
+  component(
+    'menu',
+    'Menu 菜单',
+    '导航组件',
+    [
+      ['basic', '页面导航', '使用菜单项切换页面区域。'],
+      ['element', '子组件用法', '使用 MenuItem/SubMenu/MenuItemGroup 构建导航。']
+    ],
+    ['Menu', 'MenuItem', 'SubMenu', 'MenuItemGroup']
+  ),
+  {
+    imports: ['MenuItem'],
+    id: 'components/menu-item',
+    title: 'MenuItem 菜单项',
+    group: '导航组件',
+    markdown:
+      '# MenuItem 菜单项\n\n### 介绍\n\nMenu 的子组件，声明单个菜单项。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `index` | 唯一索引 | `string` | — |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n| `route` | 路由透传值 | `string \\| Record` | — |\n| `to` | 链接透传值 | `string \\| Record` | — |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 菜单项内容 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/menu/demo/element.vue',
+        'element',
+        '子组件用法',
+        '使用 MenuItem/SubMenu/MenuItemGroup 构建导航。'
+      )
+    ]
+  },
+  {
+    imports: ['SubMenu'],
+    id: 'components/sub-menu',
+    title: 'SubMenu 子菜单',
+    group: '导航组件',
+    markdown:
+      '# SubMenu 子菜单\n\n### 介绍\n\nMenu 的子组件，声明可展开的子菜单。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `index` | 唯一索引 | `string` | — |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `title` | 子菜单标题 |\n| `default` | 子菜单项 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/menu/demo/element.vue',
+        'element',
+        '子组件用法',
+        '使用 MenuItem/SubMenu/MenuItemGroup 构建导航。'
+      )
+    ]
+  },
+  {
+    imports: ['MenuItemGroup'],
+    id: 'components/menu-item-group',
+    title: 'MenuItemGroup 菜单分组',
+    group: '导航组件',
+    markdown:
+      '# MenuItemGroup 菜单分组\n\n### 介绍\n\nMenu 的子组件，声明菜单分组。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `title` | 分组标题 | `string` | `\'\'` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `title` | 自定义标题 |\n| `default` | 分组内菜单项 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/menu/demo/element.vue',
+        'element',
+        '子组件用法',
+        '使用 MenuItem/SubMenu/MenuItemGroup 构建导航。'
+      )
+    ]
+  },
+  component(
+    'breadcrumb',
+    'Breadcrumb 面包屑',
+    '导航组件',
+    [
+      ['basic', '层级导航', '展示当前页面路径。'],
+      ['element', '子组件用法', '使用 BreadcrumbItem 构建面包屑。']
+    ],
+    ['Breadcrumb', 'BreadcrumbItem']
+  ),
+  {
+    imports: ['BreadcrumbItem'],
+    id: 'components/breadcrumb-item',
+    title: 'BreadcrumbItem 面包屑项',
+    group: '导航组件',
+    markdown:
+      '# BreadcrumbItem 面包屑项\n\n### 介绍\n\nBreadcrumb 的子组件，声明单个层级。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `to` | 跳转目标 | `string \\| Record` | — |\n| `replace` | 是否替换历史 | `boolean` | `false` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 面包屑内容 |\n| `separator` | 单项自定义分隔符 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/breadcrumb/demo/element.vue',
+        'element',
+        '子组件用法',
+        '使用 BreadcrumbItem 构建面包屑。'
+      )
+    ]
+  },
+  component(
+    'tabs',
+    'Tabs 标签页',
+    '导航组件',
+    [
+      ['basic', '内容切换', '在多个面板之间切换。'],
+      ['element', '子组件用法', '使用 TabPane 构建标签页。']
+    ],
+    ['Tabs', 'TabPane']
+  ),
+  {
+    imports: ['TabPane'],
+    id: 'components/tab-pane',
+    title: 'TabPane 标签面板',
+    group: '导航组件',
+    markdown:
+      '# TabPane 标签面板\n\n### 介绍\n\nTabs 的子组件，声明单个页签与面板。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `label` | 页签标题 | `string` | `\'\'` |\n| `name` | 唯一标识 | `string \\| number` | — |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n| `closable` | 单项是否可关闭 | `boolean` | — |\n| `lazy` | 是否懒渲染 | `boolean` | `false` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 面板内容 |\n| `label` | 自定义页签标题 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/tabs/demo/element.vue',
+        'element',
+        '子组件用法',
+        '使用 TabPane 构建标签页。'
+      )
+    ]
+  },
+  component(
+    'dropdown',
+    'Dropdown 下拉菜单',
+    '导航组件',
+    [
+      ['basic', '操作菜单', '收纳常用操作。'],
+      ['element', '子组件用法', '使用 DropdownMenu/DropdownItem 构建菜单。']
+    ],
+    ['Dropdown', 'DropdownMenu', 'DropdownItem']
+  ),
+  {
+    imports: ['DropdownMenu'],
+    id: 'components/dropdown-menu',
+    title: 'DropdownMenu 下拉菜单容器',
+    group: '导航组件',
+    markdown:
+      '# DropdownMenu 下拉菜单容器\n\n### 介绍\n\nDropdown 的子组件，容纳下拉项列表。\n\n## API\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | DropdownItem 列表 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/dropdown/demo/element.vue',
+        'element',
+        '子组件用法',
+        '使用 DropdownMenu/DropdownItem 构建菜单。'
+      )
+    ]
+  },
+  {
+    imports: ['DropdownItem'],
+    id: 'components/dropdown-item',
+    title: 'DropdownItem 下拉项',
+    group: '导航组件',
+    markdown:
+      '# DropdownItem 下拉项\n\n### 介绍\n\nDropdown 的子组件，声明单个操作项。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `command` | 命令值 | `string \\| number \\| object` | `\'\'` |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n| `divided` | 是否显示分隔线 | `boolean` | `false` |\n| `icon` | 图标 | `string` | `\'\'` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 菜单项内容 |\n| `icon` | 自定义图标 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/dropdown/demo/element.vue',
+        'element',
+        '子组件用法',
+        '使用 DropdownMenu/DropdownItem 构建菜单。'
+      )
+    ]
+  },
+  component(
+    'steps',
+    'Steps 步骤条',
+    '导航组件',
+    [
+      ['basic', '流程步骤', '展示当前流程进度。'],
+      ['element', '子组件用法', '使用 Step 构建步骤条。']
+    ],
+    ['Steps', 'Step']
+  ),
+  {
+    imports: ['Step'],
+    id: 'components/step',
+    title: 'Step 步骤',
+    group: '导航组件',
+    markdown:
+      '# Step 步骤\n\n### 介绍\n\nSteps 的子组件，声明单个步骤。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `title` | 标题 | `string` | `\'\'` |\n| `description` | 描述 | `string` | `\'\'` |\n| `icon` | 图标 | `string` | `\'\'` |\n| `status` | 显式状态 | `StepStatus` | `\'\'` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `icon` | 自定义图标 |\n| `title` | 自定义标题 |\n| `description` | 自定义描述 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/steps/demo/element.vue',
+        'element',
+        '子组件用法',
+        '使用 Step 构建步骤条。'
+      )
+    ]
+  },
+  component('page-header', 'PageHeader 页头', '导航组件', [
+    ['basic', '详情页头', '提供返回、标题和扩展操作。'],
+    ['element', '插槽用法', '使用面包屑与默认插槽扩展页头。']
+  ]),
   component('alert', 'Alert 警告', '反馈组件', [['basic', '提示信息', '展示不同类型的提示。']]),
   component('drawer', 'Drawer 抽屉', '反馈组件', [['basic', '抽屉内容', '从边缘打开内容面板。']]),
   component('notification', 'Notification 通知', '反馈组件', [['basic', '全局通知', '通过 Notify 展示操作反馈。']]),

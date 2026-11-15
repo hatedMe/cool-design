@@ -1,33 +1,72 @@
-import { defineComponent, type PropType } from 'vue';
+import { defineComponent, provide, ref, type PropType } from 'vue';
+import { breadcrumbKey } from './context';
+import IBreadcrumbItem, { type BreadcrumbTo } from './breadcrumb-item';
+
 export interface BreadcrumbItem {
-  to?: string;
+  to?: BreadcrumbTo;
   label: string;
+  replace?: boolean;
 }
+
 export default defineComponent({
   name: 'i-breadcrumb',
   props: {
     items: { type: Array as PropType<BreadcrumbItem[]>, default: () => [] },
-    separator: { type: String, default: '/' }
+    separator: { type: String, default: '/' },
+    separatorIcon: { type: [String, Object] as PropType<string | Record<string, unknown>>, default: undefined }
   },
   emits: ['click'],
   setup(props, { emit, slots }) {
-    return () => (
-      <nav class='i-breadcrumb' aria-label='面包屑'>
-        <ol>
-          {props.items.map((item, index) => (
-            <li key={`${item.label}-${index}`}>
-              {item.to ? (
-                <a href={item.to} onClick={(e) => emit('click', item, e)}>
-                  {slots.default?.({ item, index }) ?? item.label}
-                </a>
-              ) : (
-                <span>{item.label}</span>
-              )}
-              {index < props.items.length - 1 && <b>{props.separator}</b>}
-            </li>
-          ))}
-        </ol>
-      </nav>
-    );
+    const order = ref<number[]>([]);
+
+    const register = (uid: number) => {
+      if (!order.value.includes(uid)) order.value.push(uid);
+    };
+    const unregister = (uid: number) => {
+      order.value = order.value.filter((id) => id !== uid);
+    };
+    const isLast = (uid: number) => {
+      if (order.value.length === 0) return false;
+      return order.value[order.value.length - 1] === uid;
+    };
+
+    provide(breadcrumbKey, {
+      get separator() {
+        return props.separator;
+      },
+      get separatorIcon() {
+        return props.separatorIcon;
+      },
+      get separatorSlot() {
+        return slots.separator;
+      },
+      register,
+      unregister,
+      isLast,
+      items: order
+    });
+
+    return () => {
+      const useSlotChildren = !!slots.default && props.items.length === 0;
+      return (
+        <nav class='i-breadcrumb' aria-label='面包屑'>
+          <ol class='i-breadcrumb__list'>
+            {useSlotChildren
+              ? slots.default?.()
+              : props.items.map((item, index) => (
+                  <IBreadcrumbItem
+                    key={`${item.label}-${index}`}
+                    to={item.to}
+                    replace={item.replace}
+                    onClick={(event: MouseEvent) => emit('click', item, event)}>
+                    {{
+                      default: () => slots.default?.({ item, index } as never) ?? item.label
+                    }}
+                  </IBreadcrumbItem>
+                ))}
+          </ol>
+        </nav>
+      );
+    };
   }
 });

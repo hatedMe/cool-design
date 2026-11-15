@@ -55,11 +55,11 @@ import Skeleton, { SkeletonItem } from './skeleton';
 import Tree from './tree';
 import Timeline from './timeline';
 import Statistic from './statistic';
-import Menu from './menu';
-import Breadcrumb from './breadcrumb';
-import Tabs from './tabs';
-import Dropdown from './dropdown';
-import Steps from './steps';
+import Menu, { MenuItem, SubMenu, MenuItemGroup } from './menu';
+import Breadcrumb, { BreadcrumbItem } from './breadcrumb';
+import Tabs, { TabPane } from './tabs';
+import Dropdown, { DropdownMenu, DropdownItem } from './dropdown';
+import Steps, { Step } from './steps';
 import PageHeader from './page-header';
 import Alert from './alert';
 import Drawer from './drawer';
@@ -137,10 +137,18 @@ export {
   Timeline,
   Statistic,
   Menu,
+  MenuItem,
+  SubMenu,
+  MenuItemGroup,
   Breadcrumb,
+  BreadcrumbItem,
   Tabs,
+  TabPane,
   Dropdown,
+  DropdownMenu,
+  DropdownItem,
   Steps,
+  Step,
   PageHeader,
   Alert,
   Drawer,
@@ -211,10 +219,18 @@ const components = [
   Timeline,
   Statistic,
   Menu,
+  MenuItem,
+  SubMenu,
+  MenuItemGroup,
   Breadcrumb,
+  BreadcrumbItem,
   Tabs,
+  TabPane,
   Dropdown,
+  DropdownMenu,
+  DropdownItem,
   Steps,
+  Step,
   PageHeader,
   Alert,
   Drawer,
