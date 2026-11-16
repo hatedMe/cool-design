@@ -1,6 +1,17 @@
-import { Teleport, cloneVNode, computed, defineComponent, ref, watch, type PropType } from 'vue';
+import {
+  Teleport,
+  cloneVNode,
+  computed,
+  defineComponent,
+  onBeforeUnmount,
+  ref,
+  watch,
+  type Component,
+  type PropType
+} from 'vue';
 import Button from '../button';
 import type { ButtonType } from '../button/types';
+import Icon from '../icon';
 import { useFloating, type Placement } from '../../../src/utils/use-floating';
 let id = 0;
 export default defineComponent({
@@ -14,14 +25,23 @@ export default defineComponent({
     disabled: Boolean,
     confirmButtonType: { type: String, default: 'primary' },
     cancelButtonType: { type: String, default: 'default' },
+    icon: { type: [String, Object, Function] as PropType<string | Component>, default: undefined },
+    iconColor: { type: String, default: '#f90' },
     hideIcon: Boolean,
-    width: { type: [String, Number] as PropType<string | number>, default: undefined }
+    effect: { type: String as PropType<'light' | 'dark'>, default: 'light' },
+    width: { type: [String, Number] as PropType<string | number>, default: undefined },
+    teleported: { type: Boolean, default: true },
+    appendTo: { type: [String, Object] as PropType<string | HTMLElement>, default: undefined },
+    persistent: Boolean,
+    hideAfter: { type: Number, default: 0 }
   },
   emits: ['update:modelValue', 'confirm', 'cancel'],
   setup(props, { slots, emit }) {
     const internal = ref(false);
+    const shown = ref(false);
     const reference = ref<HTMLElement>(),
       floating = ref<HTMLElement>();
+    const hideTimer = ref<ReturnType<typeof setTimeout>>();
     let acted = false;
     const panelId = `i-popconfirm-${++id}`;
     const open = computed(() => !props.disabled && (props.modelValue ?? internal.value));
@@ -40,16 +60,28 @@ export default defineComponent({
       reference,
       floating,
       placement: () => props.placement,
+      appendTo: () => props.appendTo,
       close: () => finish('cancel'),
       trapFocus: true
     });
     watch(
       open,
       (value) => {
-        if (value) acted = false;
+        if (hideTimer.value) {
+          clearTimeout(hideTimer.value);
+          hideTimer.value = undefined;
+        }
+        if (value) {
+          acted = false;
+          shown.value = true;
+          if (props.hideAfter > 0) hideTimer.value = setTimeout(() => finish('cancel'), props.hideAfter);
+        }
       },
       { flush: 'sync' }
     );
+    onBeforeUnmount(() => {
+      if (hideTimer.value) clearTimeout(hideTimer.value);
+    });
     const toggle = () => {
       if (props.disabled) return;
       if (open.value) finish('cancel');
@@ -58,51 +90,66 @@ export default defineComponent({
         setOpen(true);
       }
     };
-    return () => (
-      <>
-        <span class='i-popconfirm__trigger' ref={reference} onClick={toggle}>
-          {slots.default?.().map((vnode) =>
-            cloneVNode(vnode, {
-              'aria-haspopup': 'dialog',
-              'aria-expanded': open.value,
-              'aria-controls': open.value ? panelId : undefined
-            })
+    return () => {
+      const kept = props.persistent && shown.value && !open.value;
+      const panel = open.value || kept ? (
+        <section
+          ref={floating}
+          id={panelId}
+          class={['i-popconfirm', `i-popconfirm--${props.effect}`]}
+          style={{
+            ...position.style.value,
+            width: typeof props.width === 'number' ? `${props.width}px` : props.width,
+            ...(kept ? { display: 'none' } : undefined)
+          }}
+          data-placement={position.placement.value}
+          role='dialog'
+          aria-labelledby={`${panelId}-title`}
+          aria-hidden={kept ? 'true' : undefined}
+          tabindex={-1}>
+          <p id={`${panelId}-title`} class='i-popconfirm__title'>
+            {!props.hideIcon &&
+              (slots.icon?.() ??
+                (props.icon ? (
+                  <Icon icon={props.icon} color={props.iconColor} />
+                ) : (
+                  <span class='i-popconfirm__icon' style={{ color: props.iconColor }} aria-hidden='true'>
+                    ⚠{' '}
+                  </span>
+                )))}
+            {props.title}
+          </p>
+          {slots.actions?.() ?? (
+            <div class='i-popconfirm__actions'>
+              <Button size='small' type={props.cancelButtonType as ButtonType} onClick={() => finish('cancel')}>
+                {props.cancelButtonText}
+              </Button>
+              <Button
+                size='small'
+                type={props.confirmButtonType as ButtonType}
+                data-popconfirm-confirm
+                onClick={() => finish('confirm')}>
+                {props.confirmButtonText}
+              </Button>
+            </div>
           )}
-        </span>
-        {open.value && (
-          <Teleport to={position.target.value}>
-            <section
-              ref={floating}
-              id={panelId}
-              class='i-popconfirm'
-              style={{
-                ...position.style.value,
-                width: typeof props.width === 'number' ? `${props.width}px` : props.width
-              }}
-              data-placement={position.placement.value}
-              role='dialog'
-              aria-labelledby={`${panelId}-title`}
-              tabindex={-1}>
-              <p id={`${panelId}-title`}>
-                {!props.hideIcon && <span aria-hidden='true'>⚠ </span>}
-                {props.title}
-              </p>
-              <div class='i-popconfirm__actions'>
-                <Button size='small' type={props.cancelButtonType as ButtonType} onClick={() => finish('cancel')}>
-                  {props.cancelButtonText}
-                </Button>
-                <Button
-                  size='small'
-                  type={props.confirmButtonType as ButtonType}
-                  data-popconfirm-confirm
-                  onClick={() => finish('confirm')}>
-                  {props.confirmButtonText}
-                </Button>
-              </div>
-            </section>
-          </Teleport>
-        )}
-      </>
-    );
+        </section>
+      ) : null;
+      const content = props.teleported && panel ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
+      return (
+        <>
+          <span class='i-popconfirm__trigger' ref={reference} onClick={toggle}>
+            {(slots.reference?.() ?? slots.default?.())?.map((vnode) =>
+              cloneVNode(vnode, {
+                'aria-haspopup': 'dialog',
+                'aria-expanded': open.value,
+                'aria-controls': open.value ? panelId : undefined
+              })
+            )}
+          </span>
+          {content}
+        </>
+      );
+    };
   }
 });

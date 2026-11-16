@@ -17,9 +17,17 @@
   box-shadow: var(--i-shadow);
   font-size: var(--i-font-size);
 }
-.i-popconfirm p {
+.i-popconfirm--dark {
+  background: #303133;
+  color: #fff;
+  border-color: #303133;
+}
+.i-popconfirm__title {
   margin: 0 0 16px;
   overflow-wrap: anywhere;
+}
+.i-popconfirm__icon {
+  margin-right: 4px;
 }
 .i-popconfirm__actions {
   display: flex;

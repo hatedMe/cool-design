@@ -229,3 +229,40 @@ test.each([
   expect(arrow.dataset.horizontal).toBe(horizontal);
   expect(arrow.dataset.vertical).toBe(vertical);
 });
+
+test('支持数组触发方式，hover 与 click 均可打开', async () => {
+  const w = mount(Tooltip, {
+    props: { content: '说明', trigger: ['hover', 'click'], hideAfter: 0 },
+    slots: { default: () => h('button', '帮助') },
+    attachTo: document.body
+  });
+  wrappers.push(w);
+  await w.get('.i-tooltip__trigger').trigger('mouseenter');
+  await flushPromises();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+  await w.get('.i-tooltip__trigger').trigger('mouseleave');
+  await flushPromises();
+  expect(document.querySelector('[role="tooltip"]')).toBeNull();
+  await w.get('button').trigger('click');
+  await flushPromises();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+});
+
+test('persistent 保留隐藏后的浮层节点', async () => {
+  const w = mount(Tooltip, {
+    props: { content: '说明', trigger: 'click', persistent: true, hideAfter: 0 },
+    slots: { default: () => h('button', '帮助') },
+    attachTo: document.body
+  });
+  wrappers.push(w);
+  expect(document.querySelector('[role="tooltip"]')).toBeNull();
+  await w.get('button').trigger('click');
+  await flushPromises();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+  await w.get('button').trigger('click');
+  await flushPromises();
+  const tip = document.querySelector<HTMLElement>('[role="tooltip"]')!;
+  expect(tip).not.toBeNull();
+  expect(tip.style.display).toBe('none');
+  expect(tip.getAttribute('aria-hidden')).toBe('true');
+});

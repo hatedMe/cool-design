@@ -1,5 +1,6 @@
 import {
   Teleport,
+  computed,
   defineComponent,
   inject,
   nextTick,
@@ -11,24 +12,39 @@ import {
 } from 'vue';
 import { overlayKey } from '../config-provider/context';
 import { isTopDialog, isTopFocusDialog, lockDialog, unlockDialog } from './stack';
+
+export type DialogBeforeClose = (done: () => void) => void;
+
 let dialogId = 0;
 export default defineComponent({
   name: 'i-dialog',
   props: {
     modelValue: Boolean,
-    title: { type: String, default: '对话框' },
+    title: { type: String, default: '' },
+    width: { type: [String, Number] as PropType<string | number>, default: undefined },
+    fullscreen: Boolean,
+    top: { type: String, default: '' },
+    modal: { type: Boolean, default: true },
+    appendTo: { type: [String, Object] as PropType<string | HTMLElement>, default: undefined },
+    lockScroll: { type: Boolean, default: true },
+    customClass: { type: String, default: '' },
+    headerClass: { type: String, default: '' },
+    bodyClass: { type: String, default: '' },
+    footerClass: { type: String, default: '' },
+    showClose: { type: Boolean, default: true },
     closeOnClickModal: { type: Boolean, default: true },
     closeOnPressEscape: { type: Boolean, default: true },
     closable: { type: Boolean, default: true },
-    width: { type: [String, Number] as PropType<string | number>, default: undefined },
     center: Boolean,
-    destroyOnClose: Boolean
+    destroyOnClose: { type: Boolean, default: false },
+    beforeClose: { type: Function as PropType<DialogBeforeClose>, default: undefined }
   },
-  emits: ['update:modelValue'],
-  setup(props, { slots, emit }) {
+  emits: ['update:modelValue', 'open', 'opened', 'close', 'closed', 'open-auto-focus', 'close-auto-focus'],
+  setup(props, { slots, emit, expose }) {
     const host = inject(overlayKey, undefined);
     const root = ref<HTMLElement>();
     const zIndex = ref(2000);
+    const rendered = ref(false);
     const titleId = `i-dialog-title-${++dialogId}`;
     const token = Symbol('dialog');
     let active = false;
@@ -38,6 +54,18 @@ export default defineComponent({
       maskGestureAllowed = isTopDialog(token);
     };
     let previous: HTMLElement | null = null;
+    const target = computed(() => {
+      const value = props.appendTo;
+      if (value instanceof HTMLElement) return value;
+      if (typeof value === 'string') {
+        try {
+          return document.querySelector(value) || undefined;
+        } catch {
+          return undefined;
+        }
+      }
+      return host?.value;
+    });
     const focusable = () =>
       Array.from(
         root.value?.querySelectorAll<HTMLElement>(
@@ -45,8 +73,20 @@ export default defineComponent({
         ) || []
       );
     const focusFirst = () => (focusable()[0] || root.value)?.focus();
-    const close = () => {
-      if (props.closable) emit('update:modelValue', false);
+    const doClose = () => emit('update:modelValue', false);
+    const handleClose = () => {
+      if (!active) return;
+      emit('close');
+      if (props.beforeClose) props.beforeClose(doClose);
+      else doClose();
+    };
+    const requestClose = () => {
+      if (props.closable) handleClose();
+    };
+    const resetPosition = () => {
+      if (!root.value) return;
+      if (!props.fullscreen && props.top) root.value.style.marginTop = props.top;
+      else root.value.style.removeProperty('margin-top');
     };
     const cleanup = () => {
       if (!active) return;
@@ -56,7 +96,10 @@ export default defineComponent({
       document.removeEventListener('keydown', onKeydown);
       document.removeEventListener('focusin', onFocus);
       document.removeEventListener('pointerdown', onPointerdown, true);
-      if (wasTop && previous?.isConnected) previous.focus();
+      if (wasTop && previous?.isConnected) {
+        previous.focus();
+        emit('close-auto-focus');
+      }
     };
     const onFocus = (event: FocusEvent) => {
       if (active && isTopFocusDialog(token) && root.value && !root.value.contains(event.target as Node)) focusFirst();
@@ -67,7 +110,7 @@ export default defineComponent({
       if (event.key === 'Tab' && !isTopFocusDialog(token)) return;
       if (event.key === 'Escape' && props.closeOnPressEscape && props.closable) {
         event.preventDefault();
-        close();
+        requestClose();
       }
       if (event.key !== 'Tab') return;
       const items = focusable();
@@ -89,52 +132,90 @@ export default defineComponent({
         () => props.modelValue,
         async (open) => {
           if (!open) {
+            if (!active) return;
             cleanup();
+            emit('closed');
             return;
           }
           if (active) return;
+          emit('open');
+          rendered.value = true;
           previous = document.activeElement as HTMLElement;
           active = true;
-          zIndex.value = lockDialog(token);
+          zIndex.value = lockDialog(token, props.lockScroll);
           document.addEventListener('keydown', onKeydown);
           document.addEventListener('focusin', onFocus);
           document.addEventListener('pointerdown', onPointerdown, true);
           await nextTick();
-          if (active) focusFirst();
+          if (!active) return;
+          focusFirst();
+          emit('open-auto-focus');
+          emit('opened');
         },
         { immediate: true }
       );
     });
     onBeforeUnmount(cleanup);
+    expose({ handleClose, resetPosition });
     const content = () => (
       <div
-        class='i-dialog__mask'
-        style={{ zIndex: zIndex.value }}
+        class={{
+          'i-dialog__mask': props.modal,
+          'i-dialog__wrapper': !props.modal,
+          'is-top': !!props.top && !props.fullscreen,
+          'is-fullscreen': props.fullscreen
+        }}
+        style={{ zIndex: zIndex.value, display: props.modelValue ? undefined : 'none' }}
+        aria-hidden={props.modelValue ? undefined : 'true'}
         onClick={(event: MouseEvent) => {
           const allowed = maskGestureAllowed && isTopDialog(token);
           maskGestureAllowed = true;
-          if (event.target === event.currentTarget && props.closeOnClickModal && allowed) close();
+          if (event.target === event.currentTarget && props.closeOnClickModal && allowed) requestClose();
         }}>
         <section
           ref={root}
-          class={{ 'i-dialog': true, 'i-dialog--center': props.center }}
-          style={{ width: typeof props.width === 'number' ? `${props.width}px` : props.width }}
+          class={[
+            'i-dialog',
+            { 'i-dialog--center': props.center, 'is-fullscreen': props.fullscreen },
+            props.customClass
+          ]}
+          style={{
+            width: typeof props.width === 'number' ? `${props.width}px` : props.width,
+            marginTop: !props.fullscreen && props.top ? props.top : undefined
+          }}
           role='dialog'
           aria-modal='true'
-          aria-labelledby={titleId}
+          aria-labelledby={!slots.header && (props.title || slots.title) ? titleId : undefined}
           tabindex={-1}>
-          <header class='i-dialog__header'>
-            <h2 id={titleId}>{props.title}</h2>
-            <button type='button' aria-label='关闭对话框' disabled={!props.closable} onClick={close}>
+          {props.showClose && (
+            <button
+              type='button'
+              class='i-dialog__close'
+              aria-label='关闭对话框'
+              disabled={!props.closable}
+              onClick={requestClose}>
               ×
             </button>
-          </header>
-          <div class='i-dialog__body'>{slots.default?.()}</div>
-          {slots.footer && <footer class='i-dialog__footer'>{slots.footer()}</footer>}
+          )}
+          {(slots.header || props.title || slots.title || props.showClose) && (
+            <header class={['i-dialog__header', props.headerClass]}>
+              {slots.header?.() ?? (
+                <h2 id={titleId} class='i-dialog__title'>
+                  {slots.title?.() ?? props.title}
+                </h2>
+              )}
+            </header>
+          )}
+          <div class={['i-dialog__body', props.bodyClass]}>{slots.default?.()}</div>
+          {slots.footer && <footer class={['i-dialog__footer', props.footerClass]}>{slots.footer()}</footer>}
         </section>
       </div>
     );
-    return () =>
-      !props.modelValue ? null : host?.value ? <Teleport to={host.value}>{content()}</Teleport> : content();
+    return () => {
+      if (!rendered.value) return null;
+      if (!props.modelValue && props.destroyOnClose) return null;
+      const node = content();
+      return target.value ? <Teleport to={target.value}>{node}</Teleport> : node;
+    };
   }
 });

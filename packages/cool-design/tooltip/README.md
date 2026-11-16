@@ -22,7 +22,8 @@
 | raw-content | 是否将 content 按 HTML 渲染，使用时需自行防范 XSS | `boolean` | `false` |
 | placement | 方向：`top` / `top-start` / `top-end` / `bottom` / `bottom-start` / `bottom-end` / `left` / `left-start` / `left-end` / `right` / `right-start` / `right-end` | `Placement` | `bottom` |
 | effect | 主题：`light` / `dark` | `string` | `dark` |
-| trigger | 触发方式：`hover` / `focus` / `click` / `contextmenu` | `string` | `hover` |
+| trigger | 触发方式：`hover` / `focus` / `click` / `contextmenu`，支持数组组合 | `string` / `string[]` | `hover` |
+| persistent | 关闭后是否保留浮层节点 | `boolean` | `false` |
 | disabled | 是否禁用 | `boolean` | `false` |
 | offset | 触发元素与浮层的距离，单位 px | `number` | `12` |
 | show-after | 显示延迟，单位 ms | `number` | `0` |

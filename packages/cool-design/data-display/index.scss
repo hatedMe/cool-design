@@ -6,12 +6,12 @@
 .i-card.is-bordered {
   border: 1px solid #ebeef5;
 }
-.i-card header,
-.i-card footer {
+.i-card__header,
+.i-card__footer {
   padding: 16px;
   border-bottom: 1px solid #ebeef5;
 }
-.i-card footer {
+.i-card__footer {
   border-top: 1px solid #ebeef5;
   border-bottom: 0;
 }

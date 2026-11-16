@@ -2,47 +2,61 @@
 
 ### 介绍
 
-在触发按钮附近确认操作，适合停用、移除等简单确认场景。
+在触发按钮附近确认操作，适合停用、移除等简单确认场景。API 对标 Element Plus，支持 `reference` 触发器、自定义图标、按钮文案与类型、受控显示。
 
-## API
+### 基础用法
 
-### 属性
+```vue
+<Popconfirm title="确定删除该用户吗？" @confirm="remove">
+  <template #reference>
+    <Button type="danger">删除</Button>
+  </template>
+</Popconfirm>
+```
 
-| 参数                 | 说明                              | 类型            | 默认值             |
-| -------------------- | --------------------------------- | --------------- | ------------------ |
-| modelValue / v-model | 可选受控可见性，省略时内部管理    | boolean         | undefined          |
-| title                | 确认问题                          | string          | 确定执行此操作吗？ |
-| placement            | 方向：top / bottom / left / right | string          | bottom             |
-| confirmButtonText    | 确认按钮文字                      | string          | 确定               |
-| cancelButtonText     | 取消按钮文字                      | string          | 取消               |
-| disabled             | 禁止打开确认框                    | boolean         | false              |
-| confirmButtonType    | 确认按钮类型                      | string          | primary            |
-| cancelButtonType     | 取消按钮类型                      | string          | default            |
-| hideIcon             | 隐藏标题前图标                    | boolean         | false              |
-| width                | 面板宽度                          | number / string | —                  |
+### API
 
-### 事件
+#### 属性
 
-| 事件名            | 说明                 | 回调参数       |
-| ----------------- | -------------------- | -------------- |
-| update:modelValue | 可见性更新请求       | value: boolean |
-| confirm           | 确认操作             | 无             |
-| cancel            | 取消、外部点击或 Esc | 无             |
+| 参数 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| `model-value` / `v-model` | 可选受控可见性，省略时内部管理 | `boolean` | — |
+| `title` | 确认问题 | `string` | `确定执行此操作吗？` |
+| `placement` | 方向：`top` / `top-start` / `top-end` / `bottom` / `bottom-start` / `bottom-end` / `left` / `left-start` / `left-end` / `right` / `right-start` / `right-end` | `Placement` | `bottom` |
+| `confirm-button-text` | 确认按钮文字 | `string` | `确定` |
+| `cancel-button-text` | 取消按钮文字 | `string` | `取消` |
+| `confirm-button-type` | 确认按钮类型 | `default` / `primary` / `success` / `warning` / `danger` / `info` / `text` | `primary` |
+| `cancel-button-type` | 取消按钮类型 | `default` / `primary` / `success` / `warning` / `danger` / `info` / `text` | `default` |
+| `disabled` | 禁止打开确认框 | `boolean` | `false` |
+| `icon` | 自定义图标（图标类名或组件） | `string` / `Component` | — |
+| `icon-color` | 图标颜色 | `string` | `#f90` |
+| `hide-icon` | 隐藏标题前图标 | `boolean` | `false` |
+| `effect` | 主题：`light` / `dark` | `string` | `light` |
+| `width` | 面板宽度，支持数字或 CSS 尺寸 | `number` / `string` | — |
+| `teleported` | 是否将浮层传送到挂载容器 | `boolean` | `true` |
+| `append-to` | 挂载容器选择器或元素 | `string` / `HTMLElement` | — |
+| `persistent` | 关闭后是否保留浮层节点 | `boolean` | `false` |
+| `hide-after` | 打开后自动取消的延迟，单位 ms，`0` 表示不自动关闭 | `number` | `0` |
 
-### 插槽
+#### 事件
 
-| 名称    | 说明               |
-| ------- | ------------------ |
-| default | 一个可聚焦触发按钮 |
+| 事件名 | 说明 | 回调参数 |
+| --- | --- | --- |
+| `update:modelValue` | 可见性更新请求 | `value: boolean` |
+| `confirm` | 确认操作 | — |
+| `cancel` | 取消、外部点击、Esc 或自动关闭 | — |
 
-## 使用说明
+#### 插槽
 
-- 可选 `v-model`: 控制可见性；未传时内部管理。
-- `title`: 默认“确定执行此操作吗？”。
-- `placement`: top/bottom（默认）/left/right。
-- `confirmButtonText`、`cancelButtonText`: 默认“确定”“取消”。
-- `disabled`: 禁止打开。
-- 默认插槽：放一个可聚焦的按钮触发元素。
-- `confirm()`、`cancel()`：确认/取消各只触发一次；外部点击、Esc 视为取消。
+| 名称 | 说明 |
+| --- | --- |
+| `reference` | 触发元素（推荐） |
+| `default` | 触发元素（兼容） |
+| `icon` | 自定义标题前图标 |
+| `actions` | 自定义底部按钮区 |
 
-打开后聚焦取消按钮，Tab 在确认框内循环；按 Esc 或按钮完成操作后恢复触发按钮焦点。浮层定位与主题继承同 Tooltip。确认后立即请求关闭，异步操作的锁定与错误提示由调用者管理；需要确认框内失败重试时使用 MessageBox。
+### 使用说明
+
+确认与取消各只触发一次，重复点击不会重复触发；外部点击、Esc 视为取消。
+
+打开后聚焦取消按钮，Tab 在确认框内循环；关闭后焦点恢复到触发元素。浮层定位与主题继承同 Tooltip。确认后立即请求关闭，异步操作的锁定与错误提示由调用者管理；需要确认框内失败重试时使用 MessageBox。

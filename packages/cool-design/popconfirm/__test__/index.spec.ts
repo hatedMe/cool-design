@@ -1,6 +1,6 @@
 import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent, h, ref } from 'vue';
-import { afterEach, expect, test } from 'vitest';
+import { afterEach, expect, test, vi } from 'vitest';
 import Popconfirm from '..';
 import Dialog from '../../dialog';
 import ConfigProvider from '../../config-provider';
@@ -8,6 +8,7 @@ const wrappers: ReturnType<typeof mount>[] = [];
 afterEach(() => {
   wrappers.forEach((w) => w.unmount());
   wrappers.length = 0;
+  vi.useRealTimers();
   document.body.innerHTML = '';
 });
 test('确认只触发一次，外部点击视为取消并支持受控关闭', async () => {
@@ -139,4 +140,52 @@ test('支持按钮类型、隐藏图标和面板宽度', async () => {
   const panel = document.querySelector<HTMLElement>('.i-popconfirm')!;
   expect(panel.querySelector('span')).toBeNull();
   expect(panel.style.width).toBe('280px');
+});
+
+test('支持 reference 触发器、图标插槽与深色主题', async () => {
+  const w = mount(Popconfirm, {
+    props: { title: '删除？', effect: 'dark', iconColor: 'red' },
+    slots: { reference: () => h('button', '删除'), icon: () => h('em', { class: 'custom-icon' }, '!') },
+    attachTo: document.body
+  });
+  wrappers.push(w);
+  await w.get('button').trigger('click');
+  await flushPromises();
+  const panel = document.querySelector('.i-popconfirm')!;
+  expect(panel.classList.contains('i-popconfirm--dark')).toBe(true);
+  expect(panel.querySelector('.custom-icon')).not.toBeNull();
+});
+
+test('支持自定义图标、actions 插槽与非 Teleport 渲染', async () => {
+  const w = mount(Popconfirm, {
+    props: { icon: 'icon-delete', iconColor: 'red', teleported: false },
+    slots: { default: () => h('button', '删除'), actions: () => h('button', { class: 'custom-action' }, '知道了') },
+    attachTo: document.body
+  });
+  wrappers.push(w);
+  await w.get('button').trigger('click');
+  await flushPromises();
+  const panel = w.get('.i-popconfirm');
+  expect(panel.get('.i-icon').attributes('style')).toContain('red');
+  expect(panel.get('.custom-action').exists()).toBe(true);
+  expect(panel.find('[data-popconfirm-confirm]').exists()).toBe(false);
+});
+
+test('hideAfter 自动取消，persistent 保留隐藏节点', async () => {
+  vi.useFakeTimers();
+  const w = mount(Popconfirm, {
+    props: { hideAfter: 100, persistent: true },
+    slots: { default: () => h('button', '删除') },
+    attachTo: document.body
+  });
+  wrappers.push(w);
+  await w.get('button').trigger('click');
+  await flushPromises();
+  expect(document.querySelector('.i-popconfirm')).not.toBeNull();
+  vi.advanceTimersByTime(100);
+  await flushPromises();
+  expect(w.emitted('cancel')).toHaveLength(1);
+  const kept = document.querySelector<HTMLElement>('.i-popconfirm')!;
+  expect(kept.style.display).toBe('none');
+  vi.useRealTimers();
 });

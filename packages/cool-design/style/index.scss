@@ -26,6 +26,7 @@
 @use '../loading/index.scss' as *;
 @use '../tag/index.scss' as *;
 @use '../tooltip/index.scss' as *;
+@use '../popover/index.scss' as *;
 @use '../popconfirm/index.scss' as *;
 @use '../message-box/index.scss' as *;
 @use '../container/index.scss' as *;
@@ -47,6 +48,8 @@
 @use '../descriptions/index.scss' as *;
 @use '../result/index.scss' as *;
 @use '../statistic/index.scss' as *;
+@use '../carousel/index.scss' as *;
+@use '../collapse/index.scss' as *;
 
 @use './display.scss';
 

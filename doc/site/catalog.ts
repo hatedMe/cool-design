@@ -468,6 +468,52 @@ export const pages: Page[] = [
   component('watermark', 'Watermark 水印', '反馈组件', [['basic', '内容水印', '为内容添加重复水印。']]),
   component('card', 'Card 卡片', '数据展示', [['basic', '卡片内容', '使用标题、内容和底部插槽组织信息。']]),
   component(
+    'carousel',
+    'Carousel 走马灯',
+    '数据展示',
+    [['basic', '自动轮播', '展示多张幻灯片，支持箭头、指示器、键盘与悬停暂停。']],
+    ['Carousel', 'CarouselItem']
+  ),
+  component(
+    'collapse',
+    'Collapse 折叠面板',
+    '数据展示',
+    [['basic', '展开收起', '点击标题展开内容，支持受控、手风琴与禁用。']],
+    ['Collapse', 'CollapseItem']
+  ),
+  {
+    imports: ['CarouselItem'],
+    id: 'components/carousel-item',
+    title: 'CarouselItem 轮播项',
+    group: '数据展示',
+    markdown:
+      '# CarouselItem 轮播项\n\n### 介绍\n\nCarousel 的子组件，声明单个幻灯片。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `name` | 幻灯片名称，用于 `setActiveItem` | `string \\| number` | 索引 |\n| `label` | 幻灯片无障碍标签 | `string \\| number` | `第 n 张` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 幻灯片内容 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/carousel/demo/basic.vue',
+        'basic',
+        '自动轮播',
+        '展示多张幻灯片，支持箭头、指示器、键盘与悬停暂停。'
+      )
+    ]
+  },
+  {
+    imports: ['CollapseItem'],
+    id: 'components/collapse-item',
+    title: 'CollapseItem 折叠项',
+    group: '数据展示',
+    markdown:
+      '# CollapseItem 折叠项\n\n### 介绍\n\nCollapse 的子组件，声明单个可折叠面板。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `name` | 唯一标识 | `string \\| number` | 序号 |\n| `title` | 标题文本 | `string` | `\'\'` |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n| `icon` | 自定义展开图标，替换默认箭头 | `string \\| Component` | — |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `title` | 自定义标题 |\n| `default` | 面板内容 |\n| `icon` | 自定义展开图标 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/collapse/demo/basic.vue',
+        'basic',
+        '展开收起',
+        '点击标题展开内容，支持受控、手风琴与禁用。'
+      )
+    ]
+  },
+  component(
     'descriptions',
     'Descriptions 描述列表',
     '数据展示',

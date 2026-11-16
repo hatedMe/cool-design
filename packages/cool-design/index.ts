@@ -67,6 +67,8 @@ import { Notification } from './notification';
 import Popover from './popover';
 import Watermark from './watermark';
 import Progress from './progress';
+import Carousel, { CarouselItem } from './carousel';
+import Collapse, { CollapseItem } from './collapse';
 import { installDirectives } from './directives';
 export { ClickOutside, InfiniteScroll, LoadingDirective, directives, installDirectives } from './directives';
 import './style/index.scss';
@@ -155,7 +157,11 @@ export {
   Notification,
   Popover,
   Watermark,
-  Progress
+  Progress,
+  Carousel,
+  CarouselItem,
+  Collapse,
+  CollapseItem
 };
 const components = [
   Container,
@@ -237,7 +243,11 @@ const components = [
   Notification,
   Popover,
   Watermark,
-  Progress
+  Progress,
+  Carousel,
+  CarouselItem,
+  Collapse,
+  CollapseItem
 ];
 export const install = (app: App) => {
   components.forEach((component) => app.use(component));

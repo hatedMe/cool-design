@@ -23,6 +23,11 @@
   color: var(--i-text);
   border: 1px solid var(--i-border);
 }
+.i-tooltip--dark {
+  background: #303133;
+  color: #fff;
+  border: 1px solid #303133;
+}
 .i-tooltip__arrow {
   position: absolute;
   width: 8px;

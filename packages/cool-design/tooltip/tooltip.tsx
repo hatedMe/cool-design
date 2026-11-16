@@ -24,7 +24,8 @@ export default defineComponent({
     rawContent: Boolean,
     placement: { type: String as PropType<Placement>, default: 'bottom' },
     disabled: Boolean,
-    trigger: { type: String as PropType<Trigger>, default: 'hover' },
+    trigger: { type: [String, Array] as PropType<Trigger | Trigger[]>, default: 'hover' },
+    persistent: Boolean,
     showAfter: { type: Number, default: 0 },
     hideAfter: { type: Number, default: 200 },
     enterable: { type: Boolean, default: true },
@@ -52,13 +53,18 @@ export default defineComponent({
     const timer = ref<ReturnType<typeof setTimeout>>();
     const tooltipId = `i-tooltip-${++id}`;
     const wasOpen = ref(false);
+    const shown = ref(false);
     const virtualListeners = ref<Array<() => void>>([]);
 
+    const triggers = computed(() => (Array.isArray(props.trigger) ? props.trigger : [props.trigger]));
     const triggered = computed(() => {
-      if (props.trigger === 'click') return clicked.value;
-      if (props.trigger === 'focus') return focused.value;
-      if (props.trigger === 'contextmenu') return contexted.value;
-      return hovered.value || focused.value;
+      const list = triggers.value;
+      return (
+        (list.includes('hover') && (hovered.value || focused.value)) ||
+        (list.includes('focus') && focused.value) ||
+        (list.includes('click') && clicked.value) ||
+        (list.includes('contextmenu') && contexted.value)
+      );
     });
     const open = computed(() => {
       const controlled = props.visible !== null ? props.visible : internalVisible.value;
@@ -98,8 +104,8 @@ export default defineComponent({
     };
     function closeTooltip() {
       clearTimer();
-      if (props.trigger === 'click') clicked.value = false;
-      if (props.trigger === 'contextmenu') contexted.value = false;
+      if (triggers.value.includes('click')) clicked.value = false;
+      if (triggers.value.includes('contextmenu')) contexted.value = false;
       const hide = () => {
         if (!open.value) return;
         emit('before-hide');
@@ -111,21 +117,21 @@ export default defineComponent({
       else hide();
     }
     const leave = () => {
-      if (props.trigger === 'hover' && !hovered.value && !focused.value) closeTooltip();
+      if (triggers.value.includes('hover') && !hovered.value && !focused.value) closeTooltip();
     };
     const onMouseenter = () => {
-      if (props.trigger !== 'hover') return;
+      if (!triggers.value.includes('hover')) return;
       hovered.value = true;
       openTooltip();
     };
     const onMouseleave = () => {
-      if (props.trigger !== 'hover') return;
+      if (!triggers.value.includes('hover')) return;
       hovered.value = false;
       if (props.enterable) clearTimer();
       leave();
     };
     const onFocusin = () => {
-      if (props.trigger !== 'focus' && props.trigger !== 'hover') return;
+      if (!triggers.value.includes('focus') && !triggers.value.includes('hover')) return;
       focused.value = true;
       openTooltip();
     };
@@ -136,7 +142,7 @@ export default defineComponent({
       if (!hovered.value) closeTooltip();
     };
     const onClick = () => {
-      if (props.trigger !== 'click') return;
+      if (!triggers.value.includes('click')) return;
       clicked.value = !clicked.value;
       if (clicked.value) {
         openTooltip();
@@ -145,19 +151,19 @@ export default defineComponent({
       }
     };
     const onContextmenu = (event: MouseEvent) => {
-      if (props.trigger !== 'contextmenu') return;
+      if (!triggers.value.includes('contextmenu')) return;
       event.preventDefault();
       contexted.value = true;
       openTooltip();
     };
     const onPanelEnter = () => {
-      if (props.trigger === 'hover' && props.enterable) {
+      if (triggers.value.includes('hover') && props.enterable) {
         clearTimer();
         hovered.value = true;
       }
     };
     const onPanelLeave = () => {
-      if (props.trigger === 'hover' && props.enterable) {
+      if (triggers.value.includes('hover') && props.enterable) {
         hovered.value = false;
         closeTooltip();
       }
@@ -187,6 +193,7 @@ export default defineComponent({
     };
     watch(() => [props.virtualTriggering, props.virtualRef], bindVirtualReference, { immediate: true });
     watch(open, (value) => {
+      if (value) shown.value = true;
       if (value === wasOpen.value) return;
       wasOpen.value = value;
       emit(value ? 'open' : 'close', value);
@@ -213,13 +220,15 @@ export default defineComponent({
     });
 
     return () => {
-      const panel = open.value ? (
+      const kept = props.persistent && shown.value && !open.value;
+      const panel = open.value || kept ? (
         <div
           id={tooltipId}
           ref={floating}
           class={['i-tooltip', `i-tooltip--${props.effect}`, props.popperClass]}
           role='tooltip'
-          style={[position.style.value, props.popperStyle]}
+          aria-hidden={kept ? 'true' : undefined}
+          style={[position.style.value, props.popperStyle, kept ? { display: 'none' } : undefined]}
           data-placement={position.placement.value}
           onMouseenter={onPanelEnter}
           onMouseleave={onPanelLeave}>
