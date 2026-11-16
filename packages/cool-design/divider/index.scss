@@ -27,3 +27,12 @@
 .i-divider--vertical::after {
   display: none;
 }
+.i-divider__text {
+  white-space: nowrap;
+  font-size: inherit;
+}
+.i-divider__text.is-left,
+.i-divider__text.is-center,
+.i-divider__text.is-right {
+  display: inline-block;
+}

@@ -278,7 +278,10 @@ export const pages: Page[] = [
   component('date-time-picker', 'DateTimePicker 日期时间选择器', '表单组件', [
     ['basic', '日期时间选择', '在同一个控件中选择日期和时间。']
   ]),
-  component('calendar', 'Calendar 日历', '表单组件', [['basic', '日历选择', '按月浏览并选择日期。']]),
+  component('calendar', 'Calendar 日历', '表单组件', [
+    ['basic', '日历选择', '按月浏览并选择日期，支持自定义单元格。'],
+    ['range', '范围与选择器', '使用固定周范围或年月选择器切换面板。']
+  ]),
   component(
     'menu',
     'Menu 菜单',
@@ -461,8 +464,14 @@ export const pages: Page[] = [
     ['basic', '详情页头', '提供返回、标题和扩展操作。'],
     ['element', '插槽用法', '使用面包屑与默认插槽扩展页头。']
   ]),
+  component('backtop', 'Backtop 回到顶部', '导航组件', [
+    ['basic', '滚动回顶', '滚动容器后显示按钮，点击平滑回到顶部。']
+  ]),
   component('alert', 'Alert 警告', '反馈组件', [['basic', '提示信息', '展示不同类型的提示。']]),
-  component('drawer', 'Drawer 抽屉', '反馈组件', [['basic', '抽屉内容', '从边缘打开内容面板。']]),
+  component('drawer', 'Drawer 抽屉', '反馈组件', [
+    ['basic', '抽屉内容', '从边缘打开内容面板。'],
+    ['resizable', '拖拽调整', '拖拽边缘或使用键盘调整抽屉尺寸，无遮罩穿透。']
+  ]),
   component('notification', 'Notification 通知', '反馈组件', [['basic', '全局通知', '通过 Notify 展示操作反馈。']]),
   component('popover', 'Popover 弹出框', '反馈组件', [['basic', '补充说明', '展示目标元素的补充内容。']]),
   component('watermark', 'Watermark 水印', '反馈组件', [['basic', '内容水印', '为内容添加重复水印。']]),
@@ -540,7 +549,32 @@ export const pages: Page[] = [
       )
     ]
   },
-  component('image', 'Image 图片', '数据展示', [['basic', '图片展示', '展示图片并处理加载失败。']]),
+  component(
+    'image',
+    'Image 图片',
+    '数据展示',
+    [
+      ['basic', '图片展示', '展示图片、懒加载占位、失败回退和多图预览。'],
+      ['preview', '程序化预览', '调用 showPreview 打开预览，支持起始索引。']
+    ],
+    ['Image', 'ImageViewer']
+  ),
+  {
+    imports: ['ImageViewer'],
+    id: 'components/image-viewer',
+    title: 'ImageViewer 图片预览',
+    group: '数据展示',
+    markdown:
+      '# ImageViewer 图片预览\n\n### 介绍\n\nImage 的预览组件，支持多图切换、缩放、旋转、进度、占位与失败状态，多实例共享滚动锁。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `url-list` | 预览地址列表 | `string[]` | `[]` |\n| `initial-index` | 起始索引 | `number` | `0` |\n| `infinite` | 是否循环切换 | `boolean` | `true` |\n| `zoom-rate` | 缩放步长 | `number` | `1.2` |\n| `scale` | 初始缩放 | `number` | `1` |\n| `min-scale` | 最小缩放 | `number` | `0.2` |\n| `max-scale` | 最大缩放 | `number` | `7` |\n| `show-progress` | 是否显示进度 | `boolean` | `false` |\n| `teleported` | 是否挂载到 `body` | `boolean` | `false` |\n| `hide-on-click-modal` | 点击遮罩是否关闭 | `boolean` | `false` |\n| `close-on-press-escape` | `ESC` 是否关闭 | `boolean` | `true` |\n| `z-index` | 层级 | `number` | — |\n\n### Events\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `switch` | 切换图片 |\n| `close` | 关闭预览 |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 自定义图片内容，参数 `{ url, src, index, activeIndex }` |\n| `progress` | 自定义进度，参数 `{ activeIndex, total }` |\n| `toolbar` | 自定义工具栏，参数 `{ actions, prev, next, reset, setActiveItem, activeIndex }` |\n| `placeholder` / `viewer-placeholder` | 加载占位，参数 `{ activeIndex, src }` |\n| `error` / `viewer-error` | 加载失败，参数 `{ activeIndex, src }` |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/image/demo/preview.vue',
+        'preview',
+        '程序化预览',
+        '调用 showPreview 打开预览，支持起始索引。'
+      )
+    ]
+  },
   component('result', 'Result 结果', '数据展示', [
     ['basic', '操作结果', '反馈成功结果。'],
     ['status', '状态与操作', '展示成功、警告和失败状态，并在 extra 中放置后续操作。'],
@@ -574,7 +608,32 @@ export const pages: Page[] = [
     ]
   },
   component('tree', 'Tree 树形控件', '数据展示', [['basic', '层级数据', '展开并勾选树节点。']]),
-  component('timeline', 'Timeline 时间线', '数据展示', [['basic', '事件记录', '按时间展示事件。']]),
+  component(
+    'timeline',
+    'Timeline 时间线',
+    '数据展示',
+    [
+      ['basic', '事件记录', '按时间展示事件，支持类型、位置和空心节点。'],
+      ['element', '子组件用法', '使用 TimelineItem、交错模式、自定义节点和隐藏时间戳。']
+    ],
+    ['Timeline', 'TimelineItem']
+  ),
+  {
+    imports: ['TimelineItem'],
+    id: 'components/timeline-item',
+    title: 'TimelineItem 时间线项',
+    group: '数据展示',
+    markdown:
+      '# TimelineItem 时间线项\n\n### 介绍\n\nTimeline 的子组件，声明单个时间事件。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `timestamp` | 时间戳文本 | `string` | `\'\'` |\n| `hide-timestamp` | 是否隐藏时间戳 | `boolean` | `false` |\n| `center` | 内容是否垂直居中 | `boolean` | `false` |\n| `placement` | 时间戳位置：`top` / `bottom` | `string` | `bottom` |\n| `type` | 节点主题：`primary` / `success` / `warning` / `danger` / `info` | `string` | `\'\'` |\n| `color` | 自定义节点颜色 | `string` | `\'\'` |\n| `size` | 节点尺寸：`normal` / `large` | `string` | `normal` |\n| `icon` | 自定义图标 | `string` / `Component` | — |\n| `hollow` | 是否空心节点 | `boolean` | `false` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 时间线项内容 |\n| `dot` | 自定义节点 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/timeline/demo/element.vue',
+        'element',
+        '子组件用法',
+        '使用 TimelineItem、交错模式、自定义节点和隐藏时间戳。'
+      )
+    ]
+  },
   component('statistic', 'Statistic 统计数值', '数据展示', [
     ['basic', '统计指标', '突出展示数值指标。'],
     ['format', '格式化', '配置精度、分隔符、前后缀和自定义格式化函数。']

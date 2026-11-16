@@ -49,12 +49,13 @@ import TreeSelect from './tree-select';
 import Upload from './upload';
 import Card from './card';
 import Descriptions, { DescriptionsItem } from './descriptions';
-import Image from './image';
+import Image, { ImageViewer } from './image';
 import Result from './result';
 import Skeleton, { SkeletonItem } from './skeleton';
 import Tree from './tree';
-import Timeline from './timeline';
+import Timeline, { TimelineItem } from './timeline';
 import Statistic from './statistic';
+import Backtop from './backtop';
 import Menu, { MenuItem, SubMenu, MenuItemGroup } from './menu';
 import Breadcrumb, { BreadcrumbItem } from './breadcrumb';
 import Tabs, { TabPane } from './tabs';
@@ -132,11 +133,14 @@ export {
   Descriptions,
   DescriptionsItem,
   Image,
+  ImageViewer,
   Result,
   Skeleton,
   SkeletonItem,
   Tree,
   Timeline,
+  TimelineItem,
+  Backtop,
   Statistic,
   Menu,
   MenuItem,
@@ -218,11 +222,14 @@ const components = [
   Descriptions,
   DescriptionsItem,
   Image,
+  ImageViewer,
   Result,
   Skeleton,
   SkeletonItem,
   Tree,
   Timeline,
+  TimelineItem,
+  Backtop,
   Statistic,
   Menu,
   MenuItem,
@@ -306,3 +313,16 @@ export { ElMessage } from './message';
 export type { MessageHandle, MessageOptions, MessagePlacement, MessageType } from './message';
 export type { LoadingInstance, LoadingServiceOptions } from './loading';
 export type { AlertEffect, AlertType } from './alert';
+export type { TimelineMode, TimelineItem as TimelineItemData } from './timeline';
+export type { TimelineItemPlacement, TimelineItemSize, TimelineItemType } from './timeline';
+export type { DividerBorderStyle, DividerContentPosition, DividerDirection } from './divider/divider';
+export type { ImageFit, ImageLoading, ImageReferrerPolicy } from './image';
+export type { ImageViewerToolbarActions } from './image';
+export type { DrawerBeforeClose, DrawerDirection, DrawerResizableOptions, DrawerResizePayload } from './drawer/drawer';
+export type {
+  CalendarCellData,
+  CalendarCellType,
+  CalendarControllerType,
+  CalendarFormatter,
+  CalendarSelectDateType
+} from './date-picker/calendar';

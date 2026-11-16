@@ -126,28 +126,54 @@
 .i-date-picker__grid button.is-end-date { border-radius: 50%; background: var(--i-color-primary, #409eff); color: #fff; }
 .i-date-picker__panel { grid-template-columns: repeat(4, 1fr); }
 .i-calendar {
-  width: 320px;
+  width: 100%;
+  max-width: 720px;
   padding: 12px;
   border: 1px solid var(--i-border-color, #dcdfe6);
   border-radius: 4px;
   background: #fff;
-  &__header,
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  &__title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    button {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 10px;
+      border: 1px solid var(--i-border-color, #dcdfe6);
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      border-color: var(--i-color-primary, #409eff);
+      color: var(--i-color-primary, #409eff);
+    }
+    select {
+      height: 32px;
+      border: 1px solid var(--i-border-color, #dcdfe6);
+      border-radius: 4px;
+      background: #fff;
+    }
+  }
   &__week,
   &__grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     align-items: center;
     text-align: center;
-  }
-  &__header {
-    grid-template-columns: 32px 1fr 32px;
-    margin-bottom: 12px;
-    button {
-      border: 0;
-      background: transparent;
-      cursor: pointer;
-      font-size: 20px;
-    }
   }
   &__week {
     color: #909399;
@@ -157,12 +183,15 @@
     gap: 4px;
     margin-top: 6px;
     button {
-      height: 32px;
-      border: 0;
-      border-radius: 50%;
+      min-height: 48px;
+      padding: 6px 4px;
+      border: 1px solid transparent;
+      border-radius: 4px;
       background: transparent;
       cursor: pointer;
-      &.is-other-month {
+      &.is-other-month,
+      &.is-prev-month,
+      &.is-next-month {
         color: #c0c4cc;
       }
       &.is-today {
@@ -170,8 +199,9 @@
         font-weight: 600;
       }
       &.is-selected {
-        background: var(--i-color-primary, #409eff);
-        color: #fff;
+        border-color: var(--i-color-primary, #409eff);
+        background: var(--i-color-primary-light-9, #ecf5ff);
+        color: var(--i-color-primary, #409eff);
       }
       &.is-in-range {
         border-radius: 0;
@@ -180,7 +210,11 @@
       &:disabled {
         cursor: not-allowed;
         color: #c0c4cc;
+        background: #f5f7fa;
       }
     }
+  }
+  &.is-range &__grid button.is-current-month {
+    color: inherit;
   }
 }
