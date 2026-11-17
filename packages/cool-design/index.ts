@@ -25,6 +25,7 @@ import Input from './input';
 import InputNumber from './input-number';
 import Select from './select';
 import SelectOption from './select-option';
+import SelectOptionGroup from './select-option-group';
 import Checkbox, { CheckboxButton } from './checkbox';
 import CheckboxGroup from './checkbox-group';
 import Switch from './switch';
@@ -46,6 +47,7 @@ import ColorPicker from './color-picker';
 import Slider from './slider';
 import Transfer from './transfer';
 import TreeSelect from './tree-select';
+import Cascader from './cascader';
 import Upload from './upload';
 import Card from './card';
 import Descriptions, { DescriptionsItem } from './descriptions';
@@ -73,9 +75,10 @@ import Collapse, { CollapseItem } from './collapse';
 import { installDirectives } from './directives';
 export { ClickOutside, InfiniteScroll, LoadingDirective, directives, installDirectives } from './directives';
 import './style/index.scss';
-export type { FormRule, FormInstance } from './form';
+export type { FormRule, FormInstance, FormFieldContext, FormItemInstance } from './form';
 export type { TableColumn, SortChange } from './table';
-export type { SelectRemoteOption } from './select/select';
+export type { SelectRemoteOption, SelectTagType } from './select/select';
+export type { CascaderFilterMethod, CascaderModelValue, CascaderNode, CascaderOption, CascaderPropsMapping } from './cascader';
 export type { Size, Config } from './config-provider/context';
 
 export {
@@ -103,6 +106,7 @@ export {
   InputNumber,
   Select,
   SelectOption,
+  SelectOptionGroup,
   Checkbox,
   CheckboxButton,
   CheckboxGroup,
@@ -128,6 +132,7 @@ export {
   Slider,
   Transfer,
   TreeSelect,
+  Cascader,
   Upload,
   Card,
   Descriptions,
@@ -192,6 +197,7 @@ const components = [
   InputNumber,
   Select,
   SelectOption,
+  SelectOptionGroup,
   Checkbox,
   CheckboxButton,
   CheckboxGroup,
@@ -217,6 +223,7 @@ const components = [
   Slider,
   Transfer,
   TreeSelect,
+  Cascader,
   Upload,
   Card,
   Descriptions,

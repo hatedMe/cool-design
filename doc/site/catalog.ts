@@ -659,6 +659,10 @@ export const pages: Page[] = [
     ['directory', '目录上传', '选择目录并在列表中展示目录内的文件。'],
     ['avatar', '头像上传', '使用 before-upload 校验文件类型和大小，并隐藏文件列表。']
   ]),
+  component('cascader', 'Cascader 级联选择', '表单组件', [
+    ['basic', '基础用法', '从级联数据中选择单个值，支持 emitPath 与路径展示。'],
+    ['multiple', '多选与过滤', '多选级联勾选、标签折叠和关键字过滤。']
+  ]),
   component('select', 'Select 选择器', '表单组件', [
     ['basic', '基础用法', '从 SelectOption 中选择单个值。'],
     ['states', '禁用与清空', '比较禁用选项、禁用选择器和 clearable。'],
@@ -668,6 +672,9 @@ export const pages: Page[] = [
   ]),
   component('select-option', 'SelectOption 选项', '表单组件', [
     ['basic', '选项与禁用项', '在 Select 中使用，默认插槽优先于 label。']
+  ]),
+  component('select-option-group', 'SelectOptionGroup 选项分组', '表单组件', [
+    ['basic', '选项分组', '使用 SelectOptionGroup 对选项分组，可禁用整组。']
   ]),
   component('checkbox', 'Checkbox 复选框', '表单组件', [
     ['basic', '基础用法', '单项布尔值、尺寸和标签内容。'],
