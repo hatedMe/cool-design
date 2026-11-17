@@ -637,6 +637,9 @@ export const pages: Page[] = [
       )
     ]
   },
+  component('countdown', 'Countdown 倒计时', '数据展示', [
+    ['basic', '基础用法', '按格式展示剩余时间，结束时触发 finish。']
+  ]),
   component('statistic', 'Statistic 统计数值', '数据展示', [
     ['basic', '统计指标', '突出展示数值指标。'],
     ['format', '格式化', '配置精度、分隔符、前后缀和自定义格式化函数。']

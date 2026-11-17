@@ -1,0 +1,21 @@
+.i-countdown {
+  display: inline-block;
+}
+.i-countdown__title {
+  margin-bottom: 4px;
+  color: var(--i-text-secondary, #909399);
+  font-size: 12px;
+}
+.i-countdown__content {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  color: var(--i-text, #303133);
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.i-countdown__prefix,
+.i-countdown__suffix {
+  color: var(--i-text-secondary, #909399);
+  font-size: 12px;
+}
