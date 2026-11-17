@@ -18,10 +18,10 @@ afterEach(() => {
 });
 
 describe('PC 组件文档站', () => {
-  it('开发指南按安装、快速上手、自定义主题、过渡动画排列', async () => {
+  it('开发指南按安装、快速上手、自定义主题、过渡动画、排版规范排列', async () => {
     const wrapper = await open('#/guide/install');
     const guide = wrapper.findAll('.docs-nav-group').find((group) => group.get('h2').text() === '开发指南')!;
-    expect(guide.findAll('a').map((link) => link.text())).toEqual(['安装', '快速上手', '自定义主题', '过渡动画']);
+    expect(guide.findAll('a').map((link) => link.text())).toEqual(['安装', '快速上手', '自定义主题', '过渡动画', '排版规范']);
     expect(wrapper.get('h1').text()).toBe('安装');
   });
 

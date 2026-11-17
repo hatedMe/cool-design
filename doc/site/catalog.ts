@@ -93,7 +93,8 @@ export const pages: Page[] = [
           '选择一种动画后切换面板显示。示例使用 Vue 3 内置 Transition，并遵循系统减少动态效果偏好。'
         )
       ]
-    }
+    },
+    { name: 'typography', title: '排版规范', demos: [] }
   ].map(({ name, title, demos }) => ({
     id: `guide/${name}`,
     title,
