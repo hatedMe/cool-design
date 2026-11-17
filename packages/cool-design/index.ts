@@ -35,6 +35,7 @@ import Table from './table';
 import Pagination from './pagination';
 import Dialog from './dialog';
 import Message from './message';
+import Affix from './affix';
 import Avatar from './avatar';
 import Badge from './badge';
 import Radio from './radio';
@@ -117,6 +118,7 @@ export {
   Pagination,
   Dialog,
   Message,
+  Affix,
   Avatar,
   Badge,
   Radio,
@@ -208,6 +210,7 @@ const components = [
   Pagination,
   Dialog,
   Message,
+  Affix,
   Avatar,
   Badge,
   Radio,

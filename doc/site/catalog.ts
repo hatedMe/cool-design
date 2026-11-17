@@ -464,6 +464,9 @@ export const pages: Page[] = [
     ['basic', '详情页头', '提供返回、标题和扩展操作。'],
     ['element', '插槽用法', '使用面包屑与默认插槽扩展页头。']
   ]),
+  component('affix', 'Affix 固钉', '导航组件', [
+    ['basic', '基础用法', '滚动时将元素固定在视口顶部。']
+  ]),
   component('backtop', 'Backtop 回到顶部', '导航组件', [
     ['basic', '滚动回顶', '滚动容器后显示按钮，点击平滑回到顶部。']
   ]),
