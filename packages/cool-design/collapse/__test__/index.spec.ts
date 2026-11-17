@@ -144,6 +144,6 @@ test('图标位置与自定义图标', async () => {
   });
   wrappers.push(w);
   const header = w.get('.i-collapse-item__header');
-  expect(header.get('.i-icon').exists()).toBe(true);
+  expect(header.find('.i-icon').exists()).toBe(true);
   expect(header.element.firstElementChild?.classList.contains('i-icon')).toBe(true);
 });

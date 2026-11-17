@@ -163,7 +163,7 @@ test('支持 header/title 插槽、自定义类名与隐藏关闭按钮', async 
   });
   await flushPromises();
   expect(w.get('.i-dialog').classes()).toContain('my-dialog');
-  expect(w.get('.custom-header').exists()).toBe(true);
+  expect(w.find('.custom-header').exists()).toBe(true);
   expect(w.find('.i-dialog__close').exists()).toBe(false);
   expect(w.get('.i-dialog__header').classes()).toContain('my-header');
   expect(w.get('.i-dialog__body').classes()).toContain('my-body');

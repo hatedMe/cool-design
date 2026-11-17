@@ -133,7 +133,7 @@ test('选择文件时生成 ready 文件并按 modelValue 回写', async () => {
   const wrapper = mount(Upload, { props: { autoUpload: false } });
   const raw = new File(['hello'], 'hello.txt', { type: 'text/plain' });
 
-  await select(wrapper, [raw]);
+  await select(wrapper, [raw as unknown as File]);
 
   const file = wrapper.emitted('change')?.[0]?.[0] as Record<string, unknown>;
   expect(file).toMatchObject({ name: 'hello.txt', status: 'ready', raw, size: 5 });
@@ -173,8 +173,8 @@ test('modelValue 变化同步列表，file-list 是受控主入口并优先', as
 test('受控列表等值回写不会取消活动请求', async () => {
   const handle = { cancel: vi.fn(), promise: new Promise<unknown>(() => undefined) };
   const wrapper = mount(Upload, { props: { fileList: [], action: '/upload', autoUpload: false, httpRequest: () => handle } });
-  await (wrapper.vm as { handleStart: (file: File) => void }).handleStart(new File(['x'], 'active.txt'));
-  void (wrapper.vm as { submit: () => Promise<unknown> }).submit();
+  await (wrapper.vm as unknown as { handleStart: (file: File) => void }).handleStart(new File(['x'], 'active.txt'));
+  void (wrapper.vm as unknown as { submit: () => Promise<unknown> }).submit();
   await vi.waitFor(() => expect(handle.cancel).not.toHaveBeenCalled());
   const current = (wrapper.emitted('update:file-list')?.at(-1)?.[0] as UploadFile[]).map((file) => ({ ...file }));
   await wrapper.setProps({ fileList: current });
@@ -271,7 +271,7 @@ test('自定义请求未传 data 时收到空对象', async () => {
   let requestData: unknown;
   const wrapper = mount(Upload, { props: { action: '/upload', autoUpload: false, httpRequest: (options: { data: unknown }) => { requestData = options.data; return Promise.resolve(undefined); } } });
   await select(wrapper, [new File(['x'], 'empty-data.txt')]);
-  await (wrapper.vm as { submit: () => Promise<unknown> }).submit();
+  await (wrapper.vm as unknown as { submit: () => Promise<unknown> }).submit();
   expect(requestData).toEqual({});
 });
 
@@ -305,8 +305,8 @@ test('自定义请求接收完整协议并通过回调驱动状态', async () =>
   const wrapper = mount(Upload, {
     props: {
       action: '/upload',
-      httpRequest: (request: Record<string, unknown>) => {
-        options = request;
+      httpRequest: (request) => {
+        options = request as unknown as Record<string, unknown>;
         (request.onProgress as (event: { percent: number }) => void)({ percent: 50 });
         (request.onSuccess as (response: unknown) => void)({ id: 1 });
         return Promise.resolve();
@@ -314,7 +314,7 @@ test('自定义请求接收完整协议并通过回调驱动状态', async () =>
     }
   });
   const raw = new File(['x'], 'x.txt');
-  await select(wrapper, [raw]);
+  await select(wrapper, [raw as unknown as File]);
   await vi.waitFor(() => expect(wrapper.emitted('success')).toBeTruthy());
   expect(options).toMatchObject({ file: raw, action: '/upload', method: 'POST', filename: 'file', withCredentials: false });
   expect(options?.onProgress).toBeTypeOf('function');
@@ -340,14 +340,14 @@ test('before-upload 转换后保留展示名称且不额外触发 change', async
   const changes = wrapper.emitted('change') || [];
   expect(changes).toHaveLength(1);
   expect((changes[0][0] as UploadFile).name).toBe('source.txt');
-  expect((wrapper.vm as { handleStart: (file: File) => void }).handleStart).toBeTypeOf('function');
+  expect((wrapper.vm as unknown as { handleStart: (file: File) => void }).handleStart).toBeTypeOf('function');
 });
 
 test('before-upload 返回 Blob 时保留目录元数据', async () => {
   const wrapper = mount(Upload, { props: { directory: true, autoUpload: false, beforeUpload: () => new Blob(['converted'], { type: 'text/plain' }) } });
   const raw = new File(['source'], 'a.txt') as UploadRawFile;
   Object.defineProperty(raw, 'webkitRelativePath', { value: 'folder/a.txt' });
-  await select(wrapper, [raw]);
+  await select(wrapper, [raw as unknown as File]);
   const file = wrapper.emitted('change')?.[0]?.[0] as UploadFile;
   expect(file.raw?.webkitRelativePath).toBe('folder/a.txt');
   expect(file.raw?.isDirectory).toBe(true);
@@ -371,7 +371,7 @@ test('auto-upload=false 时 submit 才上传，before-upload 可阻止请求', a
   await select(wrapper, [new File(['x'], 'x.txt')]);
   expect(request).not.toHaveBeenCalled();
   expect(wrapper.text()).toContain('x.txt');
-  await (wrapper.vm as { submit: () => Promise<unknown> }).submit();
+  await (wrapper.vm as unknown as { submit: () => Promise<unknown> }).submit();
   expect(request).toHaveBeenCalled();
 
   const blocked = mount(Upload, { props: { action: '/upload', httpRequest: request, beforeUpload } });
@@ -411,24 +411,24 @@ test('abort 单个和全部请求后不保留 uploading 且自定义句柄可取
   const handles: Array<{ cancel: ReturnType<typeof vi.fn> }> = [];
   const wrapper = mount(Upload, { props: { action: '/upload', multiple: true, autoUpload: false, httpRequest: () => { const handle = { cancel: vi.fn() }; handles.push(handle); return handle; } } });
   await select(wrapper, [new File(['1'], 'one.txt'), new File(['2'], 'two.txt')]);
-  const submit = (wrapper.vm as { submit: () => Promise<unknown> }).submit();
+  const submit = (wrapper.vm as unknown as { submit: () => Promise<unknown> }).submit();
   await vi.waitFor(() => expect(handles).toHaveLength(2));
-  await (wrapper.vm as { abort: (file?: UploadFile) => void }).abort();
+  await (wrapper.vm as unknown as { abort: (file?: UploadFile) => void }).abort();
   await wrapper.vm.$nextTick();
   expect(handles[0].cancel).toHaveBeenCalledTimes(1);
   expect(handles[1].cancel).toHaveBeenCalledTimes(1);
   const single = mount(Upload, { props: { action: '/upload', autoUpload: false, httpRequest: () => { const handle = { cancel: vi.fn(), promise: new Promise<unknown>(() => undefined) }; handles.push(handle); return handle; } } });
   await select(single, [new File(['s'], 'single.txt')]);
-  void (single.vm as { submit: () => Promise<unknown> }).submit();
+  void (single.vm as unknown as { submit: () => Promise<unknown> }).submit();
   await vi.waitFor(() => expect(handles).toHaveLength(3));
-  await (single.vm as { abort: (file?: UploadFile) => void }).abort({ uid: Number(single.find('li').attributes('data-uid')) } as UploadFile);
+  await (single.vm as unknown as { abort: (file?: UploadFile) => void }).abort({ uid: Number(single.find('li').attributes('data-uid')) } as UploadFile);
   expect(handles[2].cancel).toHaveBeenCalledTimes(1);
   const allHandles: Array<{ cancel: ReturnType<typeof vi.fn> }> = [];
   const all = mount(Upload, { props: { action: '/upload', multiple: true, autoUpload: false, httpRequest: () => { const handle = { cancel: vi.fn(), promise: new Promise<unknown>(() => undefined) }; allHandles.push(handle); return handle; } } });
   await select(all, [new File(['3'], 'three.txt'), new File(['4'], 'four.txt')]);
-  void (all.vm as { submit: () => Promise<unknown> }).submit();
+  void (all.vm as unknown as { submit: () => Promise<unknown> }).submit();
   await vi.waitFor(() => expect(allHandles).toHaveLength(2));
-  await (all.vm as { abort: (file?: UploadFile) => void }).abort();
+  await (all.vm as unknown as { abort: (file?: UploadFile) => void }).abort();
   expect(allHandles[0].cancel).toHaveBeenCalledTimes(1);
   expect(allHandles[1].cancel).toHaveBeenCalledTimes(1);
   expect(wrapper.findAll('li').every((item) => item.text().includes('ready') || item.text().includes('fail'))).toBe(true);
@@ -452,9 +452,9 @@ test('before-upload 和 before-remove reject 被捕获，onPreview 可触发且�
 test('Promise 请求永不完成时 abort 会结束 submit 并恢复 ready', async () => {
   const wrapper = mount(Upload, { props: { action: '/upload', autoUpload: false, httpRequest: () => new Promise<unknown>(() => undefined) } });
   await select(wrapper, [new File(['x'], 'never.txt')]);
-  const submit = (wrapper.vm as { submit: () => Promise<unknown> }).submit();
+  const submit = (wrapper.vm as unknown as { submit: () => Promise<unknown> }).submit();
   await vi.waitFor(() => expect(wrapper.find('em').text()).toBe('uploading'));
-  await (wrapper.vm as { abort: () => void }).abort();
+  await (wrapper.vm as unknown as { abort: () => void }).abort();
   await expect(submit).resolves.toEqual([undefined]);
   expect(wrapper.find('em').text()).toBe('ready');
 });
@@ -465,9 +465,9 @@ test('带 promise 句柄 abort 不悬挂且底层 resolve 不触发 success', as
   const abort = vi.fn();
   const wrapper = mount(Upload, { props: { action: '/upload', autoUpload: false, httpRequest: () => ({ abort, promise }) } });
   await select(wrapper, [new File(['x'], 'handle.txt')]);
-  const submit = (wrapper.vm as { submit: () => Promise<unknown> }).submit();
+  const submit = (wrapper.vm as unknown as { submit: () => Promise<unknown> }).submit();
   await vi.waitFor(() => expect(wrapper.find('em').text()).toBe('uploading'));
-  await (wrapper.vm as { abort: () => void }).abort();
+  await (wrapper.vm as unknown as { abort: () => void }).abort();
   await expect(submit).resolves.toEqual([undefined]);
   resolve({ ok: true });
   await Promise.resolve();
@@ -497,10 +497,10 @@ test('abort 后 Promise resolve 不触发 success/error/change', async () => {
   const promise = new Promise<unknown>((done) => { resolve = done; });
   const wrapper = mount(Upload, { props: { action: '/upload', autoUpload: false, httpRequest: () => promise } });
   await select(wrapper, [new File(['x'], 'late.txt')]);
-  const submit = (wrapper.vm as { submit: () => Promise<unknown> }).submit();
+  const submit = (wrapper.vm as unknown as { submit: () => Promise<unknown> }).submit();
   await vi.waitFor(() => expect(wrapper.find('em').text()).toBe('uploading'));
   const changesBeforeAbort = wrapper.emitted('change')?.length;
-  await (wrapper.vm as { abort: () => void }).abort();
+  await (wrapper.vm as unknown as { abort: () => void }).abort();
   await expect(submit).resolves.toEqual([undefined]);
   resolve({ ok: true });
   await Promise.resolve();
@@ -517,8 +517,8 @@ test('abort-only 句柄异步 success/error 会结束 pending 请求', async () 
   complete?.({ ok: true });
   await vi.waitFor(() => expect(success.emitted('success')).toBeTruthy());
 
-  let fail: ((error: unknown) => void) | undefined;
-  const failed = mount(Upload, { props: { action: '/upload', httpRequest: (options: { onError: (error: unknown) => void }) => { fail = options.onError; return { cancel: vi.fn() }; } } });
+  let fail: ((error: Error) => void) | undefined;
+  const failed = mount(Upload, { props: { action: '/upload', httpRequest: (options: { onError: (error: Error) => void }) => { fail = options.onError; return { cancel: vi.fn() }; } } });
   await select(failed, [new File(['x'], 'fail.txt')]);
   await vi.waitFor(() => expect(fail).toBeTypeOf('function'));
   fail?.(new Error('failed'));
@@ -538,12 +538,12 @@ test('实例方法只提交 ready 文件，clearFiles 清理列表，handleStart
   const request = vi.fn().mockResolvedValue(undefined);
   const wrapper = mount(Upload, { props: { action: '/upload', httpRequest: request, autoUpload: false } });
   const raw = new File(['x'], 'manual.txt');
-  await (wrapper.vm as { handleStart: (file: File) => void }).handleStart(raw);
+  await (wrapper.vm as unknown as { handleStart: (file: File) => void }).handleStart(raw);
   expect(wrapper.text()).toContain('manual.txt');
-  await (wrapper.vm as { submit: () => Promise<unknown> }).submit();
+  await (wrapper.vm as unknown as { submit: () => Promise<unknown> }).submit();
   expect(request).toHaveBeenCalledTimes(1);
-  await (wrapper.vm as { handleRemove: (file: UploadFile) => Promise<void> }).handleRemove((wrapper.vm as { fileList?: UploadFile[] }).fileList?.[0] || (wrapper.find('li').element && { uid: Number(wrapper.find('li').attributes('data-uid')) } as UploadFile));
-  await (wrapper.vm as { clearFiles: () => void }).clearFiles();
+  await (wrapper.vm as unknown as { handleRemove: (file: UploadFile) => Promise<void> }).handleRemove((wrapper.vm as unknown as { fileList?: UploadFile[] }).fileList?.[0] || (wrapper.find('li').element && { uid: Number(wrapper.find('li').attributes('data-uid')) } as UploadFile));
+  await (wrapper.vm as unknown as { clearFiles: () => void }).clearFiles();
   expect(wrapper.findAll('li')).toHaveLength(0);
 });
 
@@ -552,12 +552,12 @@ test('受控列表 handleRemove 按 uid 删除内部克隆并遵守 beforeRemove
   const onRemove = vi.fn();
   const controlled = { name: 'controlled.txt', uid: 42, status: 'ready' as const };
   const wrapper = mount(Upload, { props: { fileList: [controlled], beforeRemove, onRemove } });
-  await (wrapper.vm as { handleRemove: (file: UploadFile) => Promise<void> }).handleRemove({ name: 'external.txt', uid: 42, status: 'ready' });
+  await (wrapper.vm as unknown as { handleRemove: (file: UploadFile) => Promise<void> }).handleRemove({ name: 'external.txt', uid: 42, status: 'ready' });
   expect(beforeRemove).toHaveBeenCalledWith(expect.objectContaining({ name: 'controlled.txt', uid: 42 }), expect.any(Array));
   expect(wrapper.emitted('update:file-list')?.at(-1)?.[0]).toEqual([]);
   expect(onRemove).toHaveBeenCalledWith(expect.objectContaining({ name: 'controlled.txt', uid: 42 }), []);
   const rejected = mount(Upload, { props: { fileList: [controlled], beforeRemove: () => false } });
-  await (rejected.vm as { handleRemove: (file: UploadFile) => Promise<void> }).handleRemove({ name: 'external.txt', uid: 42, status: 'ready' });
+  await (rejected.vm as unknown as { handleRemove: (file: UploadFile) => Promise<void> }).handleRemove({ name: 'external.txt', uid: 42, status: 'ready' });
   expect(rejected.emitted('update:file-list')).toBeUndefined();
 });
 
@@ -577,7 +577,7 @@ test('隐藏列表不影响 submit，trigger choose 打开文件选择器', asyn
   const click = vi.spyOn(input, 'click');
   await select(wrapper, [new File(['x'], 'hidden-submit.txt')]);
   expect(wrapper.find('ul').exists()).toBe(false);
-  await (wrapper.vm as { submit: () => Promise<unknown> }).submit();
+  await (wrapper.vm as unknown as { submit: () => Promise<unknown> }).submit();
   expect(request).toHaveBeenCalledTimes(1);
   await wrapper.get('.custom-trigger').trigger('click');
   expect(click).toHaveBeenCalledTimes(1);

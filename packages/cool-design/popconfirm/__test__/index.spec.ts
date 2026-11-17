@@ -167,7 +167,7 @@ test('支持自定义图标、actions 插槽与非 Teleport 渲染', async () =>
   await flushPromises();
   const panel = w.get('.i-popconfirm');
   expect(panel.get('.i-icon').attributes('style')).toContain('red');
-  expect(panel.get('.custom-action').exists()).toBe(true);
+  expect(panel.find('.custom-action').exists()).toBe(true);
   expect(panel.find('[data-popconfirm-confirm]').exists()).toBe(false);
 });
 

@@ -59,7 +59,7 @@ test('automatic-dropdown 聚焦即展开', async () => {
     slots: { default: () => [h(SelectOption, { value: 'a', label: '一' })] }
   });
   await wrapper.get('[role="combobox"]').trigger('focus');
-  expect(wrapper.get('[role="listbox"]').exists()).toBe(true);
+  expect(wrapper.find('[role="listbox"]').exists()).toBe(true);
 });
 
 test('loading-text 自定义加载文案，fit-input-width 对齐触发器宽度', async () => {

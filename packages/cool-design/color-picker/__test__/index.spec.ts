@@ -57,7 +57,7 @@ describe('ColorPicker', () => {
     });
 
     await wrapper.find('.i-color-picker__trigger').trigger('click');
-    expect(wrapper.find('input[type="color"]').element.value).toBe('#00ff00');
+    expect((wrapper.find('input[type="color"]').element as HTMLInputElement).value).toBe('#00ff00');
   });
 
   test('synchronizes alpha when the controlled model value changes', async () => {
@@ -68,6 +68,6 @@ describe('ColorPicker', () => {
     await wrapper.find('.i-color-picker__trigger').trigger('click');
     await wrapper.setProps({ modelValue: '#00ff00' });
 
-    expect(wrapper.find('input[type="range"]').element.value).toBe('100');
+    expect((wrapper.find('input[type="range"]').element as HTMLInputElement).value).toBe('100');
   });
 });

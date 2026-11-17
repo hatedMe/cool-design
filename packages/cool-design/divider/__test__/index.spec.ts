@@ -11,7 +11,7 @@ test('支持方向、虚线样式和横向内容位置', () => {
   expect(w.classes()).toContain('i-divider--left');
   expect(w.attributes('style')).toContain('--i-divider-border-style: dashed');
   expect(w.text()).toBe('分组');
-  expect(w.get('.i-divider__text.is-left').exists()).toBe(true);
+  expect(w.find('.i-divider__text.is-left').exists()).toBe(true);
 });
 
 test('兼容 vertical 属性并隐藏竖线文字', () => {

@@ -30,7 +30,7 @@ test('Select 自定义面板显示选中标签并支持单选点击', async () =
   });
   expect(wrapper.get('[role="combobox"]').text()).toContain('一');
   await wrapper.get('[role="combobox"]').trigger('click');
-  expect(wrapper.get('[role="listbox"]').exists()).toBe(true);
+  expect(wrapper.find('[role="listbox"]').exists()).toBe(true);
   await wrapper.get('[role="option"][data-value="b"]').trigger('click');
   expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual(['b']);
   expect(wrapper.find('[role="listbox"]').exists()).toBe(false);
@@ -52,7 +52,7 @@ test('Select 点击外部关闭自定义面板', async () => {
     slots: { default: () => [h(SelectOption, { value: 'a', label: '一' })] }
   });
   await wrapper.get('[role="combobox"]').trigger('click');
-  expect(wrapper.get('[role="listbox"]').exists()).toBe(true);
+  expect(wrapper.find('[role="listbox"]').exists()).toBe(true);
   document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
   await wrapper.vm.$nextTick();
   expect(wrapper.find('[role="listbox"]').exists()).toBe(false);
@@ -115,8 +115,8 @@ test('Select 非筛选模式 focus 和 blur 方法作用于触发器', async () 
   const wrapper = mount(Select);
   const exposed = wrapper.vm as unknown as { focus: () => void; blur: () => void };
   const trigger = wrapper.get('[role="combobox"]');
-  const focus = vi.spyOn(trigger.element, 'focus');
-  const blur = vi.spyOn(trigger.element, 'blur');
+  const focus = vi.spyOn(trigger.element as HTMLElement, 'focus');
+  const blur = vi.spyOn(trigger.element as HTMLElement, 'blur');
   exposed.focus();
   exposed.blur();
   expect(focus).toHaveBeenCalled();

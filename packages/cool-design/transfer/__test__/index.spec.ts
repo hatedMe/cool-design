@@ -35,8 +35,8 @@ describe('Transfer', () => {
 
   test('移动选中到右侧并触发 change 与 update', async () => {
     const wrapper = mount(Transfer, { props: { modelValue: [], data: basicData() } });
-    await itemsOf(wrapper, 0)[0].get('input').setChecked();
-    await itemsOf(wrapper, 0)[1].get('input').setChecked();
+    await itemsOf(wrapper, 0)[0].get('input').setValue(true);
+    await itemsOf(wrapper, 0)[1].get('input').setValue(true);
     expect(toRight(wrapper).attributes('disabled')).toBeUndefined();
     await toRight(wrapper).trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[[1, 2]]]);
@@ -46,7 +46,7 @@ describe('Transfer', () => {
 
   test('移动选中到左侧', async () => {
     const wrapper = mount(Transfer, { props: { modelValue: [1, 2, 3], data: basicData() } });
-    await itemsOf(wrapper, 1)[0].get('input').setChecked();
+    await itemsOf(wrapper, 1)[0].get('input').setValue(true);
     await toLeft(wrapper).trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[[2, 3]]]);
     expect(wrapper.emitted('change')).toEqual([[[2, 3], 'left', [1]]]);
@@ -55,14 +55,14 @@ describe('Transfer', () => {
   test('modelValue 去重且移动不产生重复', async () => {
     const wrapper = mount(Transfer, { props: { modelValue: [2, 2], data: basicData(), targetOrder: 'push' } });
     expect(itemLabels(wrapper, 1)).toEqual(['选项二']);
-    await itemsOf(wrapper, 0)[1].get('input').setChecked();
+    await itemsOf(wrapper, 0)[1].get('input').setValue(true);
     await toRight(wrapper).trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[[2, 3]]]);
   });
 
   test('受控更新外部 modelValue 后同步列表并清理越界选中', async () => {
     const wrapper = mount(Transfer, { props: { modelValue: [], data: basicData() } });
-    await itemsOf(wrapper, 0)[0].get('input').setChecked();
+    await itemsOf(wrapper, 0)[0].get('input').setValue(true);
     expect(toRight(wrapper).attributes('disabled')).toBeUndefined();
     await wrapper.setProps({ modelValue: [1] });
     expect(itemLabels(wrapper, 0)).toEqual(['选项二', '选项三', '选项四']);
@@ -72,7 +72,7 @@ describe('Transfer', () => {
 
   test('data 变化后清理失效选中', async () => {
     const wrapper = mount(Transfer, { props: { modelValue: [], data: basicData() } });
-    await itemsOf(wrapper, 0)[0].get('input').setChecked();
+    await itemsOf(wrapper, 0)[0].get('input').setValue(true);
     await wrapper.setProps({ data: basicData().slice(1) });
     expect(toRight(wrapper).attributes('disabled')).toBeDefined();
   });
@@ -80,7 +80,7 @@ describe('Transfer', () => {
   test('全局 disabled 禁用交互且不触发事件', async () => {
     const wrapper = mount(Transfer, { props: { modelValue: [], data: basicData(), disabled: true, filterable: true } });
     expect(wrapper.classes()).toContain('is-disabled');
-    await itemsOf(wrapper, 0)[0].get('input').setChecked();
+    await itemsOf(wrapper, 0)[0].get('input').setValue(true);
     await toRight(wrapper).trigger('click');
     await selectAll(wrapper, 0).trigger('change');
     expect(wrapper.emitted('update:modelValue')).toBeUndefined();
@@ -90,7 +90,7 @@ describe('Transfer', () => {
 
   test('禁用项不可选中且全选与移动自动跳过', async () => {
     const wrapper = mount(Transfer, { props: { modelValue: [], data: basicData() } });
-    await itemsOf(wrapper, 0)[3].get('input').setChecked();
+    await itemsOf(wrapper, 0)[3].get('input').setValue(true);
     expect(wrapper.emitted('left-check-change')).toBeUndefined();
     await selectAll(wrapper, 0).trigger('change');
     expect(wrapper.emitted('left-check-change')).toEqual([[[1, 2, 3]]]);
@@ -113,7 +113,7 @@ describe('Transfer', () => {
     const wrapper = mount(Transfer, { props: { modelValue: [], data: basicData() } });
     expect(countText(wrapper, 0)).toBe('4');
     const all = selectAll(wrapper, 0);
-    await itemsOf(wrapper, 0)[0].get('input').setChecked();
+    await itemsOf(wrapper, 0)[0].get('input').setValue(true);
     expect((all.element as HTMLInputElement).indeterminate).toBe(true);
     expect(countText(wrapper, 0)).toBe('1/4');
     await all.trigger('change');
@@ -161,7 +161,7 @@ describe('Transfer', () => {
 
   test('targetOrder 为 push 时追加到末尾', async () => {
     const wrapper = mount(Transfer, { props: { modelValue: [3], data: basicData(), targetOrder: 'push' } });
-    await itemsOf(wrapper, 0)[0].get('input').setChecked();
+    await itemsOf(wrapper, 0)[0].get('input').setValue(true);
     await toRight(wrapper).trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[[3, 1]]]);
     await wrapper.setProps({ modelValue: [3, 1] });
@@ -170,7 +170,7 @@ describe('Transfer', () => {
 
   test('targetOrder 为 unshift 时前置到开头', async () => {
     const wrapper = mount(Transfer, { props: { modelValue: [3], data: basicData(), targetOrder: 'unshift' } });
-    await itemsOf(wrapper, 0)[0].get('input').setChecked();
+    await itemsOf(wrapper, 0)[0].get('input').setValue(true);
     await toRight(wrapper).trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[[1, 3]]]);
     await wrapper.setProps({ modelValue: [1, 3] });
@@ -179,7 +179,7 @@ describe('Transfer', () => {
 
   test('targetOrder 为 original 时按原始顺序展示', async () => {
     const wrapper = mount(Transfer, { props: { modelValue: [3], data: basicData(), targetOrder: 'original' } });
-    await itemsOf(wrapper, 0)[0].get('input').setChecked();
+    await itemsOf(wrapper, 0)[0].get('input').setValue(true);
     await toRight(wrapper).trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[[1, 3]]]);
     await wrapper.setProps({ modelValue: [3, 1] });
@@ -191,7 +191,7 @@ describe('Transfer', () => {
       props: { modelValue: [], data: basicData(), format: { noChecked: '共 {total} 项', hasChecked: '已选 ${checked}/${total}' } }
     });
     expect(countText(wrapper, 0)).toBe('共 4 项');
-    await itemsOf(wrapper, 0)[0].get('input').setChecked();
+    await itemsOf(wrapper, 0)[0].get('input').setValue(true);
     expect(countText(wrapper, 0)).toBe('已选 1/4');
   });
 
@@ -202,18 +202,18 @@ describe('Transfer', () => {
     ];
     const wrapper = mount(Transfer, { props: { modelValue: [], data, props: { key: 'id', label: 'name', disabled: 'forbid' } } });
     expect(itemLabels(wrapper, 0)).toEqual(['北京', '上海']);
-    await itemsOf(wrapper, 0)[1].get('input').setChecked();
+    await itemsOf(wrapper, 0)[1].get('input').setValue(true);
     expect(wrapper.emitted('left-check-change')).toBeUndefined();
-    await itemsOf(wrapper, 0)[0].get('input').setChecked();
+    await itemsOf(wrapper, 0)[0].get('input').setValue(true);
     await toRight(wrapper).trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[[1]]]);
   });
 
   test('check-change 事件参数', async () => {
     const wrapper = mount(Transfer, { props: { modelValue: [3], data: basicData() } });
-    await itemsOf(wrapper, 0)[0].get('input').setChecked();
+    await itemsOf(wrapper, 0)[0].get('input').setValue(true);
     expect(wrapper.emitted('left-check-change')).toEqual([[[1]]]);
-    await itemsOf(wrapper, 1)[0].get('input').setChecked();
+    await itemsOf(wrapper, 1)[0].get('input').setValue(true);
     expect(wrapper.emitted('right-check-change')).toEqual([[[3]]]);
   });
 

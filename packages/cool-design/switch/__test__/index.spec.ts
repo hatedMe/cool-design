@@ -43,7 +43,7 @@ test('暴露 focus 方法并支持 active 与 inactive 插槽', async () => {
     slots: { active: '开', inactive: '关' },
     attachTo: document.body
   });
-  (wrapper.vm as { focus: () => void }).focus();
+  (wrapper.vm as unknown as { focus: () => void }).focus();
   expect(document.activeElement).toBe(wrapper.find('input').element);
   expect(wrapper.text()).toContain('开');
   await wrapper.setProps({ modelValue: false });
@@ -112,7 +112,7 @@ test.each([
   ['loading', { loading: true }],
   ['disabled', { disabled: true }]
 ])('%s 时不触发变更事件', async (_, props) => {
-  const wrapper = mount(Switch, { props });
+  const wrapper = mount(Switch, { props: props as Record<string, unknown> });
   await wrapper.find('input').setValue(true);
   expect(wrapper.emitted('change')).toBeUndefined();
 });
@@ -282,6 +282,6 @@ test('支持 Switch 主题变量并忽略非法尺寸类名', () => {
   const wrapper = mount(Switch, {
     props: { size: 'extra-large', activeColor: 'green', inactiveColor: 'gray', borderColor: 'black' }
   });
-  expect(wrapper.element.style.getPropertyValue('--i-switch-on-color')).toBe('green');
+  expect((wrapper.element as HTMLElement).style.getPropertyValue('--i-switch-on-color')).toBe('green');
   expect(wrapper.classes()).not.toContain('i-switch--extra-large');
 });

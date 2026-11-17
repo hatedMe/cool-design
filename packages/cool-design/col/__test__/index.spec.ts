@@ -49,6 +49,6 @@ test('normalizes non-finite responsive values', () => {
 });
 
 test('ignores null responsive configuration', () => {
-  const wrapper = mount(Col, { props: { sm: null } });
+  const wrapper = mount(Col, { props: { sm: null as never } });
   expect(wrapper.exists()).toBe(true);
 });

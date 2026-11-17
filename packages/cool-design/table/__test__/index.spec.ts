@@ -282,7 +282,7 @@ test('custom 排序只发事件，sortMethod、sortBy、sortOrders 自定义排�
   const method = mount(Table, {
     props: {
       data: rows,
-      columns: [{ key: 'name', title: '姓名', sortable: true, sortMethod: (a, b) => a.age - b.age }]
+      columns: [{ key: 'name', title: '姓名', sortable: true, sortMethod: (a, b) => Number(a.age) - Number(b.age) }]
     }
   });
   await method.get('thead button').trigger('click');
@@ -663,7 +663,7 @@ test('树形选择级联与半选，checkStrictly 关闭级联', async () => {
       .map((r) => (r as { id: number }).id)
   ).toEqual([12]);
   expect(vmOf(w).getHalfSelectionRows()).toEqual([parent]);
-  expect(w.findAll('tbody input')[0].element.indeterminate).toBe(true);
+  expect((w.findAll('tbody input')[0].element as HTMLInputElement).indeterminate).toBe(true);
   const strict = mount(Table, { props: { ...props, treeProps: { children: 'items', checkStrictly: true } } });
   await strict.findAll('tbody input')[0].setValue(true);
   expect(strict.emitted('selection-change')?.[0]).toEqual([[{ ...parent }]]);
@@ -677,7 +677,7 @@ test('懒加载树按需加载，updateKeyChildren 更新子节点', async () =>
       data: [{ id: 1, name: '父', hasChildren: true }],
       columns: [{ key: 'name', title: '姓名' }],
       lazy: true,
-      load: (row: object, node: { level: number }, resolve: (children: object[]) => void) => {
+      load: (_row: object, node: { level: number }, resolve: (children: object[]) => void) => {
         levels.push(node.level);
         resolve([{ id: 11, name: '懒子' }]);
       }

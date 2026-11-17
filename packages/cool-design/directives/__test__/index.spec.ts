@@ -2,6 +2,12 @@ import { describe, expect, it, vi } from 'vitest';
 import type { DirectiveBinding } from 'vue';
 import { ClickOutside, InfiniteScroll, LoadingDirective } from '..';
 
+type LooseHook = (el: HTMLElement, binding?: DirectiveBinding<unknown>, vnode?: unknown, prev?: unknown) => void;
+const hooks = (directive: unknown) => directive as Record<string, LooseHook | undefined>;
+const loading = hooks(LoadingDirective);
+const outside = hooks(ClickOutside);
+const infinite = hooks(InfiniteScroll);
+
 const binding = <T>(value: T, oldValue?: T) => ({ value, oldValue } as DirectiveBinding<T>);
 
 const scrollable = (overrides: { scrollTop?: number; clientHeight?: number; scrollHeight?: number } = {}) => {
@@ -17,32 +23,32 @@ const scrollable = (overrides: { scrollTop?: number; clientHeight?: number; scro
 describe('directives', () => {
   it('toggles a loading mask and removes it on unmount', () => {
     const el = document.createElement('div');
-    LoadingDirective.mounted?.(el, binding(true));
+    loading.mounted?.(el, binding(true));
     expect(el.querySelector('.i-loading-mask')).not.toBeNull();
-    LoadingDirective.updated?.(el, binding(false, true));
+    loading.updated?.(el, binding(false, true));
     expect(el.querySelector('.i-loading-mask')).toBeNull();
-    LoadingDirective.unmounted?.(el);
+    loading.unmounted?.(el);
   });
 
   it('calls click outside handler and ignores inside clicks', () => {
     const el = document.createElement('div');
     const handler = vi.fn();
-    ClickOutside.mounted?.(el, binding(handler));
+    outside.mounted?.(el, binding(handler));
     document.body.appendChild(el);
     el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(handler).toHaveBeenCalledTimes(1);
-    ClickOutside.unmounted?.(el);
+    outside.unmounted?.(el);
     el.remove();
   });
 
   it('loads more when scrolling within the configured distance', () => {
     const el = scrollable();
     const load = vi.fn();
-    InfiniteScroll.mounted?.(el, binding(load));
+    infinite.mounted?.(el, binding(load));
     el.dispatchEvent(new Event('scroll'));
     expect(load).toHaveBeenCalledTimes(1);
-    InfiniteScroll.unmounted?.(el);
+    infinite.unmounted?.(el);
   });
 
   it('respects disabled, distance and immediate=false', async () => {
@@ -50,7 +56,7 @@ describe('directives', () => {
     el.setAttribute('infinite-scroll-distance', '20');
     el.setAttribute('infinite-scroll-immediate', 'false');
     const load = vi.fn();
-    InfiniteScroll.mounted?.(el, binding(load));
+    infinite.mounted?.(el, binding(load));
     await Promise.resolve();
     expect(load).not.toHaveBeenCalled();
     el.dispatchEvent(new Event('scroll'));
@@ -65,17 +71,17 @@ describe('directives', () => {
       el2.setAttribute('infinite-scroll-distance', '20');
       el2.setAttribute('infinite-scroll-delay', '0');
       const load2 = vi.fn();
-      InfiniteScroll.mounted?.(el2, binding(load2));
+      infinite.mounted?.(el2, binding(load2));
       el2.dispatchEvent(new Event('scroll'));
       expect(load2).toHaveBeenCalledTimes(1);
       el2.setAttribute('infinite-scroll-disabled', 'true');
       el2.dispatchEvent(new Event('scroll'));
       expect(load2).toHaveBeenCalledTimes(1);
-      InfiniteScroll.unmounted?.(el2);
+      infinite.unmounted?.(el2);
     } finally {
       vi.useRealTimers();
     }
-    InfiniteScroll.unmounted?.(el);
+    infinite.unmounted?.(el);
   });
 
   it('triggers immediately when content does not fill container and cleans up', async () => {
@@ -84,11 +90,11 @@ describe('directives', () => {
     el.setAttribute('infinite-scroll-delay', '0');
     const load = vi.fn();
     const removeSpy = vi.spyOn(el, 'removeEventListener');
-    InfiniteScroll.mounted?.(el, binding(load));
+    infinite.mounted?.(el, binding(load));
     await Promise.resolve();
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(load).toHaveBeenCalled();
-    InfiniteScroll.unmounted?.(el);
+    infinite.unmounted?.(el);
     expect(removeSpy).toHaveBeenCalled();
   });
 
@@ -97,11 +103,11 @@ describe('directives', () => {
     el.setAttribute('infinite-scroll-delay', '0');
     const first = vi.fn();
     const second = vi.fn();
-    InfiniteScroll.mounted?.(el, binding(first));
-    InfiniteScroll.updated?.(el, binding(second, first));
+    infinite.mounted?.(el, binding(first));
+    infinite.updated?.(el, binding(second, first));
     el.dispatchEvent(new Event('scroll'));
     expect(first).not.toHaveBeenCalled();
     expect(second).toHaveBeenCalledTimes(1);
-    InfiniteScroll.unmounted?.(el);
+    infinite.unmounted?.(el);
   });
 });
