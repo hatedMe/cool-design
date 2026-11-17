@@ -41,6 +41,27 @@
   border-radius: 3px;
   background: #f0f2f5;
 }
+.i-select__tag--primary {
+  background: color-mix(in srgb, var(--i-primary, #409eff) 15%, transparent);
+}
+.i-select__tag--success {
+  background: color-mix(in srgb, var(--i-success, #67c23a) 15%, transparent);
+}
+.i-select__tag--warning {
+  background: color-mix(in srgb, var(--i-warning, #e6a23c) 15%, transparent);
+}
+.i-select__tag--danger {
+  background: color-mix(in srgb, var(--i-danger, #f56c6c) 15%, transparent);
+}
+.i-select__tag--info {
+  background: color-mix(in srgb, var(--i-info, #909399) 15%, transparent);
+}
+.i-select__group {
+  padding: 6px 12px 2px;
+  color: var(--i-text-secondary, #909399);
+  font-size: 12px;
+  font-weight: 500;
+}
 
 .i-select__tag button,
 .i-select [role='combobox'] > button {

@@ -2,7 +2,7 @@ import { defineComponent, type PropType } from 'vue';
 export default defineComponent({
   name: 'i-select-option',
   props: {
-    value: { type: [String, Number] as PropType<string | number>, required: true },
+    value: { type: [String, Number, Object] as PropType<string | number | object>, required: true },
     label: String,
     disabled: Boolean
   },

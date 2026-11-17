@@ -1,0 +1,81 @@
+import { h } from 'vue';
+import { mount } from '@vue/test-utils';
+import { expect, test } from 'vitest';
+import Select from '../index';
+import SelectOption from '../../select-option';
+import SelectOptionGroup from '../../select-option-group';
+
+test('SelectOptionGroup 渲染分组标题，禁用整组不可选', async () => {
+  const wrapper = mount(Select, {
+    slots: {
+      default: () => [
+        h(SelectOptionGroup, { label: '热门', disabled: true }, { default: () => [h(SelectOption, { value: 'a', label: '一' })] }),
+        h(SelectOptionGroup, { label: '其他' }, { default: () => [h(SelectOption, { value: 'b', label: '二' })] })
+      ]
+    }
+  });
+  await wrapper.get('[role="combobox"]').trigger('click');
+  expect(wrapper.findAll('.i-select__group').map((item) => item.text())).toEqual(['热门', '其他']);
+  await wrapper.get('[role="option"][data-value="a"]').trigger('click');
+  expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  await wrapper.get('[role="option"][data-value="b"]').trigger('click');
+  expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual(['b']);
+  expect(wrapper.findAll('optgroup').map((item) => item.attributes('label'))).toEqual(['热门', '其他']);
+});
+
+test('value-key 支持对象选项值并回显 label', async () => {
+  const options = [
+    { id: 1, name: '一' },
+    { id: 2, name: '二' }
+  ];
+  const wrapper = mount(Select, {
+    props: { valueKey: 'id', modelValue: options[0] },
+    slots: { default: () => options.map((option) => h(SelectOption, { value: option, label: option.name })) }
+  });
+  expect(wrapper.get('[role="combobox"]').text()).toContain('一');
+  await wrapper.get('[role="combobox"]').trigger('click');
+  await wrapper.get('[role="option"][data-value="2"]').trigger('click');
+  expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([options[1]]);
+});
+
+test('clear 输出 value-on-clear，命中 empty-values 视为清空', async () => {
+  const wrapper = mount(Select, {
+    props: { clearable: true, valueOnClear: null, emptyValues: [null, ''], modelValue: 'a' },
+    slots: {
+      default: () => [h(SelectOption, { value: 'a', label: '一' }), h(SelectOption, { value: '', label: '空' })]
+    }
+  });
+  await wrapper.get('[role="combobox"]').trigger('click');
+  await wrapper.get('[role="option"][data-value=""]').trigger('click');
+  expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([null]);
+  await wrapper.get('button[aria-label="清空"]').trigger('click');
+  expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([null]);
+  expect(wrapper.emitted('clear')).toHaveLength(1);
+});
+
+test('automatic-dropdown 聚焦即展开', async () => {
+  const wrapper = mount(Select, {
+    props: { automaticDropdown: true },
+    slots: { default: () => [h(SelectOption, { value: 'a', label: '一' })] }
+  });
+  await wrapper.get('[role="combobox"]').trigger('focus');
+  expect(wrapper.get('[role="listbox"]').exists()).toBe(true);
+});
+
+test('loading-text 自定义加载文案，fit-input-width 对齐触发器宽度', async () => {
+  const wrapper = mount(Select, {
+    props: { loading: true, loadingText: '拼命加载中', fitInputWidth: true },
+    slots: { default: () => [h(SelectOption, { value: 'a', label: '一' })] }
+  });
+  await wrapper.get('[role="combobox"]').trigger('click');
+  expect(wrapper.text()).toContain('拼命加载中');
+  expect(wrapper.get('[role="listbox"]').attributes('style')).toContain('min-width');
+});
+
+test('tag-type 为多选标签着色', () => {
+  const wrapper = mount(Select, {
+    props: { modelValue: ['a'], multiple: true, tagType: 'success' },
+    slots: { default: () => [h(SelectOption, { value: 'a', label: '一' })] }
+  });
+  expect(wrapper.find('.i-select__tag').classes()).toContain('i-select__tag--success');
+});
