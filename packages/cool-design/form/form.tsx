@@ -13,9 +13,14 @@ export default defineComponent({
     labelSuffix: String,
     disabled: Boolean,
     size: String as PropType<Size>,
-    showMessage: { type: Boolean, default: true }
+    showMessage: { type: Boolean, default: true },
+    hideRequiredAsterisk: Boolean,
+    requireAsteriskPosition: { type: String as PropType<'left' | 'right'>, default: 'left' },
+    inlineMessage: Boolean,
+    statusIcon: Boolean,
+    scrollToError: Boolean
   },
-  emits: ['submit'],
+  emits: ['submit', 'validate'],
   setup(props, { slots, expose, emit }) {
     let modelVersion = 0;
     watch(
@@ -36,7 +41,15 @@ export default defineComponent({
       unregister: (key) => fields.delete(key),
       disabled: () => props.disabled,
       size: () => props.size,
-      resetFields
+      resetFields,
+      labelSuffix: () => props.labelSuffix,
+      labelPosition: () => props.labelPosition,
+      labelWidth: () => props.labelWidth,
+      emitValidate: (prop, isValid, message) => emit('validate', prop, isValid, message),
+      hideRequiredAsterisk: () => props.hideRequiredAsterisk,
+      requireAsteriskPosition: () => props.requireAsteriskPosition,
+      inlineMessage: () => props.inlineMessage,
+      statusIcon: () => props.statusIcon
     });
     expose({
       async validate() {
@@ -46,6 +59,7 @@ export default defineComponent({
         const invalid = results.indexOf(false);
         if (invalid >= 0) {
           await nextTick();
+          if (props.scrollToError) registered[invalid].scrollTo?.();
           registered[invalid].focus();
         }
         return invalid < 0 && version === modelVersion;
@@ -60,6 +74,23 @@ export default defineComponent({
       },
       clearValidate() {
         fields.forEach((field) => field.clear());
+      },
+      scrollToField(props?: string | string[]) {
+        const keys = props ? (Array.isArray(props) ? props : [props]) : [...fields.keys()];
+        keys
+          .map((key) => fields.get(key))
+          .find((field) => field)
+          ?.scrollTo?.();
+      },
+      get fields() {
+        return [...fields.entries()].map(([prop, field]) => ({
+          prop,
+          validate: field.validate,
+          resetField: field.reset,
+          clearValidate: field.clear,
+          scrollTo: field.scrollTo,
+          focus: field.focus
+        }));
       }
     });
     return () => (

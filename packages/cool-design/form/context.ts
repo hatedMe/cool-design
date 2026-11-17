@@ -5,6 +5,7 @@ export interface Field {
   reset: () => void;
   clear: () => void;
   focus: () => void;
+  scrollTo?: () => void;
 }
 export interface FormContext {
   model: () => Record<string, unknown>;
@@ -14,6 +15,14 @@ export interface FormContext {
   disabled?: () => boolean;
   size?: () => 'small' | 'default' | 'large' | undefined;
   resetFields?: () => void;
+  labelSuffix?: () => string | undefined;
+  labelPosition?: () => 'left' | 'right' | 'top' | undefined;
+  labelWidth?: () => string | number | undefined;
+  emitValidate?: (prop: string, isValid: boolean, message?: string) => void;
+  hideRequiredAsterisk?: () => boolean;
+  requireAsteriskPosition?: () => 'left' | 'right';
+  inlineMessage?: () => boolean;
+  statusIcon?: () => boolean;
 }
 export interface FieldContext {
   id: string;

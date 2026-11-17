@@ -145,3 +145,57 @@ test('使用 async-validator 校验嵌套路径', async () => {
   expect(await form.value!.validateField('user.name')).toBe(true);
   w.unmount();
 });
+
+test('labelSuffix 追加到表单标签文本', () => {
+  const model = reactive({ name: 'x' });
+  const w = mount(Form, {
+    props: { model, labelSuffix: '：' },
+    slots: { default: () => h(FormItem, { prop: 'name', label: '姓名' }, () => h('input')) }
+  });
+  expect(w.find('label').text()).toBe('姓名：');
+  w.unmount();
+});
+
+test('labelWidth 支持表单项覆盖表单，数字按 px 处理', () => {
+  const model = reactive({ name: 'x', age: 1 });
+  const w = mount(Form, {
+    props: { model, labelWidth: 100 },
+    slots: {
+      default: () => [
+        h(FormItem, { prop: 'name', label: '姓名' }, () => h('input')),
+        h(FormItem, { prop: 'age', label: '年龄', labelWidth: '80px' }, () => h('input'))
+      ]
+    }
+  });
+  const items = w.findAll('.i-form-item');
+  expect(items[0].attributes('style')).toContain('--i-form-item-label-width: 100px');
+  expect(items[1].attributes('style')).toContain('--i-form-item-label-width: 80px');
+  w.unmount();
+});
+
+test('labelPosition 表单项可覆盖表单级布局', () => {
+  const model = reactive({ name: 'x', age: 1 });
+  const w = mount(Form, {
+    props: { model, labelPosition: 'left' },
+    slots: {
+      default: () => [
+        h(FormItem, { prop: 'name', label: '姓名' }, () => h('input')),
+        h(FormItem, { prop: 'age', label: '年龄', labelPosition: 'top' }, () => h('input'))
+      ]
+    }
+  });
+  const items = w.findAll('.i-form-item');
+  expect(items[0].classes()).toContain('i-form-item--label-left');
+  expect(items[1].classes()).toContain('i-form-item--label-top');
+  w.unmount();
+});
+
+test('inline 表单渲染 is-inline 类', () => {
+  const model = reactive({ name: 'x' });
+  const w = mount(Form, {
+    props: { model, inline: true },
+    slots: { default: () => h(FormItem, { prop: 'name', label: '姓名' }, () => h('input')) }
+  });
+  expect(w.classes()).toContain('is-inline');
+  w.unmount();
+});
