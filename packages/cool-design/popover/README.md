@@ -49,12 +49,12 @@
 | 事件名 | 说明 |
 | --- | --- |
 | `update:visible` | 受控显示状态变化 |
-| `before-enter` | 显示前触发 |
-| `after-enter` | 显示后触发 |
-| `before-leave` | 隐藏前触发 |
-| `after-leave` | 隐藏后触发 |
+| `before-show` | 显示前触发 |
 | `show` | 显示时触发 |
+| `before-hide` | 隐藏前触发 |
 | `hide` | 隐藏时触发 |
+| `visible-change` | 显示状态变化 |
+| `before-enter` / `after-enter` / `before-leave` / `after-leave` | 兼容旧事件名（与 `before-show` / `show` / `before-hide` / `hide` 同时触发） |
 
 #### 插槽
 

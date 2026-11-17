@@ -41,7 +41,18 @@ export default defineComponent({
     virtualTriggering: Boolean,
     virtualRef: { type: Object as PropType<PopoverVirtualRef>, default: undefined }
   },
-  emits: ['update:visible', 'before-enter', 'after-enter', 'before-leave', 'after-leave', 'show', 'hide'],
+  emits: [
+    'update:visible',
+    'visible-change',
+    'before-show',
+    'show',
+    'before-hide',
+    'hide',
+    'before-enter',
+    'after-enter',
+    'before-leave',
+    'after-leave'
+  ],
   setup(props, { slots, emit, expose }) {
     const reference = ref<FloatingReference>();
     const floating = ref<HTMLElement>();
@@ -88,6 +99,7 @@ export default defineComponent({
     const setVisible = (value: boolean) => {
       if (props.visible === null) internalVisible.value = value;
       emit('update:visible', value);
+      emit('visible-change', value);
     };
     const openPopover = () => {
       clearTimer();
@@ -95,6 +107,7 @@ export default defineComponent({
       const show = () => {
         if (open.value) return;
         emit('before-enter');
+        emit('before-show');
         setVisible(true);
         emit('show');
         nextTick(() => {
@@ -111,8 +124,8 @@ export default defineComponent({
       const hide = () => {
         if (!open.value) return;
         emit('before-leave');
-        if (props.visible === null) internalVisible.value = false;
-        emit('update:visible', false);
+        emit('before-hide');
+        setVisible(false);
         emit('hide');
         nextTick(() => {
           if (!open.value) emit('after-leave');
