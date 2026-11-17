@@ -66,6 +66,8 @@ ElMessage('你好', getCurrentInstance()?.appContext ?? null);
 | `dangerously-use-h-t-m-l-string` | 是否解析 HTML | `boolean` | `false` |
 | `center` | 文本是否居中 | `boolean` | `false` |
 | `custom-class` | 自定义类名 | `string` | — |
+| `icon` | 自定义前置图标 | `string` / `Component` | — |
+| `close-icon` | 自定义关闭图标 | `string` / `Component` | — |
 
 ### 声明式事件
 
@@ -86,6 +88,9 @@ ElMessage('你好', getCurrentInstance()?.appContext ?? null);
 | `dangerouslyUseHTMLString` | 是否解析 HTML | `boolean` | `false` |
 | `center` | 文本是否居中 | `boolean` | `false` |
 | `customClass` | 自定义类名 | `string` | — |
+| `icon` | 自定义前置图标 | `string` / `Component` | — |
+| `closeIcon` | 自定义关闭图标 | `string` / `Component` | — |
+| `grouping` | 合并同内容消息并以 `×N` 累计次数 | `boolean` | `false` |
 | `onClose` | 关闭回调 | `() => void` | — |
 
 ### 服务方法

@@ -1,5 +1,5 @@
 import { createVNode, render, type AppContext } from 'vue';
-import MessageComponent, { type MessageType } from './message';
+import MessageComponent, { type MessageIcon, type MessageType } from './message';
 
 export type MessagePlacement = 'top' | 'bottom';
 
@@ -13,6 +13,9 @@ export interface MessageOptions {
   dangerouslyUseHTMLString?: boolean;
   center?: boolean;
   customClass?: string;
+  icon?: MessageIcon;
+  closeIcon?: MessageIcon;
+  grouping?: boolean;
   onClose?: () => void;
 }
 
@@ -33,6 +36,7 @@ type MessageFn = {
 
 const containers = new Map<MessagePlacement, HTMLElement>();
 const closers = new Set<() => void>();
+const grouped = new Map<string, { handle: MessageHandle; bump: () => void }>();
 
 function getContainer(placement: MessagePlacement, offset: number): HTMLElement {
   let container = containers.get(placement);
@@ -56,14 +60,24 @@ function messageFn(input: string | MessageOptions, appContext?: AppContext | nul
   const opts = normalize(input);
   const placement = opts.placement ?? 'top';
   const offset = opts.offset ?? 20;
+  const groupKey = opts.grouping ? `${opts.type ?? 'info'}|${placement}|${opts.message}` : undefined;
+  if (groupKey) {
+    const existing = grouped.get(groupKey);
+    if (existing) {
+      existing.bump();
+      return existing.handle;
+    }
+  }
   const container = getContainer(placement, offset);
   const wrapper = document.createElement('div');
   container.appendChild(wrapper);
   let closed = false;
+  let count = 1;
   const doClose = () => {
     if (closed) return;
     closed = true;
     closers.delete(doClose);
+    if (groupKey) grouped.delete(groupKey);
     render(null, wrapper);
     wrapper.remove();
     if (container.childElementCount === 0) {
@@ -73,19 +87,26 @@ function messageFn(input: string | MessageOptions, appContext?: AppContext | nul
     opts.onClose?.();
   };
   closers.add(doClose);
-  const vnode = createVNode(MessageComponent, {
-    message: opts.message,
-    type: opts.type ?? 'info',
-    duration: opts.duration ?? 3000,
-    showClose: opts.showClose ?? false,
-    dangerouslyUseHTMLString: opts.dangerouslyUseHTMLString ?? false,
-    center: opts.center ?? false,
-    customClass: opts.customClass ?? '',
-    onClose: doClose
-  });
-  vnode.appContext = appContext ?? (messageFn as MessageFn)._context ?? null;
-  render(vnode, wrapper);
-  return { close: doClose };
+  const draw = () => {
+    const vnode = createVNode(MessageComponent, {
+      message: count > 1 ? `${opts.message} ×${count}` : opts.message,
+      type: opts.type ?? 'info',
+      duration: opts.duration ?? 3000,
+      showClose: opts.showClose ?? false,
+      dangerouslyUseHTMLString: opts.dangerouslyUseHTMLString ?? false,
+      center: opts.center ?? false,
+      customClass: opts.customClass ?? '',
+      icon: opts.icon,
+      closeIcon: opts.closeIcon,
+      onClose: doClose
+    });
+    vnode.appContext = appContext ?? (messageFn as MessageFn)._context ?? null;
+    render(vnode, wrapper);
+  };
+  draw();
+  const handle: MessageHandle = { close: doClose };
+  if (groupKey) grouped.set(groupKey, { handle, bump: () => { count++; draw(); } });
+  return handle;
 }
 
 const fn = messageFn as MessageFn;
