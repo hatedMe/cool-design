@@ -726,6 +726,9 @@ export const pages: Page[] = [
     ['basic', '基础用法', '从级联数据中选择单个值，支持 emitPath 与路径展示。'],
     ['multiple', '多选与过滤', '多选级联勾选、标签折叠和关键字过滤。']
   ]),
+  component('mention', 'Mention 提及', '表单组件', [
+    ['basic', '基础用法', '输入触发符唤起候选并插入提及内容。']
+  ]),
   component('cascader-panel', 'CascaderPanel 级联面板', '表单组件', [
     ['basic', '基础用法', '纯面板级联选择，可嵌入自定义交互。']
   ]),

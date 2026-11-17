@@ -41,6 +41,7 @@ import Affix from './affix';
 import { Anchor, AnchorLink } from './anchor';
 import InputTag from './input-tag';
 import CascaderPanel from './cascader-panel';
+import Mention from './mention';
 import Avatar from './avatar';
 import Badge from './badge';
 import Radio from './radio';
@@ -135,6 +136,7 @@ export {
   AnchorLink,
   InputTag,
   CascaderPanel,
+  Mention,
   Avatar,
   Badge,
   Radio,
@@ -239,6 +241,7 @@ const components = [
   AnchorLink,
   InputTag,
   CascaderPanel,
+  Mention,
   Avatar,
   Badge,
   Radio,
