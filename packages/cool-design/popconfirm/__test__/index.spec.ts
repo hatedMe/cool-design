@@ -171,7 +171,7 @@ test('支持自定义图标、actions 插槽与非 Teleport 渲染', async () =>
   expect(panel.find('[data-popconfirm-confirm]').exists()).toBe(false);
 });
 
-test('hideAfter 自动取消，persistent 保留隐藏节点', async () => {
+test('hideAfter 确认后延迟自动关闭，persistent 保留隐藏节点', async () => {
   vi.useFakeTimers();
   const w = mount(Popconfirm, {
     props: { hideAfter: 100, persistent: true },
@@ -182,9 +182,13 @@ test('hideAfter 自动取消，persistent 保留隐藏节点', async () => {
   await w.get('button').trigger('click');
   await flushPromises();
   expect(document.querySelector('.i-popconfirm')).not.toBeNull();
+  document.querySelector<HTMLButtonElement>('[data-popconfirm-confirm]')!.click();
+  await flushPromises();
+  expect(w.emitted('confirm')).toHaveLength(1);
+  expect(w.emitted('cancel')).toBeUndefined();
+  expect(document.querySelector('.i-popconfirm')).not.toBeNull();
   vi.advanceTimersByTime(100);
   await flushPromises();
-  expect(w.emitted('cancel')).toHaveLength(1);
   const kept = document.querySelector<HTMLElement>('.i-popconfirm')!;
   expect(kept.style.display).toBe('none');
   vi.useRealTimers();

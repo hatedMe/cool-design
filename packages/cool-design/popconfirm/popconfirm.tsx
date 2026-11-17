@@ -50,10 +50,20 @@ export default defineComponent({
       emit('update:modelValue', value);
     };
     const finish = (action: 'confirm' | 'cancel') => {
+      if (!open.value) return;
+      if (!acted) {
+        acted = true;
+        emit(action);
+      }
+      setOpen(false);
+    };
+    const confirm = () => {
       if (!open.value || acted) return;
       acted = true;
-      setOpen(false);
-      emit(action);
+      emit('confirm');
+      // Element Plus 语义：hideAfter 为确认后自动关闭的延迟
+      if (props.hideAfter > 0) hideTimer.value = setTimeout(() => setOpen(false), props.hideAfter);
+      else setOpen(false);
     };
     const position = useFloating({
       open,
@@ -74,7 +84,6 @@ export default defineComponent({
         if (value) {
           acted = false;
           shown.value = true;
-          if (props.hideAfter > 0) hideTimer.value = setTimeout(() => finish('cancel'), props.hideAfter);
         }
       },
       { flush: 'sync' }
@@ -128,7 +137,7 @@ export default defineComponent({
                 size='small'
                 type={props.confirmButtonType as ButtonType}
                 data-popconfirm-confirm
-                onClick={() => finish('confirm')}>
+                onClick={() => confirm()}>
                 {props.confirmButtonText}
               </Button>
             </div>

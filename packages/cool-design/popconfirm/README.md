@@ -36,7 +36,7 @@
 | `teleported` | 是否将浮层传送到挂载容器 | `boolean` | `true` |
 | `append-to` | 挂载容器选择器或元素 | `string` / `HTMLElement` | — |
 | `persistent` | 关闭后是否保留浮层节点 | `boolean` | `false` |
-| `hide-after` | 打开后自动取消的延迟，单位 ms，`0` 表示不自动关闭 | `number` | `0` |
+| `hide-after` | 确认后自动关闭的延迟，单位 ms，`0` 表示确认后立即关闭 | `number` | `0` |
 
 #### 事件
 
