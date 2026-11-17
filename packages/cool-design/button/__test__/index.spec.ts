@@ -59,19 +59,36 @@ describe('test `Button` component', () => {
       expect(wrapper.classes()).toContain(`i-button--${type}`);
     }
   });
-  test('自定义颜色为每种外观提供颜色变量且 dark 保留', () => {
-    const wrapper = mount(Button, {
-      props: { color: '#8b5cf6', plain: true, text: true, link: true, dark: true }
-    });
-    expect(wrapper.attributes('style')).toContain('--i-button-color: #8b5cf6');
-    expect(wrapper.classes()).toEqual(expect.arrayContaining(['is-plain', 'is-text', 'is-link']));
+  test('自定义颜色按 dark 切换 hover/active 派生色的混合方向', () => {
+    const light = mount(Button, { props: { color: '#8b5cf6' } });
+    const lightStyle = light.attributes('style') ?? '';
+    expect(lightStyle).toContain('--i-button-color: #8b5cf6');
+    expect(lightStyle).toContain('--i-button-hover-bg-color: color-mix(in srgb, #8b5cf6, #fff 30%)');
+    expect(lightStyle).toContain('--i-button-active-bg-color: color-mix(in srgb, #8b5cf6, #141414 20%)');
+
+    const dark = mount(Button, { props: { color: '#8b5cf6', dark: true } });
+    const darkStyle = dark.attributes('style') ?? '';
+    expect(darkStyle).toContain('--i-button-hover-bg-color: color-mix(in srgb, #8b5cf6, #141414 30%)');
+    expect(darkStyle).toContain('--i-button-active-bg-color: color-mix(in srgb, #8b5cf6, #fff 20%)');
+    expect(dark.classes()).not.toContain('is-dark');
+  });
+  test('自定义颜色的 plain 按钮按 dark 计算背景与边框', () => {
+    const light = mount(Button, { props: { color: '#8b5cf6', plain: true } });
+    const lightStyle = light.attributes('style') ?? '';
+    expect(lightStyle).toContain('--i-button-bg-color: color-mix(in srgb, #8b5cf6, #fff 90%)');
+    expect(lightStyle).toContain('--i-button-border-color: color-mix(in srgb, #8b5cf6, #fff 50%)');
+
+    const dark = mount(Button, { props: { color: '#8b5cf6', plain: true, dark: true } });
+    const darkStyle = dark.attributes('style') ?? '';
+    expect(darkStyle).toContain('--i-button-bg-color: color-mix(in srgb, #8b5cf6, #141414 90%)');
+    expect(darkStyle).toContain('--i-button-border-color: color-mix(in srgb, #8b5cf6, #141414 50%)');
   });
   test('default 类型也消费自定义颜色变量', () => {
     const wrapper = mount(Button, { props: { color: '#8b5cf6' } });
     expect(wrapper.classes()).toContain('i-button--default');
     expect(wrapper.attributes('style')).toContain('--i-button-color: #8b5cf6');
-    expect(wrapper.attributes('style')).toContain('--i-button-custom-hover-text-color: #8b5cf6');
-    expect(wrapper.attributes('style')).toContain('--i-button-custom-hover-border-color: #8b5cf6');
+    expect(wrapper.attributes('style')).toContain('--i-button-bg-color: #8b5cf6');
+    expect(wrapper.attributes('style')).toContain('--i-button-hover-border-color: color-mix(in srgb, #8b5cf6, #fff 30%)');
   });
   test('dark 无自定义颜色时不覆盖主题颜色变量', () => {
     const wrapper = mount(Button, { props: { type: 'success', dark: true } });

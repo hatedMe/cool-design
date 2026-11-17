@@ -48,7 +48,7 @@ Button 用于触发提交、保存、删除、跳转等操作。组件的属性�
 
 ## 自定义颜色
 
-使用 `color` 设置按钮颜色，组件会计算 hover 和 active 状态。 `color` 同样支持 `plain`、`link`、`text` 和 `bg` 组合。
+使用 `color` 设置按钮颜色，组件会自动计算 hover 和 active 状态。 `color` 同样支持 `plain`、`link`、`text` 和 `bg` 组合。设置 `dark` 后按暗色模式计算派生色（hover、active 向深色混合），适用于深色背景页面。
 
 ## 自动插入中文空格
 

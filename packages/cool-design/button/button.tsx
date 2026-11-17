@@ -3,6 +3,7 @@ import { useConfig } from '../config-provider/context';
 import { formKey } from '../form/context';
 import type { ButtonType, ButtonSize, ButtonNativeType, IconProp } from './types';
 import { buttonGroupKey } from './group';
+import { buttonCustomStyle } from './custom-style';
 import Icon from '../icon';
 export type { ButtonType, ButtonSize, ButtonNativeType, ButtonGroupDirection, IButtonProps, IconProp } from './types';
 export default defineComponent({
@@ -38,7 +39,9 @@ export default defineComponent({
       const resolvedSize = props.size === 'normal' ? 'default' : props.size ?? group?.size ?? config.value.size;
       const resolvedDisabled = !!(props.disabled || props.loading || form?.disabled?.());
       const isText = props.text || resolvedType === 'text';
-      const customColor = props.color;
+      const customStyle = props.color
+        ? buttonCustomStyle(props.color, { dark: props.dark, plain: props.plain, text: isText, link: props.link })
+        : undefined;
       const classes = [
         'i-button',
         `i-button--${resolvedSize}`,
@@ -80,16 +83,7 @@ export default defineComponent({
         {
           ...attrs,
           class: [attrs.class, classes],
-          style: [
-            attrs.style,
-            customColor
-              ? {
-                  '--i-button-color': customColor,
-                  '--i-button-custom-hover-text-color': customColor,
-                  '--i-button-custom-hover-border-color': customColor
-                }
-              : undefined
-          ],
+          style: [attrs.style, customStyle],
           type: props.tag === 'button' ? props.nativeType : undefined,
           autofocus: props.autofocus || undefined,
           disabled: props.tag === 'button' ? resolvedDisabled : undefined,
