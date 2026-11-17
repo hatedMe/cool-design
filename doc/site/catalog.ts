@@ -275,6 +275,9 @@ export const pages: Page[] = [
     ['basic', '日期选择', '选择日期、日期时间以及日期范围。']
   ]),
   component('time-picker', 'TimePicker 时间选择器', '表单组件', [['basic', '时间选择', '选择时间或时间范围。']]),
+  component('time-select', 'TimeSelect 时间选择', '表单组件', [
+    ['basic', '基础用法', '在 start/step/end 生成的固定时间点中选择。']
+  ]),
   component('date-time-picker', 'DateTimePicker 日期时间选择器', '表单组件', [
     ['basic', '日期时间选择', '在同一个控件中选择日期和时间。']
   ]),

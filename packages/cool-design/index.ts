@@ -43,6 +43,7 @@ import RadioGroup from './radio-group';
 import RadioButton from './radio-button';
 import Rate from './rate';
 import { DatePicker, TimePicker, DateTimePicker, Calendar } from './date-picker';
+import TimeSelect from './time-select';
 import Autocomplete from './autocomplete';
 import ColorPicker from './color-picker';
 import Slider from './slider';
@@ -129,6 +130,7 @@ export {
   Rate,
   DatePicker,
   TimePicker,
+  TimeSelect,
   DateTimePicker,
   Calendar,
   Autocomplete,
@@ -223,6 +225,7 @@ const components = [
   Rate,
   DatePicker,
   TimePicker,
+  TimeSelect,
   DateTimePicker,
   Calendar,
   Autocomplete,
