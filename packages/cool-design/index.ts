@@ -5,6 +5,7 @@ import Main from './main';
 import Footer from './footer';
 import Link from './link';
 import Text from './text';
+import Scrollbar from './scrollbar';
 import Icon from './icon';
 import Space from './space';
 import Divider from './divider';
@@ -94,6 +95,7 @@ export {
   Footer,
   Link,
   Text,
+  Scrollbar,
   Icon,
   Space,
   Divider,
@@ -190,6 +192,7 @@ const components = [
   Footer,
   Link,
   Text,
+  Scrollbar,
   Icon,
   Space,
   Divider,
