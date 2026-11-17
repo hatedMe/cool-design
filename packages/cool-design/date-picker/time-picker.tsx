@@ -2,14 +2,14 @@ import { Teleport, computed, defineComponent, h, markRaw, nextTick, onBeforeUnmo
 import { useConfig, type Size } from '../config-provider/context';
 import { useField } from '../form/context';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
-import { emitValue, formatTimeParts, parseTimeParts, timeInputValue, type DateValue, type TimeParts } from './date';
+import { emitValue, formatTimeParts, parseTimeParts, timeInputValue, type DateModelValue, type DateValue, type TimeParts } from './date';
 import TimePickerPanel, { type TimeDisabledRule, type TimeUnit } from './time-picker-panel';
 
 export default defineComponent({
   name: 'i-time-picker',
   inheritAttrs: false,
   props: {
-    modelValue: { type: [String, Number, Date, Array] as PropType<DateValue | DateValue[] | null>, default: null },
+    modelValue: { type: [String, Number, Date, Array] as PropType<DateModelValue>, default: null },
     format: { type: String, default: 'HH:mm:ss' },
     valueFormat: String,
     placeholder: String,
@@ -27,7 +27,7 @@ export default defineComponent({
     disabledSeconds: Function as PropType<TimeDisabledRule>,
     arrowControl: Boolean,
     showConfirm: { type: Boolean, default: false },
-    defaultValue: { type: [String, Number, Date, Array] as PropType<DateValue | DateValue[] | null>, default: null },
+    defaultValue: { type: [String, Number, Date, Array] as PropType<DateModelValue>, default: null },
     saveOnBlur: { type: Boolean, default: true },
     emptyValues: Array as PropType<DateValue[]>,
     name: String,
@@ -37,7 +37,7 @@ export default defineComponent({
     clearIcon: [String, Object],
     popperStyle: [String, Object, Array],
     popperOptions: Object as PropType<FloatingOptions>,
-    valueOnClear: { type: [String, Number, Date, Array] as PropType<DateValue | DateValue[] | null>, default: null },
+    valueOnClear: { type: [String, Number, Date, Array] as PropType<DateModelValue>, default: null },
     teleported: { type: Boolean, default: true },
     placement: { type: String as PropType<Placement>, default: 'bottom' },
     popperClass: { type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>, default: undefined },

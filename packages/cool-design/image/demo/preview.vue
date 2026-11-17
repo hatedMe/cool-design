@@ -5,7 +5,7 @@ const urls = [
   'https://dummyimage.com/600x400/409eff/fff&text=1',
   'https://dummyimage.com/600x400/67c23a/fff&text=2'
 ];
-const imageRef = ref<InstanceType<typeof Image>>();
+const imageRef = ref<{ showPreview: () => void }>();
 </script>
 <template>
   <div>

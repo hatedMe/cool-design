@@ -1,12 +1,12 @@
 import { defineComponent, h, ref, type Component, type PropType } from 'vue';
 import DatePicker from './date-picker';
-import type { DateValue } from './date';
+import type { DateModelValue, DateValue } from './date';
 import type { Size } from '../config-provider/context';
 import type { FloatingOptions, Placement } from '../../../src/utils/use-floating';
 export default defineComponent({
   name: 'i-date-time-picker',
   props: {
-    modelValue: { type: [String, Number, Date, Array] as PropType<DateValue | DateValue[] | null>, default: null },
+    modelValue: { type: [String, Number, Date, Array] as PropType<DateModelValue>, default: null },
     type: { type: String as PropType<'datetime' | 'datetimerange'>, default: 'datetime' },
     format: { type: String, default: 'YYYY-MM-DD HH:mm:ss' },
     valueFormat: String,
@@ -30,8 +30,8 @@ export default defineComponent({
     fallbackPlacements: Array as PropType<Placement[]>,
     popperOptions: Object as PropType<FloatingOptions>,
     emptyValues: Array as PropType<DateValue[]>,
-    valueOnClear: { type: [String, Number, Date, Array] as PropType<DateValue | DateValue[] | null>, default: null },
-    defaultTime: { type: [Object, Array] as PropType<DateValue | DateValue[] | null>, default: null },
+    valueOnClear: { type: [String, Number, Date, Array] as PropType<DateModelValue>, default: null },
+    defaultTime: { type: [Object, Array] as PropType<DateModelValue>, default: null },
     showConfirm: Boolean,
     automaticDropdown: { type: Boolean, default: true },
     showNow: { type: Boolean, default: true },
@@ -39,7 +39,7 @@ export default defineComponent({
     singlePanel: Boolean,
     unlinkPanels: Boolean,
     shortcuts: Array as PropType<Array<{ text: string; value: DateValue | DateValue[] | (() => DateValue | DateValue[]) }>>,
-    defaultValue: { type: [String, Number, Date, Array] as PropType<DateValue | DateValue[] | null>, default: null },
+    defaultValue: { type: [String, Number, Date, Array] as PropType<DateModelValue>, default: null },
     firstDayOfWeek: { type: Number, default: 0 },
     cellClassName: [String, Function] as PropType<string | ((date: Date) => string)>,
     showFooter: { type: Boolean, default: true },
@@ -67,8 +67,8 @@ export default defineComponent({
           ...attrs,
           ...props,
           range: props.range || props.type === 'datetimerange',
-          'onUpdate:modelValue': (value: DateValue | DateValue[] | null) => emit('update:modelValue', value),
-          onChange: (value: DateValue | DateValue[] | null) => emit('change', value),
+          'onUpdate:modelValue': (value: DateModelValue) => emit('update:modelValue', value),
+          onChange: (value: DateModelValue) => emit('change', value),
           onBlur: (event: FocusEvent) => emit('blur', event),
           onFocus: (event: FocusEvent) => emit('focus', event),
           onClear: () => emit('clear'),

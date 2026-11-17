@@ -1,5 +1,5 @@
 import { computed, defineComponent, ref, watch, type PropType } from 'vue';
-import { getWeekNumber, getWeekStart, monthLabel, sameDay, toDate, type DateValue } from './date';
+import { getWeekNumber, getWeekStart, monthLabel, sameDay, toDate, type DateModelValue, type DateValue } from './date';
 
 export type DatePanelType = 'date' | 'dates' | 'week' | 'month' | 'year' | 'quarter';
 
@@ -10,7 +10,7 @@ export default defineComponent({
     type: { type: String as PropType<DatePanelType>, default: 'date' },
     disabledDate: Function as PropType<(date: Date) => boolean>,
     firstDayOfWeek: { type: Number, default: 0 },
-    defaultValue: { type: [String, Number, Date, Array] as PropType<DateValue | DateValue[] | null>, default: null },
+    defaultValue: { type: [String, Number, Date, Array] as PropType<DateModelValue>, default: null },
     cellClassName: [String, Function] as PropType<string | ((date: Date) => string)>,
     showWeekNumber: Boolean,
     cursorValue: { type: [String, Number, Date] as PropType<DateValue | null>, default: null }

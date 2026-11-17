@@ -14,6 +14,8 @@ import weekOfYear from 'dayjs/plugin/weekOfYear';
  dayjs.extend(weekOfYear);
 
 export type DateValue = string | number | Date;
+/** v-model 形态：单值、区间数组（成员可为 null）或 null */
+export type DateModelValue = DateValue | Array<DateValue | null> | null;
 export type TimeParts = { hour: number; minute: number; second: number };
 
 export const pad = (value: number) => String(value).padStart(2, '0');
