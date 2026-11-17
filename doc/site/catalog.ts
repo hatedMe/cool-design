@@ -177,7 +177,8 @@ export const pages: Page[] = [
     ['basic', '基础用法', '自绘滚动条的滚动容器。']
   ]),
   component('splitter', 'Splitter 分割面板', '基础组件', [
-    ['basic', '基础用法', '可拖拽调整大小的分割面板。']
+    ['basic', '基础用法', '可拖拽调整大小的分割面板。'],
+    ['collapsible', '折叠与尺寸约束', 'v-model:size、min/max 与折叠按钮。']
   ]),
   {
     imports: ['SplitterPanel'],
@@ -663,7 +664,8 @@ export const pages: Page[] = [
   },
   component('tree', 'Tree 树形控件', '数据展示', [['basic', '层级数据', '展开并勾选树节点。']]),
   component('tree-v2', 'TreeV2 虚拟化树', '数据展示', [
-    ['basic', '基础用法', '大数据量树形控件的窗口化渲染。']
+    ['basic', '基础用法', '大数据量树形控件的窗口化渲染。'],
+    ['checkbox', '复选框', '勾选级联与已选汇总。']
   ]),
   component(
     'timeline',
@@ -727,7 +729,8 @@ export const pages: Page[] = [
   ]),
   component('cascader', 'Cascader 级联选择', '表单组件', [
     ['basic', '基础用法', '从级联数据中选择单个值，支持 emitPath 与路径展示。'],
-    ['multiple', '多选与过滤', '多选级联勾选、标签折叠和关键字过滤。']
+    ['multiple', '多选与过滤', '多选级联勾选、标签折叠和关键字过滤。'],
+    ['searchable', '搜索与选择', 'filterable 过滤匹配路径并选中。']
   ]),
   component('input-otp', 'InputOtp 验证码输入', '表单组件', [
     ['basic', '基础用法', '分格输入一次性验证码，自动前进与粘贴分发。']
@@ -746,7 +749,8 @@ export const pages: Page[] = [
     ['sizes', '尺寸', '使用 small、default、large 控制选择器高度。']
   ]),
   component('select-v2', 'SelectV2 虚拟化选择器', '表单组件', [
-    ['basic', '基础用法', '大数据量选项的窗口化渲染选择器。']
+    ['basic', '基础用法', '大数据量选项的窗口化渲染选择器。'],
+    ['grouped', '分组与多选', '分组 options 与多选过滤。']
   ]),
   component('select-option', 'SelectOption 选项', '表单组件', [
     ['basic', '选项与禁用项', '在 Select 中使用，默认插槽优先于 label。']
