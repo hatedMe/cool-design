@@ -4,3 +4,13 @@ import _Cascader from './cascader';
 
 export const Cascader = withInstall(_Cascader);
 export default Cascader;
+export type {
+  CascaderFilterMethod,
+  CascaderItemValue,
+  CascaderModelValue,
+  CascaderNode,
+  CascaderNodePath,
+  CascaderNodeValue,
+  CascaderOption,
+  CascaderPropsMapping
+} from './types';
