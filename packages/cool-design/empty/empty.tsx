@@ -6,7 +6,7 @@ const [name, bem] = createNamespace('empty');
 export default defineComponent({
   name,
   props: {
-    description: { type: String, default: '' },
+    description: { type: String, default: 'No Data' },
     image: String,
     imageSize: { type: [String, Number] as PropType<string | number>, default: undefined }
   },
