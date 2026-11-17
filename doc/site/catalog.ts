@@ -637,6 +637,9 @@ export const pages: Page[] = [
       )
     ]
   },
+  component('segmented', 'Segmented 分段控制器', '数据展示', [
+    ['basic', '基础用法', '在互斥选项间切换的分段按钮。']
+  ]),
   component('countdown', 'Countdown 倒计时', '数据展示', [
     ['basic', '基础用法', '按格式展示剩余时间，结束时触发 finish。']
   ]),
