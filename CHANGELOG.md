@@ -4,6 +4,15 @@
 
 对齐 Element Plus 的功能/参数专项（阶段 0～3）。以下为本次变更摘要，破坏性变更附迁移说明。
 
+### 🆕 新增组件
+
+- **Cascader 级联选择**（替换原占位实现）、**CascaderPanel 级联面板**
+- **SelectV2 虚拟化选择器**、**TreeV2 虚拟化树**（窗口化渲染，任意数据量滚动流畅）
+- **InputTag 标签输入框**、**InputOtp 验证码输入**、**Mention 提及**
+- **Affix 固钉**、**Anchor 锚点**、**Countdown 倒计时**、**Segmented 分段控制器**、**TimeSelect 时间选择**、**Tour 漫游式引导**、**Splitter 分割面板**
+- **Text 文本**、**Scrollbar 滚动条**、**SelectOptionGroup 选项分组**、**SplitterPanel 分割面板项**
+- **排版规范**：字号阶梯 / 行高 / 字体栈设计 token（对齐 EP Typography）
+
 ### ⚠️ Breaking Changes（破坏性变更）
 
 | 组件 | 变更 | 迁移说明 |
@@ -33,6 +42,9 @@
 - Dialog 关闭后不再在 DOM 中保留 `role="dialog"`，MessageBox 内容关闭即销毁（修复 `examples/user-management` 长期失败的验收测试）
 - Watermark 内容/属性 XML 转义，data URI 全量百分号编码（修复含括号内容的 `url()` 解析）
 - 表单 `labelWidth` / `labelPosition` / `inline` 此前只有类名无样式的问题
+- 日期类组件 model 类型允许区间初始值 `[null, null]`（`DateModelValue`）
+- Menu `router` / Breadcrumb `to` 从透传占位改为真实 vue-router 导航
+- `pnpm build:docs` 样式编译与 `typecheck:docs` 类型门禁修复
 
 ### Docs
 
