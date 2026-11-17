@@ -35,7 +35,7 @@
 | src-set | 响应式图片地址 | `string` | — |
 | alt | 图片替代文本 | `string` | `''` |
 | shape | 形状：`circle` / `square` | `string` | `circle` |
-| size | 尺寸：`large` / `default` / `medium` / `small` / 数字（px），`medium` 为兼容别名 | `string` / `number` | `large` |
+| size | 尺寸：`large` / `default` / `medium` / `small` / 数字（px），`medium` 为兼容别名 | `string` / `number` | `default` |
 | fit | 图片适配方式：`fill` / `contain` / `cover` / `none` / `scale-down` | `string` | `cover` |
 | icon | 图标类名或图标组件 | `string` / `Component` | — |
 

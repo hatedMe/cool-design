@@ -34,7 +34,7 @@ export default defineComponent({
     },
     size: {
       type: [String, Number] as PropType<AvatarSize>,
-      default: 'large'
+      default: 'default'
     },
     icon: [String, Object, Function] as PropType<string | Component>,
     fit: {
