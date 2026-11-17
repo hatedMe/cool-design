@@ -31,8 +31,27 @@
   padding: 6px 10px;
   cursor: pointer;
 }
-.i-autocomplete__list li:hover {
+.i-autocomplete__list li:hover,
+.i-autocomplete__list li.is-highlighted {
   background: #f5f7fa;
+}
+.i-autocomplete__control {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.i-autocomplete__icon {
+  color: #909399;
+  font-size: 14px;
+}
+.i-autocomplete__clear {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.i-autocomplete__loading {
+  color: #909399;
+  cursor: default;
 }
 .i-color-picker {
   position: relative;
