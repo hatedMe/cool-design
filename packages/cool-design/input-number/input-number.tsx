@@ -1,5 +1,6 @@
-import { computed, defineComponent, ref, type PropType } from 'vue';
+import { computed, defineComponent, nextTick, ref, type PropType } from 'vue';
 import { createNamespace } from '../../../src/utils/create';
+import { useField } from '../form/context';
 import './index.scss';
 
 const [componentName, bem] = createNamespace('input-number');
@@ -43,10 +44,12 @@ export default defineComponent({
     ariaLabel: String,
     formatter: Function as PropType<(value: number | null) => string>,
     parser: Function as PropType<(value: string) => number | null>,
-    valueOnClear: [Number, String, null] as PropType<number | null | 'min' | 'max'>
+    valueOnClear: [Number, String, null] as PropType<number | null | 'min' | 'max'>,
+    validateEvent: { type: Boolean, default: true }
   },
   emits: ['update:modelValue', 'change', 'focus', 'blur'],
   setup(props, { attrs, emit, expose, slots }) {
+    const field = useField();
     const input = ref<HTMLInputElement>();
     const editing = ref(false);
     const draft = ref('');
@@ -64,9 +67,11 @@ export default defineComponent({
       return props.min + Math.round((value - props.min) / props.step) * props.step;
     };
     const normalize = (value: number) => round(clamp(alignStep(value)), precision.value);
+    const isDisabled = () => props.disabled || !!field?.disabled?.();
     const emitValue = (value: number | null) => {
       emit('update:modelValue', value);
       emit('change', value);
+      if (props.validateEvent) nextTick(() => field?.validate('change'));
     };
     const parse = (text: string): number | null => {
       if (props.parser) return props.parser(text);
@@ -75,17 +80,17 @@ export default defineComponent({
       return Number.isFinite(value) ? value : null;
     };
     const updateBy = (amount: number) => {
-      if (props.disabled || props.readonly) return;
+      if (isDisabled() || props.readonly) return;
       const base = currentValue.value ?? 0;
       emitValue(normalize(base + amount));
     };
     const clearValue = () => {
-      if (props.disabled || props.readonly) return;
+      if (isDisabled() || props.readonly) return;
       const value = props.valueOnClear === 'min' ? props.min : props.valueOnClear === 'max' ? props.max : props.valueOnClear ?? null;
       emitValue(value);
     };
     const handleInput = (event: Event) => {
-      if (props.disabled || props.readonly) return;
+      if (isDisabled() || props.readonly) return;
       const text = (event.target as HTMLInputElement).value;
       draft.value = text;
       const value = parse(text);
@@ -107,11 +112,11 @@ export default defineComponent({
     expose({ focus, blur });
 
     return () => {
-      const disabled = props.disabled;
+      const disabled = isDisabled();
       const buttonClass = (type: 'increase' | 'decrease') => bem(type, { disabled: disabled || (type === 'increase' ? currentValue.value! >= props.max : currentValue.value! <= props.min) });
       const inputAttrs = {
         ...attrs,
-        id: props.id,
+        id: props.id ?? field?.id,
         name: props.name,
         inputmode: props.inputmode,
         tabindex: props.tabindex,
@@ -147,7 +152,7 @@ export default defineComponent({
         />
       );
       return (
-        <div class={[bem({ disabled }), `i-control--${props.size || 'default'}`, props.controlsPosition === 'right' && 'is-controls-right']}>
+        <div class={[bem({ disabled }), `i-control--${props.size ?? field?.size?.() ?? 'default'}`, props.controlsPosition === 'right' && 'is-controls-right']}>
           {slots.prefix?.()}
           {props.controls && props.controlsPosition !== 'right' && (
             <button type='button' class={buttonClass('decrease')} aria-label='减少' disabled={disabled || currentValue.value! <= props.min} onClick={() => updateBy(-props.step)}>
