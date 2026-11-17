@@ -1,4 +1,4 @@
-import { computed, defineComponent, provide, ref, watch, type PropType } from 'vue';
+import { computed, defineComponent, getCurrentInstance, provide, ref, watch, type PropType } from 'vue';
 import { menuKey, menuPathKey, type MenuItemData, type MenuMode, type MenuTrigger } from './context';
 import IMenuItem from './menu-item';
 import ISubMenu from './sub-menu';
@@ -26,6 +26,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'select', 'open', 'close'],
   setup(props, { emit, slots, expose }) {
+    const instance = getCurrentInstance();
     const internalActive = ref(props.modelValue ?? props.defaultActive ?? '');
     const opened = ref<string[]>([...(props.defaultOpeneds ?? [])]);
 
@@ -70,6 +71,12 @@ export default defineComponent({
       internalActive.value = index;
       emit('update:modelValue', index);
       emit('select', index, indexPath, item);
+      if (props.router) {
+        const router = instance?.appContext.config.globalProperties.$router;
+        const meta = item as { route?: unknown; to?: unknown } | undefined;
+        const target = meta?.route ?? meta?.to ?? index;
+        if (router && typeof router.push === 'function') void router.push(target);
+      }
     };
 
     const handleOpen = (index: string, indexPath: string[]) => {

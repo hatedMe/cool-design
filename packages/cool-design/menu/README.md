@@ -46,7 +46,7 @@ Menu 用于页面导航和分组操作，支持水平/垂直模式、折叠、�
 | `background-color` | 背景色 | `string` | — |
 | `text-color` | 文字颜色 | `string` | — |
 | `active-text-color` | 激活文字颜色 | `string` | — |
-| `router` | 是否透传路由（本库不依赖 vue-router，仅透传 `route`/`to`） | `boolean` | `false` |
+| `router` | 开启后点击菜单项通过 vue-router 导航（目标取 `route`/`to`，缺省用 `index`） | `boolean` | `false` |
 | `ellipsis` | 水平模式是否收纳溢出（类名） | `boolean` | `true` |
 
 ### Menu 事件
@@ -79,8 +79,8 @@ Menu 用于页面导航和分组操作，支持水平/垂直模式、折叠、�
 | ---- | ---- | ---- | ------ |
 | `index` | 唯一索引（必填） | `string` | — |
 | `disabled` | 是否禁用 | `boolean` | `false` |
-| `route` | 路由透传值 | `string \| Record` | — |
-| `to` | 链接透传值 | `string \| Record` | — |
+| `route` | 路由目标（`router` 开启时导航） | `string \| Record` | — |
+| `to` | 链接目标（`router` 开启时导航） | `string \| Record` | — |
 
 ### MenuItem 插槽
 

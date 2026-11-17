@@ -48,8 +48,8 @@ Breadcrumb 显示当前页面在导航层级中的位置，支持链接、分隔
 
 | 参数 | 说明 | 类型 | 默认值 |
 | ---- | ---- | ---- | ------ |
-| `to` | 跳转目标，字符串渲染为 `a[href]`，对象透传（取 `path`/`href`） | `string \| Record` | — |
-| `replace` | 是否替换历史（透传，无路由时无操作） | `boolean` | `false` |
+| `to` | 跳转目标：存在 vue-router 时点击走路由导航，否则渲染为 `a[href]`（对象取 `path`/`href`） | `string \| Record` | — |
+| `replace` | 路由导航时使用 `router.replace` | `boolean` | `false` |
 
 ### BreadcrumbItem 事件
 

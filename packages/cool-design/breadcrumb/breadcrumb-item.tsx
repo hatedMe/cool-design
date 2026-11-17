@@ -33,6 +33,14 @@ export default defineComponent({
 
     const handleClick = (event: MouseEvent) => {
       emit('click', event);
+      if (event.defaultPrevented || !props.to) return;
+      const router = instance?.appContext.config.globalProperties.$router;
+      if (router && (typeof router.push === 'function' || typeof router.replace === 'function')) {
+        event.preventDefault();
+        const target = props.to;
+        if (props.replace && typeof router.replace === 'function') void router.replace(target);
+        else void router.push(target);
+      }
     };
 
     return () => {
