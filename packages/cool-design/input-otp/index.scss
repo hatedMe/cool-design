@@ -1,0 +1,50 @@
+.i-input-otp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.i-input-otp__field {
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--i-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--i-bg-color, #fff);
+  color: inherit;
+  font: inherit;
+  font-size: 18px;
+  text-align: center;
+  outline: none;
+}
+.i-input-otp__field:focus {
+  border-color: var(--i-primary, #409eff);
+}
+.i-input-otp--filled .i-input-otp__field {
+  border-color: transparent;
+  background: var(--i-bg-subtle, #f7f9fc);
+}
+.i-input-otp--underlined .i-input-otp__field {
+  border: 0;
+  border-bottom: 1px solid var(--i-border-color, #dcdfe6);
+  border-radius: 0;
+}
+.i-input-otp--underlined .i-input-otp__field:focus {
+  border-bottom-color: var(--i-primary, #409eff);
+}
+.i-input-otp.is-disabled .i-input-otp__field {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.i-input-otp.i-control--small .i-input-otp__field {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+}
+.i-input-otp.i-control--large .i-input-otp__field {
+  width: 48px;
+  height: 48px;
+  font-size: 22px;
+}
+.i-input-otp__separator {
+  color: var(--i-text-secondary, #909399);
+}

@@ -42,6 +42,7 @@ import { Anchor, AnchorLink } from './anchor';
 import InputTag from './input-tag';
 import CascaderPanel from './cascader-panel';
 import Mention from './mention';
+import InputOtp from './input-otp';
 import Avatar from './avatar';
 import Badge from './badge';
 import Radio from './radio';
@@ -137,6 +138,7 @@ export {
   InputTag,
   CascaderPanel,
   Mention,
+  InputOtp,
   Avatar,
   Badge,
   Radio,
@@ -242,6 +244,7 @@ const components = [
   InputTag,
   CascaderPanel,
   Mention,
+  InputOtp,
   Avatar,
   Badge,
   Radio,

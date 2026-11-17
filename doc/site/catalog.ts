@@ -726,6 +726,9 @@ export const pages: Page[] = [
     ['basic', '基础用法', '从级联数据中选择单个值，支持 emitPath 与路径展示。'],
     ['multiple', '多选与过滤', '多选级联勾选、标签折叠和关键字过滤。']
   ]),
+  component('input-otp', 'InputOtp 验证码输入', '表单组件', [
+    ['basic', '基础用法', '分格输入一次性验证码，自动前进与粘贴分发。']
+  ]),
   component('mention', 'Mention 提及', '表单组件', [
     ['basic', '基础用法', '输入触发符唤起候选并插入提及内容。']
   ]),
