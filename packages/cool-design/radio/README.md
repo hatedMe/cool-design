@@ -3,7 +3,7 @@
 Radio 用于在互斥选项中选择一个值；RadioGroup 用于管理同一组的值。
 
 - `v-model`：`string | number | boolean`，与 `value` 严格相等时选中。
-- `value`：选项值，默认 true。
+- `value`：选项值，未传时使用 `label`。
 - `disabled`：禁用，默认 false。
 - `name`：原生单选组名称。
 - `border`：显示带边框样式。

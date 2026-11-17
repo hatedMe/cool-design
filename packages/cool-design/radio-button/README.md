@@ -31,4 +31,4 @@ RadioButton 是 Radio 的按钮样式变体，支持独立受控使用，也可�
 ### 事件
 
 - `update:modelValue`：独立使用时选项变化。
-- `change`：独立使用或所在 RadioGroup 变化时触发。
+- `change`：独立使用时触发；在 RadioGroup 中由 RadioGroup 统一触发 `change`。
