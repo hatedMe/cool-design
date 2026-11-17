@@ -19,10 +19,11 @@ test('alert 确认 resolve，关闭 reject close', async () => {
   const p2 = MessageBox.alert('内容', '标题');
   await flushPromises();
   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-  await expect(p2).rejects.toBe('close');
+  // 默认不区分 cancel/close，关闭归并为 cancel（Element Plus 语义）
+  await expect(p2).rejects.toBe('cancel');
 });
 
-test('confirm 区分 cancel 与 close', async () => {
+test('distinguishCancelAndClose 区分 cancel 与 close', async () => {
   const p1 = MessageBox.confirm('确定吗？', '确认');
   await flushPromises();
   document.querySelector<HTMLButtonElement>('[data-message-box-cancel]')!.click();
@@ -31,7 +32,12 @@ test('confirm 区分 cancel 与 close', async () => {
   const p2 = MessageBox.confirm('确定吗？', '确认');
   await flushPromises();
   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-  await expect(p2).rejects.toBe('close');
+  await expect(p2).rejects.toBe('cancel');
+
+  const p3 = MessageBox.confirm('确定吗？', '确认', { distinguishCancelAndClose: true });
+  await flushPromises();
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  await expect(p3).rejects.toBe('close');
 });
 
 test('prompt 返回输入值并校验', async () => {

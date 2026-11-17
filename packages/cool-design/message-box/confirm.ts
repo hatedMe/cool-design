@@ -22,7 +22,11 @@ function open(
   register?: (close: () => void) => () => void
 ): Promise<'confirm' | MessageBoxPromptResult> {
   const container = document.createElement('div');
-  document.body.appendChild(container);
+  const host =
+    typeof options.container === 'string'
+      ? document.querySelector<HTMLElement>(options.container)
+      : options.container;
+  (host ?? document.body).appendChild(container);
   return new Promise((resolve, reject) => {
     let settled = false;
     let unregister = () => {};
@@ -44,7 +48,8 @@ function open(
       if (settled) return;
       settled = true;
       cleanup();
-      reject(action);
+      // Element Plus 语义：未开启 distinguishCancelAndClose 时，close 归并为 cancel
+      reject(options.distinguishCancelAndClose ? action : action === 'close' ? 'cancel' : action);
     };
     unregister = register?.(() => finishReject('cancel')) || unregister;
     const Root = defineComponent({
@@ -74,13 +79,13 @@ export const msgbox = (
   options: MessageBoxOptions & { message: string; title?: string },
   appContext: AppContext | null = null
 ): Promise<'confirm' | MessageBoxPromptResult> => {
-  const { message, title = '操作确认', ...rest } = options;
+  const { message, title = '', ...rest } = options;
   return open(message, title, rest, appContext);
 };
 
 export const alert = (
   message: string,
-  title = '操作确认',
+  title = '',
   options: MessageBoxOptions = {},
   appContext: AppContext | null = null
 ): Promise<'confirm'> =>
@@ -88,14 +93,14 @@ export const alert = (
 
 export const confirm = (
   message: string,
-  title = '操作确认',
+  title = '',
   options: MessageBoxOptions = {},
   appContext: AppContext | null = null
 ): Promise<'confirm'> => open(message, title, options, appContext) as Promise<'confirm'>;
 
 export const prompt = (
   message: string,
-  title = '操作确认',
+  title = '',
   options: MessageBoxOptions = {},
   appContext: AppContext | null = null
 ): Promise<MessageBoxPromptResult> =>
@@ -115,14 +120,14 @@ export function useMessageBox() {
   };
   return {
     msgbox: (options: MessageBoxOptions & { message: string; title?: string }) => {
-      const { message, title = '操作确认', ...rest } = options;
+      const { message, title = '', ...rest } = options;
       return open(message, title, rest, context, config, register);
     },
-    alert: (message: string, title = '操作确认', options: MessageBoxOptions = {}) =>
+    alert: (message: string, title = '', options: MessageBoxOptions = {}) =>
       open(message, title, { showCancelButton: false, ...options }, context, config, register) as Promise<'confirm'>,
-    confirm: (message: string, title = '操作确认', options: MessageBoxOptions = {}) =>
+    confirm: (message: string, title = '', options: MessageBoxOptions = {}) =>
       open(message, title, options, context, config, register) as Promise<'confirm'>,
-    prompt: (message: string, title = '操作确认', options: MessageBoxOptions = {}) =>
+    prompt: (message: string, title = '', options: MessageBoxOptions = {}) =>
       open(message, title, { showInput: true, ...options }, context, config, register) as Promise<MessageBoxPromptResult>
   };
 }

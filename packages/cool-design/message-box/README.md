@@ -25,10 +25,10 @@ MessageBox 对需要明确决策的操作进行模态确认，支持声明式组
 ```ts
 import { MessageBox } from 'cool-design';
 
-// 确认框：确认 resolve 'confirm'，取消 reject 'cancel'，关闭 reject 'close'
+// 确认框：确认 resolve 'confirm'，取消 reject 'cancel'；关闭默认归并为 'cancel'，开启 distinguishCancelAndClose 后关闭 reject 'close'
 MessageBox.confirm('确定删除吗？', '删除确认')
   .then(() => console.log('confirmed'))
-  .catch((action) => console.log(action)); // 'cancel' | 'close'
+  .catch((action) => console.log(action)); // 'cancel'（或开启 distinguishCancelAndClose 时的 'close'）
 
 // 提示框：默认无取消按钮
 await MessageBox.alert('操作成功', '提示');
@@ -102,7 +102,7 @@ MessageBox.confirm('确定吗？', '确认', {}, getCurrentInstance()?.appContex
 | 参数 | 说明 | 类型 | 默认值 |
 | ---- | ---- | ---- | ------ |
 | `modelValue` / `v-model` | 是否显示 | `boolean` | `false` |
-| `title` | 标题 | `string` | `操作确认` |
+| `title` | 标题 | `string` | `''` |
 | `message` | 纯文本内容，可被默认插槽覆盖 | `string` | 空字符串 |
 | `type` | 类型：`success` / `warning` / `info` / `error` | `MessageBoxType` | `warning` |
 | `dangerously-use-h-t-m-l-string` | 是否解析 HTML | `boolean` | `false` |
@@ -115,6 +115,13 @@ MessageBox.confirm('确定吗？', '确认', {}, getCurrentInstance()?.appContex
 | `cancel-button-type` | 取消按钮类型 | `ButtonType` | `default` |
 | `before-close` | 关闭前回调，需调用 `done` 关闭 | `MessageBoxBeforeClose` | — |
 | `before-confirm` | 确认前执行；`false` 保持窗口，抛错显示错误（旧版兼容，`before-close` 优先） | `(value?: string) => void \| boolean \| Promise<void \| boolean>` | — |
+| `close-on-click-modal` | 点击遮罩是否关闭 | `boolean` | `true` |
+| `close-on-press-escape` | Esc 是否关闭 | `boolean` | `true` |
+| `distinguish-cancel-and-close` | 区分 `cancel` 与 `close`（promise 的 reject 值） | `boolean` | `false` |
+| `round-button` | 操作按钮是否圆角 | `boolean` | `false` |
+| `lock-scroll` | 弹出时锁定滚动 | `boolean` | `true` |
+| `container` | 命令式调用的挂载容器（选择器或元素） | `string` / `HTMLElement` | `body` |
+| `custom-class` | 弹窗内容自定义类名 | `string` | — |
 | `show-input` | 是否显示输入框 | `boolean` | `false` |
 | `input-value` | 输入初始值 | `string` | 空字符串 |
 | `input-placeholder` | 输入占位 | `string` | 空字符串 |
@@ -153,4 +160,4 @@ MessageBox.confirm('确定吗？', '确认', {}, getCurrentInstance()?.appContex
 | `MessageBox.prompt(message, title?, options?, appContext?)` | 输入框 | `(message: string, title?: string, options?: MessageBoxOptions, appContext?: AppContext \| null) => Promise<MessageBoxPromptResult>` |
 | `useMessageBox()` | 组合式，返回 `{ msgbox, alert, confirm, prompt }`，继承上下文并在作用域销毁时清理 | `() => { msgbox, alert, confirm, prompt }` |
 
-复用 Dialog 的主题宿主、焦点管理、滚动锁与层级能力。点击遮罩不关闭，普通状态下 Esc 与关闭按钮触发 `close`，取消按钮触发 `cancel`。关闭或卸载后旧异步结果不再触发事件。
+复用 Dialog 的主题宿主、焦点管理、滚动锁与层级能力。点击遮罩默认关闭并触发 `close`（可用 `close-on-click-modal` 关闭该行为），普通状态下 Esc 与关闭按钮触发 `close`，取消按钮触发 `cancel`。关闭或卸载后旧异步结果不再触发事件。

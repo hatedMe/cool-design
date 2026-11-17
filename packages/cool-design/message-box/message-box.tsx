@@ -12,7 +12,7 @@ export default defineComponent({
   name: 'i-message-box',
   props: {
     modelValue: Boolean,
-    title: { type: String, default: '操作确认' },
+    title: { type: String, default: '' },
     message: { type: String, default: '' },
     type: { type: String as PropType<MessageBoxType>, default: 'warning' },
     dangerouslyUseHTMLString: Boolean,
@@ -31,7 +31,14 @@ export default defineComponent({
     inputType: { type: String as PropType<'text' | 'textarea' | 'password'>, default: 'text' },
     inputPattern: RegExp as PropType<RegExp>,
     inputValidator: Function as PropType<(value: string) => boolean | string>,
-    inputErrorMessage: { type: String, default: '输入不合法' }
+    inputErrorMessage: { type: String, default: '输入不合法' },
+    closeOnClickModal: { type: Boolean, default: true },
+    closeOnPressEscape: { type: Boolean, default: true },
+    distinguishCancelAndClose: Boolean,
+    roundButton: Boolean,
+    lockScroll: { type: Boolean, default: true },
+    container: [String, Object] as PropType<string | HTMLElement>,
+    customClass: String
   },
   emits: ['update:modelValue', 'update:inputValue', 'confirm', 'cancel', 'close'],
   setup(props, { slots, emit }) {
@@ -141,14 +148,16 @@ export default defineComponent({
         modelValue={props.modelValue}
         title={props.title}
         closable={!pending.value}
-        closeOnClickModal={false}
-        closeOnPressEscape={!pending.value}
+        closeOnClickModal={props.closeOnClickModal && !pending.value}
+        closeOnPressEscape={props.closeOnPressEscape && !pending.value}
+        lockScroll={props.lockScroll}
+        destroyOnClose
         onUpdate:modelValue={(open: boolean) => {
           if (!open) close();
         }}>
         {{
           default: () => (
-            <div class={['i-message-box', `i-message-box--${props.type}`, { 'is-center': props.center }]}>
+            <div class={['i-message-box', `i-message-box--${props.type}`, { 'is-center': props.center }, props.customClass]}>
               <div class='i-message-box__message'>
                 {slots.default?.() ??
                   (props.dangerouslyUseHTMLString ? (
@@ -191,6 +200,7 @@ export default defineComponent({
                       {props.showCancelButton && (
                         <Button
                           type={props.cancelButtonType}
+                          round={props.roundButton}
                           disabled={pending.value}
                           data-message-box-cancel
                           onClick={cancel}>
@@ -200,6 +210,7 @@ export default defineComponent({
                       {props.showConfirmButton && (
                         <Button
                           type={props.confirmButtonType}
+                          round={props.roundButton}
                           loading={pending.value}
                           data-message-box-confirm
                           onClick={confirm}>
@@ -212,6 +223,7 @@ export default defineComponent({
                       {props.showCancelButton && (
                         <Button
                           type={props.cancelButtonType}
+                          round={props.roundButton}
                           disabled={pending.value}
                           data-message-box-cancel
                           onClick={cancel}>
@@ -221,6 +233,7 @@ export default defineComponent({
                       {props.showConfirmButton && (
                         <Button
                           type={props.confirmButtonType}
+                          round={props.roundButton}
                           loading={pending.value}
                           data-message-box-confirm
                           onClick={confirm}>

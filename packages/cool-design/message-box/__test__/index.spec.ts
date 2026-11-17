@@ -44,7 +44,7 @@ test('函数确认与取消都返回明确结果并独立卸载', async () => {
   document.querySelector<HTMLButtonElement>('[data-message-box-confirm]')!.click();
   await expect(first).resolves.toBe('confirm');
   expect(document.querySelector('.i-message-box')).toBeNull();
-  const second = MessageBox.confirm('确认删除？');
+  const second = MessageBox.confirm('确认删除？', undefined, { distinguishCancelAndClose: true });
   await flushPromises();
   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   await expect(second).rejects.toBe('close');

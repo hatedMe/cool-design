@@ -12,6 +12,7 @@ import {
 } from 'vue';
 import { overlayKey } from '../config-provider/context';
 import { isTopDialog, isTopFocusDialog, lockDialog, unlockDialog } from './stack';
+import Icon from '../icon';
 
 export type DialogBeforeClose = (done: () => void) => void;
 
@@ -37,7 +38,11 @@ export default defineComponent({
     closable: { type: Boolean, default: true },
     center: Boolean,
     destroyOnClose: { type: Boolean, default: false },
-    beforeClose: { type: Function as PropType<DialogBeforeClose>, default: undefined }
+    beforeClose: { type: Function as PropType<DialogBeforeClose>, default: undefined },
+    alignCenter: Boolean,
+    draggable: Boolean,
+    closeIcon: [String, Object],
+    zIndex: Number
   },
   emits: ['update:modelValue', 'open', 'opened', 'close', 'closed', 'open-auto-focus', 'close-auto-focus'],
   setup(props, { slots, emit, expose }) {
@@ -49,6 +54,28 @@ export default defineComponent({
     const token = Symbol('dialog');
     let active = false;
     let maskGestureAllowed = true;
+    const dragOffset = ref({ x: 0, y: 0 });
+    let dragStart: { x: number; y: number; ox: number; oy: number } | null = null;
+    const onDragMove = (event: MouseEvent) => {
+      if (!dragStart) return;
+      dragOffset.value = {
+        x: dragStart.ox + event.clientX - dragStart.x,
+        y: dragStart.oy + event.clientY - dragStart.y
+      };
+    };
+    const onDragEnd = () => {
+      dragStart = null;
+      document.removeEventListener('mousemove', onDragMove);
+      document.removeEventListener('mouseup', onDragEnd);
+    };
+    const onHeaderMousedown = (event: MouseEvent) => {
+      if (!props.draggable || props.fullscreen) return;
+      if ((event.target as HTMLElement).closest('button')) return;
+      dragStart = { x: event.clientX, y: event.clientY, ox: dragOffset.value.x, oy: dragOffset.value.y };
+      document.addEventListener('mousemove', onDragMove);
+      document.addEventListener('mouseup', onDragEnd);
+    };
+    onBeforeUnmount(onDragEnd);
     // 在锚定浮层处理外部 pointerdown 之前，记录本次手势是否属于当前弹窗。
     const onPointerdown = () => {
       maskGestureAllowed = isTopDialog(token);
@@ -163,9 +190,10 @@ export default defineComponent({
           'i-dialog__mask': props.modal,
           'i-dialog__wrapper': !props.modal,
           'is-top': !!props.top && !props.fullscreen,
-          'is-fullscreen': props.fullscreen
+          'is-fullscreen': props.fullscreen,
+          'is-align-center': props.alignCenter
         }}
-        style={{ zIndex: zIndex.value, display: props.modelValue ? undefined : 'none' }}
+        style={{ zIndex: props.zIndex ?? zIndex.value, display: props.modelValue ? undefined : 'none' }}
         aria-hidden={props.modelValue ? undefined : 'true'}
         onClick={(event: MouseEvent) => {
           const allowed = maskGestureAllowed && isTopDialog(token);
@@ -181,10 +209,11 @@ export default defineComponent({
           ]}
           style={{
             width: typeof props.width === 'number' ? `${props.width}px` : props.width,
-            marginTop: !props.fullscreen && props.top ? props.top : undefined
+            marginTop: !props.fullscreen && props.top && !props.alignCenter ? props.top : undefined,
+            transform: dragOffset.value.x || dragOffset.value.y ? `translate(${dragOffset.value.x}px, ${dragOffset.value.y}px)` : undefined
           }}
-          role='dialog'
-          aria-modal='true'
+          role={props.modelValue ? 'dialog' : undefined}
+          aria-modal={props.modelValue ? 'true' : undefined}
           aria-labelledby={!slots.header && (props.title || slots.title) ? titleId : undefined}
           tabindex={-1}>
           {props.showClose && (
@@ -194,11 +223,13 @@ export default defineComponent({
               aria-label='关闭对话框'
               disabled={!props.closable}
               onClick={requestClose}>
-              ×
+              {props.closeIcon ? <Icon icon={props.closeIcon} aria-hidden='true' /> : '×'}
             </button>
           )}
           {(slots.header || props.title || slots.title || props.showClose) && (
-            <header class={['i-dialog__header', props.headerClass]}>
+            <header
+              class={['i-dialog__header', props.headerClass, props.draggable && !props.fullscreen && 'is-draggable']}
+              onMousedown={onHeaderMousedown}>
               {slots.header?.() ?? (
                 <h2 id={titleId} class='i-dialog__title'>
                   {slots.title?.() ?? props.title}

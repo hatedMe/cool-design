@@ -31,6 +31,13 @@ export interface MessageBoxOptions {
   inputPattern?: RegExp;
   inputValidator?: (value: string) => boolean | string;
   inputErrorMessage?: string;
+  closeOnClickModal?: boolean;
+  closeOnPressEscape?: boolean;
+  distinguishCancelAndClose?: boolean;
+  roundButton?: boolean;
+  lockScroll?: boolean;
+  container?: string | HTMLElement;
+  customClass?: string;
 }
 export interface MessageBoxPromptResult {
   value: string;
