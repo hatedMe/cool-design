@@ -662,6 +662,9 @@ export const pages: Page[] = [
     ]
   },
   component('tree', 'Tree 树形控件', '数据展示', [['basic', '层级数据', '展开并勾选树节点。']]),
+  component('tree-v2', 'TreeV2 虚拟化树', '数据展示', [
+    ['basic', '基础用法', '大数据量树形控件的窗口化渲染。']
+  ]),
   component(
     'timeline',
     'Timeline 时间线',
