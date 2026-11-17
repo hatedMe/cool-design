@@ -10,7 +10,7 @@
 
 | 参数                 | 说明                       | 类型                      | 默认值 |
 | -------------------- | -------------------------- | ------------------------- | ------ |
-| modelValue / v-model | 是否勾选或绑定 true-value / false-value | string / number / boolean | false  |
+| modelValue / v-model | 是否勾选或绑定 true-value / false-value | string / number / boolean | —      |
 | label                | 选项文本                   | string                    | —      |
 | trueValue            | 选中时的模型值             | string / number / boolean | true   |
 | falseValue           | 未选中时的模型值           | string / number / boolean | false  |
@@ -26,8 +26,8 @@
 
 | 事件名            | 说明         | 回调参数         |
 | ----------------- | ------------ | ---------------- |
-| update:modelValue | 用户改变勾选 | checked: boolean |
-| change            | 用户改变勾选 | checked: boolean |
+| update:modelValue | 用户改变勾选 | value: trueValue / falseValue 映射值 |
+| change            | 用户改变勾选 | value: trueValue / falseValue 映射值 |
 
 ## CheckboxGroup
 

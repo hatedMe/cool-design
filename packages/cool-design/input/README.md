@@ -56,7 +56,10 @@
 | showWordLimit           | 显示长度统计                             | boolean                   | false        |
 | wordLimitPosition       | 长度统计位置：inside / outside          | `inside` / `outside`     | inside       |
 | showPassword            | 显示密码切换                             | boolean                   | false        |
-| prefixIcon / suffixIcon | 图标字体类名                             | string                    | —            |
+| prefixIcon / suffixIcon | 图标（字体类名或组件）                     | string / Component    | —            |
+| clearIcon               | 清空图标（字体类名或组件）                 | string / Component    | —            |
+| inputStyle              | 输入框内联样式                             | string / object       | —            |
+| countGraphemes          | 字数统计函数，默认按字符计数               | (value: string) => number | —         |
 | formatter               | 展示值格式化函数                         | (value: string) => string | —            |
 | parser                  | 输入值解析函数                           | (value: string) => string | —            |
 | autosize                | 文本域自适应高度，可配置 minRows/maxRows | boolean / object          | false        |
@@ -73,6 +76,10 @@
 | input             | 输入内容变化       | value: string     |
 | focus             | 输入框聚焦         | event: FocusEvent |
 | clear             | 点击清空           | —                 |
+| keydown           | 键盘按下           | event: KeyboardEvent |
+| mouseenter        | 鼠标移入           | event: MouseEvent |
+| mouseleave        | 鼠标移出           | event: MouseEvent |
+| compositionstart / compositionupdate / compositionend | 输入法组字过程 | event: CompositionEvent |
 
 ### 插槽
 

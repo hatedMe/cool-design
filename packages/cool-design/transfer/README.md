@@ -59,6 +59,7 @@ Transfer 用于在两个列表之间移动和管理选项，支持搜索过滤�
 | filterable | 是否可搜索 | `boolean` | `false` |
 | filterPlaceholder | 搜索框占位文案 | `string` | `请输入搜索内容` |
 | filterMethod | 自定义搜索方法 | `(query: string, item: TransferItem) => boolean` | — |
+| renderContent | 自定义数据项渲染函数 | `(item: TransferItem) => unknown` | — |
 | targetOrder | 右侧列表排序策略 | `original` / `push` / `unshift` | `original` |
 | format | 计数文案模板 | `{ noChecked?: string; hasChecked?: string }` | `${total}` / `${checked}/${total}` |
 | props | 字段映射 | `{ label?: string; key?: string; disabled?: string }` | `{}` |

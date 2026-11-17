@@ -51,7 +51,7 @@
 
 | 参数 | 说明 | 类型 | 默认值 |
 | ---- | ---- | ---- | ------ |
-| variant | 占位形状：`p` / `text` / `h1` / `h3` / `caption` / `button` / `image` / `circle` / `rect` | `string` | `text` |
+| variant | 占位形状：`p` / `text` / `h1` / `h3` / `h5` / `caption` / `button` / `image` / `circle` / `rect` / `paragraph` | `string` | `text` |
 
 ### 使用说明
 

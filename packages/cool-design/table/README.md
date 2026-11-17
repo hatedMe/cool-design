@@ -260,7 +260,7 @@ const columns = [
 | cell-mouse-leave   | 鼠标离开单元格                    | `row: object`、`column: TableColumn`、`cell: HTMLTableCellElement`、`event: MouseEvent`     |
 | header-click       | 表头点击（含排序按钮）            | `column: TableColumn`、`event: MouseEvent`                                                  |
 | header-contextmenu | 表头右键                          | `column: TableColumn`、`event: MouseEvent`                                                  |
-| header-dragend     | 拖拽列宽结束                      | `newWidth: number`、`oldWidth: number`、`column: TableColumn`、`event: MouseEvent`          |
+| header-dragend     | 拖拽列宽结束（键盘调整时为 `KeyboardEvent`） | `newWidth: number`、`oldWidth: number`、`column: TableColumn`、`event: MouseEvent \| KeyboardEvent` |
 | sort-change        | 排序状态变化                      | `{ column: TableColumn \| null, prop: string, order: 'ascending' \| 'descending' \| null }` |
 | filter-change      | 筛选确认后触发                    | `filters: Record<string, unknown[]>`                                                        |
 | expand-change      | 展开行/树节点变化                 | `row: object`、`expandedRows: object[]`                                                     |
@@ -366,4 +366,4 @@ const columns = [
 
 ## 实现状态
 
-普通 `Table` 已覆盖本组件文档列出的 Element Plus Table 常用属性、事件、插槽、树形数据、展开行、选择、排序、筛选、列宽调整、列移动、编辑、合计与虚拟滚动相关能力。
+普通 `Table` 已覆盖本组件文档列出的 Element Plus Table 常用属性、事件、插槽、树形数据、展开行、选择、排序、筛选、列宽调整、列移动、编辑与合计能力。

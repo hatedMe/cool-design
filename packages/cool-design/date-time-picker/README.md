@@ -8,7 +8,7 @@ DateTimePicker 用于选择日期和时间，支持单值和日期时间范围�
 
 ## API
 
-属性：`model-value`、`format`、`value-format`、`range`、`placeholder`、`start-placeholder`、`end-placeholder`、`range-separator`、`disabled-date`、`disabled`、`readonly`、`clearable`、`editable`、`size`、`teleported`、`placement`、`popper-class`。
+属性：`model-value`、`type`（`datetime` / `datetimerange`）、`format`、`value-format`、`range`、`placeholder`、`start-placeholder`、`end-placeholder`、`range-separator`、`disabled-date`、`disabled-hours`、`disabled-minutes`、`disabled-seconds`、`disabled`、`readonly`、`clearable`、`editable`、`size`、`default-time`、`default-value`、`show-confirm`、`show-now`（默认 `true`）、`show-week-number`、`show-footer`、`single-panel`、`unlink-panels`、`shortcuts`、`first-day-of-week`、`cell-class-name`、`empty-values`、`value-on-clear`、`automatic-dropdown`、`id`、`name`、`prefix-icon`、`clear-icon`、`teleported`、`placement`、`popper-class`、`popper-style`、`popper-options`、`fallback-placements`。
 
 事件：`update:modelValue`、`change`、`focus`、`blur`、`clear`、`visible-change`、`calendar-change`、`panel-change`。
 

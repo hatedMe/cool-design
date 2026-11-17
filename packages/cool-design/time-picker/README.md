@@ -27,7 +27,7 @@ const time = ref(null);
 
 ## API
 
-属性：`model-value`、`format`、`value-format`、`placeholder`、`start-placeholder`、`end-placeholder`、`range-separator`、`is-range`、`disabled`、`readonly`、`editable`、`clearable`、`size`、`disabled-hours`、`disabled-minutes`、`disabled-seconds`、`teleported`、`placement`、`popper-class`。
+属性：`model-value`、`format`、`value-format`、`placeholder`、`start-placeholder`、`end-placeholder`、`range-separator`、`is-range`、`disabled`、`readonly`、`editable`、`clearable`、`size`、`disabled-hours`、`disabled-minutes`、`disabled-seconds`、`arrow-control`、`show-confirm`、`save-on-blur`、`default-value`、`empty-values`、`value-on-clear`、`name`、`tabindex`、`aria-label`、`prefix-icon`、`clear-icon`、`teleported`、`placement`、`popper-class`、`popper-style`、`popper-options`、`fallback-placements`。
 
 事件：`update:modelValue`、`change`、`focus`、`blur`、`clear`、`visible-change`。
 

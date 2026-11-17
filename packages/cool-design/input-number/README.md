@@ -51,6 +51,7 @@ const value = ref(1);
 | `formatter` | 格式化展示值 | `(value) => string` | — |
 | `parser` | 将展示文本解析为数值 | `(value) => number \| null` | — |
 | `value-on-clear` | 清空时的值：`min` / `max` / 数值 / `null` | `number \| null \| string` | `null` |
+| `validate-event` | 值变化时触发表单校验 | `boolean` | `true` |
 
 ### 事件
 

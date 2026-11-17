@@ -35,7 +35,7 @@
 | `show-close` | 是否显示关闭按钮 | `boolean` | `true` |
 | `close-on-click-modal` | 点击遮罩是否关闭 | `boolean` | `true` |
 | `close-on-press-escape` | `ESC` 是否关闭 | `boolean` | `true` |
-| `append-to` | 挂载目标（选择器或元素），默认 `body` | `string` / `HTMLElement` | `body` |
+| `append-to` | 挂载目标（选择器或元素），默认使用 ConfigProvider 浮层容器，兜底 `body` | `string` / `HTMLElement` | — |
 | `append-to-body` | 是否挂载到 `body`（兼容） | `boolean` | `false` |
 | `lock-scroll` | 是否锁定背景滚动 | `boolean` | `true` |
 | `before-close` | 关闭拦截 `(done: () => void) => void` | `Function` | — |
@@ -51,7 +51,7 @@
 | `footer-class` | 底部额外类名 | `string` | `''` |
 | `z-index` | 层级 | `number` | — |
 | `header-aria-level` | 标题 ARIA 层级 | `string` | `2` |
-| `resizable` | 是否可拖拽调整，或配置 `{ minSize, maxSize }`（像素或百分比，默认 `4px` / `100%`） | `boolean` / `object` | `false` |
+| `resizable` | 是否可拖拽调整，或配置 `{ minSize, maxSize }`（像素或百分比，默认 `4px` / 视口尺寸） | `boolean` / `object` | `false` |
 
 ### 事件
 
