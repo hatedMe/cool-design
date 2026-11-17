@@ -1,5 +1,6 @@
 import { Teleport, computed, defineComponent, h, markRaw, nextTick, onBeforeUnmount, onMounted, ref, toRaw, type Component, type ComponentPublicInstance, type PropType } from 'vue';
 import { useConfig, type Size } from '../config-provider/context';
+import { useField } from '../form/context';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 import { emitValue, formatTimeParts, parseTimeParts, timeInputValue, type DateValue, type TimeParts } from './date';
 import TimePickerPanel, { type TimeDisabledRule, type TimeUnit } from './time-picker-panel';
@@ -40,11 +41,17 @@ export default defineComponent({
     teleported: { type: Boolean, default: true },
     placement: { type: String as PropType<Placement>, default: 'bottom' },
     popperClass: { type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>, default: undefined },
-    fallbackPlacements: Array as PropType<Placement[]>
+    fallbackPlacements: Array as PropType<Placement[]>,
+    validateEvent: { type: Boolean, default: true }
   },
   emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear', 'visible-change'],
   setup(props, { attrs, emit, expose }) {
     const config = useConfig();
+    const field = useField();
+    const disabledOf = () => props.disabled || !!field?.disabled?.();
+    const validate = (trigger: 'blur' | 'change') => {
+      if (props.validateEvent) nextTick(() => field?.validate(trigger));
+    };
     const root = ref<HTMLElement>();
     const reference = ref<HTMLElement>();
     const floating = ref<HTMLElement>();
@@ -75,7 +82,7 @@ export default defineComponent({
     };
     const parseAt = (index: number) => parseTimeParts(values.value[index]) || { hour: 0, minute: 0, second: 0 };
     const setOpen = (value: boolean) => {
-      if (props.disabled || props.readonly || open.value === value) return;
+      if (disabledOf() || props.readonly || open.value === value) return;
       open.value = value;
       emit('visible-change', value);
       if (value) {
@@ -91,7 +98,7 @@ export default defineComponent({
         const value = draftValue.value;
         draftValue.value = null;
         emit('update:modelValue', value);
-        emit('change', value);
+        emit('change', value); validate('change');
       }
       close();
     };
@@ -116,7 +123,7 @@ export default defineComponent({
       }
       if (!range.value) {
         emit('update:modelValue', next);
-        emit('change', next);
+        emit('change', next); validate('change');
         return;
       }
       const nextValues = rangeDraft.value.map((item) => {
@@ -131,7 +138,7 @@ export default defineComponent({
       } else {
         if (parseTimeParts(nextValues[0]) && parseTimeParts(nextValues[0])!.hour * 3600 + parseTimeParts(nextValues[0])!.minute * 60 + parseTimeParts(nextValues[0])!.second > parts.hour * 3600 + parts.minute * 60 + parts.second) return;
         emit('update:modelValue', nextValues);
-        emit('change', nextValues);
+        emit('change', nextValues); validate('change');
         close();
       }
     };
@@ -163,13 +170,13 @@ export default defineComponent({
       const next = emitValue(`1970-01-01T${formatTimeParts(parts, 'HH:mm:ss')}`, props.valueFormat, true);
       if (index == null) {
         emit('update:modelValue', next);
-        emit('change', next);
+        emit('change', next); validate('change');
       } else {
         const nextValues = [...rangeDraft.value];
         nextValues[index] = next;
         rangeDraft.value = nextValues;
         emit('update:modelValue', nextValues);
-        emit('change', nextValues);
+        emit('change', nextValues); validate('change');
       }
     };
     const renderInput = (value: DateValue | null | undefined, index?: number) => (
@@ -179,7 +186,7 @@ export default defineComponent({
         role='combobox'
         aria-haspopup='dialog'
         aria-expanded={open.value}
-        aria-disabled={props.disabled || undefined}
+        aria-disabled={disabledOf() || undefined}
         aria-label={props.ariaLabel}
         name={props.name}
         tabindex={props.tabindex}
@@ -187,7 +194,7 @@ export default defineComponent({
         type='text'
         value={displayValue(value)}
         placeholder={index === 0 ? props.startPlaceholder || props.placeholder : props.endPlaceholder || props.placeholder}
-        disabled={props.disabled}
+        disabled={disabledOf()}
         readonly={props.readonly || !props.editable}
         onClick={() => {
           if (index != null) activeIndex.value = index;
@@ -196,7 +203,7 @@ export default defineComponent({
         onInput={(event: Event) => updateInput(index, (event.target as HTMLInputElement).value)}
         onChange={() => commitInput(index)}
         onFocus={(event: FocusEvent) => emit('focus', event)}
-        onBlur={(event: FocusEvent) => { if (!props.showConfirm) commitInput(index); if (props.showConfirm && props.saveOnBlur) confirm(); emit('blur', event); }}
+        onBlur={(event: FocusEvent) => { if (!props.showConfirm) commitInput(index); if (props.showConfirm && props.saveOnBlur) confirm(); emit('blur', event); validate('blur'); }}
         onKeydown={(event: KeyboardEvent) => {
           if (event.key === 'Escape') close();
           if (event.key === 'Enter') setOpen(!open.value);
@@ -204,14 +211,14 @@ export default defineComponent({
       />
     );
     const clear = (index?: number) => {
-      if (props.disabled || props.readonly) return;
+      if (disabledOf() || props.readonly) return;
       lastInputValues.length = 0;
       pendingInputs.length = 0;
       const currentRange = rangeDraft.value.some(Boolean) ? rangeDraft.value : values.value;
       const next = props.valueOnClear !== null ? props.valueOnClear : range.value ? index == null ? [null, null] : currentRange.map((item, itemIndex) => itemIndex === index ? null : item) : null;
       rangeDraft.value = range.value && Array.isArray(next) ? next : [null, null];
       emit('update:modelValue', next);
-      emit('change', next);
+      emit('change', next); validate('change');
       emit('clear');
     };
     const onOutside = (event: MouseEvent) => {
@@ -233,9 +240,9 @@ export default defineComponent({
       const content = props.teleported && panel ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
       const value = props.modelValue;
       return (
-        <span ref={root} class={['i-time-picker', `i-control--${props.size || config.value.size}`, range.value && 'is-range']}>
+        <span ref={root} class={['i-time-picker', `i-control--${props.size ?? field?.size?.() ?? config.value.size}`, range.value && 'is-range']}>
           {range.value ? <><div ref={reference}>{props.prefixIcon && <span class='i-time-picker__prefix-icon'>{renderIcon(props.prefixIcon as string | Component, 'i-time-picker__icon')}</span>}{renderInput(Array.isArray(value) ? value[0] : null, 0)}</div><span class='i-time-picker__separator'>{props.rangeSeparator}</span><div>{renderInput(Array.isArray(value) ? value[1] : null, 1)}</div></> : <div ref={reference}>{props.prefixIcon && <span class='i-time-picker__prefix-icon'>{renderIcon(props.prefixIcon as string | Component, 'i-time-picker__icon')}</span>}{renderInput(value as DateValue | null)}</div>}
-          {props.clearable && (range.value ? Array.isArray(value) && value.some(Boolean) : value) && <button type='button' class='i-time-picker__clear' disabled={props.disabled || props.readonly} aria-label='清空' onClick={() => clear()}>{props.clearIcon ? <span class='i-time-picker__clear-icon'>{renderIcon(props.clearIcon as string | Component, 'i-time-picker__icon')}</span> : '×'}</button>}
+          {props.clearable && (range.value ? Array.isArray(value) && value.some(Boolean) : value) && <button type='button' class='i-time-picker__clear' disabled={disabledOf() || props.readonly} aria-label='清空' onClick={() => clear()}>{props.clearIcon ? <span class='i-time-picker__clear-icon'>{renderIcon(props.clearIcon as string | Component, 'i-time-picker__icon')}</span> : '×'}</button>}
           {content}
         </span>
       );
