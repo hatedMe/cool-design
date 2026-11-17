@@ -39,6 +39,7 @@ import Dialog from './dialog';
 import Message from './message';
 import Affix from './affix';
 import { Anchor, AnchorLink } from './anchor';
+import InputTag from './input-tag';
 import Avatar from './avatar';
 import Badge from './badge';
 import Radio from './radio';
@@ -131,6 +132,7 @@ export {
   Affix,
   Anchor,
   AnchorLink,
+  InputTag,
   Avatar,
   Badge,
   Radio,
@@ -233,6 +235,7 @@ const components = [
   Affix,
   Anchor,
   AnchorLink,
+  InputTag,
   Avatar,
   Badge,
   Radio,

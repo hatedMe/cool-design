@@ -297,6 +297,9 @@ export const pages: Page[] = [
     ['sizes', '尺寸与图标', '使用 small、default、large 和前后缀图标。']
   ]),
   component('input-number', 'InputNumber 计数器', '表单组件', [['basic', '基础用法', '输入数值并使用步长控制。']]),
+  component('input-tag', 'InputTag 标签输入框', '表单组件', [
+    ['basic', '基础用法', '输入后回车创建标签，支持删除与拖拽排序。']
+  ]),
   component('date-picker', 'DatePicker 日期选择器', '表单组件', [
     ['basic', '日期选择', '选择日期、日期时间以及日期范围。']
   ]),
