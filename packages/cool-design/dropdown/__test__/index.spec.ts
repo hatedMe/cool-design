@@ -5,9 +5,19 @@ import Dropdown from '../index';
 import DropdownMenu from '../dropdown-menu';
 import DropdownItem from '../dropdown-item';
 
+/** 测试默认关闭 Teleport 与 hover 延时，便于断言菜单 DOM */
+const mountDropdown = (
+  options: { props?: Record<string, unknown>; slots?: Record<string, unknown>; attachTo?: HTMLElement } = {}
+) =>
+  mountDropdownBase(Dropdown, {
+    ...options,
+    props: { teleported: false, showTimeout: 0, hideTimeout: 0, ...options.props }
+  } as Parameters<typeof mount>[1]);
+const mountDropdownBase = mount;
+
 describe('Dropdown', () => {
   test('click 触发打开与命令', async () => {
-    const wrapper = mount(Dropdown, {
+    const wrapper = mountDropdown({
       props: { trigger: 'click', items: [{ command: 'edit', label: '编辑' }, { command: 'del', label: '删除', disabled: true }] },
       slots: { default: () => '触发器' }
     });
@@ -24,7 +34,7 @@ describe('Dropdown', () => {
   });
 
   test('hover 触发', async () => {
-    const wrapper = mount(Dropdown, {
+    const wrapper = mountDropdown({
       props: { items: [{ command: 'a', label: 'A' }] },
       slots: { default: () => '触发器' }
     });
@@ -35,7 +45,7 @@ describe('Dropdown', () => {
   });
 
   test('contextmenu 触发', async () => {
-    const wrapper = mount(Dropdown, {
+    const wrapper = mountDropdown({
       props: { trigger: 'contextmenu', items: [{ command: 'a', label: 'A' }] },
       slots: { default: () => '触发器' }
     });
@@ -44,7 +54,7 @@ describe('Dropdown', () => {
   });
 
   test('插槽模式支持 divided 与 icon', async () => {
-    const wrapper = mount(Dropdown, {
+    const wrapper = mountDropdown({
       props: { trigger: 'click' },
       slots: {
         default: () => '触发器',
@@ -63,7 +73,7 @@ describe('Dropdown', () => {
   });
 
   test('splitButton 左键触发 click 右键展开', async () => {
-    const wrapper = mount(Dropdown, {
+    const wrapper = mountDropdown({
       props: { splitButton: true, items: [{ command: 'a', label: 'A' }] },
       slots: { default: () => '操作' }
     });
@@ -75,7 +85,7 @@ describe('Dropdown', () => {
   });
 
   test('hideOnClick=false 保持打开', async () => {
-    const wrapper = mount(Dropdown, {
+    const wrapper = mountDropdown({
       props: { trigger: 'click', hideOnClick: false, items: [{ command: 'a', label: 'A' }] },
       slots: { default: () => '触发器' }
     });
@@ -87,7 +97,7 @@ describe('Dropdown', () => {
 
   test('命令值支持对象', async () => {
     const cmd = { id: 1 };
-    const wrapper = mount(Dropdown, {
+    const wrapper = mountDropdown({
       props: { trigger: 'click', items: [{ command: cmd, label: '对象' }] },
       slots: { default: () => '触发器' }
     });

@@ -37,10 +37,14 @@ Dropdown 将多个操作收纳到下拉菜单中，支持悬停/点击/右键触
 | `items` | 数据驱动菜单项（兼容） | `DropdownItemOption[]` | `[]` |
 | `trigger` | 触发方式 | `hover` / `click` / `contextmenu` | `hover` |
 | `hide-on-click` | 点击菜单项后是否关闭 | `boolean` | `true` |
-| `placement` | 菜单位置（类名） | `string` | `bottom` |
-| `disabled` | 是否禁用 | `boolean` | `false` |
+| `placement` | 菜单位置（自动翻转、随浮层定位） | `string` | `bottom` |
+| `show-timeout` / `hide-timeout` | hover 触发的展开/收起延时，单位 ms，`0` 表示立即 | `number` | `150` |
+| `max-height` | 菜单最大高度，超出滚动 | `number` / `string` | `172` |
+| `teleported` | 菜单是否传送到 body | `boolean` | `true` |
+| `popper-class` | 菜单浮层自定义类名 | `string` | — |
 | `split-button` | 是否为分裂按钮 | `boolean` | `false` |
 | `size` | 分裂按钮尺寸 | `large` / `default` / `small` | `''` |
+| `disabled` | 是否禁用 | `boolean` | `false` |
 
 ### Dropdown 事件
 

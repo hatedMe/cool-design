@@ -1,7 +1,8 @@
-import { computed, defineComponent, onBeforeUnmount, provide, ref, type PropType } from 'vue';
+import { Teleport, computed, defineComponent, onBeforeUnmount, provide, ref, type PropType } from 'vue';
 import { dropdownKey, type DropdownCommand, type DropdownTrigger } from './context';
 import IDropdownMenu from './dropdown-menu';
 import IDropdownItem from './dropdown-item';
+import { useFloating, type Placement } from '../../../src/utils/use-floating';
 
 export interface DropdownItem {
   command: DropdownCommand;
@@ -26,12 +27,20 @@ export default defineComponent({
     placement: { type: String as PropType<DropdownPlacement>, default: 'bottom' },
     disabled: Boolean,
     splitButton: Boolean,
-    size: { type: String as PropType<DropdownSize>, default: '' }
+    size: { type: String as PropType<DropdownSize>, default: '' },
+    showTimeout: { type: Number, default: 150 },
+    hideTimeout: { type: Number, default: 150 },
+    maxHeight: { type: [String, Number], default: 172 },
+    teleported: { type: Boolean, default: true },
+    popperClass: String
   },
   emits: ['click', 'command', 'visible-change'],
   setup(props, { slots, emit, expose }) {
     const open = ref(false);
     const rootRef = ref<HTMLElement | null>(null);
+    const reference = ref<HTMLElement>();
+    const floating = ref<HTMLElement>();
+    let hoverTimer: ReturnType<typeof setTimeout> | undefined;
 
     const triggers = computed<DropdownTrigger[]>(() =>
       Array.isArray(props.trigger) ? props.trigger : [props.trigger]
@@ -45,26 +54,36 @@ export default defineComponent({
       if (open.value === visible) return;
       open.value = visible;
       emit('visible-change', visible);
-      if (visible) {
-        document.addEventListener('click', handleDocumentClick);
-      } else {
-        document.removeEventListener('click', handleDocumentClick);
-      }
     };
+
+    const scheduleOpen = () => {
+      if (hoverTimer) clearTimeout(hoverTimer);
+      if (props.showTimeout > 0) hoverTimer = setTimeout(() => setVisible(true), props.showTimeout);
+      else setVisible(true);
+    };
+    const scheduleClose = () => {
+      if (hoverTimer) clearTimeout(hoverTimer);
+      if (props.hideTimeout > 0) hoverTimer = setTimeout(() => setVisible(false), props.hideTimeout);
+      else setVisible(false);
+    };
+    const clearTimer = () => {
+      if (hoverTimer) clearTimeout(hoverTimer);
+      hoverTimer = undefined;
+    };
+
+    const position = useFloating({
+      open,
+      reference,
+      floating,
+      placement: () => props.placement as Placement,
+      close: () => setVisible(false)
+    });
 
     const handleOpen = () => setVisible(true);
     const handleClose = () => setVisible(false);
     const toggle = () => setVisible(!open.value);
 
-    const handleDocumentClick = (event: MouseEvent) => {
-      const target = event.target as Node | null;
-      if (rootRef.value && target && rootRef.value.contains(target)) return;
-      setVisible(false);
-    };
-
-    onBeforeUnmount(() => {
-      document.removeEventListener('click', handleDocumentClick);
-    });
+    onBeforeUnmount(clearTimer);
 
     const handleCommand = (command: DropdownCommand) => {
       emit('command', command);
@@ -99,11 +118,11 @@ export default defineComponent({
       emit('click', event);
     };
 
+    const menuScope = () => floating.value ?? rootRef.value;
+
     const focusFirstItem = () => {
       requestAnimationFrame(() => {
-        const first = rootRef.value?.querySelector<HTMLElement>(
-          '.i-dropdown__menu button:not([disabled])'
-        );
+        const first = menuScope()?.querySelector<HTMLElement>('.i-dropdown__menu button:not([disabled])');
         first?.focus();
       });
     };
@@ -130,7 +149,7 @@ export default defineComponent({
     const handleMenuKeydown = (event: KeyboardEvent) => {
       if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
       const buttons = Array.from(
-        rootRef.value?.querySelectorAll<HTMLElement>('.i-dropdown__menu button:not([disabled])') ?? []
+        menuScope()?.querySelectorAll<HTMLElement>('.i-dropdown__menu button:not([disabled])') ?? []
       );
       if (buttons.length === 0) return;
       event.preventDefault();
@@ -168,12 +187,25 @@ export default defineComponent({
     return () => {
       const menu = open.value && (
         <div
-          class={{ 'i-dropdown__popper': true, [`is-${props.placement}`]: !!props.placement }}
+          ref={floating}
+          class={[
+            'i-dropdown__popper',
+            `is-${props.placement}`,
+            props.popperClass
+          ]}
           data-placement={props.placement}
+          style={[
+            position.style.value,
+            { maxHeight: typeof props.maxHeight === 'number' ? `${props.maxHeight}px` : props.maxHeight, overflow: 'auto' }
+          ]}
+          onMouseenter={() => useHover.value && scheduleOpen()}
+          onMouseleave={() => useHover.value && scheduleClose()}
           onKeydown={handleMenuKeydown}>
           {renderMenuContent()}
         </div>
       );
+      const renderedMenu =
+        menu && (props.teleported ? <Teleport to={position.target.value}>{menu}</Teleport> : menu);
 
       if (props.splitButton) {
         return (
@@ -185,8 +217,8 @@ export default defineComponent({
               [`i-dropdown--${props.size}`]: !!props.size,
               'is-disabled': props.disabled
             }}
-            onMouseenter={() => useHover.value && setVisible(true)}
-            onMouseleave={() => useHover.value && setVisible(false)}>
+            onMouseenter={() => useHover.value && scheduleOpen()}
+            onMouseleave={() => useHover.value && scheduleClose()}>
             <button
               type='button'
               class='i-dropdown__button'
@@ -195,6 +227,7 @@ export default defineComponent({
               {slots.default?.() ?? '更多'}
             </button>
             <button
+              ref={reference}
               type='button'
               class='i-dropdown__trigger'
               disabled={props.disabled}
@@ -210,7 +243,7 @@ export default defineComponent({
               onKeydown={handleTriggerKeydown}>
               <span aria-hidden='true'>▾</span>
             </button>
-            {menu}
+            {renderedMenu}
           </div>
         );
       }
@@ -223,9 +256,10 @@ export default defineComponent({
             [`i-dropdown--${props.size}`]: !!props.size,
             'is-disabled': props.disabled
           }}
-          onMouseenter={() => useHover.value && setVisible(true)}
-          onMouseleave={() => useHover.value && setVisible(false)}>
+          onMouseenter={() => useHover.value && scheduleOpen()}
+          onMouseleave={() => useHover.value && scheduleClose()}>
           <span
+            ref={reference}
             class='i-dropdown__trigger'
             tabindex={props.disabled ? -1 : 0}
             role='button'
@@ -242,7 +276,7 @@ export default defineComponent({
             onKeydown={handleTriggerKeydown}>
             {slots.default?.() ?? '更多'}
           </span>
-          {menu}
+          {renderedMenu}
         </span>
       );
     };
