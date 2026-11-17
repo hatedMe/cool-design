@@ -1,0 +1,38 @@
+.i-text {
+  color: var(--i-text, #303133);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.i-text--primary {
+  color: var(--i-primary, #409eff);
+}
+.i-text--success {
+  color: var(--i-success, #67c23a);
+}
+.i-text--warning {
+  color: var(--i-warning, #e6a23c);
+}
+.i-text--danger {
+  color: var(--i-danger, #f56c6c);
+}
+.i-text--info {
+  color: var(--i-info, #909399);
+}
+.i-text--small {
+  font-size: 12px;
+}
+.i-text--large {
+  font-size: 16px;
+}
+.i-text.is-truncated {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+.i-text.is-line-clamp {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+}

@@ -169,6 +169,9 @@ export const pages: Page[] = [
   component('link', 'Link 文字链接', '基础组件', [
     ['basic', '导航与行内操作', '体验语义色、尺寸、下划线、图标和禁用行为。']
   ]),
+  component('text', 'Text 文本', '基础组件', [
+    ['basic', '基础用法', '语义色、尺寸与多行省略的行内文本。']
+  ]),
   component('icon', 'Icon 图标', '基础组件', [
     ['basic', '图标与自定义 SVG', '装饰图标无需名称；表达独立含义时通过 label 提供可访问名称。'],
     ['catalog', '图标目录', '搜索全部内置图标，点击复制完整用法。']

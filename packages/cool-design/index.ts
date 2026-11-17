@@ -4,6 +4,7 @@ import Aside from './aside';
 import Main from './main';
 import Footer from './footer';
 import Link from './link';
+import Text from './text';
 import Icon from './icon';
 import Space from './space';
 import Divider from './divider';
@@ -92,6 +93,7 @@ export {
   Main,
   Footer,
   Link,
+  Text,
   Icon,
   Space,
   Divider,
@@ -187,6 +189,7 @@ const components = [
   Main,
   Footer,
   Link,
+  Text,
   Icon,
   Space,
   Divider,
