@@ -175,6 +175,25 @@ export const pages: Page[] = [
   component('scrollbar', 'Scrollbar 滚动条', '基础组件', [
     ['basic', '基础用法', '自绘滚动条的滚动容器。']
   ]),
+  component('splitter', 'Splitter 分割面板', '基础组件', [
+    ['basic', '基础用法', '可拖拽调整大小的分割面板。']
+  ]),
+  {
+    imports: ['SplitterPanel'],
+    id: 'components/splitter-panel',
+    title: 'SplitterPanel 分割面板项',
+    group: '基础组件',
+    markdown:
+      '# SplitterPanel 分割面板项\n\n### 介绍\n\nSplitter 的子组件，声明单个面板。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `size` | 面板大小（数字为 px，字符串支持 `%` / `px`），支持 `v-model:size` | `string \\| number` | — |\n| `min` | 最小大小 | `string \\| number` | — |\n| `max` | 最大大小 | `string \\| number` | — |\n| `resizable` | 是否允许拖拽调整 | `boolean` | `true` |\n| `collapsible` | 是否显示折叠按钮 | `boolean` | `false` |\n\n### Events\n\n| 事件名 | 说明 | 回调参数 |\n| ------ | ---- | -------- |\n| `update:size` | 面板大小变化 | `size: number` |\n\n### Slots\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 面板内容 |\n| `start-collapsible` | 起始侧折叠按钮内容 |\n| `end-collapsible` | 结束侧折叠按钮内容 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/splitter/demo/basic.vue',
+        'basic',
+        '与 Splitter 组合使用',
+        '设置初始大小、最小大小与可折叠能力。'
+      )
+    ]
+  },
   component('icon', 'Icon 图标', '基础组件', [
     ['basic', '图标与自定义 SVG', '装饰图标无需名称；表达独立含义时通过 label 提供可访问名称。'],
     ['catalog', '图标目录', '搜索全部内置图标，点击复制完整用法。']

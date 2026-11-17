@@ -64,6 +64,7 @@ import Timeline, { TimelineItem } from './timeline';
 import Countdown from './countdown';
 import Segmented from './segmented';
 import Tour from './tour';
+import { Splitter, SplitterPanel } from './splitter';
 import Statistic from './statistic';
 import Backtop from './backtop';
 import Menu, { MenuItem, SubMenu, MenuItemGroup } from './menu';
@@ -163,6 +164,8 @@ export {
   Countdown,
   Segmented,
   Tour,
+  Splitter,
+  SplitterPanel,
   Statistic,
   Menu,
   MenuItem,
@@ -263,6 +266,8 @@ const components = [
   Countdown,
   Segmented,
   Tour,
+  Splitter,
+  SplitterPanel,
   Statistic,
   Menu,
   MenuItem,
