@@ -665,6 +665,9 @@ export const pages: Page[] = [
       )
     ]
   },
+  component('tour', 'Tour 漫游式引导', '数据展示', [
+    ['basic', '基础用法', '分步骤聚焦页面元素的引导。']
+  ]),
   component('segmented', 'Segmented 分段控制器', '数据展示', [
     ['basic', '基础用法', '在互斥选项间切换的分段按钮。']
   ]),

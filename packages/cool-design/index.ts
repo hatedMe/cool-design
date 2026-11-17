@@ -63,6 +63,7 @@ import Tree from './tree';
 import Timeline, { TimelineItem } from './timeline';
 import Countdown from './countdown';
 import Segmented from './segmented';
+import Tour from './tour';
 import Statistic from './statistic';
 import Backtop from './backtop';
 import Menu, { MenuItem, SubMenu, MenuItemGroup } from './menu';
@@ -161,6 +162,7 @@ export {
   Backtop,
   Countdown,
   Segmented,
+  Tour,
   Statistic,
   Menu,
   MenuItem,
@@ -260,6 +262,7 @@ const components = [
   Backtop,
   Countdown,
   Segmented,
+  Tour,
   Statistic,
   Menu,
   MenuItem,
