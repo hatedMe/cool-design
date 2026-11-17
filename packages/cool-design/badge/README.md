@@ -40,7 +40,9 @@
 | hidden | 隐藏徽标 | `boolean` | `false` |
 | show-zero | 是否显示数值 0 | `boolean` | `true` |
 | color | 自定义徽标背景色 | `string` | — |
-| offset | 兼容扩展：徽标位置偏移 `[x, y]`，单位 px | `[number, number]` | — |
+| offset | 徽标位置偏移 `[x, y]`，单位 px | `[number, number]` | — |
+| badge-style | 徽标自定义样式 | `string` / `object` | — |
+| badge-class | 徽标自定义类名 | `string` | — |
 
 ### 插槽
 

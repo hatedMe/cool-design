@@ -33,7 +33,9 @@ const props = {
     type: Array as unknown as PropType<[number, number]>,
     default: undefined
   },
-  color: String
+  color: String,
+  badgeStyle: [String, Object] as PropType<string | Record<string, string>>,
+  badgeClass: [String, Array, Object] as PropType<string | unknown[] | Record<string, boolean>>
 };
 
 const isNumber = (value: unknown): boolean => typeof value === 'number';
@@ -64,12 +66,15 @@ export default defineComponent({
         {slots.default?.()}
         {visible.value && (
           <span
-            class={[bem('tag', { [props.type]: true }), props.isDot && bem('dot')]}
-            style={{
-              background: props.color,
-              '--i-badge-offset-x': props.offset ? `${props.offset[0]}px` : undefined,
-              '--i-badge-offset-y': props.offset ? `${props.offset[1]}px` : undefined
-            }}
+            class={[bem('tag', { [props.type]: true }), props.isDot && bem('dot'), props.badgeClass]}
+            style={[
+              {
+                background: props.color,
+                '--i-badge-offset-x': props.offset ? `${props.offset[0]}px` : undefined,
+                '--i-badge-offset-y': props.offset ? `${props.offset[1]}px` : undefined
+              },
+              props.badgeStyle
+            ]}
             data-offset={props.offset?.join(',')}>
             {slots.content?.() ?? content.value}
           </span>
