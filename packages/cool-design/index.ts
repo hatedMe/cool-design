@@ -38,6 +38,7 @@ import Pagination from './pagination';
 import Dialog from './dialog';
 import Message from './message';
 import Affix from './affix';
+import { Anchor, AnchorLink } from './anchor';
 import Avatar from './avatar';
 import Badge from './badge';
 import Radio from './radio';
@@ -126,6 +127,8 @@ export {
   Dialog,
   Message,
   Affix,
+  Anchor,
+  AnchorLink,
   Avatar,
   Badge,
   Radio,
@@ -223,6 +226,8 @@ const components = [
   Dialog,
   Message,
   Affix,
+  Anchor,
+  AnchorLink,
   Avatar,
   Badge,
   Radio,

@@ -476,6 +476,25 @@ export const pages: Page[] = [
   component('affix', 'Affix 固钉', '导航组件', [
     ['basic', '基础用法', '滚动时将元素固定在视口顶部。']
   ]),
+  component('anchor', 'Anchor 锚点', '导航组件', [
+    ['basic', '基础用法', '滚动定位与自动高亮的锚点导航。']
+  ]),
+  {
+    imports: ['AnchorLink'],
+    id: 'components/anchor-link',
+    title: 'AnchorLink 锚点链接',
+    group: '导航组件',
+    markdown:
+      '# AnchorLink 锚点链接\n\n### 介绍\n\nAnchor 的子组件，声明单个锚点链接。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `href` | 目标元素地址 | `string` | — |\n| `title` | 链接文本 | `string` | — |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 链接内容（优先于 `title`） |\n| `sub-link` | 子链接列表 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/anchor/demo/basic.vue',
+        'basic',
+        '与 Anchor 组合使用',
+        '通过 href 关联目标元素，支持 sub-link 插槽嵌套子链接。'
+      )
+    ]
+  },
   component('backtop', 'Backtop 回到顶部', '导航组件', [
     ['basic', '滚动回顶', '滚动容器后显示按钮，点击平滑回到顶部。']
   ]),
