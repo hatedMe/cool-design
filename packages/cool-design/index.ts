@@ -43,6 +43,7 @@ import InputTag from './input-tag';
 import CascaderPanel from './cascader-panel';
 import Mention from './mention';
 import InputOtp from './input-otp';
+import SelectV2 from './select-v2';
 import Avatar from './avatar';
 import Badge from './badge';
 import Radio from './radio';
@@ -139,6 +140,7 @@ export {
   CascaderPanel,
   Mention,
   InputOtp,
+  SelectV2,
   Avatar,
   Badge,
   Radio,
@@ -245,6 +247,7 @@ const components = [
   CascaderPanel,
   Mention,
   InputOtp,
+  SelectV2,
   Avatar,
   Badge,
   Radio,

@@ -742,6 +742,9 @@ export const pages: Page[] = [
     ['remote', '远程与虚拟选项', '按查询词加载远程选项，并可用于大数据量列表。'],
     ['sizes', '尺寸', '使用 small、default、large 控制选择器高度。']
   ]),
+  component('select-v2', 'SelectV2 虚拟化选择器', '表单组件', [
+    ['basic', '基础用法', '大数据量选项的窗口化渲染选择器。']
+  ]),
   component('select-option', 'SelectOption 选项', '表单组件', [
     ['basic', '选项与禁用项', '在 Select 中使用，默认插槽优先于 label。']
   ]),
