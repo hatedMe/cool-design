@@ -175,3 +175,24 @@ test('无遮罩穿透、挂载目标与多实例滚动锁', async () => {
   second.unmount();
   expect(document.body.style.overflow).toBe('');
 });
+
+test('close-icon 支持字符串与组件，开关走过渡包装', async () => {
+  const w = mount(Drawer, {
+    attachTo: document.body,
+    props: { modelValue: true, title: '编辑', closeIcon: '✕' },
+    slots: { default: () => h('input') }
+  });
+  await flushPromises();
+  expect(document.querySelector('.i-drawer__close')?.textContent).toBe('✕');
+  await w.unmount();
+
+  const CustomIcon = { render: () => h('span', { class: 'custom-close' }, '自定义') };
+  const custom = mount(Drawer, {
+    attachTo: document.body,
+    props: { modelValue: true, title: '编辑', closeIcon: CustomIcon },
+    slots: { default: () => h('input') }
+  });
+  await flushPromises();
+  expect(document.querySelector('.i-drawer__close .custom-close')?.textContent).toBe('自定义');
+  custom.unmount();
+});

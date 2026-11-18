@@ -89,6 +89,36 @@
   border-top: 1px solid var(--i-border);
   border-bottom: 0;
 }
+
+// 开关过渡：遮罩淡入淡出，面板按方向滑入滑出。
+.i-drawer-fade-enter-active .i-drawer__mask,
+.i-drawer-fade-leave-active .i-drawer__mask {
+  transition: opacity 0.3s ease;
+}
+.i-drawer-fade-enter-active .i-drawer,
+.i-drawer-fade-leave-active .i-drawer {
+  transition: transform 0.3s ease;
+}
+.i-drawer-fade-enter-from .i-drawer__mask,
+.i-drawer-fade-leave-to .i-drawer__mask {
+  opacity: 0;
+}
+.i-drawer-fade-enter-from .i-drawer.is-rtl,
+.i-drawer-fade-leave-to .i-drawer.is-rtl {
+  transform: translateX(100%);
+}
+.i-drawer-fade-enter-from .i-drawer.is-ltr,
+.i-drawer-fade-leave-to .i-drawer.is-ltr {
+  transform: translateX(-100%);
+}
+.i-drawer-fade-enter-from .i-drawer.is-ttb,
+.i-drawer-fade-leave-to .i-drawer.is-ttb {
+  transform: translateY(-100%);
+}
+.i-drawer-fade-enter-from .i-drawer.is-btt,
+.i-drawer-fade-leave-to .i-drawer.is-btt {
+  transform: translateY(100%);
+}
 .i-drawer.is-resizable {
   overflow: visible;
 }

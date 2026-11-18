@@ -1,13 +1,18 @@
 import {
   Teleport,
+  Transition,
   computed,
   defineComponent,
+  h,
   inject,
   nextTick,
   onBeforeUnmount,
   onMounted,
   ref,
+  vShow,
   watch,
+  withDirectives,
+  type Component,
   type PropType
 } from 'vue';
 import { overlayKey } from '../config-provider/context';
@@ -55,6 +60,7 @@ export default defineComponent({
     closeOnClickModal: { type: Boolean, default: true },
     closeOnPressEscape: { type: Boolean, default: true },
     showClose: { type: Boolean, default: true },
+    closeIcon: { type: [String, Object, Function] as PropType<string | Component>, default: undefined },
     appendTo: { type: [String, Object] as PropType<string | HTMLElement>, default: undefined },
     appendToBody: { type: Boolean, default: false },
     lockScroll: { type: Boolean, default: true },
@@ -357,8 +363,7 @@ export default defineComponent({
           { 'is-penetrable': !props.modal && props.modalPenetrable },
           props.modalClass
         ]}
-        style={{ zIndex: zIndex.value, display: visible.value ? undefined : 'none' }}
-        aria-hidden={visible.value ? undefined : 'true'}
+        style={{ zIndex: zIndex.value }}
         onClick={(event: MouseEvent) => {
           const allowed = maskGestureAllowed && isTopDialog(token);
           maskGestureAllowed = true;
@@ -389,7 +394,11 @@ export default defineComponent({
                       class='i-drawer__close'
                       aria-label='关闭'
                       onClick={handleClose}>
-                      ×
+                      {typeof props.closeIcon === 'string'
+                        ? props.closeIcon
+                        : props.closeIcon
+                          ? h(props.closeIcon as Component)
+                          : '×'}
                     </button>
                   )}
                 </>
@@ -419,8 +428,9 @@ export default defineComponent({
     return () => {
       if (!rendered.value) return null;
       if (!visible.value && props.destroyOnClose) return null;
-      const node = content();
-      return target.value ? <Teleport to={target.value}>{node}</Teleport> : node;
+      const node = withDirectives(content(), [[vShow, visible.value]]);
+      const animated = <Transition name='i-drawer-fade'>{node}</Transition>;
+      return target.value ? <Teleport to={target.value}>{animated}</Teleport> : animated;
     };
   }
 });

@@ -33,6 +33,7 @@
 | `size` | 宽度（水平）或高度（垂直），数字为像素 | `string` / `number` | `30%` |
 | `with-header` | 是否显示头部 | `boolean` | `true` |
 | `show-close` | 是否显示关闭按钮 | `boolean` | `true` |
+| `close-icon` | 关闭按钮内容：字符串按文本渲染，组件按节点渲染 | `string` / `Component` | `×` |
 | `close-on-click-modal` | 点击遮罩是否关闭 | `boolean` | `true` |
 | `close-on-press-escape` | `ESC` 是否关闭 | `boolean` | `true` |
 | `append-to` | 挂载目标（选择器或元素），默认使用 ConfigProvider 浮层容器，兜底 `body` | `string` / `HTMLElement` | — |
