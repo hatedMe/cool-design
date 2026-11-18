@@ -58,3 +58,10 @@
 - 主入口版本号内联为字面量（`scripts/sync-version.mjs` 随发版同步），消除 `es/package.json.js` 副产物
 - `checkbox-button`、`table-v2` 注册为独立构建入口，修复「主入口引用图未覆盖导致子路径无 JS 产物」的导入 404
 - 新增发布守卫测试：全量组件子路径的 ESM/CJS 入口与类型声明齐全性、产物依赖泄漏与副产物断言
+
+### Chores（死代码清理）
+
+- 删除零引用的遗留目录：`mask/`（旧版遮罩实现，模块别名不可解析）、`advanced-form/`（无组件的聚合样式，其中未被组件目录覆盖的 autocomplete、color-picker 规则已迁至各自 `index.scss`）；`slider`/`upload`/`tree-select` 与其重复的旧规则随之移除，`style.css` 体积下降
+- 删除根目录 `types/` 手写声明（含文件名拼写错误文件），代码中零引用
+- 删除 Vue 2 时代的 `message/demo.js`、`message-box/demo.js` 演示脚本与 `checkbox-group/index.scss`、`select-option/index.scss` 空样式文件
+- 构建副产物（`es/node_modules`、`es/_virtual`、`es/package.json.js`）随依赖外部化消失，`.gitignore` 已覆盖产物目录

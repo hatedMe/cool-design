@@ -1,0 +1,53 @@
+// 从已删除的聚合样式目录迁移而来，保持选择器与规则不变。
+.i-autocomplete {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.i-autocomplete input {
+  min-width: 220px;
+  height: 32px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 0 10px;
+  background: #fff;
+}
+.i-autocomplete__list {
+  position: absolute;
+  z-index: 10;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 4px 0;
+  padding: 4px 0;
+  border: 1px solid #ebeef5;
+  background: #fff;
+  list-style: none;
+  box-shadow: 0 4px 12px #0001;
+}
+.i-autocomplete__list li {
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.i-autocomplete__list li:hover,
+.i-autocomplete__list li.is-highlighted {
+  background: #f5f7fa;
+}
+.i-autocomplete__control {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.i-autocomplete__icon {
+  color: #909399;
+  font-size: 14px;
+}
+.i-autocomplete__clear {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.i-autocomplete__loading {
+  color: #909399;
+  cursor: default;
+}
