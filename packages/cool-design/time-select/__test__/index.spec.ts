@@ -1,6 +1,11 @@
-import { flushPromises, mount } from '@vue/test-utils';
+import { DOMWrapper, flushPromises, mount } from '@vue/test-utils';
 import { h, reactive } from 'vue';
-import { describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
+// 下拉面板默认传送到 document.body，测试中用文档级查询访问传送内容。
+beforeEach(() => {
+  document.body.innerHTML = '';
+});
+const doc = () => new DOMWrapper(document.body);
 import TimeSelect from '..';
 import Form from '../../form';
 import FormItem from '../../form-item';
@@ -11,7 +16,7 @@ describe('test `TimeSelect` component', () => {
       props: { start: '09:00', step: '00:30', end: '10:00', modelValue: '' }
     });
     await wrapper.find('.i-time-select__control').trigger('click');
-    const options = wrapper.findAll('[role="option"]');
+    const options = doc().findAll('[role="option"]');
     expect(options.map((item) => item.text())).toEqual(['09:00', '09:30', '10:00']);
     await options[1].trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([['09:30']]);
@@ -23,7 +28,7 @@ describe('test `TimeSelect` component', () => {
       props: { start: '09:00', step: '01:00', end: '12:00', minTime: '10:00', maxTime: '11:00', modelValue: '' }
     });
     await wrapper.find('.i-time-select__control').trigger('click');
-    const options = wrapper.findAll('[role="option"]');
+    const options = doc().findAll('[role="option"]');
     expect(options.map((item) => item.classes().includes('is-disabled'))).toEqual([
       true,
       false,
@@ -64,8 +69,32 @@ describe('test `TimeSelect` component', () => {
     await flushPromises();
     expect(wrapper.text()).toContain('时间必填');
     await wrapper.find('.i-time-select__control').trigger('click');
-    await wrapper.findAll('[role="option"]')[0].trigger('click');
+    await doc().findAll('[role="option"]')[0].trigger('click');
     await flushPromises();
     expect(wrapper.text()).not.toContain('时间必填');
+  });
+
+  test('下拉传送到 body，Escape 与外点关闭', async () => {
+    const wrapper = mount(TimeSelect, {
+      props: { start: '09:00', end: '10:00', popperClass: 'time-scope' },
+      attachTo: document.body
+    });
+    await wrapper.find('.i-time-select__control').trigger('click');
+    expect(wrapper.find('.i-time-select__dropdown').exists()).toBe(false);
+    const mine = () => doc().find('.time-scope');
+    expect(mine().exists()).toBe(true);
+    expect(mine().attributes('data-placement')).toBe('bottom-start');
+
+    document.body.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+    await flushPromises();
+    expect(mine().exists()).toBe(false);
+
+    await wrapper.find('.i-time-select__control').trigger('click');
+    (wrapper.get('.i-time-select__control').element as HTMLElement).dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+    );
+    await flushPromises();
+    expect(mine().exists()).toBe(false);
+    wrapper.unmount();
   });
 });
