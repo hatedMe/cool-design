@@ -1,8 +1,9 @@
-import { h, ref } from 'vue';
+import { defineComponent, h, reactive, ref } from 'vue';
 import { mount } from '@vue/test-utils';
 import { expect, test } from 'vitest';
 import Checkbox from '../index';
 import CheckboxGroup from '../group';
+import * as CoolDesign from '../../index';
 
 test('CheckboxGroup 使用数组模型并限制禁用项', async () => {
   const wrapper = mount(CheckboxGroup, {
@@ -115,4 +116,36 @@ test('CheckboxGroup 的 min 和 max 动态更新后仍然生效', async () => {
   await wrapper.findAll('input')[0].setValue(true);
   await wrapper.findAll('input')[1].setValue(true);
   expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([['a', 'b']]);
+});
+
+test('表单内继承 size 与禁用，无表单时回退全局尺寸', async () => {
+  const model = reactive({ accepted: false });
+  const Host = defineComponent({
+    setup: () => () =>
+      h(CoolDesign.Form, { model, size: 'large', disabled: true }, () =>
+        h(CoolDesign.FormItem, { prop: 'accepted', label: '接受' }, () => [
+          h(CoolDesign.Checkbox, { modelValue: model.accepted, label: '接受协议' }),
+          h(CoolDesign.CheckboxButton, { modelValue: model.accepted, label: '按钮式' })
+        ])
+      )
+  });
+  const wrapper = mount(Host);
+  const label = wrapper.find('.i-checkbox');
+  const button = wrapper.find('.i-checkbox-button');
+  expect(label.classes()).toContain('is-large');
+  expect(button.classes()).toContain('is-large');
+  expect(wrapper.find('input[type="checkbox"]').attributes('disabled')).toBeDefined();
+  expect(button.attributes('disabled')).toBeDefined();
+  wrapper.unmount();
+
+  const GlobalHost = defineComponent({
+    setup: () => () => h(CoolDesign.ConfigProvider, { size: 'small' }, () => h(CoolDesign.Checkbox, { label: '小尺寸' }))
+  });
+  const global = mount(GlobalHost);
+  expect(global.find('.i-checkbox').classes()).toContain('is-small');
+  global.unmount();
+
+  const fallback = mount(Checkbox, { props: { label: '默认' } });
+  expect(fallback.find('.i-checkbox').classes()).not.toContain('is-small');
+  expect(fallback.find('.i-checkbox').classes()).not.toContain('is-large');
 });

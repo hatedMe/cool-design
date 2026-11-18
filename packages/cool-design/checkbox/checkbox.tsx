@@ -1,5 +1,6 @@
 import { defineComponent, inject, nextTick, type PropType } from 'vue';
 import { useField } from '../form/context';
+import { useConfig } from '../config-provider/context';
 import { checkboxGroupKey, checkboxValueEqual, type CheckboxValue } from './group';
 export default defineComponent({
   name: 'i-checkbox',
@@ -20,6 +21,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, slots }) {
     const field = useField();
+    const config = useConfig();
     const group = inject(checkboxGroupKey, undefined);
     return () => {
       const disabled =
@@ -29,16 +31,17 @@ export default defineComponent({
         (group?.max !== undefined &&
           !group.modelValue.some((item) => checkboxValueEqual(item, props.value as CheckboxValue)) &&
           group.modelValue.length >= group.max);
+      const size = props.size ?? group?.size ?? field?.size?.() ?? config.value.size;
       const checked = group
         ? group.modelValue.some((item) => checkboxValueEqual(item, props.value as CheckboxValue))
         : props.modelValue === (props.trueValue ?? true) || (props.modelValue === undefined && props.checked);
       return (
-        <label class={['i-checkbox', props.border && 'is-bordered', disabled && 'is-disabled', props.size || group?.size ? `is-${props.size || group?.size}` : undefined]}>
+        <label class={['i-checkbox', props.border && 'is-bordered', disabled && 'is-disabled', size !== 'default' && size ? `is-${size}` : undefined]}>
           <input
             {...attrs}
             id={(attrs.id as string) || field?.id}
             type='checkbox'
-            class={props.size && `is-${props.size}`}
+            class={size !== 'default' && size ? `is-${size}` : undefined}
             checked={checked}
             indeterminate={props.indeterminate}
             disabled={disabled}

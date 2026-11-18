@@ -15,11 +15,11 @@
 | trueValue            | 选中时的模型值             | string / number / boolean | true   |
 | falseValue           | 未选中时的模型值           | string / number / boolean | false  |
 | checked              | 初始是否选中               | boolean                   | false  |
-| disabled             | 是否禁用                   | boolean                   | false  |
+| disabled             | 是否禁用；表单内继承 FormItem 的禁用状态 | boolean                   | false  |
 | indeterminate        | 是否显示半选，不改变模型值 | boolean                   | false  |
 | value                | 分组中的选项值             | string / number / boolean / object | — |
 | border               | 显示边框                   | boolean                   | false  |
-| size                 | 尺寸：`small` / `default` / `large` | string | — |
+| size                 | 尺寸：`small` / `default` / `large`；未指定时依次回退分组、FormItem、全局配置 | string | — |
 | validateEvent        | 是否触发表单校验           | boolean                   | true   |
 
 ### 事件

@@ -1,4 +1,6 @@
 import { defineComponent, inject, type PropType } from 'vue';
+import { useField } from '../form/context';
+import { useConfig } from '../config-provider/context';
 import { checkboxGroupKey, checkboxValueEqual, type CheckboxValue } from './group';
 
 export default defineComponent({
@@ -14,6 +16,8 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { emit, slots }) {
+    const field = useField();
+    const config = useConfig();
     const group = inject(checkboxGroupKey, undefined);
     return () => {
       const checked = group
@@ -21,10 +25,12 @@ export default defineComponent({
         : props.modelValue === (props.trueValue ?? true);
       const disabled =
         props.disabled ||
+        field?.disabled?.() ||
         group?.disabled ||
         (group?.max !== undefined &&
           !group.modelValue.some((item) => checkboxValueEqual(item, props.value as CheckboxValue)) &&
           group.modelValue.length >= group.max);
+      const size = props.size ?? group?.size ?? field?.size?.() ?? config.value.size;
       return (
         <button
           type='button'
@@ -32,7 +38,7 @@ export default defineComponent({
             'i-checkbox-button',
             checked && 'is-checked',
             disabled && 'is-disabled',
-            props.size || group?.size ? `is-${props.size || group?.size}` : undefined
+            size !== 'default' && size ? `is-${size}` : undefined
           ]}
           disabled={disabled}
           onClick={() => {
