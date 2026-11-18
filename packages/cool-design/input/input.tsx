@@ -58,6 +58,15 @@ export default defineComponent({
     });
     const parseValue = (value: string) => (props.type !== 'textarea' && props.parser ? props.parser(value) : value);
     const graphemeLength = (value: string) => props.countGraphemes?.(value) ?? Array.from(value).length;
+    // 数字 0 等合法值不应被当作“空”（清空按钮与 clear() 都依赖该判断）
+    const hasValue = () =>
+      props.modelValue !== undefined && props.modelValue !== null && String(props.modelValue) !== '';
+    const resolvedMaxLength = () => {
+      const value = props.maxlength;
+      if (value === undefined || value === null || value === '') return undefined;
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : undefined;
+    };
     const renderIcon = (icon: string | Component | undefined, fallback?: string) =>
       typeof icon === 'string' ? <i class={['i-input__icon', icon]} aria-hidden='true' /> : icon ? h(markRaw(toRaw(icon))) : fallback;
     const resizeTextarea = () => {
@@ -84,7 +93,7 @@ export default defineComponent({
       }
     );
     const clear = () => {
-      if (props.disabled || props.readonly || !props.modelValue) return;
+      if (props.disabled || props.readonly || !hasValue()) return;
       update('');
       emit('change', '');
       emit('clear');
@@ -197,7 +206,8 @@ export default defineComponent({
           }}
         />
       );
-      const count = `${graphemeLength(String(props.modelValue))}/${props.maxlength ?? '∞'}`;
+      const maxLength = resolvedMaxLength();
+      const count = `${graphemeLength(String(props.modelValue))}/${maxLength}`;
       const passwordToggle = props.showPassword && props.type === 'password' && (
         <button
           type='button'
@@ -206,7 +216,8 @@ export default defineComponent({
           {slots['password-icon']?.({ visible: passwordVisible.value }) ?? (passwordVisible.value ? '隐藏' : '显示')}
         </button>
       );
-      const countNode = props.showWordLimit && <span class='i-input__count'>{count}</span>;
+      // 设置了 maxlength 才显示字数统计
+      const countNode = props.showWordLimit && maxLength !== undefined && <span class='i-input__count'>{count}</span>;
       const wrapper = (
         <span class={['i-input', `i-control--${props.size || config.value.size}`, isTextarea && 'is-textarea']}>
           {slots.prefix?.() ?? renderIcon(props.prefixIcon)}
@@ -214,7 +225,7 @@ export default defineComponent({
           {props.wordLimitPosition === 'inside' && countNode}
           {passwordToggle}
           {slots.suffix?.() ?? renderIcon(props.suffixIcon)}
-          {props.clearable && !isTextarea && props.modelValue && (
+          {props.clearable && !isTextarea && hasValue() && (
             <button
               type='button'
               aria-label='清空'

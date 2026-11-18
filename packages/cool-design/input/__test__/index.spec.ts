@@ -140,6 +140,21 @@ test('支持自定义字符计数和输入样式', () => {
   expect(w.get('input').attributes('style')).toContain('color: red');
 });
 
+test('数字 0 显示清空按钮且可清空', async () => {
+  const w = mount(Input, { props: { modelValue: 0, clearable: true } });
+  expect(w.find('button[aria-label="清空"]').exists()).toBe(true);
+  await w.get('button[aria-label="清空"]').trigger('click');
+  expect(w.emitted('update:modelValue')?.[0]).toEqual(['']);
+  expect(w.emitted('clear')).toHaveLength(1);
+});
+
+test('未设置 maxlength 时不显示字数统计', () => {
+  const plain = mount(Input, { props: { modelValue: '内容', showWordLimit: true } });
+  expect(plain.find('.i-input__count').exists()).toBe(false);
+  const withLimit = mount(Input, { props: { modelValue: '内容', showWordLimit: true, maxlength: 10 } });
+  expect(withLimit.find('.i-input__count').text()).toBe('2/10');
+});
+
 test('支持组件形式的前缀、后缀和清空图标', async () => {
   const Icon = { setup: () => () => '图标' };
   const w = mount(Input, {
