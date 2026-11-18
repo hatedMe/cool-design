@@ -1,0 +1,26 @@
+.i-card {
+  background: var(--i-bg);
+  border-radius: var(--i-radius-small);
+  overflow: hidden;
+}
+.i-card.is-bordered {
+  border: 1px solid var(--i-border);
+}
+.i-card__header,
+.i-card__footer {
+  padding: 16px;
+  border-bottom: 1px solid var(--i-border);
+}
+.i-card__footer {
+  border-top: 1px solid var(--i-border);
+  border-bottom: 0;
+}
+.i-card__body {
+  padding: 20px;
+}
+.i-card.is-shadow-always {
+  box-shadow: var(--i-shadow-small);
+}
+.i-card.is-shadow-hover:hover {
+  box-shadow: var(--i-shadow-small);
+}

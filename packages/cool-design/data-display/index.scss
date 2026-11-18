@@ -1,29 +1,3 @@
-.i-card {
-  background: #fff;
-  border-radius: 4px;
-  overflow: hidden;
-}
-.i-card.is-bordered {
-  border: 1px solid #ebeef5;
-}
-.i-card__header,
-.i-card__footer {
-  padding: 16px;
-  border-bottom: 1px solid #ebeef5;
-}
-.i-card__footer {
-  border-top: 1px solid #ebeef5;
-  border-bottom: 0;
-}
-.i-card__body {
-  padding: 20px;
-}
-.i-card.is-shadow-always {
-  box-shadow: 0 2px 12px #0001;
-}
-.i-card.is-shadow-hover:hover {
-  box-shadow: 0 2px 12px #0001;
-}
 .i-descriptions header {
   font-size: 16px;
   font-weight: 600;
