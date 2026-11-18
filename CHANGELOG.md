@@ -65,3 +65,10 @@
 - 删除根目录 `types/` 手写声明（含文件名拼写错误文件），代码中零引用
 - 删除 Vue 2 时代的 `message/demo.js`、`message-box/demo.js` 演示脚本与 `checkbox-group/index.scss`、`select-option/index.scss` 空样式文件
 - 构建副产物（`es/node_modules`、`es/_virtual`、`es/package.json.js`）随依赖外部化消失，`.gitignore` 已覆盖产物目录
+
+### Styling Architecture（样式架构）
+
+- 十二个无自有样式的组件（card、image、timeline、drawer、watermark、menu、breadcrumb、tabs、dropdown、steps、page-header 及 image-viewer）全部建立目录级 `index.scss`，组件入口自引入样式——**任意组件子路径单独引入时样式齐备**
+- 三个聚合样式目录（data-display、feedback、navigation）删除；其中 descriptions/tree/skeleton/statistic/result 的过期重复规则一并清除
+- 拆分同时将硬编码色值替换为设计 token（背景、文字、边框、主色、成功/警告/危险色），**暗色主题下相关组件可读**；drawer 此前的硬编码亮色问题随之修复
+- `style/index.scss` 汇总登记全部组件样式（含此前遗漏的 alert、notification 等 33 项），删除零引用的 flex 工具类样式文件
