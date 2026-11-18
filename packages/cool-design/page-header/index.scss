@@ -1,4 +1,3 @@
-/* PageHeader */
 .i-page-header {
   display: flex;
   flex-direction: column;
@@ -17,11 +16,10 @@
   gap: 12px;
   min-width: 0;
 }
-.i-page-header > button,
 .i-page-header__back {
   border: 0;
   background: transparent;
-  color: #606266;
+  color: var(--i-text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -30,10 +28,10 @@
   padding: 4px 8px;
 }
 .i-page-header__back:hover {
-  color: #409eff;
+  color: var(--i-primary);
 }
 .i-page-header__back:focus-visible {
-  outline: 2px solid #409eff;
+  outline: 2px solid var(--i-primary);
   outline-offset: 1px;
 }
 .i-page-header__icon {
@@ -46,7 +44,7 @@
 .i-page-header__divider {
   width: 1px;
   height: 16px;
-  background: #dcdfe6;
+  background: var(--i-border);
 }
 .i-page-header__main,
 .i-page-header__content {
@@ -57,10 +55,10 @@
 .i-page-header__main strong,
 .i-page-header__content {
   font-size: 18px;
-  color: #303133;
+  color: var(--i-text);
 }
 .i-page-header__main span {
-  color: #909399;
+  color: var(--i-text-muted);
 }
 .i-page-header__extra {
   margin-left: auto;
@@ -73,5 +71,5 @@
 }
 .i-page-header__detail {
   font-size: 14px;
-  color: #606266;
+  color: var(--i-text-secondary);
 }
