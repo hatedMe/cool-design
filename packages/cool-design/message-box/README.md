@@ -2,7 +2,7 @@
 
 ## 组件介绍
 
-MessageBox 对需要明确决策的操作进行模态确认，支持声明式组件、命令式 `msgbox` / `alert` / `confirm` / `prompt` 与组合式 `useMessageBox`。命令式遵循 Element Plus 的 resolve/reject 语义：确认 resolve，取消或关闭 reject。
+MessageBox 对需要明确决策的操作进行模态确认，支持声明式组件、命令式 `msgbox` / `alert` / `confirm` / `prompt` 与组合式 `useMessageBox`。命令式语义：确认 resolve，取消或关闭 reject。
 
 ## 声明式用法
 
@@ -154,10 +154,12 @@ MessageBox.confirm('确定吗？', '确认', {}, getCurrentInstance()?.appContex
 
 | 方法 | 说明 | 类型 |
 | ---- | ---- | ---- |
+| `MessageBox(options, appContext?)` | 直接调用，等价于 `msgbox` | `(options: MessageBoxOptions & { message: string; title?: string }, appContext?: AppContext \| null) => Promise<'confirm' \| MessageBoxPromptResult>` |
 | `MessageBox.msgbox(options, appContext?)` | 通用弹窗，含输入时 resolve `{ value, action }`，否则 resolve `'confirm'`，取消/关闭 reject | `(options: MessageBoxOptions & { message: string; title?: string }, appContext?: AppContext \| null) => Promise<'confirm' \| MessageBoxPromptResult>` |
 | `MessageBox.alert(message, title?, options?, appContext?)` | 提示框 | `(message: string, title?: string, options?: MessageBoxOptions, appContext?: AppContext \| null) => Promise<'confirm'>` |
 | `MessageBox.confirm(message, title?, options?, appContext?)` | 确认框 | 同上 |
 | `MessageBox.prompt(message, title?, options?, appContext?)` | 输入框 | `(message: string, title?: string, options?: MessageBoxOptions, appContext?: AppContext \| null) => Promise<MessageBoxPromptResult>` |
+| `MessageBox.close()` | 关闭当前全部消息确认框（按取消语义拒绝） | `() => void` |
 | `useMessageBox()` | 组合式，返回 `{ msgbox, alert, confirm, prompt }`，继承上下文并在作用域销毁时清理 | `() => { msgbox, alert, confirm, prompt }` |
 
 复用 Dialog 的主题宿主、焦点管理、滚动锁与层级能力。点击遮罩默认关闭并触发 `close`（可用 `close-on-click-modal` 关闭该行为），普通状态下 Esc 与关闭按钮触发 `close`，取消按钮触发 `cancel`。关闭或卸载后旧异步结果不再触发事件。

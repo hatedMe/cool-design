@@ -1,7 +1,7 @@
 import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent, h, ref } from 'vue';
 import { afterEach, expect, test, vi } from 'vitest';
-import MessageBox, { useMessageBox } from '..';
+import MessageBox, { MessageBoxComponent, useMessageBox } from '..';
 import ConfigProvider from '../../config-provider';
 const wrappers: ReturnType<typeof mount>[] = [];
 afterEach(() => {
@@ -15,7 +15,7 @@ test('异步确认失败保留窗口和错误，处理中禁止重复确认与�
     .fn()
     .mockImplementationOnce(() => new Promise((_, fail) => (reject = fail)))
     .mockResolvedValueOnce(true);
-  const w = mount(MessageBox, {
+  const w = mount(MessageBoxComponent, {
     props: { modelValue: true, title: '删除用户', message: '<b>不可恢复</b>', beforeConfirm },
     attachTo: document.body
   });
@@ -93,11 +93,22 @@ test('组合式调用继承响应式主题，调用者卸载取消并清理弹�
 });
 
 test('支持消息类型样式', async () => {
-  const w = mount(MessageBox, {
+  const w = mount(MessageBoxComponent, {
     props: { modelValue: true, type: 'error', message: '失败' },
     attachTo: document.body
   });
   await flushPromises();
   expect(document.querySelector('.i-message-box--error')).not.toBeNull();
   w.unmount();
+});
+
+test('MessageBox 可直接调用并支持 close() 关闭全部', async () => {
+  const first = MessageBox({ message: '第一个', title: '直接调用' });
+  const second = MessageBox.alert('第二个', '直接调用');
+  await flushPromises();
+  expect(document.querySelectorAll('.i-message-box').length).toBe(2);
+  MessageBox.close();
+  await expect(first).rejects.toBe('cancel');
+  await expect(second).rejects.toBe('cancel');
+  expect(document.querySelector('.i-message-box')).toBeNull();
 });

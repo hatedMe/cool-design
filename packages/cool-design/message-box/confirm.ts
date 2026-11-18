@@ -13,6 +13,9 @@ import { useConfig, type Config } from '../config-provider/context';
 import Box from './message-box';
 import type { MessageBoxAction, MessageBoxOptions, MessageBoxPromptResult } from './types';
 
+/** 活动实例的取消队列，供 MessageBox.close() 关闭全部 */
+const activeClosers = new Set<() => void>();
+
 function open(
   message: string,
   title: string,
@@ -32,6 +35,7 @@ function open(
     let unregister = () => {};
     const cleanup = () => {
       unregister();
+      activeClosers.delete(globalClose);
       queueMicrotask(() => {
         render(null, container);
         container.remove();
@@ -51,6 +55,9 @@ function open(
       // 语义约定：未开启 distinguishCancelAndClose 时，close 归并为 cancel
       reject(options.distinguishCancelAndClose ? action : action === 'close' ? 'cancel' : action);
     };
+    // 登记全局关闭队列，供 MessageBox.close() 关闭全部实例
+    const globalClose = () => finishReject('cancel');
+    activeClosers.add(globalClose);
     unregister = register?.(() => finishReject('cancel')) || unregister;
     const Root = defineComponent({
       setup: () => () =>
@@ -81,6 +88,11 @@ export const msgbox = (
 ): Promise<'confirm' | MessageBoxPromptResult> => {
   const { message, title = '', ...rest } = options;
   return open(message, title, rest, appContext);
+};
+
+/** 关闭当前全部消息确认框（按取消语义拒绝） */
+export const closeAll = () => {
+  [...activeClosers].forEach((close) => close());
 };
 
 export const alert = (

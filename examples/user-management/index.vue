@@ -7,7 +7,7 @@ import {
   Tag,
   Tooltip,
   Popconfirm,
-  MessageBox,
+  MessageBoxComponent as MessageBox,
   Button,
   ConfigProvider,
   Dialog,

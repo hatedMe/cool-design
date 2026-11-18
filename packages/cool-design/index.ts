@@ -14,7 +14,7 @@ import Loading from './loading';
 import Tag from './tag';
 import Tooltip from './tooltip';
 import Popconfirm from './popconfirm';
-import MessageBox from './message-box';
+import { MessageBoxComponent } from './message-box';
 import type { App } from 'vue';
 import { version as packageVersion } from '../../package.json';
 export const version: string = packageVersion;
@@ -113,7 +113,7 @@ export {
   Tag,
   Tooltip,
   Popconfirm,
-  MessageBox,
+  MessageBoxComponent as MessageBox,
   Button,
   ButtonGroup,
   Row,
@@ -221,7 +221,7 @@ const components = [
   Tag,
   Tooltip,
   Popconfirm,
-  MessageBox,
+  MessageBoxComponent,
   Button,
   ButtonGroup,
   Row,
@@ -318,7 +318,7 @@ export const install = (app: App) => {
 };
 export default { version, install };
 
-export { useMessageBox } from './message-box';
+export { useMessageBox, alert, confirm, msgbox, prompt, MessageBoxComponent } from './message-box';
 export type {
   MessageBoxAction,
   MessageBoxBeforeClose,
