@@ -14,7 +14,8 @@ export default defineComponent({
   setup(props, { slots, emit, expose }) {
     const splitter = inject(splitterKey, undefined);
     const element = ref<HTMLElement>();
-    const index =
+    // 注册返回面板唯一 id，父组件按注册顺序解析分隔条相邻面板
+    const id =
       splitter?.register(
         () => ({
           size: props.size,
@@ -30,10 +31,10 @@ export default defineComponent({
         },
         () => element.value
       ) ?? -1;
-    onBeforeUnmount(() => splitter?.unregister(index));
+    onBeforeUnmount(() => splitter?.unregister(id));
     expose({ splitterPanelRef: element });
     return () => (
-      <div ref={element} class='i-splitter__panel' style={index >= 0 ? splitter?.sizeStyle(index) : undefined}>
+      <div ref={element} class='i-splitter__panel' style={id >= 0 ? splitter?.sizeStyle(id) : undefined}>
         {slots.default?.()}
       </div>
     );

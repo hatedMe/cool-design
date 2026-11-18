@@ -18,7 +18,10 @@ interface PanelEntry {
 }
 
 interface DragState {
-  index: number;
+  /** 分隔条位置（左侧面板在面板序列中的序号），仅用于事件载荷 */
+  position: number;
+  leftId: number;
+  rightId: number;
   startPos: number;
   startA: number;
   startB: number;
@@ -34,11 +37,16 @@ export default defineComponent({
   emits: ['resize-start', 'resize', 'resize-end', 'collapse'],
   setup(props, { slots, emit }) {
     const root = ref<HTMLElement>();
+    // 面板以唯一 id 标识，Map 的插入顺序即面板注册顺序（与渲染顺序一致）；
+    // 面板增删后 id 不复用，避免分隔条与面板配对错乱
     const panels = reactive(new Map<number, PanelEntry>());
     const collapsed = new Map<number, number>();
     const sizes = reactive(new Map<number, number>());
-    let nextIndex = 0;
+    let nextId = 0;
     let drag: DragState | null = null;
+
+    const orderedIds = () => Array.from(panels.keys());
+    const idAt = (position: number): number | undefined => orderedIds()[position];
 
     const total = () => {
       const element = root.value;
@@ -53,27 +61,29 @@ export default defineComponent({
       const px = parseFloat(text);
       return Number.isFinite(px) ? px : fallback;
     };
-    const minOf = (index: number) => {
-      const entry = panels.get(index);
+    const minOf = (id: number) => {
+      const entry = panels.get(id);
       return entry ? toPx(entry.meta().min, 0) : 0;
     };
-    const maxOf = (index: number) => {
-      const entry = panels.get(index);
+    const maxOf = (id: number) => {
+      const entry = panels.get(id);
       return entry ? toPx(entry.meta().max, Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY;
     };
-    const resolvedPx = (index: number): number => {
-      const entry = panels.get(index);
-      const explicit = sizes.get(index);
+    const resolvedPx = (id: number): number => {
+      const entry = panels.get(id);
+      const explicit = sizes.get(id);
       if (explicit !== undefined) return explicit;
       if (!entry) return 0;
-      const measured = entry.element()?.getBoundingClientRect().width ?? 0;
+      const element = entry.element();
+      const rect = element?.getBoundingClientRect();
+      const measured = props.layout === 'vertical' ? rect?.height : rect?.width;
       return toPx(entry.meta().size, measured || 0);
     };
-    const allSizes = () => Array.from(panels.keys()).map((index) => resolvedPx(index));
+    const allSizes = () => orderedIds().map((id) => resolvedPx(id));
 
-    const sizeStyle = (index: number) => {
-      const entry = panels.get(index);
-      const explicit = sizes.get(index);
+    const sizeStyle = (id: number) => {
+      const entry = panels.get(id);
+      const explicit = sizes.get(id);
       if (explicit !== undefined) return { flex: `0 0 ${explicit}px`, minWidth: '0', minHeight: '0' };
       const prop = entry?.meta().size;
       if (prop === undefined || prop === null || prop === '') {
@@ -86,89 +96,105 @@ export default defineComponent({
       };
     };
 
-    const applySize = (index: number, value: number) => {
-      sizes.set(index, value);
-      panels.get(index)?.emitSize(value);
+    const applySize = (id: number, value: number) => {
+      sizes.set(id, value);
+      panels.get(id)?.emitSize(value);
     };
 
-    const clamp = (index: number, value: number) => Math.min(maxOf(index), Math.max(minOf(index), value));
+    const clamp = (id: number, value: number) => Math.min(maxOf(id), Math.max(minOf(id), value));
 
     const onMove = (event: MouseEvent) => {
       if (!drag) return;
       const pos = props.layout === 'vertical' ? event.clientY : event.clientX;
       const delta = pos - drag.startPos;
       const pairTotal = drag.startA + drag.startB;
-      let a = clamp(drag.index, drag.startA + delta);
+      let a = clamp(drag.leftId, drag.startA + delta);
       let b = pairTotal - a;
-      if (b < minOf(drag.index + 1) || b > maxOf(drag.index + 1)) {
-        b = clamp(drag.index + 1, b);
+      if (b < minOf(drag.rightId) || b > maxOf(drag.rightId)) {
+        b = clamp(drag.rightId, b);
         a = pairTotal - b;
       }
       const next = { a, b };
       if (props.lazy) drag.pending = next;
       else {
-        sizes.set(drag.index, a);
-        sizes.set(drag.index + 1, b);
+        sizes.set(drag.leftId, a);
+        sizes.set(drag.rightId, b);
       }
-      emit('resize', drag.index, allSizes());
+      emit('resize', drag.position, allSizes());
     };
     const onUp = () => {
       if (!drag) return;
-      const { index, pending } = drag;
+      const { leftId, rightId, position, pending } = drag;
       if (pending) {
-        applySize(index, pending.a);
-        applySize(index + 1, pending.b);
+        applySize(leftId, pending.a);
+        applySize(rightId, pending.b);
       } else {
-        panels.get(index)?.emitSize(sizes.get(index) ?? resolvedPx(index));
-        panels.get(index + 1)?.emitSize(sizes.get(index + 1) ?? resolvedPx(index + 1));
+        panels.get(leftId)?.emitSize(sizes.get(leftId) ?? resolvedPx(leftId));
+        panels.get(rightId)?.emitSize(sizes.get(rightId) ?? resolvedPx(rightId));
       }
-      emit('resize-end', index, allSizes());
+      emit('resize-end', position, allSizes());
       drag = null;
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
     };
-    const startDrag = (index: number) => (event: MouseEvent) => {
-      const left = panels.get(index);
-      const right = panels.get(index + 1);
-      if (!left || !right || !left.meta().resizable || !right.meta().resizable) return;
+    const stopDrag = () => {
+      drag = null;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    const startDrag = (position: number) => (event: MouseEvent) => {
+      // 按当前面板顺序解析分隔条两侧的面板，面板增删后依然配对正确
+      const leftId = idAt(position);
+      const rightId = idAt(position + 1);
+      const left = leftId !== undefined ? panels.get(leftId) : undefined;
+      const right = rightId !== undefined ? panels.get(rightId) : undefined;
+      if (leftId === undefined || rightId === undefined || !left || !right) return;
+      if (!left.meta().resizable || !right.meta().resizable) return;
       event.preventDefault();
       drag = {
-        index,
+        position,
+        leftId,
+        rightId,
         startPos: props.layout === 'vertical' ? event.clientY : event.clientX,
-        startA: resolvedPx(index),
-        startB: resolvedPx(index + 1)
+        startA: resolvedPx(leftId),
+        startB: resolvedPx(rightId)
       };
-      emit('resize-start', index, allSizes());
+      emit('resize-start', position, allSizes());
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
     };
 
-    const collapse = (index: number, side: 'start' | 'end') => {
-      const target = side === 'end' ? index : index + 1;
-      const entry = panels.get(target);
-      if (!entry) return;
-      const current = resolvedPx(target);
-      const preSize = collapsed.get(target);
+    const collapse = (position: number, side: 'start' | 'end') => {
+      const targetPosition = side === 'end' ? position : position + 1;
+      const id = idAt(targetPosition);
+      const entry = id !== undefined ? panels.get(id) : undefined;
+      if (id === undefined || !entry) return;
+      const current = resolvedPx(id);
+      const preSize = collapsed.get(id);
       if (preSize !== undefined) {
-        collapsed.delete(target);
-        applySize(target, preSize);
+        collapsed.delete(id);
+        applySize(id, preSize);
       } else {
-        collapsed.set(target, current);
-        applySize(target, minOf(target));
+        collapsed.set(id, current);
+        applySize(id, minOf(id));
       }
-      emit('collapse', index);
+      emit('collapse', position);
     };
 
     provide(splitterKey, {
       layout: () => props.layout,
       lazy: () => props.lazy,
       register: (meta, emitSize, panelSlots, element) => {
-        const index = nextIndex++;
-        panels.set(index, { meta, emitSize, slots: panelSlots, element });
-        return index;
+        const id = nextId++;
+        panels.set(id, { meta, emitSize, slots: panelSlots, element });
+        return id;
       },
-      unregister: (index) => {
-        panels.delete(index);
+      unregister: (id) => {
+        panels.delete(id);
+        sizes.delete(id);
+        collapsed.delete(id);
+        // 面板被移除时终止涉及它的拖拽
+        if (drag && (drag.leftId === id || drag.rightId === id)) stopDrag();
       },
       sizeStyle,
       startDrag,
@@ -180,15 +206,17 @@ export default defineComponent({
       document.removeEventListener('mouseup', onUp);
     });
 
-    const renderDivider = (index: number): VNode => {
-      const left = panels.get(index);
-      const right = panels.get(index + 1);
+    const renderDivider = (position: number): VNode => {
+      const leftId = idAt(position);
+      const rightId = idAt(position + 1);
+      const left = leftId !== undefined ? panels.get(leftId) : undefined;
+      const right = rightId !== undefined ? panels.get(rightId) : undefined;
       return (
         <div
           class='i-splitter__divider'
           role='separator'
           aria-orientation={props.layout === 'vertical' ? 'horizontal' : 'vertical'}
-          onMousedown={startDrag(index)}>
+          onMousedown={startDrag(position)}>
           {left?.meta().collapsible && (
             <button
               type='button'
@@ -196,7 +224,7 @@ export default defineComponent({
               aria-label='折叠起始面板'
               onClick={(event: MouseEvent) => {
                 event.stopPropagation();
-                collapse(index, 'end');
+                collapse(position, 'end');
               }}>
               {left.slots.end?.() ?? '◀'}
             </button>
@@ -208,7 +236,7 @@ export default defineComponent({
               aria-label='折叠结束面板'
               onClick={(event: MouseEvent) => {
                 event.stopPropagation();
-                collapse(index, 'start');
+                collapse(position, 'start');
               }}>
               {right.slots.start?.() ?? '▶'}
             </button>

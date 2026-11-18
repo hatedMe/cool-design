@@ -91,4 +91,69 @@ describe('test `Splitter` component', () => {
     expect(wrapper.findAllComponents(SplitterPanel)[1].emitted('update:size')).toEqual([[40], [200]]);
     wrapper.unmount();
   });
+
+  test('移除中间面板后分隔条仍关联相邻面板', async () => {
+    const host = mount(
+      {
+        components: { Splitter, SplitterPanel },
+        data: () => ({ show: true }),
+        template: `
+          <Splitter>
+            <SplitterPanel :size="100">A</SplitterPanel>
+            <SplitterPanel v-if="show" :size="200">B</SplitterPanel>
+            <SplitterPanel :size="300">C</SplitterPanel>
+          </Splitter>`
+      },
+      { attachTo: document.body }
+    );
+    await nextTick();
+    expect(host.findAll('.i-splitter__panel')).toHaveLength(3);
+    await host.setData({ show: false });
+    await nextTick();
+    expect(host.findAll('.i-splitter__panel')).toHaveLength(2);
+
+    const splitter = host.getComponent(Splitter);
+    const divider = host.find('.i-splitter__divider');
+    await divider.trigger('mousedown', { clientX: 0 });
+    expect(splitter.emitted('resize-start')).toEqual([[0, [100, 300]]]);
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 50 }));
+    await nextTick();
+    // 拖拽作用于 A 与 C：[150, 250]
+    expect(splitter.emitted('resize')!.at(-1)).toEqual([0, [150, 250]]);
+    document.dispatchEvent(new MouseEvent('mouseup'));
+    await nextTick();
+    const outer = host.findAllComponents(SplitterPanel);
+    expect(outer[0].emitted('update:size')).toEqual([[150]]);
+    expect(outer[1].emitted('update:size')).toEqual([[250]]);
+    host.unmount();
+  });
+
+  test('移除中间面板后折叠按钮作用于相邻面板', async () => {
+    const host = mount(
+      {
+        components: { Splitter, SplitterPanel },
+        data: () => ({ show: true }),
+        template: `
+          <Splitter>
+            <SplitterPanel :size="100" collapsible>C</SplitterPanel>
+            <SplitterPanel v-if="show" :size="200">B</SplitterPanel>
+            <SplitterPanel :size="300" collapsible :min="60">C</SplitterPanel>
+          </Splitter>`
+      },
+      { attachTo: document.body }
+    );
+    await nextTick();
+    await host.setData({ show: false });
+    await nextTick();
+    const splitter = host.getComponent(Splitter);
+    // 折叠按钮按相邻面板渲染：A、C 各一个
+    expect(host.findAll('.i-splitter__collapse')).toHaveLength(2);
+    await host.find('.i-splitter__collapse.is-end').trigger('click');
+    await nextTick();
+    expect(splitter.emitted('collapse')).toEqual([[0]]);
+    const outer = host.findAllComponents(SplitterPanel);
+    expect(outer[0].emitted('update:size')).toBeUndefined();
+    expect(outer[1].emitted('update:size')).toEqual([[60]]);
+    host.unmount();
+  });
 });

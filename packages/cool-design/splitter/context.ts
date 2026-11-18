@@ -14,16 +14,21 @@ export interface SplitterPanelMeta {
 export interface SplitterContext {
   layout: () => SplitterLayout;
   lazy: () => boolean;
+  /** 注册面板，返回面板唯一 id */
   register: (
     meta: () => SplitterPanelMeta,
     emitSize: (size: number) => void,
     slots: { start?: () => unknown; end?: () => unknown },
     element: () => HTMLElement | undefined
   ) => number;
-  unregister: (index: number) => void;
-  sizeStyle: (index: number) => Record<string, string> | undefined;
-  startDrag: (index: number) => (event: MouseEvent) => void;
-  collapse: (index: number, side: 'start' | 'end') => void;
+  /** 按面板 id 注销 */
+  unregister: (id: number) => void;
+  /** 按面板 id 获取尺寸样式 */
+  sizeStyle: (id: number) => Record<string, string> | undefined;
+  /** 按分隔条位置（左侧面板序号）发起拖拽 */
+  startDrag: (position: number) => (event: MouseEvent) => void;
+  /** 按分隔条位置折叠相邻面板 */
+  collapse: (position: number, side: 'start' | 'end') => void;
 }
 
 export const splitterKey: InjectionKey<SplitterContext> = Symbol('splitter');
