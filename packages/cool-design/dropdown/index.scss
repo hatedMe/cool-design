@@ -1,0 +1,98 @@
+.i-dropdown {
+  position: relative;
+  display: inline-block;
+}
+.i-dropdown__trigger {
+  cursor: pointer;
+  display: inline-block;
+}
+.i-dropdown__trigger:focus-visible,
+.i-dropdown__button:focus-visible,
+.i-dropdown__item-button:focus-visible {
+  outline: 2px solid var(--i-primary);
+  outline-offset: 1px;
+}
+.i-dropdown.is-disabled .i-dropdown__trigger,
+.i-dropdown.is-disabled .i-dropdown__button {
+  color: var(--i-text-muted);
+  cursor: not-allowed;
+}
+.i-dropdown__popper {
+  position: absolute;
+  z-index: 10;
+  top: 100%;
+  left: 0;
+  min-width: 120px;
+  margin: 4px 0;
+}
+.i-dropdown__popper.is-top,
+.i-dropdown__popper.is-top-start,
+.i-dropdown__popper.is-top-end {
+  top: auto;
+  bottom: 100%;
+}
+.i-dropdown__menu {
+  min-width: 120px;
+  padding: 5px 0;
+  margin: 0;
+  background: var(--i-bg);
+  border: 1px solid var(--i-border);
+  box-shadow: var(--i-shadow-small);
+  list-style: none;
+}
+.i-dropdown__menu button,
+.i-dropdown__item-button {
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.i-dropdown__item-button:hover {
+  background: var(--i-bg-subtle);
+  color: var(--i-primary);
+}
+.i-dropdown__item.is-disabled .i-dropdown__item-button {
+  color: var(--i-text-muted);
+  cursor: not-allowed;
+}
+.i-dropdown__menu .is-divided,
+.i-dropdown__item.is-divided {
+  border-top: 1px solid var(--i-border);
+  margin-top: 5px;
+  padding-top: 5px;
+}
+.i-dropdown__item-icon {
+  display: inline-flex;
+}
+.i-dropdown.is-split-button {
+  display: inline-flex;
+}
+.i-dropdown__button {
+  padding: 8px 12px;
+  border: 1px solid var(--i-border);
+  background: var(--i-bg);
+  cursor: pointer;
+}
+.i-dropdown.is-split-button .i-dropdown__trigger {
+  padding: 8px 10px;
+  border: 1px solid var(--i-border);
+  border-left: 0;
+  background: var(--i-bg);
+  cursor: pointer;
+}
+.i-dropdown--large .i-dropdown__button,
+.i-dropdown--large .i-dropdown__trigger {
+  padding: 12px 16px;
+  font-size: 16px;
+}
+.i-dropdown--small .i-dropdown__button,
+.i-dropdown--small .i-dropdown__trigger {
+  padding: 5px 8px;
+  font-size: 12px;
+}
