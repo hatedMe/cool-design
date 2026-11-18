@@ -28,8 +28,10 @@
 | offset | 触发元素与浮层的距离，单位 px | `number` | `12` |
 | show-after | 显示延迟，单位 ms | `number` | `0` |
 | hide-after | 隐藏延迟，单位 ms | `number` | `200` |
+| auto-close | 打开多少毫秒后自动关闭，`0` 表示不自动关闭 | `number` | `0` |
 | enterable | 是否允许鼠标进入浮层内容 | `boolean` | `true` |
 | show-arrow | 是否显示箭头 | `boolean` | `true` |
+| fallback-placements | 主位置放不下时的候选位置 | `Placement[]` | — |
 | visible | 是否受控显示，可使用 `v-model:visible` | `boolean` | — |
 | teleported | 是否将浮层传送到挂载容器 | `boolean` | `true` |
 | append-to | 挂载容器选择器或元素 | `string` / `HTMLElement` | — |
@@ -66,5 +68,6 @@
 | `show()` | 显示 Tooltip；受控模式下应修改 `visible` |
 | `hide()` | 隐藏 Tooltip |
 | `update()` | 重新计算浮层位置 |
+| `updatePopper()` | `update()` 的兼容别名 |
 
 悬停或聚焦时，触发元素和提示通过 `aria-describedby` 关联；按 Esc 或点击外部区域关闭。浮层会自动翻转并约束在视口，随滚动、缩放及元素尺寸变化更新位置。

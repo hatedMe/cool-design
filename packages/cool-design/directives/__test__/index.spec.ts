@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { DirectiveBinding } from 'vue';
-import { ClickOutside, InfiniteScroll, LoadingDirective } from '..';
+import { flushPromises } from '@vue/test-utils';
+import { ClickOutside, InfiniteScroll, LoadingDirective, VPopover } from '..';
+import type { PopoverDirectiveValue } from '../../popover/popover';
 
 type LooseHook = (el: HTMLElement, binding?: DirectiveBinding<unknown>, vnode?: unknown, prev?: unknown) => void;
 const hooks = (directive: unknown) => directive as Record<string, LooseHook | undefined>;
@@ -109,5 +111,28 @@ describe('directives', () => {
     expect(first).not.toHaveBeenCalled();
     expect(second).toHaveBeenCalledTimes(1);
     infinite.unmounted?.(el);
+  });
+
+  it('v-popover 为元素挂载浮层并随指令更新卸载', async () => {
+    const el = document.createElement('button');
+    el.textContent = '触发';
+    document.body.appendChild(el);
+    const popover = hooks(VPopover);
+    popover.mounted?.(el, binding('初始说明' as PopoverDirectiveValue));
+    await flushPromises();
+    el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    await flushPromises();
+    const panel = document.querySelector<HTMLElement>('.i-popover');
+    expect(panel?.textContent).toContain('初始说明');
+    // 更新值时重建浮层
+    popover.updated?.(el, binding({ content: '更新说明' } as PopoverDirectiveValue, '初始说明' as PopoverDirectiveValue));
+    await flushPromises();
+    el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    await flushPromises();
+    expect(document.querySelector<HTMLElement>('.i-popover')?.textContent).toContain('更新说明');
+    popover.unmounted?.(el);
+    await flushPromises();
+    expect(document.querySelector('.i-popover')).toBeNull();
+    el.remove();
   });
 });

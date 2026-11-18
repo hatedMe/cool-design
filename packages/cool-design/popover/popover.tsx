@@ -15,6 +15,18 @@ import { useFloating, type FloatingReference, type Placement } from '../../../sr
 type Trigger = 'hover' | 'focus' | 'click' | 'contextmenu';
 type AppendTo = string | HTMLElement;
 export type PopoverVirtualRef = FloatingReference;
+export type PopoverDirectiveValue =
+  | string
+  | {
+      content?: string;
+      title?: string;
+      placement?: Placement;
+      trigger?: Trigger | Trigger[];
+      effect?: 'light' | 'dark';
+      offset?: number;
+      showArrow?: boolean;
+      disabled?: boolean;
+    };
 
 export default defineComponent({
   name: 'i-popover',
@@ -27,10 +39,12 @@ export default defineComponent({
     width: { type: [String, Number] as PropType<string | number>, default: undefined },
     showAfter: { type: Number, default: 0 },
     hideAfter: { type: Number, default: 200 },
+    autoClose: { type: Number, default: 0 },
     enterable: { type: Boolean, default: true },
     showArrow: { type: Boolean, default: true },
     effect: { type: String as PropType<'light' | 'dark'>, default: 'light' },
     offset: { type: Number, default: 12 },
+    fallbackPlacements: { type: Array as PropType<Placement[]>, default: undefined },
     visible: { type: Boolean as PropType<boolean | null>, default: null },
     persistent: Boolean,
     teleported: { type: Boolean, default: true },
@@ -63,6 +77,7 @@ export default defineComponent({
     const internalVisible = ref(false);
     const shown = ref(false);
     const timer = ref<ReturnType<typeof setTimeout>>();
+    const autoCloseTimer = ref<ReturnType<typeof setTimeout>>();
     const virtualListeners = ref<Array<() => void>>([]);
 
     const triggers = computed(() => (Array.isArray(props.trigger) ? props.trigger : [props.trigger]));
@@ -85,6 +100,7 @@ export default defineComponent({
       reference,
       floating,
       placement: () => props.placement,
+      fallbackPlacements: () => props.fallbackPlacements,
       offset: () => props.offset,
       appendTo: () => props.appendTo,
       zIndex: () => props.zIndex,
@@ -212,6 +228,14 @@ export default defineComponent({
     watch(() => [props.virtualTriggering, props.virtualRef], bindVirtualReference, { immediate: true });
     watch(open, (value) => {
       if (value) shown.value = true;
+      // 打开 autoClose 毫秒后自动关闭，0 表示不自动关闭。
+      if (value && props.autoClose > 0) {
+        if (autoCloseTimer.value) clearTimeout(autoCloseTimer.value);
+        autoCloseTimer.value = setTimeout(() => closePopover(), props.autoClose);
+      } else if (!value && autoCloseTimer.value) {
+        clearTimeout(autoCloseTimer.value);
+        autoCloseTimer.value = undefined;
+      }
     });
     watch(() => props.disabled, (disabled) => {
       if (disabled) closePopover();
@@ -219,6 +243,7 @@ export default defineComponent({
     onMounted(bindVirtualReference);
     onBeforeUnmount(() => {
       clearTimer();
+      if (autoCloseTimer.value) clearTimeout(autoCloseTimer.value);
       virtualListeners.value.forEach((remove) => {
         remove();
       });
@@ -230,7 +255,8 @@ export default defineComponent({
         internalVisible.value = true;
       },
       hide: closePopover,
-      update: position.update
+      update: position.update,
+      updatePopper: position.update
     });
 
     return () => {

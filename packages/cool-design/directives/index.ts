@@ -1,4 +1,7 @@
 import type { App, Directive } from 'vue';
+import { createApp, h } from 'vue';
+import PopoverComponent from '../popover/popover';
+import type { PopoverDirectiveValue } from '../popover/popover';
 
 type LoadingValue = boolean | { text?: string; background?: string; fullscreen?: boolean; lock?: boolean };
 const loadingLock = Symbol('loading-lock');
@@ -315,11 +318,72 @@ export const InfiniteScroll: Directive<InfiniteElement, () => void> = {
 
 export const directives = { loading: LoadingDirective, clickOutside: ClickOutside, infiniteScroll: InfiniteScroll };
 
+// v-popover 指令：基于 Popover 虚拟触发能力，为任意元素挂载浮层。
+const popoverState = Symbol('popover-directive');
+interface PopoverDirectiveState {
+  app: ReturnType<typeof createApp>;
+  host: HTMLElement;
+}
+type PopoverElement = HTMLElement & { [popoverState]?: PopoverDirectiveState };
+
+const mountPopover = (el: PopoverElement, value: PopoverDirectiveValue) => {
+  const options = typeof value === 'string' ? { content: value } : value ?? {};
+  const host = document.createElement('div');
+  const app = createApp(() =>
+    h(PopoverComponent, {
+      virtualTriggering: true,
+      virtualRef: el,
+      content: options.content ?? '',
+      title: options.title ?? '',
+      placement: options.placement ?? 'bottom',
+      trigger: options.trigger ?? 'hover',
+      effect: options.effect ?? 'light',
+      offset: options.offset ?? 12,
+      showArrow: options.showArrow ?? true,
+      disabled: options.disabled ?? false
+    })
+  );
+  app.mount(host);
+  el[popoverState] = { app, host };
+};
+
+export const VPopover: Directive<PopoverElement, PopoverDirectiveValue> = {
+  mounted: (el, binding) => {
+    if (!binding.value) return;
+    mountPopover(el, binding.value);
+  },
+  updated: (el, binding) => {
+    const state = el[popoverState];
+    if (!binding.value) {
+      if (state) {
+        state.app.unmount();
+        state.host.remove();
+        delete el[popoverState];
+      }
+      return;
+    }
+    if (state && binding.oldValue !== binding.value) {
+      state.app.unmount();
+      state.host.remove();
+      delete el[popoverState];
+    }
+    if (!el[popoverState]) mountPopover(el, binding.value);
+  },
+  unmounted: (el) => {
+    const state = el[popoverState];
+    if (!state) return;
+    state.app.unmount();
+    state.host.remove();
+    delete el[popoverState];
+  }
+};
+
 export const installDirectives = (app: App) => {
   if (typeof app.directive !== 'function') return;
   app.directive('loading', LoadingDirective);
   app.directive('click-outside', ClickOutside);
   app.directive('infinite-scroll', InfiniteScroll);
+  app.directive('popover', VPopover);
 };
 
 export default directives;

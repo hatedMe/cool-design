@@ -32,8 +32,10 @@
 | `offset` | 触发元素与浮层的距离，单位 px | `number` | `12` |
 | `show-after` | 显示延迟，单位 ms | `number` | `0` |
 | `hide-after` | 隐藏延迟，单位 ms | `number` | `200` |
+| `auto-close` | 打开多少毫秒后自动关闭，`0` 表示不自动关闭 | `number` | `0` |
 | `enterable` | 是否允许鼠标进入浮层内容 | `boolean` | `true` |
 | `show-arrow` | 是否显示箭头 | `boolean` | `true` |
+| `fallback-placements` | 主位置放不下时的候选位置 | `Placement[]` | — |
 | `visible` | 是否受控显示，可使用 `v-model:visible` | `boolean` | — |
 | `persistent` | 关闭后是否保留浮层节点 | `boolean` | `false` |
 | `teleported` | 是否将浮层传送到挂载容器 | `boolean` | `true` |
@@ -71,6 +73,16 @@
 | `show()` | 显示浮层；受控模式下应修改 `visible` |
 | `hide()` | 隐藏浮层 |
 | `update()` | 重新计算浮层位置 |
+| `updatePopper()` | `update()` 的兼容别名 |
+
+### v-popover 指令
+
+不包裹组件时，可用 `v-popover` 为任意元素挂载浮层，值为内容字符串或配置对象，随值更新自动重建：
+
+```vue
+<button v-popover="'悬停显示的说明'">查看</button>
+<button v-popover="{ content: '说明', title: '标题', placement: 'top' }">详情</button>
+```
 
 ### 使用说明
 

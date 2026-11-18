@@ -28,10 +28,12 @@ export default defineComponent({
     persistent: Boolean,
     showAfter: { type: Number, default: 0 },
     hideAfter: { type: Number, default: 200 },
+    autoClose: { type: Number, default: 0 },
     enterable: { type: Boolean, default: true },
     showArrow: { type: Boolean, default: true },
     effect: { type: String as PropType<'light' | 'dark'>, default: 'dark' },
     offset: { type: Number, default: 12 },
+    fallbackPlacements: { type: Array as PropType<Placement[]>, default: undefined },
     visible: { type: Boolean as PropType<boolean | null>, default: null },
     teleported: { type: Boolean, default: true },
     appendTo: { type: [String, Object] as PropType<AppendTo>, default: undefined },
@@ -51,6 +53,7 @@ export default defineComponent({
     const contexted = ref(false);
     const internalVisible = ref(false);
     const timer = ref<ReturnType<typeof setTimeout>>();
+    const autoCloseTimer = ref<ReturnType<typeof setTimeout>>();
     const tooltipId = `i-tooltip-${++id}`;
     const wasOpen = ref(false);
     const shown = ref(false);
@@ -75,6 +78,7 @@ export default defineComponent({
       reference,
       floating,
       placement: () => props.placement,
+      fallbackPlacements: () => props.fallbackPlacements,
       offset: () => props.offset,
       appendTo: () => props.appendTo,
       zIndex: () => props.zIndex,
@@ -194,6 +198,14 @@ export default defineComponent({
     watch(() => [props.virtualTriggering, props.virtualRef], bindVirtualReference, { immediate: true });
     watch(open, (value) => {
       if (value) shown.value = true;
+      // 打开 autoClose 毫秒后自动关闭，0 表示不自动关闭。
+      if (value && props.autoClose > 0) {
+        if (autoCloseTimer.value) clearTimeout(autoCloseTimer.value);
+        autoCloseTimer.value = setTimeout(() => closeTooltip(), props.autoClose);
+      } else if (!value && autoCloseTimer.value) {
+        clearTimeout(autoCloseTimer.value);
+        autoCloseTimer.value = undefined;
+      }
       if (value === wasOpen.value) return;
       wasOpen.value = value;
       emit(value ? 'open' : 'close', value);
@@ -205,6 +217,7 @@ export default defineComponent({
     onMounted(bindVirtualReference);
     onBeforeUnmount(() => {
       clearTimer();
+      if (autoCloseTimer.value) clearTimeout(autoCloseTimer.value);
       virtualListeners.value.forEach((remove) => {
         remove();
       });
@@ -216,7 +229,8 @@ export default defineComponent({
         internalVisible.value = true;
       },
       hide: closeTooltip,
-      update: position.update
+      update: position.update,
+      updatePopper: position.update
     });
 
     return () => {

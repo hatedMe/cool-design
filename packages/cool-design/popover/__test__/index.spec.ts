@@ -141,3 +141,36 @@ test('兼容旧用法：默认插槽为触发器，content 插槽为内容', asy
   await flushPromises();
   expect(panel()?.textContent).toContain('插槽内容');
 });
+
+test('auto-close 打开后自动关闭，updatePopper 等价于 update', async () => {
+  vi.useFakeTimers();
+  const w = mount(Popover, {
+    props: { content: '自动关闭', trigger: 'click', hideAfter: 0, autoClose: 100 },
+    slots: { reference: () => h('button', '查看') },
+    attachTo: document.body
+  });
+  wrappers.push(w);
+  await w.get('button').trigger('click');
+  await flushPromises();
+  expect(panel()).not.toBeNull();
+  const exposed = w.vm as unknown as { updatePopper: () => void; update: () => void };
+  expect(typeof exposed.updatePopper).toBe('function');
+  expect(exposed.updatePopper).toBe(exposed.update);
+  vi.advanceTimersByTime(150);
+  await flushPromises();
+  expect(panel()).toBeNull();
+  vi.useRealTimers();
+});
+
+test('fallback-placements 传入浮层候选位置', async () => {
+  const w = mount(Popover, {
+    props: { content: '说明', hideAfter: 0, placement: 'bottom', fallbackPlacements: ['top', 'right'] },
+    slots: { reference: () => h('button', '查看') },
+    attachTo: document.body
+  });
+  wrappers.push(w);
+  await w.get('.i-popover__trigger').trigger('mouseenter');
+  await flushPromises();
+  expect(panel()).not.toBeNull();
+  expect(['bottom', 'top', 'right']).toContain(panel()?.dataset.placement);
+});
