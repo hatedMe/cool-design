@@ -1,4 +1,4 @@
-import { flushPromises, mount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import { defineComponent, h, reactive, ref } from 'vue';
 import { describe, expect, test, vi } from 'vitest';
 import { fieldKey } from '../../form/context';

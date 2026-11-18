@@ -12,7 +12,7 @@
 <SelectV2 v-model="value" :options="options" placeholder="请选择" />
 ```
 
-`multiple` 多选（标签、`collapse-tags` 折叠、`multiple-limit` 限数、`remove-tag` 删除），`filterable` 本地过滤（`filter-method` 自定义），`value-key` 支持对象值，`clearable` 清空，`loading`/`automatic-dropdown`/`height`/`item-height` 控制面板与性能。
+`multiple` 多选（标签、`collapse-tags` 折叠、`multiple-limit` 限数、`remove-tag` 删除），`filterable` 本地过滤（分组数据过滤时保留仍有命中子项的分组头，`filter-method` 自定义），`value-key` 支持对象值，`clearable` 清空，`loading`/`automatic-dropdown`/`height`/`item-height` 控制面板与性能。
 
 ## API
 

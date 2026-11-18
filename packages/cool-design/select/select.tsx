@@ -116,7 +116,7 @@ export default defineComponent({
             isGroup(item)
               ? flatten(
                   ((item.children as SlotContent | undefined)?.default?.() ?? []) as VNode[],
-                  (item.props?.label as string | undefined) ?? '',
+                  (item.props?.label as string | undefined) ?? undefined,
                   groupDisabled || Boolean(item.props?.disabled)
                 )
               : [{ vnode: item, group, groupDisabled }]

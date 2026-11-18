@@ -81,12 +81,31 @@ export default defineComponent({
     const visibleRows = computed<FlatRow[]>(() => {
       if (!props.filterable || !query.value) return rows.value;
       const filter = props.filterMethod;
-      return rows.value.filter((row) => {
-        if (row.type === 'group') return false;
-        return filter
-          ? filter(query.value, row.option)
-          : optionLabel(row.option).toLowerCase().includes(query.value.toLowerCase());
-      });
+      const matches = (option: SelectV2Option) =>
+        filter
+          ? filter(query.value, option)
+          : optionLabel(option).toLowerCase().includes(query.value.toLowerCase());
+      // 过滤保留仍有命中子项的分组头，无命中的分组整组隐藏。
+      const result: FlatRow[] = [];
+      let index = 0;
+      while (index < rows.value.length) {
+        const row = rows.value[index];
+        if (row.type === 'group') {
+          let end = index + 1;
+          while (end < rows.value.length && rows.value[end].type !== 'group') end++;
+          const hits: FlatRow[] = [];
+          for (let child = index + 1; child < end; child++) {
+            const childRow = rows.value[child];
+            if (childRow.type === 'option' && matches(childRow.option)) hits.push(childRow);
+          }
+          if (hits.length) result.push(row, ...hits);
+          index = end;
+        } else {
+          if (row.type === 'option' && matches(row.option)) result.push(row);
+          index++;
+        }
+      }
+      return result;
     });
 
     const flatOptions = computed(() =>

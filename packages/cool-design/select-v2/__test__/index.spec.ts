@@ -48,6 +48,27 @@ describe('test `SelectV2` component', () => {
     expect(wrapper.findAll('.i-select-v2__group').map((item) => item.text())).toEqual(['组一', '组二']);
   });
 
+  test('filterable 过滤保留有命中子项的分组头', async () => {
+    const { wrapper } = mountSelect({
+      filterable: true,
+      options: [
+        { label: '热门城市', options: [{ value: 'sh', label: '上海' }, { value: 'su', label: '苏州' }] },
+        { label: '其他城市', options: [{ value: 'gz', label: '广州' }, { value: 'hz', label: '杭州' }] }
+      ]
+    });
+    await openSelect(wrapper);
+    const input = wrapper.get('input[aria-label="筛选选项"]');
+    await input.setValue('广州');
+    expect(wrapper.findAll('.i-select-v2__group').map((item) => item.text())).toEqual(['其他城市']);
+    expect(wrapper.findAll('[role="option"]')).toHaveLength(1);
+    await input.setValue('州');
+    expect(wrapper.findAll('.i-select-v2__group').map((item) => item.text())).toEqual(['热门城市', '其他城市']);
+    expect(wrapper.findAll('[role="option"]')).toHaveLength(3);
+    await input.setValue('不存在');
+    expect(wrapper.findAll('.i-select-v2__group')).toHaveLength(0);
+    expect(wrapper.text()).toContain('无匹配数据');
+  });
+
   test('多选标签、折叠与删除', async () => {
     const { wrapper, value, select } = mountSelect(
       {
