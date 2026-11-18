@@ -26,6 +26,17 @@ test('支持便捷方法与 error 别名', () => {
   expect(document.querySelector('.i-notification')).toBeNull();
 });
 
+test('字符串简写等价于 { message }', () => {
+  const a = Notify('纯文本消息');
+  expect(document.body.textContent).toContain('纯文本消息');
+  a.close();
+  Notify.success('成功消息');
+  const success = document.querySelector('.i-notification--success');
+  expect(success).not.toBeNull();
+  expect(success?.textContent).toContain('成功消息');
+  Notify.closeAll();
+});
+
 test('HTML 默认转义，显式开启才渲染', () => {
   const a = Notify({ title: 't', message: '<b>加粗</b>', duration: 0 });
   expect(document.querySelector('.i-notification b')).toBeNull();
