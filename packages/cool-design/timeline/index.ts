@@ -1,3 +1,4 @@
+import './index.scss';
 import { withInstall } from '../../../src/utils/with-install';
 import Component from './timeline';
 import ItemComponent from './timeline-item';
