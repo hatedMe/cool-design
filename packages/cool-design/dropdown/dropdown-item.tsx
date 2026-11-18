@@ -1,4 +1,4 @@
-import { defineComponent, inject, type PropType } from 'vue';
+import { defineComponent, getCurrentInstance, inject, type PropType } from 'vue';
 import { dropdownKey, type DropdownCommand } from './context';
 
 export default defineComponent({
@@ -12,18 +12,19 @@ export default defineComponent({
   emits: ['click'],
   setup(props, { slots, emit }) {
     const parent = inject(dropdownKey, undefined);
+    const instance = getCurrentInstance()?.proxy;
 
     const handleClick = (event: MouseEvent) => {
       if (props.disabled || parent?.disabled) return;
       emit('click', event);
-      parent?.handleCommand(props.command);
+      parent?.handleCommand(props.command, instance);
     };
 
     const handleKeydown = (event: KeyboardEvent) => {
       if (props.disabled) return;
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        parent?.handleCommand(props.command);
+        parent?.handleCommand(props.command, instance);
       } else if (event.key === 'Escape') {
         event.preventDefault();
         parent?.close('escape');

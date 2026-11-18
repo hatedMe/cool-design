@@ -2,6 +2,8 @@ import { Teleport, computed, defineComponent, onBeforeUnmount, provide, ref, typ
 import { dropdownKey, type DropdownCommand, type DropdownTrigger } from './context';
 import IDropdownMenu from './dropdown-menu';
 import IDropdownItem from './dropdown-item';
+import Button from '../button/button';
+import ButtonGroup from '../button/group';
 import { useFloating, type Placement } from '../../../src/utils/use-floating';
 
 export interface DropdownItem {
@@ -14,6 +16,7 @@ export interface DropdownItem {
 
 export type DropdownSize = '' | 'large' | 'default' | 'small';
 export type DropdownPlacement = string;
+export type DropdownType = 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'default';
 
 export default defineComponent({
   name: 'i-dropdown',
@@ -27,12 +30,18 @@ export default defineComponent({
     placement: { type: String as PropType<DropdownPlacement>, default: 'bottom' },
     disabled: Boolean,
     splitButton: Boolean,
+    type: { type: String as PropType<DropdownType>, default: 'default' },
+    buttonProps: { type: Object as PropType<Record<string, unknown>>, default: () => ({}) },
     size: { type: String as PropType<DropdownSize>, default: '' },
     showTimeout: { type: Number, default: 150 },
     hideTimeout: { type: Number, default: 150 },
     maxHeight: { type: [String, Number], default: 172 },
     teleported: { type: Boolean, default: true },
-    popperClass: String
+    popperClass: String,
+    effect: { type: String as PropType<'light' | 'dark'>, default: 'light' },
+    role: { type: String, default: 'menu' },
+    tabindex: { type: [String, Number], default: 0 },
+    triggerKeys: { type: Array as PropType<string[]>, default: () => ['enter', 'space'] }
   },
   emits: ['click', 'command', 'visible-change'],
   setup(props, { slots, emit, expose }) {
@@ -85,8 +94,8 @@ export default defineComponent({
 
     onBeforeUnmount(clearTimer);
 
-    const handleCommand = (command: DropdownCommand) => {
-      emit('command', command);
+    const handleCommand = (command: DropdownCommand, instance?: unknown) => {
+      emit('command', command, instance);
       if (props.hideOnClick) setVisible(false);
     };
 
@@ -106,6 +115,9 @@ export default defineComponent({
       },
       get disabled() {
         return props.disabled;
+      },
+      get role() {
+        return props.role;
       },
       handleCommand,
       close
@@ -129,7 +141,8 @@ export default defineComponent({
 
     const handleTriggerKeydown = (event: KeyboardEvent) => {
       if (props.disabled) return;
-      if (event.key === 'Enter' || event.key === ' ') {
+      const keys = props.triggerKeys.map((key) => key.toLowerCase());
+      if (keys.includes(event.key.toLowerCase())) {
         event.preventDefault();
         if (!open.value) {
           setVisible(true);
@@ -191,6 +204,7 @@ export default defineComponent({
           class={[
             'i-dropdown__popper',
             `is-${props.placement}`,
+            `i-dropdown__popper--${props.effect}`,
             props.popperClass
           ]}
           data-placement={props.placement}
@@ -219,30 +233,34 @@ export default defineComponent({
             }}
             onMouseenter={() => useHover.value && scheduleOpen()}
             onMouseleave={() => useHover.value && scheduleClose()}>
-            <button
-              type='button'
-              class='i-dropdown__button'
-              disabled={props.disabled}
-              onClick={handleSplitClick}>
-              {slots.default?.() ?? '更多'}
-            </button>
-            <button
-              ref={reference}
-              type='button'
-              class='i-dropdown__trigger'
-              disabled={props.disabled}
-              aria-haspopup='menu'
-              aria-expanded={open.value}
-              onClick={toggle}
-              onContextmenu={(event) => {
-                if (useContextmenu.value) {
-                  event.preventDefault();
-                  toggle();
-                }
-              }}
-              onKeydown={handleTriggerKeydown}>
-              <span aria-hidden='true'>▾</span>
-            </button>
+            <ButtonGroup>
+              <Button
+                type={props.type}
+                size={props.size || undefined}
+                disabled={props.disabled}
+                class='i-dropdown__button'
+                {...(props.buttonProps as Record<string, unknown>)}
+                onClick={handleSplitClick}>
+                {slots.default?.() ?? '更多'}
+              </Button>
+              <button
+                ref={reference}
+                type='button'
+                class='i-dropdown__trigger'
+                disabled={props.disabled}
+                aria-haspopup='menu'
+                aria-expanded={open.value}
+                onClick={toggle}
+                onContextmenu={(event) => {
+                  if (useContextmenu.value) {
+                    event.preventDefault();
+                    toggle();
+                  }
+                }}
+                onKeydown={handleTriggerKeydown}>
+                <span aria-hidden='true'>▾</span>
+              </button>
+            </ButtonGroup>
             {renderedMenu}
           </div>
         );
@@ -261,7 +279,7 @@ export default defineComponent({
           <span
             ref={reference}
             class='i-dropdown__trigger'
-            tabindex={props.disabled ? -1 : 0}
+            tabindex={props.disabled ? -1 : props.tabindex}
             role='button'
             aria-haspopup='menu'
             aria-expanded={open.value}

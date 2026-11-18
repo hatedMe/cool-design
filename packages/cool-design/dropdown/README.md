@@ -42,7 +42,13 @@ Dropdown 将多个操作收纳到下拉菜单中，支持悬停/点击/右键触
 | `max-height` | 菜单最大高度，超出滚动 | `number` / `string` | `172` |
 | `teleported` | 菜单是否传送到 body | `boolean` | `true` |
 | `popper-class` | 菜单浮层自定义类名 | `string` | — |
-| `split-button` | 是否为分裂按钮 | `boolean` | `false` |
+| `effect` | 菜单主题：`light` / `dark` | `string` | `light` |
+| `role` | 菜单无障碍角色 | `string` | `menu` |
+| `tabindex` | 触发器 Tab 顺序 | `string` / `number` | `0` |
+| `trigger-keys` | 键盘打开菜单的按键 | `string[]` | `['enter', 'space']` |
+| `split-button` | 是否为分裂按钮（复用按钮组） | `boolean` | `false` |
+| `type` | 分裂主按钮类型：`primary` / `success` / `warning` / `danger` / `info` / `default` | `string` | `default` |
+| `button-props` | 分裂主按钮的透传属性 | `object` | `{}` |
 | `size` | 分裂按钮尺寸 | `large` / `default` / `small` | `''` |
 | `disabled` | 是否禁用 | `boolean` | `false` |
 
@@ -51,7 +57,7 @@ Dropdown 将多个操作收纳到下拉菜单中，支持悬停/点击/右键触
 | 事件名 | 说明 | 回调参数 |
 | ------ | ---- | -------- |
 | `click` | 分裂按钮左侧点击 | `event: MouseEvent` |
-| `command` | 点击菜单项 | `command: string \| number \| object` |
+| `command` | 点击菜单项 | `command: string \| number \| object`，`dropdownItem: DropdownItem 组件实例` |
 | `visible-change` | 下拉显隐变化 | `visible: boolean` |
 
 ### Dropdown 插槽

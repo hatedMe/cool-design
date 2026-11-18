@@ -28,7 +28,10 @@ describe('Dropdown', () => {
     const buttons = wrapper.findAll('.i-dropdown__item-button');
     expect(buttons[1].attributes('disabled')).toBeDefined();
     await buttons[0].trigger('click');
-    expect(wrapper.emitted('command')?.[0]).toEqual(['edit']);
+    const command = wrapper.emitted('command')?.[0];
+    expect(command?.[0]).toBe('edit');
+    // 第二参数为 DropdownItem 组件实例
+    expect(command?.[1]).toBeTruthy();
     // hideOnClick 默认关闭
     expect(wrapper.find('.i-dropdown__menu').exists()).toBe(false);
   });
@@ -91,7 +94,7 @@ describe('Dropdown', () => {
     });
     await wrapper.find('.i-dropdown__trigger').trigger('click');
     await wrapper.find('.i-dropdown__item-button').trigger('click');
-    expect(wrapper.emitted('command')?.[0]).toEqual(['a']);
+    expect(wrapper.emitted('command')?.[0]?.[0]).toBe('a');
     expect(wrapper.find('.i-dropdown__menu').exists()).toBe(true);
   });
 
@@ -103,6 +106,47 @@ describe('Dropdown', () => {
     });
     await wrapper.find('.i-dropdown__trigger').trigger('click');
     await wrapper.find('.i-dropdown__item-button').trigger('click');
-    expect(wrapper.emitted('command')?.[0]).toEqual([cmd]);
+    expect(wrapper.emitted('command')?.[0]?.[0]).toEqual(cmd);
+  });
+
+  test('split-button 复用按钮组并支持 type / buttonProps', async () => {
+    const wrapper = mountDropdown({
+      props: {
+        splitButton: true,
+        type: 'primary',
+        buttonProps: { loading: false, 'data-main': 'yes' },
+        items: [{ command: 'a', label: 'A' }]
+      },
+      slots: { default: () => '更多操作' }
+    });
+    const group = wrapper.find('.i-button-group');
+    expect(group.exists()).toBe(true);
+    const main = wrapper.find('.i-dropdown__button');
+    expect(main.classes()).toContain('i-button');
+    expect(main.classes()).toContain('i-button--primary');
+    expect(main.attributes('data-main')).toBe('yes');
+    await main.trigger('click');
+    expect(wrapper.emitted('click')).toHaveLength(1);
+  });
+
+  test('role 与 effect 透传菜单与面板', async () => {
+    const wrapper = mountDropdown({
+      props: { trigger: 'click', role: 'list', effect: 'dark', items: [{ command: 'a', label: 'A' }] },
+      slots: { default: () => '触发器' }
+    });
+    await wrapper.find('.i-dropdown__trigger').trigger('click');
+    expect(wrapper.find('.i-dropdown__menu').attributes('role')).toBe('list');
+    expect(wrapper.find('.i-dropdown__popper').classes()).toContain('i-dropdown__popper--dark');
+  });
+
+  test('trigger-keys 自定义触发键', async () => {
+    const wrapper = mountDropdown({
+      props: { triggerKeys: ['enter'], items: [{ command: 'a', label: 'A' }] },
+      slots: { default: () => '触发器' }
+    });
+    await wrapper.find('.i-dropdown__trigger').trigger('keydown', { key: ' ' });
+    expect(wrapper.find('.i-dropdown__menu').exists()).toBe(false);
+    await wrapper.find('.i-dropdown__trigger').trigger('keydown', { key: 'Enter' });
+    expect(wrapper.find('.i-dropdown__menu').exists()).toBe(true);
   });
 });

@@ -6,7 +6,8 @@ export type DropdownCommand = string | number | Record<string, unknown>;
 export interface DropdownContext {
   hideOnClick: boolean;
   disabled: boolean;
-  handleCommand: (command: DropdownCommand) => void;
+  role: string;
+  handleCommand: (command: DropdownCommand, instance?: unknown) => void;
   close: (reason?: string) => void;
 }
 

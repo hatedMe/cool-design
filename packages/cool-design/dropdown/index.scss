@@ -70,6 +70,16 @@
 .i-dropdown__item-icon {
   display: inline-flex;
 }
+.i-dropdown__popper--dark .i-dropdown__menu {
+  background: #303133;
+  border-color: #303133;
+  color: #fff;
+
+  button:hover {
+    background: rgb(255 255 255 / 12%);
+    color: #fff;
+  }
+}
 .i-dropdown.is-split-button {
   display: inline-flex;
 }
