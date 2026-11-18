@@ -1,5 +1,7 @@
 import { computed, defineComponent, nextTick, onBeforeUnmount, type CSSProperties, type PropType, ref } from 'vue';
 import { useField } from '../form/context';
+import { useConfig } from '../config-provider/context';
+import InputNumber from '../input-number/input-number';
 
 type SliderValue = number | number[];
 type Mark = string | { style?: CSSProperties; label?: string };
@@ -62,13 +64,16 @@ export default defineComponent({
     rangeStartLabel: String,
     rangeEndLabel: String,
     marks: Object as PropType<Record<number, Mark>>,
-    size: { type: String as PropType<SliderProps['size']>, default: 'default' }
+    size: { type: String as PropType<SliderProps['size']>, default: undefined }
   },
   emits: ['update:modelValue', 'input', 'change'],
   setup(props, { emit, slots, attrs }) {
     const activeHandle = ref(0);
     const focusedHandle = ref<number | null>(null);
     const field = useField();
+    const config = useConfig();
+    const isDisabled = computed(() => props.disabled || !!field?.disabled?.());
+    const resolvedSize = computed(() => props.size ?? field?.size?.() ?? config.value.size);
     const bounds = computed(() => {
       const min = Number.isFinite(props.min) ? props.min : 0;
       const max = Number.isFinite(props.max) && props.max > min ? props.max : min + 100;
@@ -104,7 +109,7 @@ export default defineComponent({
     const percentage = (value: number) => ((value - bounds.value.min) / (bounds.value.max - bounds.value.min)) * 100;
     const displayValue = (value: number) => (props.formatTooltip ? props.formatTooltip(value) : String(value));
     const cssHeight = computed(() => (typeof props.height === 'number' ? `${props.height}px` : props.height));
-    const resolvedInputSize = computed(() => props.inputSize || props.size);
+    const resolvedInputSize = computed(() => props.inputSize || resolvedSize.value);
     const output = (next: number[]) => (props.range ? next : next[0]);
     const commitValue = (result: SliderValue) => {
       emit('change', result);
@@ -112,7 +117,7 @@ export default defineComponent({
     };
 
     const update = (value: number, handle = activeHandle.value, commit = true) => {
-      if (props.disabled) return;
+      if (isDisabled.value) return;
       const next = [...values.value];
       next[handle] = normalizeNumber(value);
       if (props.range) {
@@ -129,7 +134,7 @@ export default defineComponent({
 
     let dragging = false;
     const handlePointerMove = (event: PointerEvent) => {
-      if (!dragging || props.disabled) return;
+      if (!dragging || isDisabled.value) return;
       const target = event.currentTarget as HTMLElement;
       const rect = target.getBoundingClientRect();
       const ratio = props.vertical ? 1 - (event.clientY - rect.top) / rect.height : (event.clientX - rect.left) / rect.width;
@@ -140,14 +145,14 @@ export default defineComponent({
       dragging = false;
     };
     const startDragging = (event: PointerEvent, handle: number) => {
-      if (props.disabled) return;
+      if (isDisabled.value) return;
       activeHandle.value = handle;
       dragging = true;
       (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
     };
 
     const updateFromKeyboard = (event: KeyboardEvent, handle: number) => {
-      if (props.disabled) return;
+      if (isDisabled.value) return;
       const current = values.value[handle];
       const distance = bounds.value.max - bounds.value.min;
       const jump = event.key === 'PageUp' || event.key === 'PageDown' ? bounds.value.step * 10 : bounds.value.step;
@@ -168,7 +173,7 @@ export default defineComponent({
     };
 
     const handleTrackClick = (event: MouseEvent) => {
-      if (props.disabled) return;
+      if (isDisabled.value) return;
       const target = event.currentTarget as HTMLElement;
       const rect = target.getBoundingClientRect();
       const ratio = props.vertical ? 1 - (event.clientY - rect.top) / rect.height : (event.clientX - rect.left) / rect.width;
@@ -184,11 +189,16 @@ export default defineComponent({
     onBeforeUnmount(() => {
       if (inputTimer) clearTimeout(inputTimer);
     });
-    const inputValue = (event: Event, handle: number, immediate = false) => {
-      const value = Number((event.target as HTMLInputElement).value);
+    const numberInput = (value: number | null, handle: number) => {
+      if (value === null) return;
       if (inputTimer) clearTimeout(inputTimer);
-      if (immediate || props.debounce <= 0) update(value, handle);
-      else inputTimer = setTimeout(() => update(value, handle), props.debounce);
+      if (props.debounce > 0) inputTimer = setTimeout(() => update(value, handle, false), props.debounce);
+      else update(value, handle, false);
+    };
+    const commitInput = (value: number | null, handle: number) => {
+      if (value === null) return;
+      if (inputTimer) clearTimeout(inputTimer);
+      update(value, handle);
     };
     const stops = computed(() => {
       if (!props.showStops) return [];
@@ -200,7 +210,7 @@ export default defineComponent({
     const markEntries = computed(() => Object.entries(props.marks || {}).map(([value, mark]) => ({ value: Number(value), mark })).filter(({ value }) => value >= bounds.value.min && value <= bounds.value.max));
 
     return () => (
-      <div {...attrs} class={{ 'i-slider': true, 'is-vertical': props.vertical, 'is-disabled': props.disabled, [`i-slider--${props.vertical ? 'default' : props.size}`]: true }} style={props.vertical && cssHeight.value ? { ...(attrs.style as Record<string, string> || {}), height: cssHeight.value } : attrs.style as string | undefined}>
+      <div {...attrs} class={{ 'i-slider': true, 'is-vertical': props.vertical, 'is-disabled': isDisabled.value, [`i-slider--${props.vertical ? 'default' : resolvedSize.value}`]: true }} style={props.vertical && cssHeight.value ? { ...(attrs.style as Record<string, string> || {}), height: cssHeight.value } : attrs.style as string | undefined}>
         {props.rangeStartLabel && <span class='i-slider__label'>{props.rangeStartLabel}</span>}
         <div class='i-slider__body'>
           <div class='i-slider__track' onClick={handleTrackClick} onPointermove={handlePointerMove} onPointerup={stopDragging} onPointercancel={stopDragging}>
@@ -221,13 +231,13 @@ export default defineComponent({
               <span
                 class='i-slider__handle'
                 role='slider'
-                tabindex={props.disabled ? -1 : 0}
+                tabindex={isDisabled.value ? -1 : 0}
                 aria-valuemin={bounds.value.min}
                 aria-valuemax={bounds.value.max}
                 aria-valuenow={value}
                 aria-valuetext={props.formatValueText ? props.formatValueText(value) : undefined}
                 aria-orientation={props.vertical ? 'vertical' : 'horizontal'}
-                aria-disabled={props.disabled ? 'true' : undefined}
+                aria-disabled={isDisabled.value ? 'true' : undefined}
                 aria-label={props.range
                   ? (index === 0 ? props.rangeStartLabel || `${props.ariaLabel || props.label || attrs['aria-label'] || ''}起始值` : props.rangeEndLabel || `${props.ariaLabel || props.label || attrs['aria-label'] || ''}结束值`)
                   : props.ariaLabel || props.label || String(attrs['aria-label'] || '滑块')}
@@ -244,13 +254,30 @@ export default defineComponent({
           </div>
         </div>
         {props.rangeEndLabel && <span class='i-slider__label'>{props.rangeEndLabel}</span>}
-        {props.showInput && !props.range && props.step !== 'mark' && values.value.map((value) => (
-          <div class={{ 'i-slider__input-wrap': true, [`i-slider__input-wrap--${resolvedInputSize.value}`]: true }}>
-            {props.showInputControls && <button type='button' aria-label='减少' disabled={props.disabled || value <= bounds.value.min} onClick={() => update(value - bounds.value.step, 0)}>-</button>}
-            <input class='i-slider__number' type='number' min={bounds.value.min} max={bounds.value.max} step={bounds.value.step} value={value} disabled={props.disabled} onInput={(event: Event) => inputValue(event, 0)} onChange={(event: Event) => inputValue(event, 0, true)} />
-            {props.showInputControls && <button type='button' aria-label='增加' disabled={props.disabled || value >= bounds.value.max} onClick={() => update(value + bounds.value.step, 0)}>+</button>}
+        {props.showInput && props.step !== 'mark' && (
+          <div class='i-slider__inputs'>
+            {values.value.map((value, index) => (
+              <span key={index} class={['i-slider__input-wrap', `i-slider__input-wrap--${resolvedInputSize.value}`]}>
+                <InputNumber
+                  modelValue={value}
+                  min={props.range && index === 1 ? values.value[0] : bounds.value.min}
+                  max={props.range && index === 0 ? values.value[1] : bounds.value.max}
+                  step={bounds.value.step}
+                  size={resolvedInputSize.value}
+                  controls={props.showInputControls}
+                  disabled={isDisabled.value}
+                  validateEvent={false}
+                  id={field ? `${field.id}-input-${index}` : undefined}
+                  ariaLabel={props.range
+                    ? (index === 0 ? props.rangeStartLabel || '起始值' : props.rangeEndLabel || '结束值')
+                    : props.ariaLabel || props.label || '滑块值'}
+                  onUpdate:modelValue={(value: number | null) => numberInput(value, index)}
+                  onChange={(value: number) => commitInput(value, index)}
+                />
+              </span>
+            ))}
           </div>
-        ))}
+        )}
       </div>
     );
   }

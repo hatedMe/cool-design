@@ -98,37 +98,15 @@
     white-space: nowrap;
   }
 
+  &__inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   &__input-wrap {
     display: flex;
     align-items: center;
-
-    &--large .i-slider__number,
-    &--large button {
-      height: 32px;
-      padding: 0 11px;
-      font-size: 14px;
-    }
-    &--small .i-slider__number,
-    &--small button {
-      height: 24px;
-      padding: 0 7px;
-      font-size: 12px;
-    }
-
-    button {
-      width: 24px;
-      height: 28px;
-      box-sizing: border-box;
-      border: 1px solid var(--i-border-color, #dcdfe6);
-      background: #f5f7fa;
-      cursor: pointer;
-    }
-  }
-
-  &__number {
-    width: 70px;
-    height: 28px;
-    box-sizing: border-box;
   }
 
   &--large &__track { height: 8px; }

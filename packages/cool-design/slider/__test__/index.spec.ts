@@ -1,7 +1,9 @@
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
+import { defineComponent, h, reactive, ref } from 'vue';
 import { describe, expect, test, vi } from 'vitest';
 import { fieldKey } from '../../form/context';
 import Slider from '../index';
+import * as CoolDesign from '../../index';
 
 describe('Slider', () => {
   test('规范化单值和范围值，并在交互更新时区分 input/change', async () => {
@@ -55,8 +57,12 @@ describe('Slider', () => {
       }
     });
 
-    expect(wrapper.findAll('input[type="number"]')).toHaveLength(0);
-    expect(wrapper.findAll('[aria-label="增加"]').length).toBe(0);
+    expect(wrapper.findAll('.i-slider__input-wrap')).toHaveLength(2);
+    expect(wrapper.findAll('.i-input-number')).toHaveLength(2);
+    expect(wrapper.findAll('[aria-label="增加"]')).toHaveLength(2);
+    expect(wrapper.findAll('[aria-label="减少"]')).toHaveLength(2);
+    expect(wrapper.findAll('input')[0].attributes('aria-label')).toBe('起始');
+    expect(wrapper.findAll('input')[1].attributes('aria-label')).toBe('结束');
     expect(wrapper.text()).toContain('起始');
     expect(wrapper.text()).toContain('结束');
     expect(wrapper.findAll('.i-slider__tooltip')).toHaveLength(2);
@@ -183,7 +189,8 @@ describe('Slider', () => {
 
   test('step=mark 时不显示 show-input', () => {
     const wrapper = mount(Slider, { props: { modelValue: 20, step: 'mark', marks: { 0: '0', 20: '20' }, showInput: true } });
-    expect(wrapper.find('input[type="number"]').exists()).toBe(false);
+    expect(wrapper.find('.i-slider__inputs').exists()).toBe(false);
+    expect(wrapper.find('.i-input-number').exists()).toBe(false);
   });
 
   test('拖动结束时触发表单校验', async () => {
@@ -213,12 +220,15 @@ describe('Slider', () => {
       props: { modelValue: 10, showInput: true, debounce: 20 },
       global: { provide: { [fieldKey as symbol]: { id: 'field', validate } } }
     });
-    const input = wrapper.get('input[type="number"]');
+    const input = wrapper.get('.i-input-number input');
     (input.element as HTMLInputElement).value = '20';
     await input.trigger('input');
     expect(wrapper.emitted('input')).toBeUndefined();
     await new Promise((resolve) => setTimeout(resolve, 30));
     expect(wrapper.emitted('input')?.at(-1)).toEqual([20]);
+    expect(wrapper.emitted('change')).toBeUndefined();
+    await input.trigger('blur');
+    expect(wrapper.emitted('change')?.at(-1)).toEqual([20]);
     expect(validate).toHaveBeenCalledWith('change');
   });
 
@@ -237,5 +247,72 @@ describe('Slider', () => {
     expect(wrapper.findAll('.i-slider__stop')).toHaveLength(5);
     expect(wrapper.findAll('.i-slider__mark')).toHaveLength(3);
     expect(wrapper.text()).toContain('中点');
+  });
+
+  test('表单内继承禁用与尺寸，全局配置尺寸兜底', async () => {
+    const model = reactive({ volume: 30 });
+    const Host = defineComponent({
+      setup: () => () =>
+        h(CoolDesign.Form, { model, size: 'large', disabled: true }, () =>
+          h(CoolDesign.FormItem, { prop: 'volume', label: '音量' }, () =>
+            h(CoolDesign.Slider, { modelValue: model.volume, showInput: true })
+          )
+        )
+    });
+    const wrapper = mount(Host);
+    const slider = wrapper.find('.i-slider');
+    expect(slider.classes()).toContain('is-disabled');
+    expect(slider.classes()).toContain('i-slider--large');
+    expect(wrapper.find('.i-slider__input-wrap--large').exists()).toBe(true);
+    expect(wrapper.get('[role="slider"]').attributes('tabindex')).toBe('-1');
+    await wrapper.get('[role="slider"]').trigger('keydown', { key: 'ArrowRight' });
+    expect(wrapper.emitted('input')).toBeUndefined();
+    expect(wrapper.get('.i-input-number input').attributes('disabled')).toBeDefined();
+    wrapper.unmount();
+
+    const GlobalHost = defineComponent({
+      setup: () => () => h(CoolDesign.ConfigProvider, { size: 'small' }, () => h(CoolDesign.Slider, { modelValue: 10 }))
+    });
+    const global = mount(GlobalHost);
+    expect(global.find('.i-slider').classes()).toContain('i-slider--small');
+    global.unmount();
+
+    const fallback = mount(Slider, { props: { modelValue: 10 } });
+    expect(fallback.find('.i-slider').classes()).toContain('i-slider--default');
+  });
+
+  test('range 模式双输入框相互约束', async () => {
+    const mountRange = () => {
+      const model = ref<[number, number]>([20, 40]);
+      const wrapper = mount(Slider, {
+        props: {
+          modelValue: model.value,
+          range: true,
+          min: 0,
+          max: 100,
+          showInput: true,
+          'onUpdate:modelValue': (value: number | number[]) => {
+            model.value = [...value] as [number, number];
+            wrapper.setProps({ modelValue: model.value });
+          }
+        }
+      });
+      return { model, wrapper };
+    };
+
+    const upper = mountRange();
+    const upperInputs = upper.wrapper.findAll('.i-input-number input');
+    expect(upperInputs).toHaveLength(2);
+    (upperInputs[0].element as HTMLInputElement).value = '60';
+    await upperInputs[0].trigger('input');
+    // 起始输入框受结束值 40 约束，超出时吸附到 40
+    expect(upper.model.value[0]).toBe(40);
+
+    const lower = mountRange();
+    const lowerInputs = lower.wrapper.findAll('.i-input-number input');
+    (lowerInputs[1].element as HTMLInputElement).value = '10';
+    await lowerInputs[1].trigger('input');
+    // 结束输入框受起始值 20 约束，低于时吸附到 20
+    expect(lower.model.value[1]).toBe(20);
   });
 });
