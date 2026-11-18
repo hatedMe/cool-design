@@ -20,7 +20,7 @@ test('InputNumber 接入表单校验，变更后触发 change 校验', async () 
     }
   });
   const form = wrapper.vm as unknown as FormInstance;
-  expect(await form.validate()).toBe(false);
+  await expect(form.validate()).rejects.toEqual({ count: ['数量必填'] });
   await flushPromises();
   expect(wrapper.text()).toContain('数量必填');
 

@@ -125,7 +125,14 @@ export default defineComponent({
         nextTick(() => validate(trigger));
       }
     });
-    const scrollTo = () => root.value?.scrollIntoView?.({ block: 'center' });
+    const scrollTo = (offset?: number) => {
+      if (!root.value) return;
+      if (offset !== undefined) {
+        window.scrollTo?.({ top: root.value.getBoundingClientRect().top + window.scrollY - offset });
+        return;
+      }
+      root.value.scrollIntoView?.({ block: 'center' });
+    };
     if (props.prop) {
       const key = props.prop;
       form?.register(key, {
@@ -141,7 +148,8 @@ export default defineComponent({
               'input:not(:disabled), select:not(:disabled), textarea:not(:disabled), button:not(:disabled)'
             )
             ?.focus(),
-        scrollTo
+        scrollTo,
+        error: () => error.value
       });
       onBeforeUnmount(() => {
         clear();

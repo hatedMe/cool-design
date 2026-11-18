@@ -23,7 +23,7 @@ test('Form validate 事件逐字段上报校验结果', async () => {
     attachTo: document.body
   });
   const form = wrapper.vm as unknown as FormInstance;
-  expect(await form.validate()).toBe(false);
+  await expect(form.validate()).rejects.toEqual({ name: ['姓名必填'] });
   expect(onValidate).toHaveBeenCalledWith('name', false, '姓名必填');
   expect(onValidate).toHaveBeenCalledWith('age', true, undefined);
   wrapper.unmount();
@@ -107,7 +107,7 @@ test('inline-message 与 status-icon 生效', async () => {
     slots: { default: () => h(FormItem, { prop: 'name', label: '姓名' }, () => h('input')) }
   });
   const form = wrapper.vm as unknown as FormInstance;
-  await form.validate();
+  await form.validate().catch(() => undefined);
   await flushPromises();
   expect(wrapper.find('.i-form-item__error').classes()).toContain('is-inline-message');
   expect(wrapper.find('.i-form-item__status-icon').classes()).toContain('is-error');
@@ -136,5 +136,62 @@ test('Form scrollToField 与 fields 暴露字段上下文', async () => {
   expect(form.fields.map((field) => field.prop)).toEqual(['name']);
   expect(() => form.scrollToField('name')).not.toThrow();
   expect(() => form.scrollToField()).not.toThrow();
+  wrapper.unmount();
+});
+
+test('validate 失败拒绝并携带无效字段映射，通过时 resolve true', async () => {
+  const model = reactive({ name: '' });
+  const wrapper = mount(Form, {
+    props: { model, rules: { name: [{ required: true, message: '姓名必填' }] } },
+    slots: { default: () => h(FormItem, { prop: 'name', label: '姓名' }, () => h('input')) }
+  });
+  const form = wrapper.vm as unknown as FormInstance;
+  await expect(form.validate()).rejects.toEqual({ name: ['姓名必填'] });
+  model.name = '有效值';
+  await expect(form.validate()).resolves.toBe(true);
+});
+
+test('validate-on-rule-change 控制规则变化时的自动校验', async () => {
+  const model = reactive({ name: '' });
+  const rules = ref<Record<string, Array<{ required: boolean; message?: string }>>>({});
+  const wrapper = mount(Form, {
+    props: { model, rules: rules.value },
+    slots: { default: () => h(FormItem, { prop: 'name', label: '姓名' }, () => h('input')) }
+  });
+  await flushPromises();
+  expect(wrapper.text()).not.toContain('自动规则');
+
+  rules.value = { name: [{ required: true, message: '自动规则' }] };
+  await wrapper.setProps({ rules: rules.value });
+  await flushPromises();
+  expect(wrapper.text()).toContain('自动规则');
+  wrapper.unmount();
+
+  const manual = mount(Form, {
+    props: { model, rules: { name: [{ required: true, message: '关闭规则' }] }, validateOnRuleChange: false },
+    slots: { default: () => h(FormItem, { prop: 'name', label: '姓名' }, () => h('input')) }
+  });
+  await manual.setProps({ rules: { name: [{ required: true, message: '关闭规则' }] } });
+  await flushPromises();
+  expect(manual.text()).not.toContain('关闭规则');
+});
+
+test('scroll-to-error 与 scrollToErrorOffset 滚动定位无效字段', async () => {
+  const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+  const model = reactive({ name: '' });
+  const wrapper = mount(Form, {
+    props: {
+      model,
+      rules: { name: [{ required: true, message: '必填' }] },
+      scrollToError: true,
+      scrollToErrorOffset: 20
+    },
+    slots: { default: () => h(FormItem, { prop: 'name', label: '姓名' }, () => h('input')) },
+    attachTo: document.body
+  });
+  const form = wrapper.vm as unknown as FormInstance;
+  await expect(form.validate()).rejects.toEqual({ name: ['必填'] });
+  expect(scrollTo).toHaveBeenCalled();
+  scrollTo.mockRestore();
   wrapper.unmount();
 });

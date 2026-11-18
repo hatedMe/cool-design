@@ -74,7 +74,7 @@ test('Form validate 后校验失败聚焦首个错误字段', async () => {
     attachTo: document.body
   });
   const form = wrapper.vm as unknown as FormInstance;
-  expect(await form.validate()).toBe(false);
+  await expect(form.validate()).rejects.toEqual({ date: ['日期必填'] });
   await flushPromises();
   expect(document.activeElement).toBe(wrapper.find('input').element);
   wrapper.unmount();

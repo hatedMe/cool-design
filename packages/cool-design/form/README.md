@@ -36,6 +36,8 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 | `inlineMessage` | 是否以行内样式显示校验消息                                 | `boolean`                       | `false` |
 | `statusIcon`    | 是否在字段后显示校验状态图标                               | `boolean`                       | `false` |
 | `scrollToError` | 校验失败时滚动到第一个错误字段                             | `boolean`                       | `false` |
+| `scrollToErrorOffset` | 滚动到错误字段时的顶部偏移量                         | `number`                        | —      |
+| `validateOnRuleChange` | `rules` 变化后是否立即触发一次校验                 | `boolean`                       | `true`  |
 
 ### 事件
 
@@ -54,7 +56,7 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 
 | 方法                    | 说明                                 | 返回值             |
 | ----------------------- | ------------------------------------ | ------------------ |
-| `validate()`            | 校验全部字段，失败时聚焦首个无效字段 | `Promise<boolean>` |
+| `validate()`            | 校验全部字段；全部通过时 resolve `true`，失败或校验期间模型发生变化时 reject 并携带 `invalidFields`（`prop → 错误消息数组` 映射），失败时聚焦首个无效字段 | `Promise<boolean>` |
 | `resetFields()`         | 恢复字段注册时初值                   | `void`             |
 | `clearValidate()`       | 清除错误并使旧异步结果失效           | `void`             |
 | `validateField(props?)` | 校验指定字段                         | `Promise<boolean>` |
@@ -64,7 +66,7 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 
 | 名称    | 说明                                             | 类型                  |
 | ------- | ------------------------------------------------ | --------------------- |
-| `fields` | 已注册字段上下文（`prop` / `validate` / `resetField` / `clearValidate` / `scrollTo` / `focus`） | `FormFieldContext[]` |
+| `fields` | 已注册字段上下文（`prop` / `validate` / `resetField` / `clearValidate` / `scrollTo` / `focus` / `error`） | `FormFieldContext[]` |
 
 ### FormRule 校验规则
 
@@ -80,7 +82,7 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 | `whitespace`      | 必填字符串是否拒绝空白                      | `boolean`                                  |
 | `transform`       | 校验前转换值                                | `(value: unknown) => unknown`              |
 
-`FormRule`、`FormInstance` 可从 `cool-design` 导入。自定义 validator 抛出 Error 或返回 rejected Promise 表示失败；异步期间模型发生变化，整体 validate 返回 false。
+`FormRule`、`FormInstance` 可从 `cool-design` 导入。自定义 validator 抛出 Error 或返回 rejected Promise 表示失败；异步期间模型发生变化，整体 validate 以空 `invalidFields` 拒绝。
 
 ## 使用说明
 
@@ -104,6 +106,6 @@ interface FormRule {
 
 必填检查 null、undefined、空白字符串和空数组；false、0 有效。校验错误消息取规则或 async-validator 返回的 message。
 
-模板 ref 可标注 FormInstance：validate(): Promise<boolean> 校验全部字段，失败聚焦首个无效字段；resetFields() 恢复注册时初值；clearValidate() 清除错误并使旧异步校验失效。校验期间模型变化使整体校验返回 false，需要重新提交。
+模板 ref 可标注 FormInstance：validate(): Promise<boolean> 校验全部字段，全部通过 resolve true，失败时拒绝并携带无效字段映射，同时聚焦首个无效字段；resetFields() 恢复注册时初值；clearValidate() 清除错误并使旧异步校验失效。校验期间模型变化使整体校验拒绝，需要重新提交。
 
 submit(event) 已阻止原生提交；页面在 validate=true 后调用接口。默认插槽放 FormItem。每次编辑重挂载表单，以本次记录为初值。首版草稿为平面标量字段，复杂对象的独立草稿和初始快照由页面管理。

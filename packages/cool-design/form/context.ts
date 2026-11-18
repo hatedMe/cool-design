@@ -5,7 +5,8 @@ export interface Field {
   reset: () => void;
   clear: () => void;
   focus: () => void;
-  scrollTo?: () => void;
+  scrollTo?: (offset?: number) => void;
+  error?: () => string;
 }
 export interface FormContext {
   model: () => Record<string, unknown>;

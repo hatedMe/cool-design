@@ -18,7 +18,9 @@ export default defineComponent({
     requireAsteriskPosition: { type: String as PropType<'left' | 'right'>, default: 'left' },
     inlineMessage: Boolean,
     statusIcon: Boolean,
-    scrollToError: Boolean
+    scrollToError: Boolean,
+    scrollToErrorOffset: { type: Number, default: undefined },
+    validateOnRuleChange: { type: Boolean, default: true }
   },
   emits: ['submit', 'validate'],
   setup(props, { slots, expose, emit }) {
@@ -34,6 +36,13 @@ export default defineComponent({
     const resetFields = () => {
       fields.forEach((field) => field.reset());
     };
+    watch(
+      () => props.rules,
+      () => {
+        if (props.validateOnRuleChange) fields.forEach((field) => field.validate());
+      },
+      { deep: true }
+    );
     provide(formKey, {
       model: () => props.model!,
       rules: () => props.rules,
@@ -52,17 +61,25 @@ export default defineComponent({
       statusIcon: () => props.statusIcon
     });
     expose({
-      async validate() {
+      async validate(): Promise<boolean> {
         const version = modelVersion;
         const registered = [...fields.values()];
         const results = await Promise.all(registered.map((field) => field.validate()));
+        const invalidFields: Record<string, string[]> = {};
+        const propList = [...fields.keys()];
+        results.forEach((result, index) => {
+          if (result === false) {
+            invalidFields[propList[index]] = [registered[index].error?.() ?? '校验失败'];
+          }
+        });
         const invalid = results.indexOf(false);
         if (invalid >= 0) {
           await nextTick();
-          if (props.scrollToError) registered[invalid].scrollTo?.();
+          if (props.scrollToError) registered[invalid].scrollTo?.(props.scrollToErrorOffset);
           registered[invalid].focus();
         }
-        return invalid < 0 && version === modelVersion;
+        if (invalid >= 0 || version !== modelVersion) return Promise.reject(invalidFields);
+        return true;
       },
       async validateField(props?: string | string[]) {
         const keys = props ? (Array.isArray(props) ? props : [props]) : [...fields.keys()];
@@ -89,7 +106,8 @@ export default defineComponent({
           resetField: field.reset,
           clearValidate: field.clear,
           scrollTo: field.scrollTo,
-          focus: field.focus
+          focus: field.focus,
+          error: field.error
         }));
       }
     });

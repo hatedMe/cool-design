@@ -16,8 +16,9 @@ export interface FormFieldContext {
   validate: (trigger?: 'blur' | 'change') => Promise<boolean>;
   resetField: () => void;
   clearValidate: () => void;
-  scrollTo?: () => void;
+  scrollTo?: (offset?: number) => void;
   focus: () => void;
+  error?: () => string;
 }
 export interface FormInstance {
   validate(): Promise<boolean>;

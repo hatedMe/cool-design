@@ -39,14 +39,14 @@ function createForm(rules: FormRule[] = [{ required: true, message: '姓名必�
 test('必填错误关联字段，校验聚焦，重置恢复初值', async () => {
   const { w, model, form } = createForm();
   model.name = '   ';
-  expect(await form.validate()).toBe(false);
+  await expect(form.validate()).rejects.toEqual({ name: ['姓名必填'] });
   await flushPromises();
   expect(w.text()).toContain('姓名必填');
   expect(w.find('input').attributes('aria-invalid')).toBe('true');
   expect(document.activeElement).toBe(w.find('input').element);
   expect(w.find('label').attributes('for')).toBe(w.find('input').attributes('id'));
   model.name = '有效姓名';
-  expect(await form.validate()).toBe(true);
+  await expect(form.validate()).resolves.toBe(true);
   form.resetFields();
   expect(model.name).toBe('初始值');
   w.unmount();
@@ -61,18 +61,18 @@ test('过期异步校验不覆盖新结果，清除错误使待完成校验失�
     }
   ]);
   model.name = '旧值';
-  const old = form.validate();
+  const old = form.validate().catch(() => 'rejected');
   model.name = '新值';
-  expect(await form.validate()).toBe(true);
+  await expect(form.validate()).resolves.toBe(true);
   rejectOld(new Error('旧错误'));
-  await old;
+  await expect(old).resolves.toBe('rejected');
   await flushPromises();
   expect(w.text()).not.toContain('旧错误');
   model.name = '旧值';
-  const pending = form.validate();
+  const pending = form.validate().catch(() => 'rejected');
   form.clearValidate();
   rejectOld(new Error('清除后的错误'));
-  await pending;
+  await expect(pending).resolves.toBe('rejected');
   await flushPromises();
   expect(w.text()).not.toContain('清除后的错误');
   w.unmount();
@@ -83,7 +83,7 @@ test('仅 blur 触发的规则不会被无对应规则的 change 清空错误', 
   const input = w.find('input').element;
   input.value = '';
   input.dispatchEvent(new Event('input', { bubbles: true }));
-  expect(await form.validate()).toBe(false);
+  await expect(form.validate()).rejects.toEqual({ name: ['姓名必填'] });
   await flushPromises();
   expect(w.text()).toContain('姓名必填');
   w.unmount();
@@ -94,10 +94,10 @@ test('异步校验过程中修改字段，即使没有 change 规则也不能通
   const { w, model, form } = createForm([
     { trigger: 'blur', validator: () => new Promise<void>((resolve) => (finish = resolve)) }
   ]);
-  const pending = form.validate();
+  const pending = form.validate().catch(() => 'rejected');
   model.name = '尚未校验的新值';
   finish();
-  expect(await pending).toBe(false);
+  expect(await pending).toBe('rejected');
   w.unmount();
 });
 
@@ -115,11 +115,11 @@ test('等待另一字段时修改已通过字段，整体校验也应失败', as
         h(Form, { model, rules, ref: form }, () => [h(FormItem, { prop: 'name' }), h(FormItem, { prop: 'status' })])
     })
   );
-  const pending = form.value!.validate();
+  const pending = form.value!.validate().catch(() => 'rejected');
   await flushPromises();
   model.name = '';
   finish();
-  expect(await pending).toBe(false);
+  expect(await pending).toBe('rejected');
   w.unmount();
 });
 
@@ -139,7 +139,7 @@ test('使用 async-validator 校验嵌套路径', async () => {
         )
     })
   );
-  expect(await form.value!.validate()).toBe(false);
+  await expect(form.value!.validate()).rejects.toEqual({ 'user.name': ['请输入姓名'] });
   expect(w.text()).toContain('请输入姓名');
   model.user.name = '小明';
   expect(await form.value!.validateField('user.name')).toBe(true);
