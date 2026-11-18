@@ -1,8 +1,14 @@
-import { mount } from '@vue/test-utils';
+import { mount, DOMWrapper } from '@vue/test-utils';
 import { defineComponent, h, ref } from 'vue';
-import { describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import SelectV2 from '..';
 import type { SelectV2Option } from '../types';
+
+// 下拉面板默认传送到 document.body，测试中用文档级查询访问传送内容。
+beforeEach(() => {
+  document.body.innerHTML = '';
+});
+const doc = () => new DOMWrapper(document.body);
 
 const mountSelect = (props: Record<string, unknown>, initial?: unknown) => {
   const value = ref<unknown>(initial);
@@ -32,7 +38,7 @@ describe('test `SelectV2` component', () => {
     const { wrapper, value, select } = mountSelect({ options, valueKey: 'id' }, { id: 1 });
     expect(wrapper.get('[role="combobox"]').text()).toContain('一');
     await openSelect(wrapper);
-    await wrapper.findAll('[role="option"]')[1].trigger('click');
+    await doc().findAll('[role="option"]')[1].trigger('click');
     expect(value.value).toEqual({ id: 2 });
     expect(select.emitted('change')).toHaveLength(1);
   });
@@ -45,7 +51,7 @@ describe('test `SelectV2` component', () => {
       ]
     });
     await openSelect(wrapper);
-    expect(wrapper.findAll('.i-select-v2__group').map((item) => item.text())).toEqual(['组一', '组二']);
+    expect(doc().findAll('.i-select-v2__group').map((item) => item.text())).toEqual(['组一', '组二']);
   });
 
   test('filterable 过滤保留有命中子项的分组头', async () => {
@@ -59,14 +65,14 @@ describe('test `SelectV2` component', () => {
     await openSelect(wrapper);
     const input = wrapper.get('input[aria-label="筛选选项"]');
     await input.setValue('广州');
-    expect(wrapper.findAll('.i-select-v2__group').map((item) => item.text())).toEqual(['其他城市']);
-    expect(wrapper.findAll('[role="option"]')).toHaveLength(1);
+    expect(doc().findAll('.i-select-v2__group').map((item) => item.text())).toEqual(['其他城市']);
+    expect(doc().findAll('[role="option"]')).toHaveLength(1);
     await input.setValue('州');
-    expect(wrapper.findAll('.i-select-v2__group').map((item) => item.text())).toEqual(['热门城市', '其他城市']);
-    expect(wrapper.findAll('[role="option"]')).toHaveLength(3);
+    expect(doc().findAll('.i-select-v2__group').map((item) => item.text())).toEqual(['热门城市', '其他城市']);
+    expect(doc().findAll('[role="option"]')).toHaveLength(3);
     await input.setValue('不存在');
-    expect(wrapper.findAll('.i-select-v2__group')).toHaveLength(0);
-    expect(wrapper.text()).toContain('无匹配数据');
+    expect(doc().findAll('.i-select-v2__group')).toHaveLength(0);
+    expect(doc().text()).toContain('无匹配数据');
   });
 
   test('多选标签、折叠与删除', async () => {
@@ -90,18 +96,18 @@ describe('test `SelectV2` component', () => {
     const { wrapper } = mountSelect({ options: manyOptions(5), filterable: true });
     await openSelect(wrapper);
     await wrapper.get('.i-select-v2__input').setValue('选项3');
-    expect(wrapper.findAll('[role="option"]')).toHaveLength(1);
+    expect(doc().findAll('[role="option"]')).toHaveLength(1);
     await wrapper.get('.i-select-v2__input').setValue('zzz');
-    expect(wrapper.find('.i-select-v2__empty').text()).toBe('无匹配数据');
+    expect(doc().find('.i-select-v2__empty').text()).toBe('无匹配数据');
   });
 
   test('虚拟滚动只渲染窗口行', async () => {
     const { wrapper } = mountSelect({ options: manyOptions(500), height: 340, itemHeight: 34, filterable: true });
     await openSelect(wrapper);
-    const rendered = wrapper.findAll('[role="option"]');
+    const rendered = doc().findAll('[role="option"]');
     expect(rendered.length).toBeGreaterThan(0);
     expect(rendered.length).toBeLessThan(30);
-    expect(wrapper.find('.i-select-v2__list').attributes('style')).toContain('17000px');
+    expect(doc().find('.i-select-v2__list').attributes('style')).toContain('17000px');
   });
 
   test('clearable 清空与键盘导航选中', async () => {
@@ -114,5 +120,46 @@ describe('test `SelectV2` component', () => {
     await wrapper.get('[role="combobox"]').trigger('keydown', { key: 'ArrowDown' });
     await wrapper.get('[role="combobox"]').trigger('keydown', { key: 'Enter' });
     expect(value.value).toBe(1);
+  });
+
+  test('下拉默认传送到 body，属性族透传到面板', async () => {
+    const { wrapper } = mountSelect({
+      options: manyOptions(3),
+      popperClass: 'custom-popper',
+      placement: 'bottom-start'
+    });
+    await openSelect(wrapper);
+    expect(wrapper.find('.i-select-v2__dropdown').exists()).toBe(false);
+    const panel = doc().get('.i-select-v2__dropdown');
+    expect(panel.classes()).toContain('custom-popper');
+    expect(panel.classes()).toContain('i-select-v2__dropdown--light');
+    expect(panel.attributes('data-placement')).toBe('bottom-start');
+
+    document.body.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+    await wrapper.vm.$nextTick();
+    expect(doc().find('.i-select-v2__dropdown').exists()).toBe(false);
+  });
+
+  test('name 渲染隐藏输入，多选时序列化为数组', async () => {
+    const single = mountSelect({ options: manyOptions(3), name: 'single' }, 1);
+    const hidden = single.wrapper.find('input[type="hidden"]');
+    expect(hidden.attributes('name')).toBe('single');
+    expect((hidden.element as HTMLInputElement).value).toBe('1');
+    expect(hidden.attributes('value')).toBe('1');
+
+    const multi = mountSelect({ options: manyOptions(3), name: 'multi', multiple: true }, [0, 2]);
+    const multiHidden = multi.wrapper.find('input[type="hidden"]');
+    expect((multiHidden.element as HTMLInputElement).value).toBe('[0,2]');
+  });
+
+  test('打开时高亮选中项，键盘导航滚动跟随', async () => {
+    const { wrapper } = mountSelect({ options: manyOptions(50), height: 100, itemHeight: 20 }, 30);
+    await openSelect(wrapper);
+    expect(doc().get('.i-select-v2__option.is-highlighted').text()).toBe('选项30');
+    // 高亮项超出可视窗口时滚动跟随
+    const dropdown = doc().get('.i-select-v2__dropdown');
+    await wrapper.get('[role="combobox"]').trigger('keydown', { key: 'ArrowDown' });
+    await wrapper.get('[role="combobox"]').trigger('keydown', { key: 'ArrowDown' });
+    expect((dropdown.element as HTMLElement).scrollTop).toBeGreaterThan(0);
   });
 });

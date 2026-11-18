@@ -40,6 +40,15 @@
 | `itemHeight`    | 选项行高（px，虚拟滚动依据）               | `number`                               | `34`     |
 | `automaticDropdown` | 聚焦即展开                               | `boolean`                              | `false`  |
 | `validateEvent` | 值变化时触发表单校验                       | `boolean`                              | `true`   |
+| `name`           | 原生表单提交用的隐藏输入名称，多选时值为 JSON 数组 | `string`                      | —        |
+| `teleported`     | 下拉面板是否传送到 body                   | `boolean`                              | `true`   |
+| `persistent`     | 关闭后是否保留面板节点                    | `boolean`                              | `false`  |
+| `placement`      | 面板位置及 `-start` / `-end` 变体        | `string`                               | `bottom-start` |
+| `fallbackPlacements` | 主位置放不下时的候选位置              | `Placement[]`                          | `['top-start', 'bottom', 'top']` |
+| `popperOptions`  | 浮层参数覆盖（`offset` / `placement`）     | `{ offset?: number; placement?: Placement }` | — |
+| `popperClass`    | 面板自定义 class                          | `string` / `string[]` / `object`       | —        |
+| `popperStyle`    | 面板自定义样式                            | `string` / `CSSProperties`             | —        |
+| `effect`         | 面板主题：`light` / `dark`                | `string`                               | `light`  |
 
 `SelectV2Option`：`{ label?, value?, disabled?, options?, ... }`。
 

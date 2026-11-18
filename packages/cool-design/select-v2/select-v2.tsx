@@ -1,6 +1,8 @@
-import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, type PropType } from 'vue';
+import { computed, defineComponent, nextTick, ref, watch, type CSSProperties, type PropType } from 'vue';
+import { Teleport } from 'vue';
 import { useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
+import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 import type { SelectV2Option, SelectV2PropsMapping, SelectV2Value } from './types';
 
 type FlatRow =
@@ -32,7 +34,16 @@ export default defineComponent({
     height: { type: Number, default: 240 },
     itemHeight: { type: Number, default: 34 },
     automaticDropdown: Boolean,
-    validateEvent: { type: Boolean, default: true }
+    name: String,
+    validateEvent: { type: Boolean, default: true },
+    teleported: { type: Boolean, default: true },
+    persistent: Boolean,
+    placement: { type: String as PropType<Placement>, default: 'bottom-start' },
+    fallbackPlacements: { type: Array as PropType<Placement[]>, default: () => ['top-start', 'bottom', 'top'] },
+    popperOptions: { type: Object as PropType<FloatingOptions>, default: undefined },
+    popperClass: { type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>, default: undefined },
+    popperStyle: { type: [String, Array, Object] as PropType<string | CSSProperties | CSSProperties[]>, default: undefined },
+    effect: { type: String as PropType<'light' | 'dark'>, default: 'light' }
   },
   emits: ['update:modelValue', 'change', 'focus', 'blur', 'clear', 'visible-change', 'remove-tag'],
   setup(props, { emit, slots, expose }) {
@@ -41,10 +52,21 @@ export default defineComponent({
     const root = ref<HTMLElement>();
     const input = ref<HTMLInputElement>();
     const listRef = ref<HTMLElement>();
+    const dropdown = ref<HTMLElement>();
     const open = ref(false);
+    const shownOnce = ref(false);
     const query = ref('');
     const highlighted = ref(0);
     const scrollTop = ref(0);
+    const position = useFloating({
+      open,
+      reference: root,
+      floating: dropdown,
+      placement: () => props.popperOptions?.placement ?? props.placement,
+      fallbackPlacements: () => props.fallbackPlacements,
+      offset: () => props.popperOptions?.offset ?? 4,
+      close: () => setOpen(false)
+    });
 
     const labelKey = computed(() => props.props?.label || 'label');
     const valueKey = computed(() => props.props?.value || 'value');
@@ -133,17 +155,40 @@ export default defineComponent({
     const setOpen = (value: boolean) => {
       if (isDisabled() || open.value === value) return;
       open.value = value;
+      if (value) shownOnce.value = true;
       emit('visible-change', value);
       if (value) {
         query.value = '';
         scrollTop.value = 0;
-        highlighted.value = Math.max(
-          0,
-          visibleRows.value.findIndex((row) => row.type === 'option' && !row.option[disabledKey.value])
+        // 打开时优先高亮选中项，未选中时高亮首个可用项
+        const selectedIndex = visibleRows.value.findIndex(
+          (row) => row.type === 'option' && selectedValues.value.some((item) => sameValue(item, row.option[valueKey.value]))
         );
-        nextTick(() => input.value?.focus());
+        highlighted.value = selectedIndex >= 0
+          ? selectedIndex
+          : Math.max(
+              0,
+              visibleRows.value.findIndex((row) => row.type === 'option' && !row.option[disabledKey.value])
+            );
+        nextTick(() => {
+          syncScrollToHighlighted();
+          input.value?.focus();
+        });
       }
     };
+
+    const syncScrollToHighlighted = () => {
+      const view = dropdown.value;
+      if (!view) return;
+      const target = highlighted.value * props.itemHeight;
+      if (target < view.scrollTop) view.scrollTop = target;
+      else if (target + props.itemHeight > view.scrollTop + props.height)
+        view.scrollTop = target + props.itemHeight - props.height;
+      scrollTop.value = view.scrollTop;
+    };
+    watch(highlighted, () => {
+      nextTick(syncScrollToHighlighted);
+    });
 
     const update = (value: SelectV2Value) => {
       emit('update:modelValue', value);
@@ -205,12 +250,6 @@ export default defineComponent({
         removeTag(selectedValues.value[selectedValues.value.length - 1]);
       }
     };
-
-    const onOutside = (event: MouseEvent) => {
-      if (open.value && root.value && !root.value.contains(event.target as Node)) setOpen(false);
-    };
-    onMounted(() => document.addEventListener('mousedown', onOutside));
-    onBeforeUnmount(() => document.removeEventListener('mousedown', onOutside));
 
     expose({
       focus: () => input.value?.focus(),
@@ -300,62 +339,77 @@ export default defineComponent({
               </button>
             )}
           </div>
-          {open.value && (
-            <div
-              class='i-select-v2__dropdown'
-              role='listbox'
-              style={{ maxHeight: `${props.height}px` }}
-              onScroll={(event: Event) => {
-                scrollTop.value = (event.target as HTMLElement).scrollTop;
-              }}>
-              {slots.header?.()}
-              {props.loading && <div class='i-select-v2__empty'>{slots.empty?.() ?? '加载中…'}</div>}
-              {!props.loading && !visibleRows.value.length && (
-                <div class='i-select-v2__empty'>{slots.empty?.() ?? (query.value ? props.noMatchText : props.noDataText)}</div>
-              )}
-              {!props.loading && visibleRows.value.length > 0 && (
-                <div
-                  ref={listRef}
-                  class='i-select-v2__list'
-                  style={{ height: `${visibleRows.value.length * props.itemHeight}px`, position: 'relative' }}>
-                  <div style={{ transform: `translateY(${windowRows.value.start * props.itemHeight}px)` }}>
-                    {windowRows.value.items.map((row, index) => {
-                      const rowIndex = windowRows.value.start + index;
-                      if (row.type === 'group') {
+          {props.name && (
+            <input
+              type='hidden'
+              name={props.name}
+              value={props.multiple ? JSON.stringify(selectedValues.value.map((item) => keyOf(item))) : String(keyOf(selectedValues.value[0]) ?? '')}
+            />
+          )}
+          {(() => {
+            const kept = props.persistent && shownOnce.value && !open.value;
+            if (!open.value && !kept) return null;
+            const panel = (
+              <div
+                ref={dropdown}
+                class={['i-select-v2__dropdown', `i-select-v2__dropdown--${props.effect}`, props.popperClass]}
+                role='listbox'
+                aria-hidden={kept ? 'true' : undefined}
+                data-placement={position.placement.value}
+                style={[position.style.value, { maxHeight: `${props.height}px` }, props.popperStyle, kept ? { display: 'none' } : undefined]}
+                onScroll={(event: Event) => {
+                  scrollTop.value = (event.target as HTMLElement).scrollTop;
+                }}>
+                {slots.header?.()}
+                {props.loading && <div class='i-select-v2__empty'>{slots.empty?.() ?? '加载中…'}</div>}
+                {!props.loading && !visibleRows.value.length && (
+                  <div class='i-select-v2__empty'>{slots.empty?.() ?? (query.value ? props.noMatchText : props.noDataText)}</div>
+                )}
+                {!props.loading && visibleRows.value.length > 0 && (
+                  <div
+                    ref={listRef}
+                    class='i-select-v2__list'
+                    style={{ height: `${visibleRows.value.length * props.itemHeight}px`, position: 'relative' }}>
+                    <div style={{ transform: `translateY(${windowRows.value.start * props.itemHeight}px)` }}>
+                      {windowRows.value.items.map((row, index) => {
+                        const rowIndex = windowRows.value.start + index;
+                        if (row.type === 'group') {
+                          return (
+                            <div class='i-select-v2__group' key={`group-${rowIndex}`} style={{ height: `${props.itemHeight}px` }}>
+                              {row.label}
+                            </div>
+                          );
+                        }
+                        const option = row.option;
+                        const selected = selectedValues.value.some((value) => sameValue(value, option[valueKey.value]));
                         return (
-                          <div class='i-select-v2__group' key={`group-${rowIndex}`} style={{ height: `${props.itemHeight}px` }}>
-                            {row.label}
+                          <div
+                            key={rowIndex}
+                            role='option'
+                            aria-selected={selected}
+                            aria-disabled={Boolean(option[disabledKey.value]) || undefined}
+                            style={{ height: `${props.itemHeight}px` }}
+                            class={[
+                              'i-select-v2__option',
+                              {
+                                'is-selected': selected,
+                                'is-highlighted': rowIndex === highlighted.value,
+                                'is-disabled': Boolean(option[disabledKey.value])
+                              }
+                            ]}
+                            onClick={() => choose(row)}>
+                            {slots.label?.({ option }) ?? optionLabel(option)}
                           </div>
                         );
-                      }
-                      const option = row.option;
-                      const selected = selectedValues.value.some((value) => sameValue(value, option[valueKey.value]));
-                      return (
-                        <div
-                          key={rowIndex}
-                          role='option'
-                          aria-selected={selected}
-                          aria-disabled={Boolean(option[disabledKey.value]) || undefined}
-                          style={{ height: `${props.itemHeight}px` }}
-                          class={[
-                            'i-select-v2__option',
-                            {
-                              'is-selected': selected,
-                              'is-highlighted': rowIndex === highlighted.value,
-                              'is-disabled': Boolean(option[disabledKey.value])
-                            }
-                          ]}
-                          onClick={() => choose(row)}>
-                          {slots.label?.({ option }) ?? optionLabel(option)}
-                        </div>
-                      );
-                    })}
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
-              {slots.footer?.()}
-            </div>
-          )}
+                )}
+                {slots.footer?.()}
+              </div>
+            );
+            return props.teleported ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
+          })()}
         </span>
       );
     };
