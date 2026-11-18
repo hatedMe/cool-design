@@ -1,3 +1,4 @@
+import './index.scss';
 import { withInstall } from '../../../src/utils/with-install';
 import Component from './steps';
 import Item from './step';
