@@ -48,3 +48,37 @@ test('pager-count 收敛为奇数并越界修正页码', async () => {
   // pagerCount 6 收敛为 5：1、…、当前区、…、20
   expect(w.findAll('.i-pagination__pager button').length).toBeLessThanOrEqual(5);
 });
+
+test('非受控模式：未绑定 v-model 时页码自身维护', async () => {
+  const w = mount(Pagination, { props: { total: 100, layout: 'prev, pager, next' } });
+  const active = () => w.get('button[aria-current="page"]');
+  expect(active().text()).toBe('1');
+  await w.get('button[aria-label="下一页"]').trigger('click');
+  expect(active().text()).toBe('2');
+  expect(w.emitted('current-change')?.[0]).toEqual([2]);
+  await w.get('button[aria-label="上一页"]').trigger('click');
+  expect(active().text()).toBe('1');
+});
+
+test('非受控模式：未绑定 v-model 时每页条数自身维护', async () => {
+  const w = mount(Pagination, { props: { total: 100, layout: 'prev, pager, next, sizes' } });
+  await w.get('select').setValue('20');
+  expect(w.emitted('update:pageSize')?.[0]).toEqual([20]);
+  // total 100 / pageSize 20 = 5 页
+  expect(w.findAll('.i-pagination__pager button').map((b) => b.text())).toEqual([
+    '1',
+    '2',
+    '3',
+    '4',
+    '5'
+  ]);
+  expect((w.get('select').element as HTMLSelectElement).value).toBe('20');
+});
+
+test('受控模式：外部传入 currentPage 时仍由父级驱动', async () => {
+  const w = mount(Pagination, { props: { total: 100, currentPage: 1, layout: 'prev, pager, next' } });
+  await w.get('button[aria-label="下一页"]').trigger('click');
+  expect(w.emitted('update:currentPage')?.[0]).toEqual([2]);
+  // 父级未更新 prop，页面保持 1
+  expect(w.get('button[aria-current="page"]').text()).toBe('1');
+});

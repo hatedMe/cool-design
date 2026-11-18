@@ -59,8 +59,11 @@ export default defineComponent({
     const jumperValue = ref('');
     const layoutItems = computed(() => parseLayout(props.layout));
     const pagerCount = computed(() => normalizePagerCount(props.pagerCount));
-    const currentPage = computed(() => props.currentPage ?? props.defaultCurrentPage);
-    const pageSize = computed(() => props.pageSize ?? props.defaultPageSize);
+    // 非受控内部状态：未绑定 v-model 时由组件自身维护当前页与每页条数（与 Element Plus 行为一致）
+    const innerPage = ref(Math.max(1, Math.floor(props.defaultCurrentPage) || 1));
+    const innerSize = ref(Math.max(1, Math.floor(props.defaultPageSize) || 10));
+    const currentPage = computed(() => props.currentPage ?? innerPage.value);
+    const pageSize = computed(() => props.pageSize ?? innerSize.value);
     const pages = computed(() => {
       if (props.pageCount != null && Number.isFinite(props.pageCount)) return Math.max(1, Math.floor(props.pageCount));
       const size = pageSize.value > 0 ? pageSize.value : 1;
@@ -87,6 +90,7 @@ export default defineComponent({
       if (props.disabled) return;
       const next = Math.min(pages.value, Math.max(1, page));
       if (next === safeCurrent.value) return;
+      innerPage.value = next;
       emit('update:currentPage', next);
       emit('current-change', next);
       emit('change', next);
@@ -95,6 +99,7 @@ export default defineComponent({
 
     const changeSize = (size: number) => {
       if (props.disabled || size <= 0 || size === pageSize.value) return;
+      innerSize.value = size;
       emit('update:pageSize', size);
       emit('page-size-change', size);
       emit('size-change', size);
@@ -111,8 +116,14 @@ export default defineComponent({
     watch(
       pages,
       (max) => {
-        if (currentPage.value > max) emit('update:currentPage', max);
-        if (currentPage.value < 1) emit('update:currentPage', 1);
+        if (currentPage.value > max) {
+          innerPage.value = max;
+          emit('update:currentPage', max);
+        }
+        if (currentPage.value < 1) {
+          innerPage.value = 1;
+          emit('update:currentPage', 1);
+        }
       },
       { immediate: true }
     );
