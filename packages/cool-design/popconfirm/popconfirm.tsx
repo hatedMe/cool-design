@@ -49,18 +49,18 @@ export default defineComponent({
       internal.value = value;
       emit('update:modelValue', value);
     };
-    const finish = (action: 'confirm' | 'cancel') => {
+    const finish = (action: 'confirm' | 'cancel', event?: MouseEvent) => {
       if (!open.value) return;
       if (!acted) {
         acted = true;
-        emit(action);
+        emit(action, event);
       }
       setOpen(false);
     };
-    const confirm = () => {
+    const confirm = (event?: MouseEvent) => {
       if (!open.value || acted) return;
       acted = true;
-      emit('confirm');
+      emit('confirm', event);
       // hideAfter 语义：确认后自动关闭的延迟
       if (props.hideAfter > 0) hideTimer.value = setTimeout(() => setOpen(false), props.hideAfter);
       else setOpen(false);
@@ -128,16 +128,19 @@ export default defineComponent({
                 )))}
             {props.title}
           </p>
-          {slots.actions?.() ?? (
+          {slots.actions?.({ confirm, cancel: (event?: MouseEvent) => finish('cancel', event) }) ?? (
             <div class='i-popconfirm__actions'>
-              <Button size='small' type={props.cancelButtonType as ButtonType} onClick={() => finish('cancel')}>
+              <Button
+                size='small'
+                type={props.cancelButtonType as ButtonType}
+                onClick={(event: MouseEvent) => finish('cancel', event)}>
                 {props.cancelButtonText}
               </Button>
               <Button
                 size='small'
                 type={props.confirmButtonType as ButtonType}
                 data-popconfirm-confirm
-                onClick={() => confirm()}>
+                onClick={(event: MouseEvent) => confirm(event)}>
                 {props.confirmButtonText}
               </Button>
             </div>

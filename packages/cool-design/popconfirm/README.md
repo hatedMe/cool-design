@@ -43,17 +43,17 @@
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
 | `update:modelValue` | 可见性更新请求 | `value: boolean` |
-| `confirm` | 确认操作 | — |
-| `cancel` | 取消、外部点击、Esc 或自动关闭 | — |
+| `confirm` | 确认操作 | `event: MouseEvent` |
+| `cancel` | 取消、外部点击、Esc 或自动关闭 | `event: MouseEvent` |
 
 #### 插槽
 
-| 名称 | 说明 |
-| --- | --- |
-| `reference` | 触发元素（推荐） |
-| `default` | 触发元素（兼容） |
-| `icon` | 自定义标题前图标 |
-| `actions` | 自定义底部按钮区 |
+| 名称 | 说明 | 作用域参数 |
+| --- | --- | --- |
+| `reference` | 触发元素（推荐） | — |
+| `default` | 触发元素（兼容） | — |
+| `icon` | 自定义标题前图标 | — |
+| `actions` | 自定义底部按钮区 | `{ confirm, cancel }` |
 
 ### 使用说明
 

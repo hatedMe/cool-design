@@ -171,6 +171,40 @@ test('支持自定义图标、actions 插槽与非 Teleport 渲染', async () =>
   expect(panel.find('[data-popconfirm-confirm]').exists()).toBe(false);
 });
 
+test('actions 插槽接收 confirm/cancel 作用域并可触发内部行为', async () => {
+  interface PopconfirmActionsScope {
+    confirm: (event?: MouseEvent) => void;
+    cancel: (event?: MouseEvent) => void;
+  }
+  let scope: PopconfirmActionsScope | undefined;
+  const w = mount(Popconfirm, {
+    props: { title: '删除？' },
+    slots: {
+      default: () => h('button', '删除'),
+      actions: (actionsScope: PopconfirmActionsScope) => {
+        scope = actionsScope;
+        return h('button', { class: 'custom-action' }, '知道了');
+      }
+    },
+    attachTo: document.body
+  });
+  wrappers.push(w);
+  await w.get('button').trigger('click');
+  await flushPromises();
+  expect(typeof scope?.confirm).toBe('function');
+  expect(typeof scope?.cancel).toBe('function');
+  scope?.confirm();
+  await flushPromises();
+  expect(w.emitted('confirm')).toHaveLength(1);
+  expect(document.querySelector('.i-popconfirm')).toBeNull();
+  await w.get('button').trigger('click');
+  await flushPromises();
+  scope?.cancel();
+  await flushPromises();
+  expect(w.emitted('cancel')).toHaveLength(1);
+  expect(document.querySelector('.i-popconfirm')).toBeNull();
+});
+
 test('hideAfter 确认后延迟自动关闭，persistent 保留隐藏节点', async () => {
   vi.useFakeTimers();
   const w = mount(Popconfirm, {
