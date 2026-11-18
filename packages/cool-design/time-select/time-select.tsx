@@ -1,4 +1,4 @@
-import { computed, defineComponent, nextTick, onBeforeUnmount, ref, type PropType } from 'vue';
+import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, type PropType } from 'vue';
 import { useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 
@@ -79,7 +79,8 @@ export default defineComponent({
         setOpen(true);
       }
     };
-    document.addEventListener('mousedown', onOutside);
+    // 在挂载后绑定，避免 SSR 环境访问 document
+    onMounted(() => document.addEventListener('mousedown', onOutside));
     onBeforeUnmount(() => document.removeEventListener('mousedown', onOutside));
 
     expose({

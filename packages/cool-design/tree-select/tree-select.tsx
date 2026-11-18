@@ -122,8 +122,11 @@ export default defineComponent({
     const onDocumentKeydown = (event: KeyboardEvent) => {
       if (open.value && event.key === 'Escape') close();
     };
-    document.addEventListener('mousedown', onDocumentMousedown);
-    document.addEventListener('keydown', onDocumentKeydown);
+    // 在挂载后绑定，避免 SSR 环境访问 document
+    onMounted(() => {
+      document.addEventListener('mousedown', onDocumentMousedown);
+      document.addEventListener('keydown', onDocumentKeydown);
+    });
     onBeforeUnmount(() => {
       document.removeEventListener('mousedown', onDocumentMousedown);
       document.removeEventListener('keydown', onDocumentKeydown);
