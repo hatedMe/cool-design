@@ -49,3 +49,12 @@
 ### Docs
 
 - 修正 19 处文档与实现不一致（未文档化的属性/事件、错误的默认值与载荷、过时的限制说明），统一类型反引号格式
+
+### Build & Publish（构建与发布健康）
+
+- 类型声明范围改为通配单一来源（`vite.config.ts` 与 `tsconfig.build.json` 同步），此前遗漏的 21 个组件目录（affix、anchor、scrollbar、splitter、text、input-number、input-tag、input-otp、mention、cascader、cascader-panel、select-v2、tree-v2、rate、time-select、progress、segmented、tour、countdown、select-option-group、date-picker）全部产出 `.d.ts`，子路径 `exports` 的 `types` 字段不再 404
+- 修复 Calendar 声明展开失败（TS4023）导致的 `date-picker/index.d.ts` 缺失：移除组件定义中的内部插槽类型声明，与库内其他组件写法一致
+- `dayjs`、`async-validator` 改为构建外部依赖，产物不再把 `es/node_modules/.pnpm/**`、`es/_virtual/**` 打包进包
+- 主入口版本号内联为字面量（`scripts/sync-version.mjs` 随发版同步），消除 `es/package.json.js` 副产物
+- `checkbox-button`、`table-v2` 注册为独立构建入口，修复「主入口引用图未覆盖导致子路径无 JS 产物」的导入 404
+- 新增发布守卫测试：全量组件子路径的 ESM/CJS 入口与类型声明齐全性、产物依赖泄漏与副产物断言

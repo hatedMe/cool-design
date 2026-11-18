@@ -2,7 +2,7 @@
   "$schema": "https://unpkg.com/release-it@14/schema/release-it.json",
   "increment": "minor",
   "hooks": {
-    "after:bump": "pnpm build"
+    "after:bump": "node scripts/sync-version.mjs ${version} && pnpm build"
   },
   "git": {
     "commit": true,

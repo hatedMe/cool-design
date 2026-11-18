@@ -1,4 +1,4 @@
-import { computed, defineComponent, ref, watch, type PropType, type SlotsType } from 'vue';
+import { computed, defineComponent, ref, watch, type PropType } from 'vue';
 import { formatDate, monthLabel, pad, sameDay, toDate, type DateValue } from './date';
 
 export type CalendarSelectDateType = 'prev-month' | 'next-month' | 'prev-year' | 'next-year' | 'today';
@@ -19,12 +19,6 @@ export interface CalendarDateCellSlotParams {
   date: Date;
 }
 
-type CalendarSlots = SlotsType<{
-  'date-cell'?: (params: CalendarDateCellSlotParams) => unknown;
-  date?: (params: CalendarDateCellSlotParams) => unknown;
-  header?: (params: CalendarHeaderSlotParams) => unknown;
-}>;
-
 const WEEK_NAMES = ['日', '一', '二', '三', '四', '五', '六'];
 
 const startOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1);
@@ -41,7 +35,6 @@ export default defineComponent({
     formatter: { type: Function as PropType<CalendarFormatter>, default: undefined }
   },
   emits: ['update:modelValue', 'input', 'select', 'change', 'panel-change'],
-  slots: Object as unknown as CalendarSlots,
   setup(props, { emit, slots, expose }) {
     const firstDow = computed(() => {
       const value = Math.floor(props.firstDayOfWeek);

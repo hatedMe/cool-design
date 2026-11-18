@@ -16,8 +16,8 @@ import Tooltip from './tooltip';
 import Popconfirm from './popconfirm';
 import { MessageBoxComponent } from './message-box';
 import type { App } from 'vue';
-import { version as packageVersion } from '../../package.json';
-export const version: string = packageVersion;
+// 版本号内联为字面量，避免构建时读取 package.json 产生多余产物；发版由 scripts/sync-version.mjs 同步。
+export const version: string = '1.14.0';
 import Button from './button';
 import ButtonGroup from './button-group';
 import Row from './row';
