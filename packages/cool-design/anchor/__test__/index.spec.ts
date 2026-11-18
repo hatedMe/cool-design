@@ -106,4 +106,37 @@ describe('test `Anchor` component', () => {
     expect(wrapper.findAll('.i-anchor__link')[0].classes()).toContain('is-active');
     wrapper.unmount();
   });
+
+  test('切换容器时注销旧容器监听并绑定新容器', async () => {
+    const first = setupContainer({ 'target-1': 100 });
+    const second = setupContainer({ 'target-2': 100 });
+    const wrapper = mount(Anchor, {
+      props: { container: first, duration: 0 },
+      slots: { default: () => h(AnchorLink, { href: '#target-1', title: '一' }) },
+      attachTo: document.body
+    });
+    await wrapper.setProps({ container: second });
+    // 旧容器滚动不再触发更新
+    first.scrollTop = 100;
+    first.dispatchEvent(new Event('scroll'));
+    await nextTick();
+    expect(wrapper.emitted('change')).toBeUndefined();
+    wrapper.unmount();
+  });
+
+  test('点击链接同步地址栏且不触发原生锚点跳转', async () => {
+    const container = setupContainer({ 'target-1': 400 });
+    const wrapper = mount(Anchor, {
+      props: { container, duration: 0 },
+      slots: { default: () => h(AnchorLink, { href: '#target-1', title: '一' }) },
+      attachTo: document.body
+    });
+    const initialHref = window.location.href;
+    await wrapper.find('.i-anchor__link').trigger('click');
+    expect(container.scrollTop).toBe(400);
+    expect(window.location.hash).toBe('#target-1');
+    // 还原测试环境地址，避免影响其他用例
+    window.history.replaceState(window.history.state, '', initialHref);
+    wrapper.unmount();
+  });
 });

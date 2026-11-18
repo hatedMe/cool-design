@@ -29,6 +29,9 @@ export default defineComponent({
   setup(props, { slots, emit, expose }) {
     const links: string[] = [];
     const activeHref = ref('');
+    // 记录当前绑定滚动的容器，切换容器时注销旧监听
+    let boundContainer: HTMLElement | Window | undefined;
+    let rafId: number | undefined;
 
     const resolveContainer = (): HTMLElement | Window | undefined => {
       const value = props.container;
@@ -82,14 +85,16 @@ export default defineComponent({
         move(destination);
         return;
       }
+      // 新滚动开始前取消进行中的动画，避免多个动画相互竞争
+      if (rafId !== undefined) cancelAnimationFrame(rafId);
       const startTime = Date.now();
       const step = () => {
         const progress = Math.min(1, (Date.now() - startTime) / props.duration);
         const eased = 1 - (1 - progress) ** 3;
         move(from + (destination - from) * eased);
-        if (progress < 1) requestAnimationFrame(step);
+        rafId = progress < 1 ? requestAnimationFrame(step) : undefined;
       };
-      requestAnimationFrame(step);
+      rafId = requestAnimationFrame(step);
     };
 
     const handleClick = (event: MouseEvent, href: string) => {
@@ -97,8 +102,13 @@ export default defineComponent({
       const prevented = event.defaultPrevented;
       event.preventDefault();
       scrollTo(href);
+      // 用 replaceState 同步地址栏，不触发浏览器原生锚点跳转，避免与平滑滚动冲突
       if (!prevented && href.startsWith('#')) {
-        window.location.hash = href;
+        try {
+          window.history.replaceState(window.history.state, '', href);
+        } catch {
+          // 无效地址（如 file 协议）时忽略
+        }
       }
     };
 
@@ -122,20 +132,25 @@ export default defineComponent({
     });
 
     const onScroll = () => updateActive();
+    const bindContainer = () => {
+      boundContainer?.removeEventListener('scroll', onScroll);
+      boundContainer = resolveContainer();
+      boundContainer?.addEventListener('scroll', onScroll, { passive: true });
+    };
     onMounted(() => {
-      const container = resolveContainer();
-      container?.addEventListener('scroll', onScroll, { passive: true });
+      bindContainer();
       window.addEventListener('resize', onScroll);
       updateActive();
     });
     onBeforeUnmount(() => {
-      const container = resolveContainer();
-      container?.removeEventListener('scroll', onScroll);
+      if (rafId !== undefined) cancelAnimationFrame(rafId);
+      rafId = undefined;
+      boundContainer?.removeEventListener('scroll', onScroll);
+      boundContainer = undefined;
       window.removeEventListener('resize', onScroll);
     });
     watch(() => props.container, () => {
-      const container = resolveContainer();
-      container?.addEventListener('scroll', onScroll, { passive: true });
+      bindContainer();
       updateActive();
     });
 
