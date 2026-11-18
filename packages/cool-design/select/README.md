@@ -75,6 +75,14 @@
 | remote-loading | `loading` 的兼容别名 | `boolean` | `false` |
 | virtualized | 是否启用基础可视范围截取 | `boolean` | `false` |
 | item-height / height | 虚拟选项行高和面板高度 | `number` | `34` / `240` |
+| teleported | 下拉面板是否传送到 body（`overflow: hidden` 祖先不被裁剪） | `boolean` | `true` |
+| persistent | 关闭后是否保留面板节点 | `boolean` | `false` |
+| placement | 面板位置：`top` / `bottom` / `left` / `right` 及 `-start` / `-end` 变体 | `string` | `bottom-start` |
+| fallback-placements | 主位置放不下时的候选位置 | `Placement[]` | `['top-start', 'bottom', 'top']` |
+| popper-options | 浮层参数覆盖（`offset` / `placement`） | `{ offset?: number; placement?: Placement }` | — |
+| popper-class | 面板自定义 class | `string` / `string[]` / `object` | — |
+| popper-style | 面板自定义样式 | `string` / `CSSProperties` | — |
+| effect | 面板主题：`light` / `dark` | `string` | `light` |
 
 ### 事件
 

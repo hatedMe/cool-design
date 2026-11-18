@@ -1,9 +1,15 @@
 import { h } from 'vue';
-import { mount } from '@vue/test-utils';
-import { expect, test, vi } from 'vitest';
+import { DOMWrapper, mount } from '@vue/test-utils';
+import { expect, test, vi, beforeEach } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import Select from '../index';
 import SelectOption from '../../select-option';
+
+// 下拉面板默认传送到 document.body，测试中用文档级查询访问传送内容。
+beforeEach(() => {
+  document.body.innerHTML = '';
+});
+const doc = () => new DOMWrapper(document.body);
 
 test('SelectOption 默认插槽文本显示为选项内容', async () => {
   const wrapper = mount(Select, {
@@ -11,7 +17,7 @@ test('SelectOption 默认插槽文本显示为选项内容', async () => {
     slots: { default: () => [h(SelectOption, { value: 'a' }, { default: () => '苹果' })] }
   });
   await wrapper.get('[role="combobox"]').trigger('click');
-  expect(wrapper.get('[role="option"][data-value="a"]').text()).toBe('苹果');
+  expect(doc().get('[role="option"][data-value="a"]').text()).toBe('苹果');
 });
 
 test('SelectOption 默认插槽支持嵌套元素文本', async () => {
@@ -20,7 +26,7 @@ test('SelectOption 默认插槽支持嵌套元素文本', async () => {
     slots: { default: () => [h(SelectOption, { value: 'a' }, { default: () => h('span', ['苹果']) })] }
   });
   await wrapper.get('[role="combobox"]').trigger('click');
-  expect(wrapper.get('[role="option"][data-value="a"]').text()).toBe('苹果');
+  expect(doc().get('[role="option"][data-value="a"]').text()).toBe('苹果');
 });
 
 test('Select 自定义面板显示选中标签并支持单选点击', async () => {
@@ -30,10 +36,10 @@ test('Select 自定义面板显示选中标签并支持单选点击', async () =
   });
   expect(wrapper.get('[role="combobox"]').text()).toContain('一');
   await wrapper.get('[role="combobox"]').trigger('click');
-  expect(wrapper.find('[role="listbox"]').exists()).toBe(true);
-  await wrapper.get('[role="option"][data-value="b"]').trigger('click');
+  expect(doc().find('[role="listbox"]').exists()).toBe(true);
+  await doc().get('[role="option"][data-value="b"]').trigger('click');
   expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual(['b']);
-  expect(wrapper.find('[role="listbox"]').exists()).toBe(false);
+  expect(doc().find('[role="listbox"]').exists()).toBe(false);
 });
 
 test('Select 多选显示标签且禁用选项不可点击', async () => {
@@ -42,7 +48,7 @@ test('Select 多选显示标签且禁用选项不可点击', async () => {
     slots: { default: () => [h(SelectOption, { value: 'a', label: '一' }), h(SelectOption, { value: 'b', label: '二', disabled: true })] }
   });
   await wrapper.get('[role="combobox"]').trigger('click');
-  await wrapper.get('[role="option"][data-value="b"]').trigger('click');
+  await doc().get('[role="option"][data-value="b"]').trigger('click');
   expect(wrapper.emitted('update:modelValue')).toBeUndefined();
   expect(wrapper.get('[role="combobox"]').text()).toContain('一');
 });
@@ -52,10 +58,54 @@ test('Select 点击外部关闭自定义面板', async () => {
     slots: { default: () => [h(SelectOption, { value: 'a', label: '一' })] }
   });
   await wrapper.get('[role="combobox"]').trigger('click');
-  expect(wrapper.find('[role="listbox"]').exists()).toBe(true);
-  document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+  expect(doc().find('[role="listbox"]').exists()).toBe(true);
+  document.body.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
   await wrapper.vm.$nextTick();
-  expect(wrapper.find('[role="listbox"]').exists()).toBe(false);
+  expect(doc().find('[role="listbox"]').exists()).toBe(false);
+});
+
+test('Select 下拉默认传送到 body 并支持弹层属性族', async () => {
+  const wrapper = mount(Select, {
+    props: {
+      popperClass: 'custom-popper',
+      popperStyle: { width: '260px' },
+      placement: 'bottom-start',
+      teleported: false
+    },
+    slots: { default: () => [h(SelectOption, { value: 'a', label: '一' })] }
+  });
+  await wrapper.get('[role="combobox"]').trigger('click');
+  // teleported=false 时面板保留在组件内部
+  const inlineDropdown = wrapper.get('.i-select__dropdown');
+  expect(inlineDropdown.classes()).toContain('custom-popper');
+  expect(inlineDropdown.attributes('style')).toContain('width: 260px');
+  wrapper.unmount();
+
+  const teleported = mount(Select, {
+    slots: { default: () => [h(SelectOption, { value: 'a', label: '一' })] }
+  });
+  await teleported.get('[role="combobox"]').trigger('click');
+  expect(teleported.find('.i-select__dropdown').exists()).toBe(false);
+  expect(doc().get('.i-select__dropdown').attributes('data-placement')).toBe('bottom-start');
+});
+
+test('Select 打开时优先高亮选中项并跟随键盘滚动', async () => {
+  const options = Array.from({ length: 6 }, (_, index) => h(SelectOption, { value: index, label: `选项${index}` }));
+  const wrapper = mount(Select, {
+    props: { modelValue: 4 },
+    slots: { default: () => options }
+  });
+  await wrapper.get('[role="combobox"]').trigger('click');
+  expect(doc().get('.i-select__option.is-highlighted').attributes('data-value')).toBe('4');
+  expect(wrapper.get('[role="combobox"]').attributes('aria-activedescendant')).toBe('i-select-option-4');
+  wrapper.unmount();
+
+  const unselected = mount(Select, {
+    slots: { default: () => [h(SelectOption, { value: 'a', label: '一', disabled: true }), h(SelectOption, { value: 'b', label: '二' })] }
+  });
+  await unselected.get('[role="combobox"]').trigger('click');
+  // 无选中时高亮首个可用项，跳过禁用项
+  expect(doc().get('.i-select__option.is-highlighted').attributes('data-value')).toBe('b');
 });
 
 test('Select 多选标签支持删除和 collapse-tags', async () => {
@@ -76,11 +126,11 @@ test('Select 键盘方向键、Enter 和 Escape 控制面板', async () => {
   });
   const trigger = wrapper.get('[role="combobox"]');
   await trigger.trigger('keydown', { key: 'ArrowDown' });
-  expect(wrapper.find('[role="listbox"]').exists()).toBe(true);
+  expect(doc().find('[role="listbox"]').exists()).toBe(true);
   await trigger.trigger('keydown', { key: 'Enter' });
   expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual(['a']);
   await trigger.trigger('keydown', { key: 'Escape' });
-  expect(wrapper.find('[role="listbox"]').exists()).toBe(false);
+  expect(doc().find('[role="listbox"]').exists()).toBe(false);
 });
 
 test('Select 多选空查询时 Backspace 删除最后标签', async () => {
@@ -133,17 +183,17 @@ test('Select virtualized 面板滚动后显示后续选项', async () => {
   const options = Array.from({ length: 20 }, (_, index) => h(SelectOption, { value: index, label: `选项${index}` }));
   const wrapper = mount(Select, { props: { virtualized: true, height: 40, itemHeight: 20 }, slots: { default: () => options } });
   await wrapper.get('[role="combobox"]').trigger('click');
-  const dropdown = wrapper.get('.i-select__dropdown');
+  const dropdown = doc().get('.i-select__dropdown');
   Object.defineProperty(dropdown.element, 'scrollTop', { value: 200, configurable: true });
   await dropdown.trigger('scroll');
-  expect(wrapper.find('[data-value="10"]').exists()).toBe(true);
+  expect(doc().find('[data-value="10"]').exists()).toBe(true);
 });
 
 test('Select reserve-keyword 默认保留多选查询词', async () => {
   const wrapper = mount(Select, { props: { filterable: true, multiple: true }, slots: { default: () => [h(SelectOption, { value: 'a', label: '苹果' })] } });
   const input = wrapper.get('input[aria-label="筛选选项"]');
   await input.setValue('苹果');
-  await wrapper.get('[role="option"][data-value="a"]').trigger('click');
+  await doc().get('[role="option"][data-value="a"]').trigger('click');
   expect((input.element as HTMLInputElement).value).toBe('苹果');
 });
 
@@ -169,7 +219,7 @@ test('Select filterable 按选项标签筛选并显示无匹配提示', async ()
   await wrapper.get('input[aria-label="筛选选项"]').setValue('苹果');
   expect(wrapper.findAll('option')).toHaveLength(2);
   await wrapper.get('input[aria-label="筛选选项"]').setValue('不存在');
-  expect(wrapper.text()).toContain('无匹配数据');
+  expect(doc().text()).toContain('无匹配数据');
 });
 
 test('Select 自定义面板支持本地筛选和空状态', async () => {
@@ -179,7 +229,7 @@ test('Select 自定义面板支持本地筛选和空状态', async () => {
   });
   const input = wrapper.get('input[aria-label="筛选选项"]');
   await input.setValue('不存在');
-  expect(wrapper.text()).toContain('无匹配数据');
+  expect(doc().text()).toContain('无匹配数据');
 });
 
 test('Select 自定义面板支持远程 loading 和乱序保护', async () => {
@@ -196,8 +246,8 @@ test('Select 自定义面板支持远程 loading 和乱序保护', async () => {
   await flushPromises();
   resolveFirst([{ value: 'old', label: '旧结果' }]);
   await flushPromises();
-  expect(wrapper.get('[role="option"]').attributes('data-value')).toBe('new');
-  expect(wrapper.find('[data-value="old"]').exists()).toBe(false);
+  expect(doc().get('[role="option"]').attributes('data-value')).toBe('new');
+  expect(doc().find('[data-value="old"]').exists()).toBe(false);
 });
 
 test('Select allow-create 遵守 multiple-limit', async () => {
@@ -226,7 +276,7 @@ test('Select 区分数字值 1 和字符串值 1', async () => {
   });
   expect(wrapper.get('[role="combobox"]').text()).toContain('数字');
   await wrapper.get('[role="combobox"]').trigger('click');
-  await wrapper.get('[role="option"][data-value="1"]').trigger('click');
+  await doc().get('[role="option"][data-value="1"]').trigger('click');
   expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1]);
 });
 
@@ -238,7 +288,7 @@ test('Select 自定义面板支持 allow-create 和 default-first-option', async
   expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual(['a']);
   await input.setValue('新选项');
   await input.trigger('keydown', { key: 'Enter' });
-  expect(wrapper.find('[data-value="新选项"]').exists()).toBe(true);
+  expect(doc().find('[data-value="新选项"]').exists()).toBe(true);
 });
 
 test('Select 支持远程选项和数字值', async () => {
@@ -318,7 +368,7 @@ test('Select reserve-keyword 单选始终清理查询词，多选可显式清理
 
   await wrapper.setProps({ reserveKeyword: true, multiple: true, modelValue: [] });
   await input.setValue('苹果');
-  await wrapper.get('[role="option"][data-value="a"]').trigger('click');
+  await doc().get('[role="option"][data-value="a"]').trigger('click');
   expect((input.element as HTMLInputElement).value).toBe('苹果');
 });
 
@@ -366,4 +416,5 @@ test('Select 支持 focus、blur 和 loading API', async () => {
   expect(wrapper.emitted('focus')).toHaveLength(1);
   expect(wrapper.emitted('blur')).toHaveLength(1);
   expect(wrapper.text()).toContain('加载中');
+  expect(wrapper.get('.i-select__loading').text()).toContain('加载中');
 });

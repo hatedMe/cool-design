@@ -2,16 +2,17 @@ import {
   defineComponent,
   h,
   nextTick,
-  onBeforeUnmount,
-  onMounted,
   ref,
   computed,
   watch,
+  type CSSProperties,
   type PropType,
   type VNode
 } from 'vue';
+import { Teleport } from 'vue';
 import { useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
+import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 
 export interface SelectRemoteOption {
   value: string | number;
@@ -80,7 +81,15 @@ export default defineComponent({
     validateEvent: { type: Boolean, default: true },
     virtualized: Boolean,
     itemHeight: { type: Number, default: 34 },
-    height: { type: Number, default: 240 }
+    height: { type: Number, default: 240 },
+    teleported: { type: Boolean, default: true },
+    persistent: Boolean,
+    placement: { type: String as PropType<Placement>, default: 'bottom-start' },
+    fallbackPlacements: { type: Array as PropType<Placement[]>, default: () => ['top-start', 'bottom', 'top'] },
+    popperOptions: { type: Object as PropType<FloatingOptions>, default: undefined },
+    popperClass: { type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>, default: undefined },
+    popperStyle: { type: [String, Array, Object] as PropType<string | CSSProperties | CSSProperties[]>, default: undefined },
+    effect: { type: String as PropType<'light' | 'dark'>, default: 'light' }
   },
   emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear', 'visible-change', 'remove-tag'],
   setup(props, { slots, attrs, emit, expose }) {
@@ -96,8 +105,19 @@ export default defineComponent({
     const remoteOptionCache = ref<SelectRemoteOption[]>([]);
     const createdOptions = ref<SelectRemoteOption[]>([]);
     const virtualOffset = ref(0);
+    const dropdown = ref<HTMLElement>();
     const dropdownMinWidth = ref<string>();
+    const shown = ref(false);
     let remoteRequestId = 0;
+    const position = useFloating({
+      open,
+      reference: root,
+      floating: dropdown,
+      placement: () => props.popperOptions?.placement ?? props.placement,
+      fallbackPlacements: () => props.fallbackPlacements,
+      offset: () => props.popperOptions?.offset ?? 4,
+      close: () => setOpen(false)
+    });
 
     const isDisabled = () => props.disabled || field?.disabled?.();
     const keyOf = (value: unknown): unknown =>
@@ -167,9 +187,15 @@ export default defineComponent({
     const setOpen = (value: boolean) => {
       if (isDisabled() || open.value === value) return;
       open.value = value;
+      if (value) shown.value = true;
       emit('visible-change', value);
       if (value) {
-        highlightedIndex.value = Math.max(0, filteredRecords.value.findIndex((item) => !item.disabled));
+        // 打开时优先高亮选中项，未选中时高亮首个可用项
+        const selectedIndex = filteredRecords.value.findIndex((item) =>
+          selectedValues.value.some((value2) => sameValue(value2, item.value))
+        );
+        const firstUsable = filteredRecords.value.findIndex((item) => !item.disabled);
+        highlightedIndex.value = selectedIndex >= 0 ? selectedIndex : Math.max(0, firstUsable);
         nextTick(() => {
           if (props.fitInputWidth && root.value) {
             dropdownMinWidth.value = `${root.value.getBoundingClientRect().width}px`;
@@ -282,14 +308,14 @@ export default defineComponent({
       const record = optionRecords.value.find((item) => nativeValue(item) === value);
       return record?.value ?? value;
     };
-    const onOutside = (event: MouseEvent) => {
-      if (root.value && !root.value.contains(event.target as Node)) setOpen(false);
-    };
     watch(query, () => {
       highlightedIndex.value = filteredRecords.value.findIndex((item) => !item.disabled);
     });
-    onMounted(() => document.addEventListener('mousedown', onOutside));
-    onBeforeUnmount(() => document.removeEventListener('mousedown', onOutside));
+    watch(highlightedIndex, () => {
+      nextTick(() => {
+        dropdown.value?.querySelector('.i-select__option.is-highlighted')?.scrollIntoView?.({ block: 'nearest' });
+      });
+    });
     expose({
       focus: () => {
         const target = input.value ?? root.value?.querySelector<HTMLElement>('[role="combobox"]');
@@ -396,19 +422,34 @@ export default defineComponent({
               update(nextValue);
               clearQuery();
             }}>{nativeOptions}</select>
-          {open.value && <div class='i-select__dropdown' role='listbox' style={{ minWidth: dropdownMinWidth.value }} onScroll={(event: Event) => {
-            if (props.virtualized) virtualOffset.value = Math.floor((event.target as HTMLElement).scrollTop / props.itemHeight);
-          }} onMousedown={(event) => event.stopPropagation()}>
-            {slots.header?.()}
-            {loading.value && <div class='i-select__empty'>{slots.empty ? slots.empty() : props.loadingText}</div>}
-            {!loading.value && !visibleRecords.length && <div class='i-select__empty'>{slots.empty ? slots.empty() : (query.value ? props.noMatchText : props.noDataText)}</div>}
-            {!loading.value && props.virtualized && visibleRecords.map((item, index) => renderOption(item, index))}
-            {!loading.value && !props.virtualized && groupBy(filteredRecords.value).map((group) => [
-              group.label !== undefined && <div class='i-select__group' role='presentation'>{group.label}</div>,
-              group.items.map((item) => renderOption(item, filteredRecords.value.indexOf(item)))
-            ])}
-            {slots.footer?.()}
-          </div>}
+          {(() => {
+            const kept = props.persistent && shown.value && !open.value;
+            if (!open.value && !kept) return null;
+            const panel = (
+              <div
+                ref={dropdown}
+                class={['i-select__dropdown', `i-select__dropdown--${props.effect}`, props.popperClass]}
+                role='listbox'
+                aria-hidden={kept ? 'true' : undefined}
+                data-placement={position.placement.value}
+                style={[position.style.value, dropdownMinWidth.value ? { minWidth: dropdownMinWidth.value } : undefined, props.popperStyle, kept ? { display: 'none' } : undefined]}
+                onScroll={(event: Event) => {
+                  if (props.virtualized) virtualOffset.value = Math.floor((event.target as HTMLElement).scrollTop / props.itemHeight);
+                }}
+                onMousedown={(event) => event.stopPropagation()}>
+                {slots.header?.()}
+                {loading.value && <div class='i-select__empty'>{slots.empty ? slots.empty() : props.loadingText}</div>}
+                {!loading.value && !visibleRecords.length && <div class='i-select__empty'>{slots.empty ? slots.empty() : (query.value ? props.noMatchText : props.noDataText)}</div>}
+                {!loading.value && props.virtualized && visibleRecords.map((item, index) => renderOption(item, index))}
+                {!loading.value && !props.virtualized && groupBy(filteredRecords.value).map((group) => [
+                  group.label !== undefined && <div class='i-select__group' role='presentation'>{group.label}</div>,
+                  group.items.map((item) => renderOption(item, filteredRecords.value.indexOf(item)))
+                ])}
+                {slots.footer?.()}
+              </div>
+            );
+            return props.teleported ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
+          })()}
         </span>
       );
     };

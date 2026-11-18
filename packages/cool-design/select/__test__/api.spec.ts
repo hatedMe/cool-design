@@ -1,9 +1,15 @@
 import { h } from 'vue';
-import { mount } from '@vue/test-utils';
-import { expect, test } from 'vitest';
+import { DOMWrapper, mount } from '@vue/test-utils';
+import { beforeEach, expect, test } from 'vitest';
 import Select from '../index';
 import SelectOption from '../../select-option';
 import SelectOptionGroup from '../../select-option-group';
+
+// 下拉面板默认传送到 document.body，测试中用文档级查询访问传送内容。
+beforeEach(() => {
+  document.body.innerHTML = '';
+});
+const doc = () => new DOMWrapper(document.body);
 
 test('SelectOptionGroup 渲染分组标题，禁用整组不可选', async () => {
   const wrapper = mount(Select, {
@@ -15,10 +21,10 @@ test('SelectOptionGroup 渲染分组标题，禁用整组不可选', async () =>
     }
   });
   await wrapper.get('[role="combobox"]').trigger('click');
-  expect(wrapper.findAll('.i-select__group').map((item) => item.text())).toEqual(['热门', '其他']);
-  await wrapper.get('[role="option"][data-value="a"]').trigger('click');
+  expect(doc().findAll('.i-select__group').map((item) => item.text())).toEqual(['热门', '其他']);
+  await doc().get('[role="option"][data-value="a"]').trigger('click');
   expect(wrapper.emitted('update:modelValue')).toBeUndefined();
-  await wrapper.get('[role="option"][data-value="b"]').trigger('click');
+  await doc().get('[role="option"][data-value="b"]').trigger('click');
   expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual(['b']);
   expect(wrapper.findAll('optgroup').map((item) => item.attributes('label'))).toEqual(['热门', '其他']);
 });
@@ -34,7 +40,7 @@ test('value-key 支持对象选项值并回显 label', async () => {
   });
   expect(wrapper.get('[role="combobox"]').text()).toContain('一');
   await wrapper.get('[role="combobox"]').trigger('click');
-  await wrapper.get('[role="option"][data-value="2"]').trigger('click');
+  await doc().get('[role="option"][data-value="2"]').trigger('click');
   expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([options[1]]);
 });
 
@@ -46,7 +52,7 @@ test('clear 输出 value-on-clear，命中 empty-values 视为清空', async () 
     }
   });
   await wrapper.get('[role="combobox"]').trigger('click');
-  await wrapper.get('[role="option"][data-value=""]').trigger('click');
+  await doc().get('[role="option"][data-value=""]').trigger('click');
   expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([null]);
   await wrapper.get('button[aria-label="清空"]').trigger('click');
   expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([null]);
@@ -59,7 +65,7 @@ test('automatic-dropdown 聚焦即展开', async () => {
     slots: { default: () => [h(SelectOption, { value: 'a', label: '一' })] }
   });
   await wrapper.get('[role="combobox"]').trigger('focus');
-  expect(wrapper.find('[role="listbox"]').exists()).toBe(true);
+  expect(doc().find('[role="listbox"]').exists()).toBe(true);
 });
 
 test('loading-text 自定义加载文案，fit-input-width 对齐触发器宽度', async () => {
@@ -68,8 +74,8 @@ test('loading-text 自定义加载文案，fit-input-width 对齐触发器宽度
     slots: { default: () => [h(SelectOption, { value: 'a', label: '一' })] }
   });
   await wrapper.get('[role="combobox"]').trigger('click');
-  expect(wrapper.text()).toContain('拼命加载中');
-  expect(wrapper.get('[role="listbox"]').attributes('style')).toContain('min-width');
+  expect(doc().text()).toContain('拼命加载中');
+  expect(doc().get('[role="listbox"]').attributes('style')).toContain('min-width');
 });
 
 test('tag-type 为多选标签着色', () => {

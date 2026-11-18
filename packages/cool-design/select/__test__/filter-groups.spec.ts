@@ -1,9 +1,16 @@
 import { mount } from '@vue/test-utils';
+import { DOMWrapper } from '@vue/test-utils';
 import { h } from 'vue';
-import { expect, test } from 'vitest';
+import { beforeEach, expect, test } from 'vitest';
 import Select from '../index';
 import SelectOption from '../../select-option';
 import SelectOptionGroup from '../../select-option-group';
+
+// 下拉面板默认传送到 document.body，测试中用文档级查询访问传送内容。
+beforeEach(() => {
+  document.body.innerHTML = '';
+});
+const doc = () => new DOMWrapper(document.body);
 
 test('Select 过滤时保留有命中子项的分组头', async () => {
   const wrapper = mount(Select, {
@@ -26,14 +33,14 @@ test('Select 过滤时保留有命中子项的分组头', async () => {
   await wrapper.get('[role="combobox"]').trigger('click');
   const input = wrapper.get('input[aria-label="筛选选项"]');
   await input.setValue('广州');
-  expect(wrapper.findAll('.i-select__group').map((item) => item.text())).toEqual(['其他城市']);
-  expect(wrapper.findAll('[role="option"]')).toHaveLength(1);
+  expect(doc().findAll('.i-select__group').map((item) => item.text())).toEqual(['其他城市']);
+  expect(doc().findAll('[role="option"]')).toHaveLength(1);
   await input.setValue('州');
-  expect(wrapper.findAll('.i-select__group').map((item) => item.text())).toEqual(['热门城市', '其他城市']);
-  expect(wrapper.findAll('[role="option"]')).toHaveLength(3);
+  expect(doc().findAll('.i-select__group').map((item) => item.text())).toEqual(['热门城市', '其他城市']);
+  expect(doc().findAll('[role="option"]')).toHaveLength(3);
   await input.setValue('不存在');
-  expect(wrapper.findAll('.i-select__group')).toHaveLength(0);
-  expect(wrapper.text()).toContain('无匹配数据');
+  expect(doc().findAll('.i-select__group')).toHaveLength(0);
+  expect(doc().text()).toContain('无匹配数据');
 });
 
 test('SelectOptionGroup 未设置 label 时不渲染空分组头', async () => {
@@ -46,9 +53,9 @@ test('SelectOptionGroup 未设置 label 时不渲染空分组头', async () => {
     }
   });
   await wrapper.get('[role="combobox"]').trigger('click');
-  const groups = wrapper.findAll('.i-select__group');
+  const groups = doc().findAll('.i-select__group');
   expect(groups).toHaveLength(1);
   expect(groups[0].text()).toBe('有名称分组');
   // 未命名的分组退化为普通选项，禁用继承仍生效
-  expect(wrapper.findAll('[role="option"]')[1].attributes('aria-disabled')).toBe('true');
+  expect(doc().findAll('[role="option"]')[1].attributes('aria-disabled')).toBe('true');
 });
