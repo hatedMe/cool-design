@@ -300,7 +300,7 @@ describe('Rate', () => {
     expect(slider.attributes('tabindex')).toBeUndefined();
   });
 
-  test('uses Element Plus threshold boundaries and object entries', () => {
+  test('uses threshold boundaries and object entries', () => {
     const wrapper = mount(Rate, { props: { modelValue: 4, colors: ['red', 'orange', 'green'] } });
     expect(wrapper.find('.i-rate__icon').attributes('style')).toContain('color: green');
     const object = mount(Rate, { props: { modelValue: 2, colors: { 2: { value: 'red', excluded: true }, 4: 'green' } as RateColor } });

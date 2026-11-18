@@ -16,7 +16,7 @@ export default defineComponent({
     const parentPath = inject(menuPathKey, []);
     const indexPath = computed(() => [...parentPath, props.index]);
     const active = computed(() => menu?.isActive(props.index) ?? false);
-    // 折叠模式下的一级菜单项通过 Tooltip 展示完整标题（对齐 Element Plus 行为）
+    // 折叠模式下的一级菜单项通过 Tooltip 展示完整标题
     const collapsedTooltip = computed(
       () => !!menu?.collapse && menu.mode === 'vertical' && parentPath.length === 0
     );

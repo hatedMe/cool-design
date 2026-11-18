@@ -61,7 +61,7 @@ export default defineComponent({
       if (!open.value || acted) return;
       acted = true;
       emit('confirm');
-      // Element Plus 语义：hideAfter 为确认后自动关闭的延迟
+      // hideAfter 语义：确认后自动关闭的延迟
       if (props.hideAfter > 0) hideTimer.value = setTimeout(() => setOpen(false), props.hideAfter);
       else setOpen(false);
     };

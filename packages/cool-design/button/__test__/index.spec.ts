@@ -32,7 +32,7 @@ describe('test `Button` component', () => {
     await wrapper.setProps({ size: 'large' });
     expect(wrapper.classes()).toContain('i-button--large');
   });
-  test('支持 Element Plus 风格的外观属性和图标', () => {
+  test('支持常见的外观属性和图标', () => {
     const wrapper = mount(Button, {
       props: {
         type: 'info',

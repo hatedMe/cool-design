@@ -1,6 +1,6 @@
 /**
  * 自定义颜色（color + dark）的样式变量计算。
- * 算法与 Element Plus `button-custom.ts` 对齐：
+ * 算法约定：
  * - 非 dark 模式：hover/active 向白色混合（tint）；
  * - dark 模式：hover/active 向 #141414 混合（darken）；
  * - 文字颜色按背景色明度自动取黑/白。
@@ -15,7 +15,7 @@ export interface ButtonCustomStyleOptions {
 
 /** 向白色混合 percent%（对应 TinyColor#tint） */
 const tint = (color: string, percent: number) => `color-mix(in srgb, ${color}, #fff ${percent}%)`;
-/** 向 #141414 混合 percent%（对应 EP 的 darken） */
+/** 向 #141414 混合 percent%（暗色变体） */
 const darken = (color: string, percent: number) => `color-mix(in srgb, ${color}, #141414 ${percent}%)`;
 
 const clampByte = (value: number) => Math.min(255, Math.max(0, value));

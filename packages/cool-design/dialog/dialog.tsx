@@ -111,7 +111,7 @@ export default defineComponent({
       if (props.closable) handleClose();
     };
     const resetPosition = () => {
-      // 重置拖拽偏移，恢复初始位置（对齐 Element Plus）
+      // 重置拖拽偏移，恢复初始位置
       dragOffset.value = { x: 0, y: 0 };
       if (!root.value) return;
       if (!props.fullscreen && props.top) root.value.style.marginTop = props.top;

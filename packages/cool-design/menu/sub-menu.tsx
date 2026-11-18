@@ -18,7 +18,7 @@ export default defineComponent({
 
     const opened = computed(() => menu?.isOpened(props.index) ?? false);
     const isFirstLevel = parentPath.length === 0;
-    // 折叠模式下，一级子菜单通过浮层弹层展示（对齐 Element Plus 行为）
+    // 折叠模式下，一级子菜单通过浮层弹层展示
     const popupMode = computed(() => !!menu?.collapse && menu.mode === 'vertical' && isFirstLevel);
 
     const titleRef = ref<HTMLElement>();

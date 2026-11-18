@@ -25,7 +25,7 @@ describe('test `Radio` component', () => {
     await wrapper.get('input').trigger('change');
     expect(wrapper.emitted('change')).toHaveLength(1);
   });
-  test('支持 Element Plus label 作为选项值', async () => {
+  test('支持 label 作为选项值', async () => {
     const { default: RadioGroup } = await import('../group');
     const wrapper = mount(RadioGroup, {
       props: { modelValue: 'a' },

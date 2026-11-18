@@ -17,7 +17,7 @@ const parseLayout = (layout: string): PaginationLayoutItem[] => {
   return items.length > 0 ? items : [...DEFAULT_LAYOUT];
 };
 
-/** Element Plus 要求 pager-count 为 5~21 之间的奇数 */
+/** pager-count 要求为 5~21 之间的奇数 */
 const normalizePagerCount = (value: unknown): number => {
   const numeric = Number(value);
   const int = Number.isFinite(numeric) ? Math.floor(numeric) : 7;
@@ -59,7 +59,7 @@ export default defineComponent({
     const jumperValue = ref('');
     const layoutItems = computed(() => parseLayout(props.layout));
     const pagerCount = computed(() => normalizePagerCount(props.pagerCount));
-    // 非受控内部状态：未绑定 v-model 时由组件自身维护当前页与每页条数（与 Element Plus 行为一致）
+    // 非受控内部状态：未绑定 v-model 时由组件自身维护当前页与每页条数
     const innerPage = ref(Math.max(1, Math.floor(props.defaultCurrentPage) || 1));
     const innerSize = ref(Math.max(1, Math.floor(props.defaultPageSize) || 10));
     const currentPage = computed(() => props.currentPage ?? innerPage.value);

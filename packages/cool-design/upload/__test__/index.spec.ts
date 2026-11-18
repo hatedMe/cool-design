@@ -37,7 +37,7 @@ test('默认渲染文件输入、按钮和默认插槽', () => {
   expect(wrapper.get('ul').classes()).toContain('i-upload__list');
 });
 
-test('没有 action 时默认使用当前页面地址上传并触发 Element Plus success 参数', async () => {
+test('没有 action 时默认使用当前页面地址上传并触发 success 参数', async () => {
   const xhrInstances: Array<{ upload: { onprogress?: (event: ProgressEvent) => void }; open: ReturnType<typeof vi.fn>; send: ReturnType<typeof vi.fn>; setRequestHeader: ReturnType<typeof vi.fn>; onload?: () => void }> = [];
   class MockXHR {
     upload = {};

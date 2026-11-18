@@ -7,7 +7,7 @@ export default defineComponent({
   props: {
     size: [Number, String, Array] as PropType<number | Size | [number, number]>,
     direction: { type: String as PropType<'horizontal' | 'vertical'>, default: 'horizontal' },
-    /** Element Plus 属性名，优先于 `align` */
+    /** 标准属性名，优先于 `align` */
     alignment: String as PropType<SpaceAlignment>,
     /** 兼容别名（项目早期属性名） */
     align: String as PropType<SpaceAlignment>,

@@ -22,14 +22,14 @@ test('支持圆角和 hit 样式，禁用时不触发点击', async () => {
   expect(w.emitted('click')).toBeUndefined();
 });
 
-test('对齐 Element Plus Tag 的主题、尺寸、颜色和关闭过渡属性', () => {
+test('对齐 Tag 的主题、尺寸、颜色和关闭过渡属性', () => {
   const w = mount(Tag, {
     props: { type: 'danger', effect: 'dark', size: 'large', color: '#7c3aed', disableTransitions: true, closable: true }
   });
   expect(w.classes()).toEqual(
     expect.arrayContaining(['i-tag--danger', 'i-tag--dark', 'i-tag--large', 'i-tag--disable-transitions'])
   );
-  // 与 Element Plus 一致：color 作为内联背景色，覆盖 effect 类的背景
+  // color 作为内联背景色，覆盖 effect 类的背景
   expect((w.element as HTMLElement).style.backgroundColor).toBe('rgb(124, 58, 237)');
   expect(w.get('button').attributes('aria-label')).toBe('移除标签');
 });

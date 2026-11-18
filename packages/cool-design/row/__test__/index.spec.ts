@@ -9,7 +9,7 @@ describe('test `Row` component', () => {
     expect(wrapper.exists()).toBeTruthy();
   });
 
-  test('supports Element Plus middle alignment and preserves stretch by default', () => {
+  test('supports middle alignment and preserves stretch by default', () => {
     const middle = mount(Row, { props: { align: 'middle' } });
     expect(middle.attributes('style')).toContain('align-items: center');
 

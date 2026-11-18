@@ -12,12 +12,12 @@ export interface TableColumn<T extends object = Record<string, unknown>> {
   index?: number | ((index: number) => number | string);
   columnKey?: string;
   key?: string;
-  /** Element Plus 风格，等价于 key */
+  /** 兼容别名，等价于 key */
   prop?: string;
-  /** Element Plus 旧别名，等价于 prop */
+  /** 旧别名，等价于 prop */
   property?: string;
   title?: string;
-  /** Element Plus 风格，等价于 title */
+  /** 兼容别名，等价于 title */
   label?: string;
   width?: number | string;
   minWidth?: number | string;
@@ -49,7 +49,7 @@ export interface TableColumn<T extends object = Record<string, unknown>> {
   visible?: boolean;
 }
 
-/** 对标 Element Plus sort-change 载荷 */
+/** sort-change 事件载荷 */
 export interface SortChange {
   column: TableColumn | null;
   prop: string;

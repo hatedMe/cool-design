@@ -19,7 +19,7 @@ test('alert 确认 resolve，关闭 reject close', async () => {
   const p2 = MessageBox.alert('内容', '标题');
   await flushPromises();
   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-  // 默认不区分 cancel/close，关闭归并为 cancel（Element Plus 语义）
+  // 默认不区分 cancel/close，关闭归并为 cancel
   await expect(p2).rejects.toBe('cancel');
 });
 

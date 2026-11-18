@@ -75,7 +75,7 @@ describe('Tabs', () => {
     expect(wrapper.findAll('[role="tab"]')[1].attributes('aria-selected')).toBe('true');
   });
 
-  test('tabPosition 为 bottom/right 时内容在 DOM 前面（与 Element Plus 一致）', () => {
+  test('tabPosition 为 bottom/right 时内容在 DOM 前面', () => {
     const order = (position: 'top' | 'right' | 'bottom' | 'left') => {
       const wrapper = mount(Tabs, {
         props: {

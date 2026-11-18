@@ -908,7 +908,7 @@ export default defineComponent({
       clearSort,
       sort,
       doLayout: () => {
-        // 纯 CSS 布局无需手动重算，保留方法以兼容 Element Plus 调用
+        // 纯 CSS 布局无需手动重算，保留方法以兼容既有调用
       },
       scrollTo: (options?: { top?: number; left?: number }) => {
         const el = scrollEl.value;

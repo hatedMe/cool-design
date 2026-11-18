@@ -113,7 +113,7 @@ export default defineComponent({
       }
     };
     const handleResize = () => {
-      // 兼容 Element Plus 方法名：本库使用 CSS 响应式，无需手动计算
+      // 兼容标准方法名：本库使用 CSS 响应式，无需手动计算
     };
 
     expose({ open, close, updateActiveIndex, handleResize });

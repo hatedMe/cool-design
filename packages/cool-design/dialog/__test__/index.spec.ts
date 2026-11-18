@@ -212,14 +212,18 @@ test('默认关闭后保留内容，destroy-on-close 为 true 时销毁', async 
 });
 
 test('header 插槽接收 close/titleId/titleClass，拖拽后 resetPosition 复位', async () => {
-  let scope: { close: () => void; titleId: string; titleClass: string } | undefined;
+  interface DialogHeaderScope {
+    close: () => void;
+    titleId: string;
+    titleClass: string;
+  }
+  let scope: DialogHeaderScope | undefined;
   const w = mount(Dialog, {
     attachTo: document.body,
     props: { modelValue: true, draggable: true },
     slots: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      header: (props: any) => {
-        scope = props;
+      header: (headerScope: DialogHeaderScope) => {
+        scope = headerScope;
         return h('div', { class: 'custom-header' }, '定制头');
       },
       default: () => 'x'

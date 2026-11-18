@@ -48,7 +48,7 @@ function open(
       if (settled) return;
       settled = true;
       cleanup();
-      // Element Plus 语义：未开启 distinguishCancelAndClose 时，close 归并为 cancel
+      // 语义约定：未开启 distinguishCancelAndClose 时，close 归并为 cancel
       reject(options.distinguishCancelAndClose ? action : action === 'close' ? 'cancel' : action);
     };
     unregister = register?.(() => finishReject('cancel')) || unregister;

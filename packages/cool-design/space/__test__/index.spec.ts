@@ -4,7 +4,7 @@ import { expect, test } from 'vitest';
 import Space from '..';
 import ConfigProvider from '../../config-provider';
 
-test('内置尺寸对齐 Element Plus（8/12/16px），继承配置尺寸', () => {
+test('内置尺寸（8/12/16px），继承配置尺寸', () => {
   const w = mount(ConfigProvider, {
     props: { size: 'large' },
     slots: { default: () => h(Space, {}, () => [h('button', '一'), h('button', '二')]) }
