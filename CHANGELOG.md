@@ -72,3 +72,19 @@
 - 三个聚合样式目录（data-display、feedback、navigation）删除；其中 descriptions/tree/skeleton/statistic/result 的过期重复规则一并清除
 - 拆分同时将硬编码色值替换为设计 token（背景、文字、边框、主色、成功/警告/危险色），**暗色主题下相关组件可读**；drawer 此前的硬编码亮色问题随之修复
 - `style/index.scss` 汇总登记全部组件样式（含此前遗漏的 alert、notification 等 33 项），删除零引用的 flex 工具类样式文件
+
+### Form Integration（表单集成对齐）
+
+- **Transfer / ColorPicker**：接入表单字段上下文——禁用状态继承 FormItem、`change` 后触发校验（新增 `validate-event` 属性）、绑定字段 `id` 与 `aria-describedby`
+- **Checkbox / CheckboxButton**：尺寸继承链补齐（自身 → 分组 → FormItem → 全局配置），CheckboxButton 补齐禁用继承
+- **Slider**：禁用与尺寸继承 FormItem、无表单回退全局配置；`show-input` 复用数字输入框组件，`range` 模式渲染起止双输入框并相互约束
+- **InputNumber / RadioGroup / Radio / Rate**：统一尺寸回退链，补全局配置兜底
+- **SelectV2**：过滤改为整组扫描，保留仍有命中子项的分组头；Select 未命名分组不再渲染空分组头
+- **Form**：`validate()` 对齐上游契约——通过时 resolve `true`，失败或校验期间模型变化时 reject 并携带 `invalidFields`（`prop → 消息数组` 映射）；新增 `validate-on-rule-change`、`scroll-to-error-offset`；字段上下文补充 `error()`；自定义校验器支持同步抛错
+- 每项均附「禁用表单内控件不可交互」「change 触发校验」回归测试；Form 契约测试覆盖拒绝载荷与规则变化自动校验
+
+#### ⚠️ Form validate 契约迁移
+
+| 变更 | 迁移说明 |
+| --- | --- |
+| `Form.validate()` 失败时由 resolve `false` 改为 reject 携带无效字段映射 | `await form.validate()` 判断失败的写法改为 `try/catch` 或 `.catch()`；拒绝值为 `{ [prop]: string[] }` |
