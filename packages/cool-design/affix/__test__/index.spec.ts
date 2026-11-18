@@ -101,4 +101,54 @@ describe('test `Affix` component', () => {
     expect(wrapper.find('.is-fixed').exists()).toBe(true);
     wrapper.unmount();
   });
+
+  test('offset 属性对 top/bottom 均生效', async () => {
+    mockRects();
+    const wrapper = mount(Affix, {
+      props: { offset: 35 },
+      slots: { default: () => '内容' },
+      attachTo: document.body
+    });
+    await nextTick();
+    phTop = 30; // top 30 < offset 35，应固定
+    await scroll();
+    expect(wrapper.find('.is-fixed').exists()).toBe(true);
+    expect(wrapper.find('.i-affix__content').attributes('style')).toContain('top: 35px');
+    phTop = 50;
+    await scroll();
+    expect(wrapper.find('.is-fixed').exists()).toBe(false);
+    wrapper.unmount();
+
+    const bottom = mount(Affix, {
+      props: { position: 'bottom', offset: 30 },
+      slots: { default: () => '内容' },
+      attachTo: document.body
+    });
+    phTop = 740; // bottom 780 > 视口底(768) - 30
+    await nextTick();
+    await scroll();
+    expect(bottom.find('.is-fixed').exists()).toBe(true);
+    expect(bottom.find('.i-affix__content').attributes('style')).toContain('bottom: 30px');
+    bottom.unmount();
+  });
+
+  test('target-container 容器滚动触发更新并发出 scroll 事件', async () => {
+    mockRects();
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const wrapper = mount(Affix, {
+      props: { offset: 20, targetContainer: container },
+      slots: { default: () => '内容' },
+      attachTo: document.body
+    });
+    await nextTick();
+    expect(wrapper.find('.is-fixed').exists()).toBe(false);
+    phTop = 10;
+    container.dispatchEvent(new Event('scroll'));
+    await nextTick();
+    expect(wrapper.find('.is-fixed').exists()).toBe(true);
+    const scrollEvents = wrapper.emitted('scroll');
+    expect(scrollEvents?.at(-1)).toEqual([{ scrollTop: 0, fixed: true }]);
+    wrapper.unmount();
+  });
 });
