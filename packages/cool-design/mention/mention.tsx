@@ -4,9 +4,11 @@ import {
   h,
   nextTick,
   ref,
+  type CSSProperties,
   type PropType
 } from 'vue';
-import { useFloating, type Placement } from '../../../src/utils/use-floating';
+import { Teleport } from 'vue';
+import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 import { useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 
@@ -35,11 +37,16 @@ export default defineComponent({
     placement: { type: String as PropType<Placement>, default: 'bottom' },
     showArrow: Boolean,
     offset: { type: Number, default: 0 },
+    teleported: { type: Boolean, default: true },
+    persistent: Boolean,
+    fallbackPlacements: { type: Array as PropType<Placement[]>, default: () => ['top', 'bottom'] },
+    popperOptions: { type: Object as PropType<FloatingOptions>, default: undefined },
     whole: Boolean,
     checkIsWhole: Function as PropType<(pattern: string, prefix: string) => boolean>,
     loading: Boolean,
     popperClass: [String, Array, Object],
-    popperStyle: [String, Object],
+    popperStyle: [String, Object] as PropType<string | CSSProperties>,
+    effect: { type: String as PropType<'light' | 'dark'>, default: 'light' },
     type: { type: String as PropType<'text' | 'textarea'>, default: 'text' },
     rows: { type: Number, default: 3 },
     placeholder: String,
@@ -79,10 +86,11 @@ export default defineComponent({
       open,
       reference: inputRef,
       floating,
-      placement: () => props.placement,
+      placement: () => props.popperOptions?.placement ?? props.placement,
+      fallbackPlacements: () => props.fallbackPlacements,
       close: () => setOpen(false),
       closeOnOutside: () => true,
-      options: () => ({ offset: props.offset })
+      options: () => ({ offset: props.offset, ...props.popperOptions })
     });
 
     const setOpen = (value: boolean) => {
@@ -246,41 +254,46 @@ export default defineComponent({
               ×
             </button>
           )}
-          {open.value && (
-            <div
-              ref={floating}
-              class={['i-mention__dropdown', props.popperClass]}
-              style={[position.style.value, props.popperStyle]}
-              role='listbox'>
-              {slots.header?.()}
-              {props.loading && (
-                <div class='i-mention__loading'>{slots.loading?.() ?? '加载中…'}</div>
-              )}
-              {!props.loading && !list.length && <div class='i-mention__empty'>暂无数据</div>}
-              {!props.loading &&
-                list.map((option, index) => (
-                  <div
-                    key={String(option[valueKey.value])}
-                    role='option'
-                    aria-selected={index === highlighted.value}
-                    aria-disabled={Boolean(option[disabledKey.value]) || undefined}
-                    class={[
-                      'i-mention__option',
-                      {
-                        'is-highlighted': index === highlighted.value,
-                        'is-disabled': Boolean(option[disabledKey.value])
-                      }
-                    ]}
-                    onMousedown={(event: MouseEvent) => {
-                      event.preventDefault();
-                      selectOption(option);
-                    }}>
-                    {slots.label?.({ item: option }) ?? String(option[labelKey.value] ?? option[valueKey.value] ?? '')}
-                  </div>
-                ))}
-              {slots.footer?.()}
-            </div>
-          )}
+          {(() => {
+            if (!open.value && !props.persistent) return null;
+            const panel = (
+              <div
+                ref={floating}
+                class={['i-mention__dropdown', `i-mention__dropdown--${props.effect}`, props.popperClass]}
+                style={[position.style.value, props.popperStyle]}
+                data-placement={position.placement.value}
+                role='listbox'>
+                {slots.header?.()}
+                {props.loading && (
+                  <div class='i-mention__loading'>{slots.loading?.() ?? '加载中…'}</div>
+                )}
+                {!props.loading && !list.length && <div class='i-mention__empty'>暂无数据</div>}
+                {!props.loading &&
+                  list.map((option, index) => (
+                    <div
+                      key={String(option[valueKey.value])}
+                      role='option'
+                      aria-selected={index === highlighted.value}
+                      aria-disabled={Boolean(option[disabledKey.value]) || undefined}
+                      class={[
+                        'i-mention__option',
+                        {
+                          'is-highlighted': index === highlighted.value,
+                          'is-disabled': Boolean(option[disabledKey.value])
+                        }
+                      ]}
+                      onMousedown={(event: MouseEvent) => {
+                        event.preventDefault();
+                        selectOption(option);
+                      }}>
+                      {slots.label?.({ item: option }) ?? String(option[labelKey.value] ?? option[valueKey.value] ?? '')}
+                    </div>
+                  ))}
+                {slots.footer?.()}
+              </div>
+            );
+            return props.teleported ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
+          })()}
         </div>
       );
     };

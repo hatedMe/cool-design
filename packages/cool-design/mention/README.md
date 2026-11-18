@@ -29,6 +29,11 @@
 | `placement`     | 下拉位置                                   | `string`                               | `bottom` |
 | `offset`        | 下拉偏移                                   | `number`                               | `0`      |
 | `showArrow`     | 下拉显示箭头                               | `boolean`                              | `false`  |
+| `teleported`    | 下拉是否传送到 body                        | `boolean`                              | `true`   |
+| `persistent`    | 关闭后是否保留下拉节点                     | `boolean`                              | `false`  |
+| `fallbackPlacements` | 主位置放不下时的候选位置            | `Placement[]`                          | `['top', 'bottom']` |
+| `popperOptions` | 浮层参数覆盖（`offset` / `placement`）     | `{ offset?: number; placement?: Placement }` | — |
+| `effect`        | 下拉主题：`light` / `dark`                 | `string`                               | `light`  |
 | `whole`         | 退格整体删除提及                           | `boolean`                              | `false`  |
 | `checkIsWhole`  | 自定义整体判定                             | `(pattern, prefix) => boolean`         | —        |
 | `loading`       | 下拉加载态                                 | `boolean`                              | `false`  |

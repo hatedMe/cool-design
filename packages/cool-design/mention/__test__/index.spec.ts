@@ -1,6 +1,11 @@
-import { mount } from '@vue/test-utils';
+import { DOMWrapper, mount } from '@vue/test-utils';
 import { defineComponent, h, ref, type Component } from 'vue';
-import { describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
+// 下拉面板默认传送到 document.body，测试中用文档级查询访问传送内容。
+beforeEach(() => {
+  document.body.innerHTML = '';
+});
+const doc = () => new DOMWrapper(document.body);
 import Mention from '..';
 import type { MentionOption } from '../mention';
 
@@ -35,21 +40,21 @@ describe('test `Mention` component', () => {
     const input = wrapper.get('input');
     await input.setValue('@');
     expect(mention.emitted('search')).toEqual([['', '@']]);
-    expect(wrapper.findAll('.i-mention__option')).toHaveLength(3);
+    expect(doc().findAll('.i-mention__option')).toHaveLength(3);
 
     await input.setValue('@Je');
     expect(mention.emitted('search')!.at(-1)).toEqual(['Je', '@']);
-    expect(wrapper.findAll('.i-mention__option')).toHaveLength(1);
+    expect(doc().findAll('.i-mention__option')).toHaveLength(1);
   });
 
   test('选中候选插入内容并触发 select', async () => {
     const { wrapper, text, mention } = mountMention({ options });
     const input = wrapper.get('input');
     await input.setValue('hi @Je');
-    await wrapper.find('.i-mention__option').trigger('mousedown');
+    await doc().find('.i-mention__option').trigger('mousedown');
     expect(mention.emitted('select')).toHaveLength(1);
     expect(text.value).toBe('hi @Jeremy ');
-    expect(wrapper.find('.i-mention__dropdown').exists()).toBe(false);
+    expect(doc().find('.i-mention__dropdown').exists()).toBe(false);
   });
 
   test('键盘上下移动高亮，Enter 选中', async () => {
@@ -83,7 +88,7 @@ describe('test `Mention` component', () => {
     const textarea = wrapper.get('textarea');
     expect((textarea.element as HTMLTextAreaElement).rows).toBe(4);
     await textarea.setValue('@');
-    expect(wrapper.find('.i-mention__option').text()).toBe('自定义-a');
+    expect(doc().find('.i-mention__option').text()).toBe('自定义-a');
   });
 
   test('filter-option=false 全量展示，禁用项不可选', async () => {
@@ -96,8 +101,22 @@ describe('test `Mention` component', () => {
     });
     const input = wrapper.get('input');
     await input.setValue('@zzz');
-    expect(wrapper.findAll('.i-mention__option')).toHaveLength(2);
-    await wrapper.findAll('.i-mention__option')[0].trigger('mousedown');
+    expect(doc().findAll('.i-mention__option')).toHaveLength(2);
+    await doc().findAll('.i-mention__option')[0].trigger('mousedown');
     expect(mention.emitted('select')).toBeUndefined();
+  });
+
+  test('下拉传送到 body 并支持 effect 与浮层参数', async () => {
+    const { wrapper } = mountMention({
+      options,
+      effect: 'dark',
+      popperClass: 'mention-scope',
+      popperOptions: { placement: 'bottom-start', offset: 8 }
+    });
+    await wrapper.get('input').setValue('@a');
+    expect(wrapper.find('.i-mention__dropdown').exists()).toBe(false);
+    const panel = doc().get('.mention-scope');
+    expect(panel.classes()).toContain('i-mention__dropdown--dark');
+    expect(panel.attributes('data-placement')).toBe('bottom-start');
   });
 });
