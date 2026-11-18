@@ -39,14 +39,15 @@
 | --- | --- | --- | --- |
 | `modelValue` | 当前颜色值 | `string` | `#409eff` |
 | `show-alpha` | 是否支持透明度 | `boolean` | `false` |
-| `disabled` | 是否禁用 | `boolean` | `false` |
+| `disabled` | 是否禁用；表单内继承 FormItem 的禁用状态 | `boolean` | `false` |
 | `color-format` | 输出颜色格式：`hex` / `rgb` / `hsl` / `hsv` | `string` | `hex` |
 | `predefine` | 预定义颜色列表 | `string[]` | `[]` |
 | `size` | 组件尺寸：`small` / `default` / `large` | `string` | `default` |
 | `tabindex` | 触发器的 Tab 顺序 | `string` / `number` | `0` |
 | `popper-class` | 面板自定义 class | `string` | `''` |
+| `validate-event` | 确认颜色后是否触发表单校验 | `boolean` | `true` |
 
-开启 `show-alpha` 后，`rgb` 输出为 `rgba(...)`，`hsl` 输出为 `hsla(...)`，`hex` 在透明度小于 1 时输出八位十六进制颜色。
+开启 `show-alpha` 后，`rgb` 输出为 `rgba(...)`，`hsl` 输出为 `hsla(...)`，`hex` 在透明度小于 1 时输出八位十六进制颜色。置于 `FormItem` 内时自动继承禁用状态、绑定字段 `id` / `aria-describedby`，`change` 事件联动表单校验。
 
 ### 事件
 

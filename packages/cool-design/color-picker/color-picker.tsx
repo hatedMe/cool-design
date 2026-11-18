@@ -1,4 +1,5 @@
-import { defineComponent, ref, watch } from 'vue';
+import { defineComponent, nextTick, ref, watch } from 'vue';
+import { useField } from '../form/context';
 
 type ColorFormat = 'hex' | 'rgb' | 'hsl' | 'hsv';
 interface RgbaColor {
@@ -124,6 +125,7 @@ const nativeColor = (value: string): string => toHex(parseColor(value), false);
 
 export default defineComponent({
   name: 'i-color-picker',
+  inheritAttrs: false,
   props: {
     modelValue: { type: String, default: '#409eff' },
     showAlpha: Boolean,
@@ -132,10 +134,13 @@ export default defineComponent({
     predefine: { type: Array as () => string[], default: () => [] },
     size: { type: String as () => 'small' | 'default' | 'large', default: 'default' },
     tabindex: { type: [String, Number], default: 0 },
-    popperClass: { type: String, default: '' }
+    popperClass: { type: String, default: '' },
+    validateEvent: { type: Boolean, default: true }
   },
   emits: ['update:modelValue', 'change', 'active-change'],
-  setup(props, { emit, slots, expose }) {
+  setup(props, { attrs, emit, slots, expose }) {
+    const field = useField();
+    const isDisabled = () => props.disabled || !!field?.disabled?.();
     const open = ref(false);
     const currentColor = ref(props.modelValue);
     const alpha = ref(parseColor(props.modelValue).alpha * 100);
@@ -155,6 +160,7 @@ export default defineComponent({
     };
     const commit = (value: string) => {
       emit('change', formatColor(value, props.colorFormat, alpha.value / 100, props.showAlpha));
+      if (props.validateEvent) nextTick(() => field?.validate('change'));
     };
     const close = () => {
       open.value = false;
@@ -164,23 +170,34 @@ export default defineComponent({
       if (event.key === 'Escape') close();
     };
     expose({ focus: () => trigger.value?.focus(), blur: () => trigger.value?.blur() });
+    // id 绑定在触发按钮上以关联表单标签，根节点不重复携带。
+    const rootAttrs: Record<string, unknown> = { ...attrs };
+    delete rootAttrs.id;
     return () => (
-      <span class={['i-color-picker', `i-color-picker--${props.size}`, { 'is-disabled': props.disabled }]} onKeydown={onKeydown}>
+      <span
+        {...rootAttrs}
+        class={['i-color-picker', `i-color-picker--${props.size}`, { 'is-disabled': isDisabled() }]}
+        aria-disabled={isDisabled() ? 'true' : undefined}
+        onKeydown={onKeydown}
+      >
         <button
           ref={trigger}
           type='button'
           class='i-color-picker__trigger'
-          disabled={props.disabled}
+          id={(attrs.id as string) || field?.id}
+          disabled={isDisabled()}
           tabindex={props.tabindex}
           aria-label='选择颜色'
           aria-expanded={open.value}
           aria-haspopup='dialog'
+          aria-invalid={field?.invalid() || undefined}
+          aria-describedby={field?.invalid() ? field.errorId : undefined}
           style={{ backgroundColor: props.modelValue }}
           onClick={() => (open.value = !open.value)}
         >
           {slots.default?.()}
         </button>
-        {open.value && !props.disabled && (
+        {open.value && !isDisabled() && (
           <div class={['i-color-picker__panel', props.popperClass]} role='dialog'>
             <input
               type='color'
@@ -207,7 +224,7 @@ export default defineComponent({
                   <button
                     type='button'
                     key={color}
-                    disabled={props.disabled}
+                    disabled={isDisabled()}
                     style={{ backgroundColor: color }}
                     aria-label={color}
                     onClick={() => {
