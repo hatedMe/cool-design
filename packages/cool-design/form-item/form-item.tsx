@@ -91,10 +91,15 @@ export default defineComponent({
             ...rule,
             whitespace: rule.whitespace ?? (rule.required ? true : undefined),
             validator: rule.validator
-              ? (_rule: unknown, ruleValue: unknown, callback: (error?: string | Error) => void) =>
-                  Promise.resolve(rule.validator?.(ruleValue))
-                    .then(() => callback())
-                    .catch((reason) => callback(reason instanceof Error ? reason : '校验失败'))
+              ? (_rule: unknown, ruleValue: unknown, callback: (error?: string | Error) => void) => {
+                  try {
+                    Promise.resolve(rule.validator?.(ruleValue))
+                      .then(() => callback())
+                      .catch((reason) => callback(reason instanceof Error ? reason : '校验失败'));
+                  } catch (error) {
+                    callback(error instanceof Error ? error : '校验失败');
+                  }
+                }
               : undefined
           })) as Rules['value']
         };

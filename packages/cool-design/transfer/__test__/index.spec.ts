@@ -1,5 +1,5 @@
-import { mount } from '@vue/test-utils';
-import { defineComponent, h } from 'vue';
+import { flushPromises, mount } from '@vue/test-utils';
+import { defineComponent, h, reactive } from 'vue';
 import { describe, expect, test } from 'vitest';
 import Transfer from '..';
 import * as CoolDesign from '../../index';
@@ -261,5 +261,66 @@ describe('Transfer', () => {
     expect(toRight(wrapper).attributes('aria-label')).toBe('到右');
     expect(toLeft(wrapper).attributes('aria-label')).toBe('到左');
     expect(toRight(wrapper).attributes('disabled')).toBeDefined();
+  });
+
+  test('表单禁用继承、change 触发校验与字段关联', async () => {
+    const model = reactive<{ picked: number[] }>({ picked: [] });
+    const wrapper = mount(
+      defineComponent({
+        setup: () => () =>
+          h(
+            CoolDesign.Form,
+            {
+              model,
+              rules: {
+                picked: [
+                  {
+                    trigger: 'change',
+                    validator: (value: unknown) => {
+                      if (Array.isArray(value) && value.length) throw new Error('不允许选择');
+                    }
+                  }
+                ]
+              }
+            },
+            () =>
+              h(CoolDesign.FormItem, { prop: 'picked', label: '选项' }, () =>
+                h(CoolDesign.Transfer, {
+                  data: basicData(),
+                  modelValue: model.picked,
+                  'onUpdate:modelValue': (value: number[]) => (model.picked = value)
+                })
+              )
+          )
+      })
+    );
+    const root = wrapper.find('.i-transfer');
+    const fieldId = root.attributes('id');
+    expect(fieldId).toMatch(/^i-field-/);
+    expect(wrapper.find('label').attributes('for')).toBe(fieldId);
+    expect(wrapper.text()).not.toContain('不允许选择');
+
+    await itemsOf(wrapper, 0)[0].get('input').setValue(true);
+    await toRight(wrapper).trigger('click');
+    await flushPromises();
+    expect(wrapper.text()).toContain('不允许选择');
+    expect(root.attributes('aria-invalid')).toBe('true');
+    expect(root.attributes('aria-describedby')).toBe(`${fieldId}-error`);
+    wrapper.unmount();
+
+    const disabledWrapper = mount(
+      defineComponent({
+        setup: () => () =>
+          h(CoolDesign.Form, { model, disabled: true }, () =>
+            h(CoolDesign.FormItem, { prop: 'picked', label: '选项' }, () =>
+              h(CoolDesign.Transfer, { modelValue: model.picked, data: basicData() })
+            )
+          )
+      })
+    );
+    expect(disabledWrapper.find('.i-transfer').classes()).toContain('is-disabled');
+    expect(itemsOf(disabledWrapper, 0)[0].get('input').attributes('disabled')).toBeDefined();
+    expect(selectAll(disabledWrapper, 0).attributes('disabled')).toBeDefined();
+    expect(toRight(disabledWrapper).attributes('disabled')).toBeDefined();
   });
 });

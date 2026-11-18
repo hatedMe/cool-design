@@ -1,4 +1,5 @@
-import { computed, defineComponent, ref, watch, type PropType } from 'vue';
+import { computed, defineComponent, nextTick, ref, watch, type PropType } from 'vue';
+import { useField } from '../form/context';
 import type {
   TransferDirection,
   TransferFilterMethod,
@@ -46,10 +47,13 @@ export default defineComponent({
     disabled: Boolean,
     noDataText: { type: String, default: '无数据' },
     noMatchText: { type: String, default: '无匹配数据' },
-    renderContent: Function as PropType<TransferRenderContent>
+    renderContent: Function as PropType<TransferRenderContent>,
+    validateEvent: { type: Boolean, default: true }
   },
   emits: ['update:modelValue', 'change', 'left-check-change', 'right-check-change'],
-  setup(props, { emit, slots, expose }) {
+  setup(props, { attrs, emit, slots, expose }) {
+    const field = useField();
+    const isDisabled = () => props.disabled || !!field?.disabled?.();
     const query = ref<[string, string]>(['', '']);
     const map = computed(() => props.props || {});
     const all = computed(() => props.data.filter((item) => keyOf(item, map.value) !== undefined));
@@ -98,18 +102,18 @@ export default defineComponent({
       const lower = raw.trim().toLowerCase();
       return items.filter((item) => labelOf(item, map.value).toLowerCase().includes(lower));
     };
-    const selectable = (items: TransferItem[]) => items.filter((item) => !props.disabled && !disabledOf(item, map.value));
+    const selectable = (items: TransferItem[]) => items.filter((item) => !isDisabled() && !disabledOf(item, map.value));
     const emitChecked = (side: number) => emit(side ? 'right-check-change' : 'left-check-change', [...checked.value[side]]);
 
     const toggle = (side: number, key: TransferKey, itemDisabled: boolean) => {
-      if (props.disabled || itemDisabled) return;
+      if (isDisabled() || itemDisabled) return;
       const set = checked.value[side];
       if (set.has(key)) set.delete(key);
       else set.add(key);
       emitChecked(side);
     };
     const toggleAll = (side: number, items: TransferItem[]) => {
-      if (props.disabled) return;
+      if (isDisabled()) return;
       const keys = selectable(visible(items, side)).map((item) => keyOf(item, map.value));
       if (!keys.length) return;
       const set = checked.value[side];
@@ -131,7 +135,7 @@ export default defineComponent({
         })
         .map((item) => keyOf(item, map.value));
     };
-    const canMove = (side: number) => !props.disabled && moveKeys(side).length > 0;
+    const canMove = (side: number) => !isDisabled() && moveKeys(side).length > 0;
     const move = (toRight: boolean) => {
       const side = toRight ? 0 : 1;
       const moved = moveKeys(side);
@@ -158,6 +162,7 @@ export default defineComponent({
       checked.value[side].clear();
       emit('update:modelValue', next);
       emit('change', next, direction, moved);
+      if (props.validateEvent) nextTick(() => field?.validate('change'));
       emitChecked(side);
     };
 
@@ -193,7 +198,7 @@ export default defineComponent({
               class="i-transfer__select-all"
               type="checkbox"
               aria-label="全选"
-              disabled={props.disabled || available.length === 0}
+              disabled={isDisabled() || available.length === 0}
               checked={allChecked}
               ref={syncIndeterminate}
               onChange={() => toggleAll(side, items)}
@@ -208,7 +213,7 @@ export default defineComponent({
               value={query.value[side]}
               placeholder={props.filterPlaceholder}
               aria-label={props.filterPlaceholder}
-              disabled={props.disabled}
+              disabled={isDisabled()}
               onInput={(e: Event) => (query.value[side] = (e.target as HTMLInputElement).value)}
             />
           )}
@@ -217,7 +222,7 @@ export default defineComponent({
               ? emptySlot?.() ?? <span class="i-transfer__empty">{query.value[side] ? props.noMatchText : props.noDataText}</span>
               : shown.map((item) => {
                   const key = keyOf(item, map.value);
-                  const itemDisabled = props.disabled || disabledOf(item, map.value);
+                  const itemDisabled = isDisabled() || disabledOf(item, map.value);
                   const isChecked = checked.value[side].has(key);
                   return (
                     <label
@@ -242,7 +247,13 @@ export default defineComponent({
       const toLeftText = props.buttonTexts[0] ?? '';
       const toRightText = props.buttonTexts[1] ?? '';
       return (
-        <div class={['i-transfer', props.disabled && 'is-disabled']} aria-disabled={props.disabled ? 'true' : undefined}>
+        <div
+          class={['i-transfer', isDisabled() && 'is-disabled']}
+          id={(attrs.id as string) || field?.id}
+          aria-disabled={isDisabled() ? 'true' : undefined}
+          aria-invalid={field?.invalid() || undefined}
+          aria-describedby={field?.invalid() ? field.errorId : undefined}
+        >
           {panel(left.value, 0)}
           <div class="i-transfer__buttons">
             <button
