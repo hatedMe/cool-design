@@ -1,5 +1,6 @@
 import { computed, defineComponent, inject, type PropType } from 'vue';
 import { menuKey, menuPathKey } from './context';
+import Tooltip from '../tooltip';
 
 export default defineComponent({
   name: 'i-menu-item',
@@ -15,6 +16,10 @@ export default defineComponent({
     const parentPath = inject(menuPathKey, []);
     const indexPath = computed(() => [...parentPath, props.index]);
     const active = computed(() => menu?.isActive(props.index) ?? false);
+    // 折叠模式下的一级菜单项通过 Tooltip 展示完整标题（对齐 Element Plus 行为）
+    const collapsedTooltip = computed(
+      () => !!menu?.collapse && menu.mode === 'vertical' && parentPath.length === 0
+    );
 
     const handleClick = (event: MouseEvent) => {
       emit('click', event);
@@ -38,11 +43,8 @@ export default defineComponent({
       }
     };
 
-    return () => (
-      <li
-        class={{ 'i-menu-item': true, 'is-active': active.value, 'is-disabled': props.disabled }}
-        role='menuitem'
-        aria-disabled={props.disabled || undefined}>
+    return () => {
+      const button = (
         <button
           type='button'
           class='i-menu-item__button'
@@ -53,7 +55,24 @@ export default defineComponent({
           onKeydown={handleKeydown}>
           {slots.default?.() ?? slots.title?.()}
         </button>
-      </li>
-    );
+      );
+      return (
+        <li
+          class={{ 'i-menu-item': true, 'is-active': active.value, 'is-disabled': props.disabled }}
+          role='menuitem'
+          aria-disabled={props.disabled || undefined}>
+          {collapsedTooltip.value ? (
+            <Tooltip placement='right' offset={6} disabled={props.disabled}>
+              {{
+                default: () => button,
+                content: () => slots.default?.() ?? slots.title?.()
+              }}
+            </Tooltip>
+          ) : (
+            button
+          )}
+        </li>
+      );
+    };
   }
 });

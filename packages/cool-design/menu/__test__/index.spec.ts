@@ -95,4 +95,66 @@ describe('Menu', () => {
     expect(wrapper.find('.i-menu-item-group__title').text()).toBe('分组');
     expect(wrapper.find('.i-menu-item').exists()).toBe(true);
   });
+
+  test('折叠模式：一级子菜单通过弹层展开并可选中子项', async () => {
+    const wrapper = mount(Menu, {
+      props: {
+        collapse: true,
+        items: [
+          { index: '1', label: '导航一', children: [{ index: '1-1', label: '选项一' }, { index: '1-2', label: '选项二' }] },
+          { index: 'home', label: '首页' }
+        ]
+      }
+    });
+    // 折叠时不渲染内联 children
+    expect(wrapper.find('.i-sub-menu__children').exists()).toBe(false);
+    // hover 一级子菜单标题打开弹层
+    await wrapper.findAll('.i-sub-menu')[0].trigger('mouseenter');
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    const popup = wrapper.find('.i-sub-menu__popup');
+    expect(popup.exists()).toBe(true);
+    expect(popup.find('.i-sub-menu__popup-title').text()).toBe('导航一');
+    // 弹层内点击叶子项触发 select 并自动收起
+    await popup.findAll('.i-menu-item__button')[0].trigger('click');
+    expect(wrapper.emitted('select')?.[0]?.[0]).toBe('1-1');
+    expect(wrapper.find('.i-sub-menu__popup').exists()).toBe(false);
+  });
+
+  test('折叠模式：一级菜单项显示 Tooltip 提示', async () => {
+    const wrapper = mount(Menu, {
+      attachTo: document.body,
+      props: {
+        collapse: true,
+        items: [
+          { index: 'home', label: '首页' },
+          { index: '1', label: '导航一', children: [{ index: '1-1', label: '选项一' }] }
+        ]
+      }
+    });
+    const item = wrapper.findAll('.i-menu-item')[0];
+    // 一级菜单项被 Tooltip 包裹
+    expect(item.find('.i-tooltip__trigger').exists()).toBe(true);
+    await item.find('.i-tooltip__trigger').trigger('mouseenter');
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(document.querySelector('.i-tooltip')?.textContent).toBe('首页');
+    // 子菜单内的菜单项不包 Tooltip
+    await wrapper.findAll('.i-sub-menu')[0].trigger('mouseenter');
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    const popupItem = wrapper.find('.i-sub-menu__popup .i-menu-item');
+    expect(popupItem.find('.i-tooltip__trigger').exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  test('折叠模式：键盘 Enter 切换弹层', async () => {
+    const wrapper = mount(Menu, {
+      props: {
+        collapse: true,
+        items: [{ index: '1', label: '导航一', children: [{ index: '1-1', label: '选项一' }] }]
+      }
+    });
+    await wrapper.find('.i-sub-menu__title').trigger('keydown', { key: 'Enter' });
+    expect(wrapper.find('.i-sub-menu__popup').exists()).toBe(true);
+    await wrapper.find('.i-sub-menu__title').trigger('keydown', { key: 'Escape' });
+    expect(wrapper.find('.i-sub-menu__popup').exists()).toBe(false);
+  });
 });
