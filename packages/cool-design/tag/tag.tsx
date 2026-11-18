@@ -32,11 +32,7 @@ export default defineComponent({
             'i-tag--disable-transitions': props.disableTransitions
           }
         ]}
-        style={
-          props.color
-            ? { '--i-tag-color': props.color, '--i-tag-bg-color': props.color, '--i-tag-border-color': props.color }
-            : undefined
-        }
+        style={props.color ? { background: props.color } : undefined}
         onClick={(event: MouseEvent) => {
           if (!props.disabled) emit('click', event);
         }}>

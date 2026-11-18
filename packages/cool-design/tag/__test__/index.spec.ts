@@ -29,6 +29,7 @@ test('对齐 Element Plus Tag 的主题、尺寸、颜色和关闭过渡属性',
   expect(w.classes()).toEqual(
     expect.arrayContaining(['i-tag--danger', 'i-tag--dark', 'i-tag--large', 'i-tag--disable-transitions'])
   );
-  expect((w.element as HTMLElement).style.getPropertyValue('--i-tag-bg-color')).toBe('#7c3aed');
+  // 与 Element Plus 一致：color 作为内联背景色，覆盖 effect 类的背景
+  expect((w.element as HTMLElement).style.backgroundColor).toBe('rgb(124, 58, 237)');
   expect(w.get('button').attributes('aria-label')).toBe('移除标签');
 });
