@@ -133,4 +133,23 @@ describe('test `TreeV2` component', () => {
     await nextTick();
     expect(rows(wrapper)).toHaveLength(2);
   });
+
+  test('scrollTo 与 scrollToNode 同步滚动真实容器', async () => {
+    const wrapper = mount(TreeV2, {
+      props: {
+        data: Array.from({ length: 100 }, (_, index) => ({ id: index, label: `N${index}` })),
+        height: 200,
+        itemSize: 26
+      }
+    });
+    const api = wrapper.vm as unknown as {
+      scrollTo: (offset: number) => void;
+      scrollToNode: (key: number) => void;
+    };
+    const listEl = wrapper.find('.i-tree-v2__list').element as HTMLElement;
+    api.scrollTo(520);
+    expect(listEl.scrollTop).toBe(520);
+    api.scrollToNode(60);
+    expect(listEl.scrollTop).toBe(60 * 26);
+  });
 });

@@ -50,6 +50,7 @@ export default defineComponent({
     const nodes = ref<TreeV2InnerNode[]>([]);
     const keyMap = new Map<TreeV2Key, TreeV2InnerNode>();
     const scrollTop = ref(0);
+    const listRef = ref<HTMLElement>();
     const currentKey = ref<TreeV2Key | undefined>(props.currentNodeKey);
     const query = ref('');
 
@@ -318,10 +319,16 @@ export default defineComponent({
       },
       scrollTo: (offset: number) => {
         scrollTop.value = offset;
+        // 同步滚动真实容器，保证视口与虚拟窗口一致
+        if (listRef.value) listRef.value.scrollTop = offset;
       },
       scrollToNode: (key: TreeV2Key) => {
         const index = rows.value.findIndex((node) => node.key === key);
-        if (index >= 0) scrollTop.value = index * props.itemSize;
+        if (index >= 0) {
+          const offset = index * props.itemSize;
+          scrollTop.value = offset;
+          if (listRef.value) listRef.value.scrollTop = offset;
+        }
       }
     });
 
@@ -333,6 +340,7 @@ export default defineComponent({
         {rows.value.length === 0 && <div class='i-tree-v2__empty'>{slots.empty?.() ?? props.emptyText}</div>}
         {rows.value.length > 0 && (
           <div
+            ref={listRef}
             class='i-tree-v2__list'
             style={{ height: `${props.height}px`, overflow: 'auto' }}
             onScroll={(event: Event) => {
