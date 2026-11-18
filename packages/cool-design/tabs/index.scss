@@ -1,0 +1,96 @@
+.i-tabs {
+  display: flex;
+  flex-direction: column;
+}
+.i-tabs.is-left,
+.i-tabs.is-right {
+  flex-direction: row;
+}
+.i-tabs.is-left .i-tabs__header,
+.i-tabs.is-right .i-tabs__header {
+  border-bottom: 0;
+}
+.i-tabs.is-left .i-tabs__nav,
+.i-tabs.is-right .i-tabs__nav {
+  flex-direction: column;
+}
+.i-tabs.is-bottom .i-tabs__header {
+  border-bottom: 0;
+  border-top: 1px solid var(--i-border);
+}
+.i-tabs__header {
+  display: flex;
+  border-bottom: 1px solid var(--i-border);
+}
+.i-tabs__header.is-stretch .i-tabs__nav {
+  width: 100%;
+}
+.i-tabs__header.is-stretch .i-tabs__item {
+  flex: 1;
+  text-align: center;
+}
+.i-tabs__nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.i-tabs__header button,
+.i-tabs__item,
+.i-tabs__add {
+  padding: 10px 16px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--i-text);
+}
+.i-tabs__item:focus-visible,
+.i-tabs__add:focus-visible,
+.i-tabs__close:focus-visible {
+  outline: 2px solid var(--i-primary);
+  outline-offset: -2px;
+}
+.i-tabs__header button.is-active,
+.i-tabs__item.is-active {
+  color: var(--i-primary);
+  border-bottom: 2px solid var(--i-primary);
+}
+.i-tabs__item.is-disabled {
+  color: var(--i-text-muted);
+  cursor: not-allowed;
+}
+.i-tabs__header i,
+.i-tabs__close {
+  margin-left: 8px;
+  font-style: normal;
+  cursor: pointer;
+}
+.i-tabs__close:hover {
+  color: var(--i-danger);
+}
+.i-tabs__content {
+  padding: 16px;
+}
+.i-tabs__pane[hidden] {
+  display: none;
+}
+.i-tabs.is-card .i-tabs__item,
+.i-tabs.is-border-card .i-tabs__item {
+  border: 1px solid transparent;
+  border-bottom: 0;
+}
+.i-tabs.is-card .i-tabs__item.is-active,
+.i-tabs.is-border-card .i-tabs__item.is-active {
+  border-color: var(--i-border);
+  border-bottom: 1px solid var(--i-bg);
+  background: var(--i-bg);
+}
+.i-tabs.is-border-card {
+  border: 1px solid var(--i-border);
+}
+.i-tabs.is-border-card .i-tabs__header {
+  background: var(--i-bg-subtle);
+}
+.i-tabs.is-border-card .i-tabs__content {
+  background: var(--i-bg);
+}
