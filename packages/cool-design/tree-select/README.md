@@ -25,6 +25,14 @@
 | `clearable`     | 是否可清空                                 | `boolean`                                  | `false`  |
 | `disabled`      | 是否禁用                                   | `boolean`                                  | `false`  |
 | `validateEvent` | 选中变化时触发表单校验                     | `boolean`                                  | `true`   |
+| `teleported`    | 下拉面板是否传送到 body                    | `boolean`                                  | `true`   |
+| `persistent`    | 关闭后是否保留面板节点（树实例状态保留）   | `boolean`                                  | `false`  |
+| `placement`     | 面板位置及 `-start` / `-end` 变体         | `string`                                   | `bottom-start` |
+| `fallbackPlacements` | 主位置放不下时的候选位置              | `Placement[]`                              | `['top-start', 'bottom', 'top']` |
+| `popperOptions` | 浮层参数覆盖（`offset` / `placement`）     | `{ offset?: number; placement?: Placement }` | — |
+| `popperClass`   | 面板自定义 class                           | `string` / `string[]` / `object`           | —        |
+| `popperStyle`   | 面板自定义样式                             | `string` / `CSSProperties`                 | —        |
+| `effect`        | 面板主题：`light` / `dark`                 | `string`                                   | `light`  |
 
 `TreeSelectNode`：`{ value: string | number; label: string; children?: TreeSelectNode[]; disabled?: boolean }`。
 

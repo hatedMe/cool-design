@@ -2,15 +2,16 @@ import {
   computed,
   defineComponent,
   nextTick,
-  onBeforeUnmount,
-  onMounted,
   ref,
   watch,
+  type CSSProperties,
   type PropType
 } from 'vue';
+import { Teleport } from 'vue';
 import Tree from '../tree';
 import type { TreeData, TreeExposed, TreeKey } from '../tree/types';
 import { useField } from '../form/context';
+import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 export interface TreeSelectNode {
   value: string | number;
   label: string;
@@ -33,16 +34,35 @@ export default defineComponent({
     placeholder: { type: String, default: '请选择' },
     disabled: Boolean,
     clearable: Boolean,
-    validateEvent: { type: Boolean, default: true }
+    validateEvent: { type: Boolean, default: true },
+    teleported: { type: Boolean, default: true },
+    persistent: Boolean,
+    placement: { type: String as PropType<Placement>, default: 'bottom-start' },
+    fallbackPlacements: { type: Array as PropType<Placement[]>, default: () => ['top-start', 'bottom', 'top'] },
+    popperOptions: { type: Object as PropType<FloatingOptions>, default: undefined },
+    popperClass: { type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>, default: undefined },
+    popperStyle: { type: [String, Array, Object] as PropType<string | CSSProperties | CSSProperties[]>, default: undefined },
+    effect: { type: String as PropType<'light' | 'dark'>, default: 'light' }
   },
   emits: ['update:modelValue', 'change', 'clear', 'visible-change', 'remove-tag'],
   setup(props, { emit, expose }) {
     const field = useField();
     const root = ref<HTMLElement>();
     const treeRef = ref<TreeExposed>();
+    const dropdown = ref<HTMLElement>();
     const open = ref(false);
+    const shownOnce = ref(false);
     const query = ref('');
     const syncing = ref(false);
+    const position = useFloating({
+      open,
+      reference: root,
+      floating: dropdown,
+      placement: () => props.popperOptions?.placement ?? props.placement,
+      fallbackPlacements: () => props.fallbackPlacements,
+      offset: () => props.popperOptions?.offset ?? 4,
+      close: () => close()
+    });
 
     const selectedValues = computed<(string | number)[]>(() =>
       Array.isArray(props.modelValue) ? props.modelValue : props.modelValue == null ? [] : [props.modelValue]
@@ -68,8 +88,10 @@ export default defineComponent({
     const openDropdown = () => {
       if (open.value || isDisabled()) return;
       open.value = true;
+      shownOnce.value = true;
       emit('visible-change', true);
       nextTick(() => {
+        syncTree();
         if (query.value) treeRef.value?.filter(query.value);
       });
     };
@@ -93,7 +115,6 @@ export default defineComponent({
       },
       { immediate: true }
     );
-    onMounted(syncTree);
 
     const onNodeClick = (data: TreeData) => {
       if (props.multiple) return;
@@ -114,23 +135,6 @@ export default defineComponent({
       commit(props.multiple ? [] : null);
       emit('clear');
     };
-
-    const onDocumentMousedown = (event: MouseEvent) => {
-      if (!open.value) return;
-      if (root.value && !root.value.contains(event.target as Node)) close();
-    };
-    const onDocumentKeydown = (event: KeyboardEvent) => {
-      if (open.value && event.key === 'Escape') close();
-    };
-    // 在挂载后绑定，避免 SSR 环境访问 document
-    onMounted(() => {
-      document.addEventListener('mousedown', onDocumentMousedown);
-      document.addEventListener('keydown', onDocumentKeydown);
-    });
-    onBeforeUnmount(() => {
-      document.removeEventListener('mousedown', onDocumentMousedown);
-      document.removeEventListener('keydown', onDocumentKeydown);
-    });
 
     watch(query, (value) => {
       treeRef.value?.filter(value);
@@ -201,31 +205,43 @@ export default defineComponent({
               ×
             </button>
           )}
-          <div class='i-tree-select__dropdown' style={{ display: open.value ? undefined : 'none' }}>
-            {props.filterable && (
-              <input
-                class='i-tree-select__filter'
-                value={query.value}
-                placeholder='筛选'
-                onInput={(e: Event) => (query.value = (e.target as HTMLInputElement).value)}
-              />
-            )}
-            <Tree
-              ref={treeRef}
-              data={props.data as unknown as TreeData[]}
-              nodeKey='value'
-              showCheckbox={props.multiple}
-              checkStrictly={props.checkStrictly}
-              highlightCurrent={!props.multiple}
-              expandOnClickNode={!props.multiple}
-              checkOnClickNode={false}
-              renderAfterExpand={false}
-              disabled={isDisabled()}
-              emptyText='暂无数据'
-              onNode-click={(data: TreeData) => onNodeClick(data)}
-              onCheck={onCheck}
-            />
-          </div>
+          {(() => {
+            const kept = props.persistent && shownOnce.value && !open.value;
+            if (!open.value && !kept) return null;
+            const panel = (
+              <div
+                ref={dropdown}
+                class={['i-tree-select__dropdown', `i-tree-select__dropdown--${props.effect}`, props.popperClass]}
+                aria-hidden={kept ? 'true' : undefined}
+                data-placement={position.placement.value}
+                style={[position.style.value, props.popperStyle, kept ? { display: 'none' } : undefined]}>
+                {props.filterable && (
+                  <input
+                    class='i-tree-select__filter'
+                    value={query.value}
+                    placeholder='筛选'
+                    onInput={(e: Event) => (query.value = (e.target as HTMLInputElement).value)}
+                  />
+                )}
+                <Tree
+                  ref={treeRef}
+                  data={props.data as unknown as TreeData[]}
+                  nodeKey='value'
+                  showCheckbox={props.multiple}
+                  checkStrictly={props.checkStrictly}
+                  highlightCurrent={!props.multiple}
+                  expandOnClickNode={!props.multiple}
+                  checkOnClickNode={false}
+                  renderAfterExpand={false}
+                  disabled={isDisabled()}
+                  emptyText='暂无数据'
+                  onNode-click={(data: TreeData) => onNodeClick(data)}
+                  onCheck={onCheck}
+                />
+              </div>
+            );
+            return props.teleported ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
+          })()}
         </span>
       );
     };
