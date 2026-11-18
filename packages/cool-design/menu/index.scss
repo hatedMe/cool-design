@@ -1,0 +1,111 @@
+.i-menu ul,
+.i-menu__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.i-menu li button,
+.i-menu-item__button,
+.i-sub-menu__title {
+  width: 100%;
+  padding: 10px 16px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font-size: 14px;
+}
+.i-menu li button:focus-visible,
+.i-menu-item__button:focus-visible,
+.i-sub-menu__title:focus-visible {
+  outline: 2px solid var(--i-primary);
+  outline-offset: -2px;
+}
+.i-menu li.is-active > button,
+.i-menu li.is-active button,
+.i-menu-item.is-active > .i-menu-item__button,
+.i-menu-item.is-active .i-menu-item__button {
+  color: var(--i-menu-active-color, var(--i-primary));
+  background: color-mix(in srgb, var(--i-menu-active-color, var(--i-primary)) 12%, var(--i-bg));
+}
+.i-menu li.is-disabled button,
+.i-menu-item.is-disabled .i-menu-item__button,
+.i-sub-menu.is-disabled .i-sub-menu__title {
+  color: var(--i-text-muted);
+  cursor: not-allowed;
+}
+.i-menu li ul,
+.i-sub-menu__children,
+.i-menu-item-group__children {
+  padding-left: 16px;
+}
+.i-sub-menu__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.i-sub-menu__arrow {
+  display: inline-block;
+  transform: rotate(-90deg);
+  transition: transform 0.2s;
+  color: var(--i-text-muted);
+}
+.i-sub-menu.is-opened > .i-sub-menu__title .i-sub-menu__arrow {
+  transform: rotate(90deg);
+}
+.i-menu-item-group__title {
+  padding: 8px 16px;
+  font-size: 12px;
+  color: var(--i-text-muted);
+}
+.i-menu.is-horizontal > ul,
+.i-menu.is-horizontal > .i-menu__list {
+  display: flex;
+  align-items: center;
+}
+.i-menu.is-horizontal li ul,
+.i-menu.is-horizontal .i-sub-menu__children {
+  position: absolute;
+  z-index: 10;
+  min-width: 160px;
+  padding: 5px 0;
+  background: var(--i-bg);
+  border: 1px solid var(--i-border);
+  box-shadow: var(--i-shadow-small);
+}
+.i-menu.is-horizontal .i-sub-menu {
+  position: relative;
+}
+.i-menu.is-collapse .i-menu-item__button,
+.i-menu.is-collapse .i-sub-menu__title {
+  padding: 10px;
+  text-align: center;
+}
+// 折叠模式：一级子菜单弹层与 Tooltip 提示
+.i-menu .i-tooltip__trigger {
+  display: block;
+}
+.i-sub-menu__popup {
+  min-width: 200px;
+  padding: 5px 0;
+  background: var(--i-bg);
+  border: 1px solid var(--i-border);
+  border-radius: var(--i-radius-small);
+  box-shadow: var(--i-shadow-small);
+}
+.i-sub-menu__popup > .i-sub-menu__children {
+  padding-left: 0;
+}
+.i-sub-menu__popup .i-sub-menu__title,
+.i-sub-menu__popup .i-menu-item__button {
+  padding: 10px 16px;
+  text-align: left;
+}
+.i-sub-menu__popup-title {
+  padding: 7px 16px;
+  font-size: 14px;
+  color: var(--i-text-muted);
+  cursor: default;
+}
