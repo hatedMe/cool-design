@@ -1,6 +1,7 @@
 import { defineComponent, nextTick, type PropType } from 'vue';
 import { createNamespace } from '../../../src/utils/create';
 import { useField, formKey } from '../form/context';
+import { useConfig } from '../config-provider/context';
 import { inject } from 'vue';
 import { radioGroupKey } from './group';
 const [name, bem] = createNamespace('radio');
@@ -21,13 +22,15 @@ export default defineComponent({
   emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, slots }) {
     const field = useField();
+    const config = useConfig();
     const form = inject(formKey, undefined);
     const group = inject(radioGroupKey, undefined);
     return () => {
       const value = props.value !== undefined ? props.value : props.label;
       const disabled = props.disabled || field?.disabled?.() || form?.disabled?.() || group?.disabled || false;
+      const size = props.size ?? group?.size ?? field?.size?.() ?? config.value.size;
       return (
-      <label class={[bem({ 'is-disabled': disabled, 'is-bordered': props.border }), props.size || group?.size ? `i-radio--${props.size || group?.size}` : undefined]}>
+      <label class={[bem({ 'is-disabled': disabled, 'is-bordered': props.border }), size && size !== 'default' ? `i-radio--${size}` : undefined]}>
         <input
           {...attrs}
           id={(attrs.id as string) || field?.id}

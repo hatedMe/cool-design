@@ -1,6 +1,8 @@
 import { mount } from '@vue/test-utils';
+import { defineComponent, h } from 'vue';
 import { describe, expect, test } from 'vitest';
 import InputNumber from '../index';
+import * as CoolDesign from '../../index';
 
 describe('InputNumber', () => {
   test('支持标准 v-model、默认步长和手动输入', async () => {
@@ -55,5 +57,17 @@ describe('InputNumber', () => {
     const instance = wrapper.vm as unknown as { focus: () => void; blur: () => void };
     expect(() => instance.focus()).not.toThrow();
     expect(() => instance.blur()).not.toThrow();
+  });
+
+  test('未设置 size 时依次回退 FormItem 与全局配置', () => {
+    const Host = defineComponent({
+      setup: () => () => h(CoolDesign.ConfigProvider, { size: 'small' }, () => h(InputNumber, { modelValue: 1 }))
+    });
+    const wrapper = mount(Host);
+    expect(wrapper.find('.i-input-number').classes()).toContain('i-control--small');
+    wrapper.unmount();
+
+    const fallback = mount(InputNumber, { props: { modelValue: 1 } });
+    expect(fallback.find('.i-input-number').classes()).toContain('i-control--default');
   });
 });

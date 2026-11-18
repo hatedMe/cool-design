@@ -1,9 +1,10 @@
 import { mount } from '@vue/test-utils';
-import { h } from 'vue';
+import { defineComponent, h } from 'vue';
 import { describe, expect, test } from 'vitest';
 
 import Radio from '..';
 import RadioButton from '../../radio-button';
+import * as CoolDesign from '../../index';
 
 describe('test `Radio` component', () => {
   test('renders a component', async () => {
@@ -90,5 +91,20 @@ describe('test `Radio` component', () => {
     expect(wrapper.findAll('input:checked')).toHaveLength(1);
     await wrapper.findAll('input')[1].setValue(true);
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['b']);
+  });
+
+  test('未设置 size 时依次回退分组、FormItem 与全局配置', () => {
+    const Host = defineComponent({
+      setup: () => () =>
+        h(CoolDesign.ConfigProvider, { size: 'small' }, () =>
+          h(CoolDesign.RadioGroup, { modelValue: 'a' }, () => [h(Radio, { value: 'a' }), h(Radio, { value: 'b' })])
+        )
+    });
+    const wrapper = mount(Host);
+    expect(wrapper.findAll('.i-radio')[0].classes()).toContain('i-radio--small');
+    wrapper.unmount();
+
+    const fallback = mount(Radio);
+    expect(fallback.classes()).not.toContain('i-radio--small');
   });
 });

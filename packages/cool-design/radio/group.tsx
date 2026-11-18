@@ -1,6 +1,7 @@
 import { defineComponent, nextTick, provide, type InjectionKey, type PropType } from 'vue';
 import type { RadioValue } from './radio';
 import { useField } from '../form/context';
+import { useConfig } from '../config-provider/context';
 
 export interface RadioGroupContext {
   modelValue: RadioValue | undefined;
@@ -25,6 +26,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change'],
   setup(props, { emit, slots }) {
     const field = useField();
+    const config = useConfig();
     provide(radioGroupKey, {
       get modelValue() {
         return props.modelValue;
@@ -36,7 +38,7 @@ export default defineComponent({
         return props.disabled || !!field?.disabled?.();
       },
       get size() {
-        return props.size ?? field?.size?.();
+        return props.size ?? field?.size?.() ?? config.value.size;
       },
       update: (value) => {
         emit('update:modelValue', value);

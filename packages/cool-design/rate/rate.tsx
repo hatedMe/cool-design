@@ -1,5 +1,6 @@
 import { computed, defineComponent, inject, ref, watch, type PropType } from 'vue';
 import { fieldKey, formKey } from '../form/context';
+import { useConfig } from '../config-provider/context';
 import { createNamespace } from '../../../src/utils/create';
 import { Icon } from '../icon';
 import type { RateColor, RateIcon, RateIconMap, RateSize, RateThresholdValue } from './types';
@@ -50,8 +51,9 @@ export default defineComponent({
   setup(props, { attrs, emit, expose }) {
     const form = inject(formKey, undefined);
     const field = inject(fieldKey, undefined);
+    const config = useConfig();
     const isDisabled = computed(() => props.disabled ?? Boolean(form?.disabled?.()));
-    const effectiveSize = computed(() => props.size ?? form?.size?.() ?? 'default');
+    const effectiveSize = computed(() => props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size);
     const currentValue = ref(normalizeValue(props.modelValue, props.max));
     const hoverValue = ref(0);
     watch(() => [props.modelValue, props.max], () => {

@@ -5,6 +5,7 @@ import { formKey } from '../../form/context';
 import FormItem from '../../form-item';
 import Rate from '..';
 import type { RateColor } from '..';
+import * as CoolDesign from '../../index';
 
 describe('Rate', () => {
   test('inherits the FormItem field id and label association', () => {
@@ -448,5 +449,17 @@ describe('Rate', () => {
     } });
     expect(wrapper.find('.i-rate__icon').attributes('style')).not.toContain('green');
     expect(wrapper.find('.i-rate__icon').attributes('style')).not.toContain('red');
+  });
+
+  test('falls back to the global config size when no size source is set', () => {
+    const Host = defineComponent({
+      setup: () => () => h(CoolDesign.ConfigProvider, { size: 'small' }, () => h(Rate))
+    });
+    const wrapper = mount(Host);
+    expect(wrapper.find('.i-rate').classes()).toContain('i-rate--small');
+    wrapper.unmount();
+
+    const outside = mount(Rate);
+    expect(outside.classes()).toContain('i-rate--default');
   });
 });
