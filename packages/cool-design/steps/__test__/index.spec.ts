@@ -57,4 +57,37 @@ describe('Steps', () => {
     expect(simple.find('.i-steps').classes()).toContain('is-simple');
     expect(simple.text()).not.toContain('应隐藏');
   });
+
+  test('完成/成功/错误状态显示对应图标而非序号', () => {
+    const wrapper = mount(Steps, {
+      props: {
+        active: 1,
+        items: [{ title: '一' }, { title: '二', status: 'error' }, { title: '三', status: 'success' }]
+      }
+    });
+    const icons = wrapper.findAll('.i-steps__icon');
+    expect(icons[0].text()).toBe('✓');
+    expect(icons[1].text()).toBe('✕');
+    expect(icons[2].text()).toBe('✓');
+    // 进行中与等待状态仍显示序号
+    const numbered = mount(Steps, {
+      props: { active: 0, items: [{ title: '一' }, { title: '二' }] }
+    });
+    expect(numbered.findAll('.i-steps__icon')[0].text()).toBe('1');
+    expect(numbered.findAll('.i-steps__icon')[1].text()).toBe('2');
+  });
+
+  test('自定义 icon 优先于状态图标并经 Icon 渲染', () => {
+    const wrapper = mount(Steps, {
+      props: {
+        active: 2,
+        items: [{ title: '一', icon: 'icon-custom' }, { title: '二' }, { title: '三' }]
+      }
+    });
+    const icons = wrapper.findAll('.i-steps__icon');
+    expect(icons[0].find('.i-icon').classes()).toContain('icon-custom');
+    // 未自定义的完成态仍显示 ✓，当前进行态显示序号
+    expect(icons[1].text()).toBe('✓');
+    expect(icons[2].text()).toBe('3');
+  });
 });

@@ -3,11 +3,13 @@ import {
   Fragment,
   computed,
   defineComponent,
+  type Component,
   type CSSProperties,
   type PropType,
   type Slot,
   type VNode
 } from 'vue';
+import Icon from '../icon';
 
 export type StepStatus = 'wait' | 'process' | 'finish' | 'error' | 'success';
 export type StepsDirection = 'horizontal' | 'vertical';
@@ -15,14 +17,14 @@ export type StepsDirection = 'horizontal' | 'vertical';
 export interface StepItem {
   title: string;
   description?: string;
-  icon?: string;
+  icon?: string | Component;
   status?: StepStatus | '';
 }
 
 interface NormalizedStep {
   title: string;
   description: string;
-  icon: string;
+  icon: string | Component | undefined;
   status: StepStatus | '';
   titleSlot?: Slot;
   descriptionSlot?: Slot;
@@ -76,7 +78,7 @@ export default defineComponent({
           return {
             title: (nodeProps.title as string) ?? '',
             description: (nodeProps.description as string) ?? '',
-            icon: (nodeProps.icon as string) ?? '',
+            icon: nodeProps.icon as string | Component | undefined,
             status: ((nodeProps.status as StepStatus) ?? '') as StepStatus | '',
             titleSlot: getSlot('title'),
             descriptionSlot: getSlot('description'),
@@ -87,7 +89,7 @@ export default defineComponent({
       return props.items.map((item, index) => ({
         title: item.title,
         description: item.description ?? '',
-        icon: item.icon ?? '',
+        icon: item.icon,
         status: item.status ?? '',
         titleSlot: (slots as unknown as Record<string, Slot | undefined>)[`title-${index}`],
         descriptionSlot: undefined,
@@ -145,7 +147,16 @@ export default defineComponent({
                 }}>
                 <div class='i-steps__head'>
                   <div class='i-steps__icon'>
-                    {step.iconSlot?.() ?? (step.icon || (props.simple ? null : index + 1))}
+                    {step.iconSlot?.()
+                      ?? (step.icon ? (
+                          <Icon icon={step.icon} aria-hidden='true' />
+                        ) : status === 'finish' || status === 'success' ? (
+                          <span aria-hidden='true'>✓</span>
+                        ) : status === 'error' ? (
+                          <span aria-hidden='true'>✕</span>
+                        ) : (
+                          (props.simple ? null : index + 1)
+                        ))}
                   </div>
                   {!isLast && <div class='i-steps__line' aria-hidden='true' />}
                 </div>
