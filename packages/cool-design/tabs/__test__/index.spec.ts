@@ -74,4 +74,44 @@ describe('Tabs', () => {
     });
     expect(wrapper.findAll('[role="tab"]')[1].attributes('aria-selected')).toBe('true');
   });
+
+  test('tabPosition 为 bottom/right 时内容在 DOM 前面（与 Element Plus 一致）', () => {
+    const order = (position: 'top' | 'right' | 'bottom' | 'left') => {
+      const wrapper = mount(Tabs, {
+        props: {
+          panes: [{ name: 'first', label: '一' }, { name: 'second', label: '二' }],
+          tabPosition: position
+        }
+      });
+      const children = wrapper.element.children;
+      const firstClass = children[0]?.className ?? '';
+      return firstClass.includes('i-tabs__header') ? 'header' : 'content';
+    };
+    expect(order('top')).toBe('header');
+    expect(order('left')).toBe('header');
+    expect(order('bottom')).toBe('content');
+    expect(order('right')).toBe('content');
+  });
+
+  test('键盘导航只在当前 Tabs 实例内聚焦页签', async () => {
+    const makePanes = () => [{ name: 'first', label: '一' }, { name: 'second', label: '二' }];
+    const wrapper = mount(
+      {
+        components: { Tabs },
+        template: `<div>
+          <Tabs id="tabs-a" ref="a" :panes="panes" modelValue="first" />
+          <Tabs id="tabs-b" ref="b" :panes="panes" modelValue="first" />
+        </div>`,
+        setup: () => ({ panes: makePanes() })
+      },
+      { attachTo: document.body }
+    );
+    const tab = wrapper.findAll('#tabs-b [role="tab"]')[0];
+    await tab.trigger('keydown', { key: 'ArrowRight' });
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    expect(document.activeElement).toBe(wrapper.findAll('#tabs-b [role="tab"]')[1].element);
+    // tabs-a 的页签没有被聚焦或切换
+    expect(wrapper.findAll('#tabs-a [role="tab"]')[1].attributes('aria-selected')).not.toBe('true');
+    wrapper.unmount();
+  });
 });

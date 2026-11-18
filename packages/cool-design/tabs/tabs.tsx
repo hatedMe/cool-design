@@ -70,6 +70,7 @@ export default defineComponent({
   setup(props, { emit, slots, expose }) {
     const internalActive = ref<string | number>(props.modelValue ?? props.defaultValue ?? '');
     const visited = ref<Set<string | number>>(new Set());
+    const rootRef = ref<HTMLElement>();
 
     const normalizedFromProps = computed<NormalizedPane[]>(() =>
       props.panes.map((pane) => ({
@@ -202,9 +203,9 @@ export default defineComponent({
       event.preventDefault();
       const next = enabled[nextPos];
       setActive(next.pane.name);
-      // 键盘切换后聚焦对应页签
+      // 键盘切换后在当前实例内聚焦对应页签，避免同页多个 Tabs 同名页签互相干扰
       requestAnimationFrame(() => {
-        const el = document.querySelector<HTMLElement>(
+        const el = rootRef.value?.querySelector<HTMLElement>(
           `[data-tabs-tab="${String(next.pane.name).replace(/"/g, '\\"')}"]`
         );
         el?.focus();
@@ -319,12 +320,13 @@ export default defineComponent({
 
       return (
         <div
+          ref={rootRef}
           class={{
             'i-tabs': true,
             [`is-${normalizedType.value}`]: true,
             [`is-${headerPosition}`]: true
           }}>
-          {headerPosition === 'bottom' ? (
+          {headerPosition === 'bottom' || headerPosition === 'right' ? (
             <>
               {content}
               {header}
