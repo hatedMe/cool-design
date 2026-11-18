@@ -48,6 +48,12 @@ Menu 用于页面导航和分组操作，支持水平/垂直模式、折叠、�
 | `active-text-color` | 激活文字颜色 | `string` | — |
 | `router` | 开启后点击菜单项通过 vue-router 导航（目标取 `route`/`to`，缺省用 `index`） | `boolean` | `false` |
 | `ellipsis` | 水平模式是否收纳溢出（类名） | `boolean` | `true` |
+| `popper-offset` | 折叠弹层与触发器的间距，单位 px | `number` | `4` |
+| `popper-effect` | 折叠弹层主题 | `light` / `dark` | `light` |
+| `popper-class` | 折叠弹层自定义类名 | `string` | — |
+| `teleported` | 折叠弹层是否传送到 body | `boolean` | `true` |
+| `show-timeout` | 折叠弹层展开延时（子菜单 `show-timeout` 优先） | `number` | `300` |
+| `hide-timeout` | 折叠弹层收起延时（子菜单 `hide-timeout` 优先） | `number` | `300` |
 
 ### Menu 事件
 

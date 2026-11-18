@@ -95,6 +95,17 @@
   border-radius: var(--i-radius-small);
   box-shadow: var(--i-shadow-small);
 }
+
+.i-sub-menu__popup--dark {
+  background: #303133;
+  border-color: #303133;
+  color: #fff;
+
+  .i-sub-menu__popup-title,
+  .i-sub-menu__arrow {
+    color: var(--i-text-muted);
+  }
+}
 .i-sub-menu__popup > .i-sub-menu__children {
   padding-left: 0;
 }

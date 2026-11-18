@@ -22,7 +22,13 @@ export default defineComponent({
     textColor: { type: String, default: '' },
     activeTextColor: { type: String, default: '' },
     router: Boolean,
-    ellipsis: { type: Boolean, default: true }
+    ellipsis: { type: Boolean, default: true },
+    popperOffset: { type: Number, default: undefined },
+    popperEffect: { type: String as PropType<'light' | 'dark'>, default: 'light' },
+    popperClass: { type: String, default: '' },
+    teleported: { type: Boolean, default: true },
+    showTimeout: { type: Number, default: 300 },
+    hideTimeout: { type: Number, default: 300 }
   },
   emits: ['update:modelValue', 'select', 'open', 'close'],
   setup(props, { emit, slots, expose }) {
@@ -132,6 +138,16 @@ export default defineComponent({
       },
       get menuTrigger() {
         return props.menuTrigger;
+      },
+      get popperProps() {
+        return {
+          offset: props.popperOffset,
+          effect: props.popperEffect,
+          popperClass: props.popperClass,
+          teleported: props.teleported,
+          showTimeout: props.showTimeout,
+          hideTimeout: props.hideTimeout
+        };
       },
       isActive,
       isOpened,

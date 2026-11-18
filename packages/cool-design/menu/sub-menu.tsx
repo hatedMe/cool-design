@@ -1,4 +1,4 @@
-import { computed, defineComponent, inject, onBeforeUnmount, provide, ref, watch } from 'vue';
+import { Teleport, computed, defineComponent, inject, onBeforeUnmount, provide, ref, watch } from 'vue';
 import { menuKey, menuPathKey } from './context';
 import { useFloating } from '../../../src/utils/use-floating';
 
@@ -7,8 +7,8 @@ export default defineComponent({
   props: {
     index: { type: String, required: true },
     disabled: Boolean,
-    showTimeout: { type: Number, default: 300 },
-    hideTimeout: { type: Number, default: 300 }
+    showTimeout: { type: Number, default: undefined },
+    hideTimeout: { type: Number, default: undefined }
   },
   setup(props, { slots }) {
     const menu = inject(menuKey, undefined);
@@ -32,13 +32,16 @@ export default defineComponent({
       showTimer = undefined;
       hideTimer = undefined;
     };
+    // 展开延时依次回退：子菜单自身 → 菜单级配置 → 默认值
+    const showTimeout = () => props.showTimeout ?? menu?.popperProps.showTimeout ?? 300;
+    const hideTimeout = () => props.hideTimeout ?? menu?.popperProps.hideTimeout ?? 300;
 
     const floating = useFloating({
       open: popupOpen,
       reference: titleRef,
       floating: popupRef,
       placement: () => 'right-start',
-      offset: () => 4,
+      offset: () => menu?.popperProps.offset ?? 4,
       close: () => {
         popupOpen.value = false;
       }
@@ -51,9 +54,10 @@ export default defineComponent({
         hideTimer = undefined;
       }
       if (popupOpen.value) return;
+      const delay = showTimeout();
       showTimer = setTimeout(() => {
         popupOpen.value = true;
-      }, props.showTimeout);
+      }, delay);
     };
     const closePopup = (immediate = false) => {
       if (showTimer) {
@@ -68,7 +72,7 @@ export default defineComponent({
       }
       hideTimer = setTimeout(() => {
         popupOpen.value = false;
-      }, props.hideTimeout);
+      }, hideTimeout());
     };
     const keepPopup = () => {
       if (hideTimer) {
@@ -186,21 +190,29 @@ export default defineComponent({
           </span>
         </button>
         {popupMode.value
-          ? popupOpen.value && (
-              <div
-                ref={popupRef}
-                class='i-sub-menu__popup'
-                role='menu'
-                style={floating.style.value}
-                onClick={handlePopupClick}
-                onMouseenter={keepPopup}
-                onMouseleave={() => closePopup()}>
-                <div class='i-sub-menu__popup-title'>{slots.title?.()}</div>
-                <ul class='i-sub-menu__children' role='menu'>
-                  {slots.default?.()}
-                </ul>
-              </div>
-            )
+          ? popupOpen.value && (() => {
+              const popper = menu?.popperProps;
+              const panel = (
+                <div
+                  ref={popupRef}
+                  class={[
+                    'i-sub-menu__popup',
+                    `i-sub-menu__popup--${popper?.effect ?? 'light'}`,
+                    popper?.popperClass
+                  ]}
+                  role='menu'
+                  style={floating.style.value}
+                  onClick={handlePopupClick}
+                  onMouseenter={keepPopup}
+                  onMouseleave={() => closePopup()}>
+                  <div class='i-sub-menu__popup-title'>{slots.title?.()}</div>
+                  <ul class='i-sub-menu__children' role='menu'>
+                    {slots.default?.()}
+                  </ul>
+                </div>
+              );
+              return popper?.teleported ? <Teleport to={floating.target.value}>{panel}</Teleport> : panel;
+            })()
           : opened.value && (
               <ul class='i-sub-menu__children' role='menu'>
                 {slots.default?.()}

@@ -19,6 +19,14 @@ export interface MenuContext {
   collapse: boolean;
   uniqueOpened: boolean;
   menuTrigger: MenuTrigger;
+  popperProps: {
+    offset: number | undefined;
+    effect: 'light' | 'dark';
+    popperClass: string;
+    teleported: boolean;
+    showTimeout: number;
+    hideTimeout: number;
+  };
   isActive: (index: string) => boolean;
   isOpened: (index: string) => boolean;
   handleSelect: (index: string, indexPath: string[], item?: unknown) => void;
