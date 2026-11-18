@@ -210,3 +210,38 @@ test('默认关闭后保留内容，destroy-on-close 为 true 时销毁', async 
   expect(w2.find('p').exists()).toBe(true);
   w2.unmount();
 });
+
+test('header 插槽接收 close/titleId/titleClass，拖拽后 resetPosition 复位', async () => {
+  let scope: { close: () => void; titleId: string; titleClass: string } | undefined;
+  const w = mount(Dialog, {
+    attachTo: document.body,
+    props: { modelValue: true, draggable: true },
+    slots: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      header: (props: any) => {
+        scope = props;
+        return h('div', { class: 'custom-header' }, '定制头');
+      },
+      default: () => 'x'
+    }
+  });
+  await flushPromises();
+  expect(scope?.titleClass).toBe('i-dialog__title');
+  expect(scope?.titleId).toContain('i-dialog-title-');
+  expect(typeof scope?.close).toBe('function');
+  scope?.close();
+  expect(w.emitted('update:modelValue')).toEqual([[false]]);
+  await w.setProps({ modelValue: true });
+  // 拖拽 header 产生偏移
+  const header = w.get('.i-dialog__header');
+  await header.trigger('mousedown', { clientX: 100, clientY: 100 });
+  document.dispatchEvent(new MouseEvent('mousemove', { clientX: 150, clientY: 130 }));
+  await nextTick();
+  const section = w.get('.i-dialog').element as HTMLElement;
+  expect(section.style.transform).toContain('translate(50px, 30px)');
+  // resetPosition 清除拖拽偏移
+  (w.vm as unknown as { resetPosition: () => void }).resetPosition();
+  await nextTick();
+  expect(section.style.transform).toBe('');
+  w.unmount();
+});

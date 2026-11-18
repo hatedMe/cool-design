@@ -43,6 +43,10 @@
 | `center` | 头部与页脚是否居中 | `boolean` | `false` |
 | `destroy-on-close` | 关闭后是否销毁内容 | `boolean` | `false` |
 | `before-close` | 关闭前拦截，调用 `done()` 继续关闭 | `(done: () => void) => void` | — |
+| `align-center` | 是否垂直水平居中 | `boolean` | `false` |
+| `draggable` | 是否可通过拖拽头部移动 | `boolean` | `false` |
+| `close-icon` | 自定义关闭图标 | `string` / `Component` | `×` |
+| `z-index` | 自定义层级 | `number` | — |
 
 #### 事件
 
@@ -58,19 +62,19 @@
 
 #### 插槽
 
-| 名称 | 说明 |
-| --- | --- |
-| `default` | 窗口内容 |
-| `header` | 自定义整个头部 |
-| `title` | 自定义标题文本 |
-| `footer` | 底部操作区 |
+| 名称 | 说明 | 作用域参数 |
+| --- | --- | --- |
+| `default` | 窗口内容 | — |
+| `header` | 自定义整个头部 | `{ close, titleId, titleClass }` |
+| `title` | 自定义标题文本 | — |
+| `footer` | 底部操作区 | — |
 
 #### Exposes
 
 | 方法 | 说明 |
 | --- | --- |
 | `handleClose()` | 触发关闭流程（触发 `close`，尊重 `before-close`） |
-| `resetPosition()` | 重置弹窗顶部偏移为 `top` 属性值 |
+| `resetPosition()` | 重置拖拽偏移并恢复顶部偏移为 `top` 属性值 |
 
 ### 使用说明
 

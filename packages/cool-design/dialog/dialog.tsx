@@ -111,6 +111,8 @@ export default defineComponent({
       if (props.closable) handleClose();
     };
     const resetPosition = () => {
+      // 重置拖拽偏移，恢复初始位置（对齐 Element Plus）
+      dragOffset.value = { x: 0, y: 0 };
       if (!root.value) return;
       if (!props.fullscreen && props.top) root.value.style.marginTop = props.top;
       else root.value.style.removeProperty('margin-top');
@@ -216,24 +218,24 @@ export default defineComponent({
           aria-modal={props.modelValue ? 'true' : undefined}
           aria-labelledby={!slots.header && (props.title || slots.title) ? titleId : undefined}
           tabindex={-1}>
-          {props.showClose && (
-            <button
-              type='button'
-              class='i-dialog__close'
-              aria-label='关闭对话框'
-              disabled={!props.closable}
-              onClick={requestClose}>
-              {props.closeIcon ? <Icon icon={props.closeIcon} aria-hidden='true' /> : '×'}
-            </button>
-          )}
           {(slots.header || props.title || slots.title || props.showClose) && (
             <header
               class={['i-dialog__header', props.headerClass, props.draggable && !props.fullscreen && 'is-draggable']}
               onMousedown={onHeaderMousedown}>
-              {slots.header?.() ?? (
+              {slots.header?.({ close: requestClose, titleId, titleClass: 'i-dialog__title' }) ?? (
                 <h2 id={titleId} class='i-dialog__title'>
                   {slots.title?.() ?? props.title}
                 </h2>
+              )}
+              {props.showClose && (
+                <button
+                  type='button'
+                  class='i-dialog__close'
+                  aria-label='关闭对话框'
+                  disabled={!props.closable}
+                  onClick={requestClose}>
+                  {props.closeIcon ? <Icon icon={props.closeIcon} aria-hidden='true' /> : '×'}
+                </button>
               )}
             </header>
           )}
