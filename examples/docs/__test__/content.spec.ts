@@ -46,6 +46,34 @@ describe('文档内容与组件覆盖', () => {
     expect(html).toContain('<table>');
   });
 
+  it('每个组件页面包含介绍、用法与规范表格，表格列数一致', () => {
+    const componentPages = pages.filter((page) => page.id.startsWith('components/'));
+    expect(componentPages.length).toBeGreaterThan(80);
+    for (const page of componentPages) {
+      const markdown = page.markdown;
+      // 介绍：以一级标题开头并配有说明文字。
+      expect(markdown.startsWith('# '), `${page.id} 缺少标题`).toBe(true);
+      // 用法：使用说明标题或代码示例。
+      const hasUsage = /## 用法|## 基础用法|## 快速上手|## 使用说明|```/.test(markdown);
+      expect(hasUsage, `${page.id} 缺少用法说明`).toBe(true);
+      // API：规范表格或明确声明无专属属性。
+      const hasApiTable = /## API|### 属性|### Attributes/.test(markdown);
+      const declaresNoProps = /无专用属性|没有专属属性/.test(markdown);
+      expect(hasApiTable || declaresNoProps, `${page.id} 缺少 API 表格`).toBe(true);
+      // 表格列数一致：表头、分隔行与数据行的未转义竖线数相同。
+      const tables = markdown.match(/(?:^\|.*\|\s*$\n?)+/gm) ?? [];
+      expect(tables.length, `${page.id} 未发现表格`).toBeGreaterThan(0);
+      for (const table of tables) {
+        const rows = table.trim().split('\n').filter(Boolean);
+        const columnCount = (rows[0].match(/(?<!\\)\|/g) || []).length;
+        expect(columnCount, `${page.id} 表格列数异常`).toBeGreaterThanOrEqual(2);
+        rows.forEach((row, index) => {
+          expect((row.match(/(?<!\\)\|/g) || []).length, `${page.id} 第 ${index + 1} 行列数不齐`).toBe(columnCount);
+        });
+      }
+    }
+  });
+
   it('文档代码块按语言高亮，未知语言安全回退为纯文本', () => {
     const html = renderMarkdown(
       '```ts\nconst name: string = "示例";\n```\n\n```unknown\n<img onerror="alert(1)">\n```'

@@ -1,6 +1,17 @@
 # RadioGroup 单选组
 
+### 介绍
+
 RadioGroup 管理一组 Radio 的受控值、原生名称和整体禁用状态。组内使用手动 roving tabindex 键盘导航：选中项（未选中时第一个可用项）是 Tab 停靠点，方向键在可用选项间移动选中并聚焦，跳过禁用项，不依赖原生 `name` 分组。
+
+## 用法
+
+```vue
+<RadioGroup v-model="value" name="kind">
+  <Radio value="a">选项 A</Radio>
+  <Radio value="b">选项 B</Radio>
+</RadioGroup>
+```
 
 ## API
 

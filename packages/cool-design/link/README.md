@@ -1,6 +1,14 @@
 # Link 文字链接
 
+### 介绍
+
 用于文字导航与行内操作，支持主题色、三种尺寸、图标与禁用状态。
+
+## 用法
+
+```vue
+<Link href="/docs" type="primary" underline="hover">查看文档</Link>
+```
 
 ## API
 

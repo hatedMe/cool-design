@@ -186,7 +186,7 @@ export const pages: Page[] = [
     title: 'SplitterPanel 分割面板项',
     group: '基础组件',
     markdown:
-      '# SplitterPanel 分割面板项\n\n### 介绍\n\nSplitter 的子组件，声明单个面板。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `size` | 面板大小（数字为 px，字符串支持 `%` / `px`），支持 `v-model:size` | `string \\| number` | — |\n| `min` | 最小大小 | `string \\| number` | — |\n| `max` | 最大大小 | `string \\| number` | — |\n| `resizable` | 是否允许拖拽调整 | `boolean` | `true` |\n| `collapsible` | 是否显示折叠按钮 | `boolean` | `false` |\n\n### Events\n\n| 事件名 | 说明 | 回调参数 |\n| ------ | ---- | -------- |\n| `update:size` | 面板大小变化 | `size: number` |\n\n### Slots\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 面板内容 |\n| `start-collapsible` | 起始侧折叠按钮内容 |\n| `end-collapsible` | 结束侧折叠按钮内容 |\n',
+      '# SplitterPanel 分割面板项\n\n### 介绍\n\nSplitter 的子组件，声明单个面板。\n\n## 用法\n\n在 `Splitter` 的默认插槽中声明面板：\n\n```vue\n<Splitter>\n  <SplitterPanel>左侧内容</SplitterPanel>\n  <SplitterPanel>右侧内容</SplitterPanel>\n</Splitter>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `size` | 面板大小（数字为 px，字符串支持 `%` / `px`），支持 `v-model:size` | `string \\| number` | — |\n| `min` | 最小大小 | `string \\| number` | — |\n| `max` | 最大大小 | `string \\| number` | — |\n| `resizable` | 是否允许拖拽调整 | `boolean` | `true` |\n| `collapsible` | 是否显示折叠按钮 | `boolean` | `false` |\n\n### Events\n\n| 事件名 | 说明 | 回调参数 |\n| ------ | ---- | -------- |\n| `update:size` | 面板大小变化 | `size: number` |\n\n### Slots\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 面板内容 |\n| `start-collapsible` | 起始侧折叠按钮内容 |\n| `end-collapsible` | 结束侧折叠按钮内容 |\n',
     demos: [
       demo(
         '../../packages/cool-design/splitter/demo/basic.vue',
@@ -331,7 +331,7 @@ export const pages: Page[] = [
     title: 'MenuItem 菜单项',
     group: '导航组件',
     markdown:
-      '# MenuItem 菜单项\n\n### 介绍\n\nMenu 的子组件，声明单个菜单项。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `index` | 唯一索引 | `string` | — |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n| `route` | 路由透传值 | `string \\| Record` | — |\n| `to` | 链接透传值 | `string \\| Record` | — |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 菜单项内容 |\n',
+      '# MenuItem 菜单项\n\n### 介绍\n\nMenu 的子组件，声明单个菜单项。\n\n## 用法\n\n在 `Menu` 中声明菜单项，`index` 为唯一标识：\n\n```vue\n<Menu>\n  <MenuItem index="home">首页</MenuItem>\n</Menu>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `index` | 唯一索引 | `string` | — |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n| `route` | 路由透传值 | `string \\| Record` | — |\n| `to` | 链接透传值 | `string \\| Record` | — |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 菜单项内容 |\n',
     demos: [
       demo(
         '../../packages/cool-design/menu/demo/element.vue',
@@ -347,7 +347,7 @@ export const pages: Page[] = [
     title: 'SubMenu 子菜单',
     group: '导航组件',
     markdown:
-      '# SubMenu 子菜单\n\n### 介绍\n\nMenu 的子组件，声明可展开的子菜单。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `index` | 唯一索引 | `string` | — |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `title` | 子菜单标题 |\n| `default` | 子菜单项 |\n',
+      '# SubMenu 子菜单\n\n### 介绍\n\nMenu 的子组件，声明可展开的子菜单。\n\n## 用法\n\n在 `Menu` 中嵌套声明子菜单，`title` 插槽为分组标题：\n\n```vue\n<Menu>\n  <SubMenu>\n    <template #title>分组</template>\n    <MenuItem index="a">选项 A</MenuItem>\n  </SubMenu>\n</Menu>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `index` | 唯一索引 | `string` | — |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `title` | 子菜单标题 |\n| `default` | 子菜单项 |\n',
     demos: [
       demo(
         '../../packages/cool-design/menu/demo/element.vue',
@@ -363,7 +363,7 @@ export const pages: Page[] = [
     title: 'MenuItemGroup 菜单分组',
     group: '导航组件',
     markdown:
-      '# MenuItemGroup 菜单分组\n\n### 介绍\n\nMenu 的子组件，声明菜单分组。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `title` | 分组标题 | `string` | `\'\'` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `title` | 自定义标题 |\n| `default` | 分组内菜单项 |\n',
+      '# MenuItemGroup 菜单分组\n\n### 介绍\n\nMenu 的子组件，声明菜单分组。\n\n## 用法\n\n在 `Menu` 中对菜单项分组：\n\n```vue\n<MenuItemGroup title="分组一">\n  <MenuItem index="a">选项 A</MenuItem>\n</MenuItemGroup>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `title` | 分组标题 | `string` | `\'\'` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `title` | 自定义标题 |\n| `default` | 分组内菜单项 |\n',
     demos: [
       demo(
         '../../packages/cool-design/menu/demo/element.vue',
@@ -389,7 +389,7 @@ export const pages: Page[] = [
     title: 'BreadcrumbItem 面包屑项',
     group: '导航组件',
     markdown:
-      '# BreadcrumbItem 面包屑项\n\n### 介绍\n\nBreadcrumb 的子组件，声明单个层级。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `to` | 跳转目标 | `string \\| Record` | — |\n| `replace` | 是否替换历史 | `boolean` | `false` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 面包屑内容 |\n| `separator` | 单项自定义分隔符 |\n',
+      '# BreadcrumbItem 面包屑项\n\n### 介绍\n\nBreadcrumb 的子组件，声明单个层级。\n\n## 用法\n\n在 `Breadcrumb` 中声明层级，`to` 指定跳转目标：\n\n```vue\n<Breadcrumb>\n  <BreadcrumbItem to="/">首页</BreadcrumbItem>\n  <BreadcrumbItem>详情</BreadcrumbItem>\n</Breadcrumb>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `to` | 跳转目标 | `string \\| Record` | — |\n| `replace` | 是否替换历史 | `boolean` | `false` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 面包屑内容 |\n| `separator` | 单项自定义分隔符 |\n',
     demos: [
       demo(
         '../../packages/cool-design/breadcrumb/demo/element.vue',
@@ -415,7 +415,7 @@ export const pages: Page[] = [
     title: 'TabPane 标签面板',
     group: '导航组件',
     markdown:
-      '# TabPane 标签面板\n\n### 介绍\n\nTabs 的子组件，声明单个页签与面板。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `label` | 页签标题 | `string` | `\'\'` |\n| `name` | 唯一标识 | `string \\| number` | — |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n| `closable` | 单项是否可关闭 | `boolean` | — |\n| `lazy` | 是否懒渲染 | `boolean` | `false` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 面板内容 |\n| `label` | 自定义页签标题 |\n',
+      '# TabPane 标签面板\n\n### 介绍\n\nTabs 的子组件，声明单个页签与面板。\n\n## 用法\n\n在 `Tabs` 中声明页签，`name` 为唯一标识：\n\n```vue\n<Tabs v-model="active">\n  <TabPane label="详情" name="detail">内容</TabPane>\n</Tabs>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `label` | 页签标题 | `string` | `\'\'` |\n| `name` | 唯一标识 | `string \\| number` | — |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n| `closable` | 单项是否可关闭 | `boolean` | — |\n| `lazy` | 是否懒渲染 | `boolean` | `false` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 面板内容 |\n| `label` | 自定义页签标题 |\n',
     demos: [
       demo(
         '../../packages/cool-design/tabs/demo/element.vue',
@@ -441,7 +441,7 @@ export const pages: Page[] = [
     title: 'DropdownMenu 下拉菜单容器',
     group: '导航组件',
     markdown:
-      '# DropdownMenu 下拉菜单容器\n\n### 介绍\n\nDropdown 的子组件，容纳下拉项列表。\n\n## API\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | DropdownItem 列表 |\n',
+      '# DropdownMenu 下拉菜单容器\n\n### 介绍\n\nDropdown 的子组件，容纳下拉项列表。\n\n## 用法\n\n通过 `dropdown` 插槽声明菜单结构：\n\n```vue\n<Dropdown>\n  <template #dropdown>\n    <DropdownMenu>\n      <DropdownItem command="edit">编辑</DropdownItem>\n    </DropdownMenu>\n  </template>\n</Dropdown>\n```\n\n## API\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | DropdownItem 列表 |\n',
     demos: [
       demo(
         '../../packages/cool-design/dropdown/demo/element.vue',
@@ -457,7 +457,7 @@ export const pages: Page[] = [
     title: 'DropdownItem 下拉项',
     group: '导航组件',
     markdown:
-      '# DropdownItem 下拉项\n\n### 介绍\n\nDropdown 的子组件，声明单个操作项。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `command` | 命令值 | `string \\| number \\| object` | `\'\'` |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n| `divided` | 是否显示分隔线 | `boolean` | `false` |\n| `icon` | 图标 | `string` | `\'\'` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 菜单项内容 |\n| `icon` | 自定义图标 |\n',
+      '# DropdownItem 下拉项\n\n### 介绍\n\nDropdown 的子组件，声明单个操作项。\n\n## 用法\n\n在 `DropdownMenu` 中声明操作项，`command` 随 `command` 事件抛出：\n\n```vue\n<DropdownMenu>\n  <DropdownItem command="edit">编辑</DropdownItem>\n</DropdownMenu>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `command` | 命令值 | `string \\| number \\| object` | `\'\'` |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n| `divided` | 是否显示分隔线 | `boolean` | `false` |\n| `icon` | 图标 | `string` | `\'\'` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 菜单项内容 |\n| `icon` | 自定义图标 |\n',
     demos: [
       demo(
         '../../packages/cool-design/dropdown/demo/element.vue',
@@ -483,7 +483,7 @@ export const pages: Page[] = [
     title: 'Step 步骤',
     group: '导航组件',
     markdown:
-      '# Step 步骤\n\n### 介绍\n\nSteps 的子组件，声明单个步骤。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `title` | 标题 | `string` | `\'\'` |\n| `description` | 描述 | `string` | `\'\'` |\n| `icon` | 图标 | `string` | `\'\'` |\n| `status` | 显式状态 | `StepStatus` | `\'\'` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `icon` | 自定义图标 |\n| `title` | 自定义标题 |\n| `description` | 自定义描述 |\n',
+      '# Step 步骤\n\n### 介绍\n\nSteps 的子组件，声明单个步骤。\n\n## 用法\n\n在 `Steps` 中按顺序声明步骤：\n\n```vue\n<Steps :active="1">\n  <Step title="提交" description="填写信息" />\n  <Step title="审核" description="等待确认" />\n</Steps>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `title` | 标题 | `string` | `\'\'` |\n| `description` | 描述 | `string` | `\'\'` |\n| `icon` | 图标 | `string` | `\'\'` |\n| `status` | 显式状态 | `StepStatus` | `\'\'` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `icon` | 自定义图标 |\n| `title` | 自定义标题 |\n| `description` | 自定义描述 |\n',
     demos: [
       demo(
         '../../packages/cool-design/steps/demo/element.vue',
@@ -509,7 +509,7 @@ export const pages: Page[] = [
     title: 'AnchorLink 锚点链接',
     group: '导航组件',
     markdown:
-      '# AnchorLink 锚点链接\n\n### 介绍\n\nAnchor 的子组件，声明单个锚点链接。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `href` | 目标元素地址 | `string` | — |\n| `title` | 链接文本 | `string` | — |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 链接内容（优先于 `title`） |\n| `sub-link` | 子链接列表 |\n',
+      '# AnchorLink 锚点链接\n\n### 介绍\n\nAnchor 的子组件，声明单个锚点链接。\n\n## 用法\n\n在 `Anchor` 中声明锚点，`href` 指向目标元素：\n\n```vue\n<Anchor>\n  <AnchorLink href="#basic" title="基础用法" />\n</Anchor>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `href` | 目标元素地址 | `string` | — |\n| `title` | 链接文本 | `string` | — |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 链接内容（优先于 `title`） |\n| `sub-link` | 子链接列表 |\n',
     demos: [
       demo(
         '../../packages/cool-design/anchor/demo/basic.vue',
@@ -551,7 +551,7 @@ export const pages: Page[] = [
     title: 'CarouselItem 轮播项',
     group: '数据展示',
     markdown:
-      '# CarouselItem 轮播项\n\n### 介绍\n\nCarousel 的子组件，声明单个幻灯片。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `name` | 幻灯片名称，用于 `setActiveItem` | `string \\| number` | 索引 |\n| `label` | 幻灯片无障碍标签 | `string \\| number` | `第 n 张` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 幻灯片内容 |\n',
+      '# CarouselItem 轮播项\n\n### 介绍\n\nCarousel 的子组件，声明单个幻灯片。\n\n## 用法\n\n在 `Carousel` 中声明幻灯片内容：\n\n```vue\n<Carousel>\n  <CarouselItem>第一屏</CarouselItem>\n  <CarouselItem>第二屏</CarouselItem>\n</Carousel>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `name` | 幻灯片名称，用于 `setActiveItem` | `string \\| number` | 索引 |\n| `label` | 幻灯片无障碍标签 | `string \\| number` | `第 n 张` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 幻灯片内容 |\n',
     demos: [
       demo(
         '../../packages/cool-design/carousel/demo/basic.vue',
@@ -567,7 +567,7 @@ export const pages: Page[] = [
     title: 'CollapseItem 折叠项',
     group: '数据展示',
     markdown:
-      '# CollapseItem 折叠项\n\n### 介绍\n\nCollapse 的子组件，声明单个可折叠面板。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `name` | 唯一标识 | `string \\| number` | 序号 |\n| `title` | 标题文本 | `string` | `\'\'` |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n| `icon` | 自定义展开图标，替换默认箭头 | `string \\| Component` | — |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `title` | 自定义标题 |\n| `default` | 面板内容 |\n| `icon` | 自定义展开图标 |\n',
+      '# CollapseItem 折叠项\n\n### 介绍\n\nCollapse 的子组件，声明单个可折叠面板。\n\n## 用法\n\n在 `Collapse` 中声明折叠面板：\n\n```vue\n<Collapse v-model="activeNames">\n  <CollapseItem title="标题" name="1">内容</CollapseItem>\n</Collapse>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `name` | 唯一标识 | `string \\| number` | 序号 |\n| `title` | 标题文本 | `string` | `\'\'` |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n| `icon` | 自定义展开图标，替换默认箭头 | `string \\| Component` | — |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `title` | 自定义标题 |\n| `default` | 面板内容 |\n| `icon` | 自定义展开图标 |\n',
     demos: [
       demo(
         '../../packages/cool-design/collapse/demo/basic.vue',
@@ -594,7 +594,7 @@ export const pages: Page[] = [
     title: 'DescriptionsItem 描述项',
     group: '数据展示',
     markdown:
-      '# DescriptionsItem 描述项\n\n### 介绍\n\nDescriptions 的子组件，声明单个标签与内容。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| label | 标签文本 | `string` | — |\n| span | 横跨列数 | `number` | `1` |\n| rowspan | 横跨行数（横向） | `number` | `1` |\n| width | 内容列宽度 | `string` / `number` | — |\n| min-width | 内容列最小宽度 | `string` / `number` | — |\n| label-width | 标签宽度 | `string` / `number` | — |\n| align | 内容对齐：`left` / `center` / `right` | `string` | — |\n| label-align | 标签对齐：`left` / `center` / `right` | `string` | — |\n| class-name | 内容单元格类名 | `string` | — |\n| label-class-name | 标签单元格类名 | `string` | — |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| default | 内容 |\n| label | 自定义标签 |\n',
+      '# DescriptionsItem 描述项\n\n### 介绍\n\nDescriptions 的子组件，声明单个标签与内容。\n\n## 用法\n\n在 `Descriptions` 中声明键值对：\n\n```vue\n<Descriptions>\n  <DescriptionsItem label="邮箱">user@example.com</DescriptionsItem>\n</Descriptions>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| label | 标签文本 | `string` | — |\n| span | 横跨列数 | `number` | `1` |\n| rowspan | 横跨行数（横向） | `number` | `1` |\n| width | 内容列宽度 | `string` / `number` | — |\n| min-width | 内容列最小宽度 | `string` / `number` | — |\n| label-width | 标签宽度 | `string` / `number` | — |\n| align | 内容对齐：`left` / `center` / `right` | `string` | — |\n| label-align | 标签对齐：`left` / `center` / `right` | `string` | — |\n| class-name | 内容单元格类名 | `string` | — |\n| label-class-name | 标签单元格类名 | `string` | — |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| default | 内容 |\n| label | 自定义标签 |\n',
     demos: [
       demo(
         '../../packages/cool-design/descriptions/demo/item.vue',
@@ -620,7 +620,7 @@ export const pages: Page[] = [
     title: 'ImageViewer 图片预览',
     group: '数据展示',
     markdown:
-      '# ImageViewer 图片预览\n\n### 介绍\n\nImage 的预览组件，支持多图切换、缩放、旋转、进度、占位与失败状态，多实例共享滚动锁。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `url-list` | 预览地址列表 | `string[]` | `[]` |\n| `initial-index` | 起始索引 | `number` | `0` |\n| `infinite` | 是否循环切换 | `boolean` | `true` |\n| `zoom-rate` | 缩放步长 | `number` | `1.2` |\n| `scale` | 初始缩放 | `number` | `1` |\n| `min-scale` | 最小缩放 | `number` | `0.2` |\n| `max-scale` | 最大缩放 | `number` | `7` |\n| `show-progress` | 是否显示进度 | `boolean` | `false` |\n| `teleported` | 是否挂载到 `body` | `boolean` | `false` |\n| `hide-on-click-modal` | 点击遮罩是否关闭 | `boolean` | `false` |\n| `close-on-press-escape` | `ESC` 是否关闭 | `boolean` | `true` |\n| `z-index` | 层级 | `number` | — |\n\n### Events\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `switch` | 切换图片 |\n| `close` | 关闭预览 |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 自定义图片内容，参数 `{ url, src, index, activeIndex }` |\n| `progress` | 自定义进度，参数 `{ activeIndex, total }` |\n| `toolbar` | 自定义工具栏，参数 `{ actions, prev, next, reset, setActiveItem, activeIndex }` |\n| `placeholder` / `viewer-placeholder` | 加载占位，参数 `{ activeIndex, src }` |\n| `error` / `viewer-error` | 加载失败，参数 `{ activeIndex, src }` |\n',
+      '# ImageViewer 图片预览\n\n### 介绍\n\nImage 的预览组件，支持多图切换、缩放、旋转、进度、占位与失败状态，多实例共享滚动锁。\n\n## 用法\n\n通常由 `Image` 的 `preview-src-list` 自动唤起，也可独立使用：\n\n```vue\n<ImageViewer :url-list="urls" @close="visible = false" />\n```\n\n预览打开后支持滚轮缩放与按住拖拽平移，`reset` 会复位缩放、旋转与位移。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `url-list` | 预览地址列表 | `string[]` | `[]` |\n| `initial-index` | 起始索引 | `number` | `0` |\n| `infinite` | 是否循环切换 | `boolean` | `true` |\n| `zoom-rate` | 缩放步长 | `number` | `1.2` |\n| `scale` | 初始缩放 | `number` | `1` |\n| `min-scale` | 最小缩放 | `number` | `0.2` |\n| `max-scale` | 最大缩放 | `number` | `7` |\n| `show-progress` | 是否显示进度 | `boolean` | `false` |\n| `teleported` | 是否挂载到 `body` | `boolean` | `false` |\n| `hide-on-click-modal` | 点击遮罩是否关闭 | `boolean` | `false` |\n| `close-on-press-escape` | `ESC` 是否关闭 | `boolean` | `true` |\n| `z-index` | 层级 | `number` | — |\n\n### Events\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `switch` | 切换图片 |\n| `close` | 关闭预览 |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 自定义图片内容，参数 `{ url, src, index, activeIndex }` |\n| `progress` | 自定义进度，参数 `{ activeIndex, total }` |\n| `toolbar` | 自定义工具栏，参数 `{ actions, prev, next, reset, setActiveItem, activeIndex }` |\n| `placeholder` / `viewer-placeholder` | 加载占位，参数 `{ activeIndex, src }` |\n| `error` / `viewer-error` | 加载失败，参数 `{ activeIndex, src }` |\n',
     demos: [
       demo(
         '../../packages/cool-design/image/demo/preview.vue',
@@ -652,7 +652,7 @@ export const pages: Page[] = [
     title: 'SkeletonItem 骨架项',
     group: '数据展示',
     markdown:
-      '# SkeletonItem 骨架项\n\n### 介绍\n\nSkeleton 的子组件，在 template 插槽中组合占位形状。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| variant | 占位形状：`p` / `text` / `h1` / `h3` / `caption` / `button` / `image` / `circle` / `rect` | `string` | `text` |\n',
+      '# SkeletonItem 骨架项\n\n### 介绍\n\nSkeleton 的子组件，在 template 插槽中组合占位形状。\n\n## 用法\n\n在 `Skeleton` 的 `template` 插槽中组合：\n\n```vue\n<Skeleton :rows="0">\n  <template #template>\n    <SkeletonItem variant="h1" />\n    <SkeletonItem variant="p" />\n  </template>\n</Skeleton>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| variant | 占位形状：`p` / `text` / `h1` / `h3` / `caption` / `button` / `image` / `circle` / `rect` | `string` | `text` |\n',
     demos: [
       demo(
         '../../packages/cool-design/skeleton/demo/item.vue',
@@ -683,7 +683,7 @@ export const pages: Page[] = [
     title: 'TimelineItem 时间线项',
     group: '数据展示',
     markdown:
-      '# TimelineItem 时间线项\n\n### 介绍\n\nTimeline 的子组件，声明单个时间事件。\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `timestamp` | 时间戳文本 | `string` | `\'\'` |\n| `hide-timestamp` | 是否隐藏时间戳 | `boolean` | `false` |\n| `center` | 内容是否垂直居中 | `boolean` | `false` |\n| `placement` | 时间戳位置：`top` / `bottom` | `string` | `bottom` |\n| `type` | 节点主题：`primary` / `success` / `warning` / `danger` / `info` | `string` | `\'\'` |\n| `color` | 自定义节点颜色 | `string` | `\'\'` |\n| `size` | 节点尺寸：`normal` / `large` | `string` | `normal` |\n| `icon` | 自定义图标 | `string` / `Component` | — |\n| `hollow` | 是否空心节点 | `boolean` | `false` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 时间线项内容 |\n| `dot` | 自定义节点 |\n',
+      '# TimelineItem 时间线项\n\n### 介绍\n\nTimeline 的子组件，声明单个时间事件。\n\n## 用法\n\n在 `Timeline` 中按时间顺序声明节点：\n\n```vue\n<Timeline>\n  <TimelineItem timestamp="10:00">已提交</TimelineItem>\n  <TimelineItem timestamp="11:00">已审核</TimelineItem>\n</Timeline>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `timestamp` | 时间戳文本 | `string` | `\'\'` |\n| `hide-timestamp` | 是否隐藏时间戳 | `boolean` | `false` |\n| `center` | 内容是否垂直居中 | `boolean` | `false` |\n| `placement` | 时间戳位置：`top` / `bottom` | `string` | `bottom` |\n| `type` | 节点主题：`primary` / `success` / `warning` / `danger` / `info` | `string` | `\'\'` |\n| `color` | 自定义节点颜色 | `string` | `\'\'` |\n| `size` | 节点尺寸：`normal` / `large` | `string` | `normal` |\n| `icon` | 自定义图标 | `string` / `Component` | — |\n| `hollow` | 是否空心节点 | `boolean` | `false` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 时间线项内容 |\n| `dot` | 自定义节点 |\n',
     demos: [
       demo(
         '../../packages/cool-design/timeline/demo/element.vue',
@@ -732,7 +732,7 @@ export const pages: Page[] = [
     title: 'UploadDragger 拖拽上传区',
     group: '表单组件',
     markdown:
-      '# UploadDragger 拖拽上传区\n\n### 介绍\n\n拖拽上传的独立形态，内部即 Upload 的 `drag` 模式，文件悬停时区域高亮；插槽与属性透传给 Upload。\n\n## API\n\n### Attributes\n\n除 `drag`（恒为 `true`）外，其余属性与 `Upload` 一致，见 [Upload](#/components/upload)。\n\n### Slot\n\n| 插槽 | 说明 |\n| ---- | ---- |\n| `default` | 区域内容 |\n| `tip` | 底部提示 |\n',
+      '# UploadDragger 拖拽上传区\n\n### 介绍\n\n拖拽上传的独立形态，内部即 Upload 的 `drag` 模式，文件悬停时区域高亮；插槽与属性透传给 Upload。\n\n## 用法\n\n```vue\n<UploadDragger multiple action="/api/upload">\n  <p>将文件拖到此处，或点击选择</p>\n</UploadDragger>\n```\n\n## API\n\n### Attributes\n\n除 `drag`（恒为 `true`）外，其余属性与 `Upload` 一致，见 [Upload](#/components/upload)。\n\n### Slot\n\n| 插槽 | 说明 |\n| ---- | ---- |\n| `default` | 区域内容 |\n| `tip` | 底部提示 |\n',
     demos: [
       demo(
         '../../packages/cool-design/upload/demo/drag.vue',

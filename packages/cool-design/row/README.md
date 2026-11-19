@@ -1,6 +1,17 @@
 # Row 行布局
 
+### 介绍
+
 与 Col 组合构建 24 栅格。基于 Flex，支持换行、动态 gutter、水平排列和垂直对齐；嵌套 Row 的 gutter 独立生效。
+
+## 用法
+
+```vue
+<Row :gutter="16">
+  <Col :span="12">左栏</Col>
+  <Col :span="12">右栏</Col>
+</Row>
+```
 
 ## API
 
