@@ -58,7 +58,7 @@ const value = ref(1);
 | 事件 | 说明 | 参数 |
 | --- | --- | --- |
 | `update:modelValue` | 数值更新时触发 | `(value: number \| null)` |
-| `change` | 数值确认变化时触发 | `(value: number \| null)` |
+| `change` | 提交值变化时触发（失焦/回车/按钮提交后值未变则不触发） | `(current: number \| null, old: number \| null)` |
 | `focus` | 输入框获得焦点时触发 | `(event: FocusEvent)` |
 | `blur` | 输入框失去焦点时触发 | `(event: FocusEvent)` |
 

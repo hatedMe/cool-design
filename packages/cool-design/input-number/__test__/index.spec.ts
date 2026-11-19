@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { defineComponent, h } from 'vue';
+import { defineComponent, h, ref } from 'vue';
 import { describe, expect, test } from 'vitest';
 import InputNumber from '../index';
 import * as CoolDesign from '../../index';
@@ -69,5 +69,39 @@ describe('InputNumber', () => {
 
     const fallback = mount(InputNumber, { props: { modelValue: 1 } });
     expect(fallback.find('.i-input-number').classes()).toContain('i-control--default');
+  });
+
+  test('change 携带新旧值，提交值未变化时不触发', async () => {
+    const value = ref(2);
+    const wrapper = mount(
+      defineComponent({
+        setup: () => () =>
+          h(InputNumber, {
+            modelValue: value.value,
+            max: 3,
+            'onUpdate:modelValue': (v: number | null) => {
+              value.value = v ?? 2;
+            }
+          })
+      })
+    );
+    const number = wrapper.getComponent(InputNumber);
+    await wrapper.get('[aria-label="增加"]').trigger('click');
+    expect(number.emitted('change')!.at(-1)).toEqual([3, 2]);
+
+    // 已到上限：继续加不产生 change。
+    await wrapper.get('[aria-label="增加"]').trigger('click');
+    expect(number.emitted('change')).toHaveLength(1);
+
+    // 未修改直接失焦：不产生 change。
+    await wrapper.get('input').trigger('focus');
+    await wrapper.get('input').trigger('blur');
+    expect(number.emitted('change')).toHaveLength(1);
+
+    // 修改后失焦：携带新旧值触发一次。
+    await wrapper.get('input').setValue('1');
+    await wrapper.get('input').trigger('blur');
+    expect(number.emitted('change')!.at(-1)).toEqual([1, 3]);
+    expect(number.emitted('change')).toHaveLength(2);
   });
 });

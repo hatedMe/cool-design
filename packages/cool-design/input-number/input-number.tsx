@@ -64,6 +64,8 @@ export default defineComponent({
     });
 
     const clamp = (value: number) => Math.min(props.max, Math.max(props.min, value));
+    // 上一次提交的值：change 以它为基线去重，打字过程中的实时同步不算提交。
+    const lastCommitted = ref<number | null>(currentValue.value);
     const alignStep = (value: number) => {
       if (!isStrict.value || !props.step) return value;
       return props.min + Math.round((value - props.min) / props.step) * props.step;
@@ -72,8 +74,13 @@ export default defineComponent({
     const isDisabled = () => props.disabled || !!field?.disabled?.();
     const emitValue = (value: number | null) => {
       emit('update:modelValue', value);
-      emit('change', value);
-      if (props.validateEvent) nextTick(() => field?.validate('change'));
+      // 提交值未变化时不触发 change，避免 blur/按钮重复通知。
+      if (value !== lastCommitted.value) {
+        const previous = lastCommitted.value;
+        lastCommitted.value = value;
+        emit('change', value, previous);
+        if (props.validateEvent) nextTick(() => field?.validate('change'));
+      }
     };
     const parse = (text: string): number | null => {
       if (props.parser) return props.parser(text);
