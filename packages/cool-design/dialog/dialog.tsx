@@ -11,6 +11,7 @@ import {
   type PropType
 } from 'vue';
 import { overlayKey } from '../config-provider/context';
+import { useZIndex } from '../../hooks/use-z-index';
 import { isTopDialog, isTopFocusDialog, lockDialog, unlockDialog } from './stack';
 import Icon from '../icon';
 
@@ -47,6 +48,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'open', 'opened', 'close', 'closed', 'open-auto-focus', 'close-auto-focus'],
   setup(props, { slots, emit, expose }) {
     const host = inject(overlayKey, undefined);
+    const { nextZIndex } = useZIndex();
     const root = ref<HTMLElement>();
     const zIndex = ref(2000);
     const rendered = ref(false);
@@ -171,7 +173,7 @@ export default defineComponent({
           rendered.value = true;
           previous = document.activeElement as HTMLElement;
           active = true;
-          zIndex.value = lockDialog(token, props.lockScroll);
+          zIndex.value = Math.max(lockDialog(token, props.lockScroll), nextZIndex());
           document.addEventListener('keydown', onKeydown);
           document.addEventListener('focusin', onFocus);
           document.addEventListener('pointerdown', onPointerdown, true);

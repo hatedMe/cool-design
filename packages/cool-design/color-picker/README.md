@@ -25,6 +25,8 @@
 />
 ```
 
+预览颜色、透明度或预定义颜色时仅触发 `active-change`，点击“确定”后才更新 `v-model` 并触发 `change`。点击“清空”提交 `null`；关闭面板会放弃未确认的预览。面板默认传送到 `body`，可通过 `append-to` 指定容器，或设置 `:teleported="false"` 在原位置渲染。
+
 ### 禁用状态
 
 ```vue
@@ -37,7 +39,10 @@
 
 | 属性 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| `modelValue` | 当前颜色值 | `string` | `#409eff` |
+| `modelValue` | 当前颜色值；清空后为 `null` | `string \| null` | `#409eff` |
+| `clearable` | 是否显示清空按钮 | `boolean` | `true` |
+| `teleported` | 是否传送面板 | `boolean` | `true` |
+| `append-to` | 面板挂载目标，选择器或元素 | `string` / `HTMLElement` | `body` |
 | `show-alpha` | 是否支持透明度 | `boolean` | `false` |
 | `disabled` | 是否禁用；表单内继承 FormItem 的禁用状态 | `boolean` | `false` |
 | `color-format` | 输出颜色格式：`hex` / `rgb` / `hsl` / `hsv` | `string` | `hex` |
@@ -53,9 +58,9 @@
 
 | 事件 | 说明 | 参数 |
 | --- | --- | --- |
-| `update:modelValue` | 颜色实时变化时更新受控值 | `value: string` |
+| `update:modelValue` | 确认或清空时更新受控值 | `value: string \| null` |
 | `active-change` | 颜色或透明度实时变化时触发 | `value: string` |
-| `change` | 颜色确认或选择预定义颜色后触发 | `value: string` |
+| `change` | 点击确定或清空时触发 | `value: string \| null` |
 
 ### 插槽
 
@@ -69,7 +74,9 @@
 
 | 方法 | 说明 |
 | --- | --- |
+| `show()` | 打开面板，禁用时无效 |
+| `hide()` | 关闭面板，放弃未确认预览 |
 | `focus()` | 聚焦触发器 |
 | `blur()` | 取消触发器焦点 |
 
-> 当前版本使用原生颜色输入控件，不包含完整调色板布局、`teleported`、`validate-event` 和 Popper 定位 API。
+> 当前版本使用原生颜色输入控件，支持确认、清空及基础浮层定位，不包含完整调色板布局与完整 Popper 配置 API。

@@ -1,4 +1,12 @@
-let current = 2000;
+import { useConfig } from '../cool-design/config-provider/context';
+
+let offset = 0;
 export function useZIndex() {
-  return { nextZIndex: () => ++current, currentZIndex: () => current };
+  const config = useConfig();
+  const currentZIndex = () => config.value.zIndex + offset;
+  const nextZIndex = () => {
+    offset += 1;
+    return currentZIndex();
+  };
+  return { nextZIndex, currentZIndex };
 }

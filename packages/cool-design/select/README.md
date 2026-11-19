@@ -43,7 +43,9 @@
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| modelValue / v-model | 当前选中值，配合 `value-key` 支持对象值 | `string` / `number` / `object` / `Array` | `undefined` |
+| modelValue / v-model | 当前选中值，配合 `value-key` 支持对象值 | `string` / `number` / `boolean` / `object` / `Array` | `undefined` |
+| options | 通过数组提供选项及分组 | `Record<string, unknown>[]` | — |
+| props | 数组选项字段映射 | `{ value?: string; label?: string; disabled?: string; options?: string }` | 对应同名字段 |
 | value-key | 对象值的唯一标识字段 | `string` | `value` |
 | placeholder | 未选择时的提示 | `string` | `请选择` |
 | clearable | 显示清空按钮 | `boolean` | `false` |
@@ -70,13 +72,14 @@
 | value-on-clear | 清空时输出的值 | `any` | — |
 | validate-event | 选中变化时触发表单校验 | `boolean` | `true` |
 | remote | 是否启用远程搜索 | `boolean` | `false` |
-| remote-method | 根据查询词加载选项 | `(query) => SelectRemoteOption[] / Promise<SelectRemoteOption[]>` | — |
+| remote-method | 查询变化时调用，可更新外部选项；返回选项为扩展用法 | `(query: string) => void / SelectRemoteOption[] / Promise<void / SelectRemoteOption[]>` | — |
 | loading | 是否显示加载状态 | `boolean` | `false` |
 | remote-loading | `loading` 的兼容别名 | `boolean` | `false` |
 | virtualized | 是否启用基础可视范围截取 | `boolean` | `false` |
 | item-height / height | 虚拟选项行高和面板高度 | `number` | `34` / `240` |
 | teleported | 下拉面板是否传送到 body（`overflow: hidden` 祖先不被裁剪） | `boolean` | `true` |
-| persistent | 关闭后是否保留面板节点 | `boolean` | `false` |
+| persistent | 关闭后是否保留面板节点 | `boolean` | `true` |
+| append-to | 下拉面板的挂载位置 | `string` / `HTMLElement` | ConfigProvider 浮层宿主或 `body` |
 | placement | 面板位置：`top` / `bottom` / `left` / `right` 及 `-start` / `-end` 变体 | `string` | `bottom-start` |
 | fallback-placements | 主位置放不下时的候选位置 | `Placement[]` | `['top-start', 'bottom', 'top']` |
 | popper-options | 浮层参数覆盖（`offset` / `placement`） | `{ offset?: number; placement?: Placement }` | — |
@@ -122,4 +125,16 @@
 - `Escape`：关闭面板
 - 多选空查询时 `Backspace`：移除最后一个标签
 
-当前实现优先支持桌面端交互；原生隐藏 select 仅用于表单兼容和数字值回显，不作为可见 UI。值类型支持 `string` / `number`，以及配合 `value-key` 的对象值（暂不支持 `boolean`）。
+当前实现优先支持桌面端交互；原生隐藏 select 仅用于表单兼容和值回显，不作为可见 UI。值类型支持 `string` / `number` / `boolean`，以及配合 `value-key` 的对象值。
+
+## 远程搜索
+
+`remote-method(query)` 可以返回 `void`，在回调中更新外部响应式选项，与 Element Plus 用法一致。也保留返回选项数组或 Promise 的扩展用法；扩展用法只接受最近一次查询的返回结果，防止旧请求覆盖新结果。
+
+```vue
+<Select v-model="value" filterable remote :remote-method="search">
+  <SelectOption v-for="item in options" :key="item.value" :value="item.value" :label="item.label" />
+</Select>
+```
+
+`options` 属性也可直接提供数组；分组数组默认使用 `options` 字段，可通过 `props` 映射。

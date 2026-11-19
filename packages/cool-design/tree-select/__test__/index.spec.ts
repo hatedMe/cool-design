@@ -1,4 +1,4 @@
-import { DOMWrapper, mount } from '@vue/test-utils';
+import { DOMWrapper, flushPromises, mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import { beforeEach, describe, expect, test } from 'vitest';
 
@@ -140,4 +140,76 @@ describe('test `TreeSelect` component', () => {
     expect(mine().exists()).toBe(false);
     wrapper.unmount();
   });
+});
+
+
+test('maps node keys, children, labels and disabled fields', async () => {
+  const wrapper = mount(TreeSelect, { props: {
+    nodeKey: 'id', props: { label: 'name', children: 'nodes', disabled: 'locked' },
+    data: [{ id: 1, name: 'Parent', nodes: [{ id: 2, name: 'Child' }, { id: 3, name: 'Disabled', locked: true }] }],
+    modelValue: 2, defaultExpandAll: true
+  } });
+  expect(wrapper.text()).toContain('Child');
+  await openDropdown(wrapper);
+  await doc().findAll('.i-tree__content')[2].trigger('click');
+  expect(wrapper.emitted('change')).toBeUndefined();
+  await doc().findAll('.i-tree__content')[1].trigger('click');
+  expect(wrapper.emitted('change')).toEqual([[2]]);
+  wrapper.unmount();
+});
+
+test('loads nodes lazily and displays cached and loaded labels', async () => {
+  const wrapper = mount(TreeSelect, { props: {
+    lazy: true, nodeKey: 'id', props: { label: 'name', isLeaf: 'leaf' }, modelValue: 2,
+    cacheData: [{ id: 2, name: 'Cached child' }],
+    load: (node, resolve) => resolve(node.level === 0
+      ? [{ id: 1, name: 'Parent' }]
+      : [{ id: 2, name: 'Loaded child', leaf: true }])
+  } });
+  expect(wrapper.text()).toContain('Cached child');
+  await openDropdown(wrapper);
+  await flushPromises();
+  await doc().find('.i-tree__expand-icon').trigger('click');
+  await flushPromises();
+  expect(doc().text()).toContain('Loaded child');
+  expect(wrapper.text()).toContain('Loaded child');
+  await doc().findAll('.i-tree__content')[1].trigger('click');
+  expect(wrapper.emitted('change')).toEqual([[2]]);
+  expect(wrapper.text()).toContain('Loaded child');
+  wrapper.unmount();
+});
+
+test('accepts promise-based lazy loads without resolving twice', async () => {
+  const wrapper = mount(TreeSelect, { props: {
+    lazy: true,
+    load: async () => [{ value: 1, label: 'Async node', isLeaf: true }]
+  } });
+  await openDropdown(wrapper);
+  await flushPromises();
+  expect(doc().find('.i-tree__label').text()).toBe('Async node');
+  wrapper.unmount();
+});
+
+test('does not select children of disabled mapped nodes', async () => {
+  const wrapper = mount(TreeSelect, { props: {
+    props: { disabled: 'locked' },
+    data: [{ value: 1, label: 'Parent', locked: true, children: [{ value: 2, label: 'Child' }] }]
+  } });
+  await openDropdown(wrapper);
+  await doc().findAll('.i-tree__content')[1].trigger('click');
+  expect(wrapper.emitted('change')).toBeUndefined();
+  wrapper.unmount();
+});
+
+test('函数标签在树挂载前回退到数据标签，挂载后使用节点上下文', async () => {
+  const wrapper = mount(TreeSelect, { props: {
+    modelValue: 1,
+    data: [{ value: 1, label: '初始标签' }],
+    props: { label: (_data, node) => `层级${node.level}` }
+  } });
+  expect(wrapper.text()).toContain('初始标签');
+  await openDropdown(wrapper);
+  await nextTick();
+  expect(wrapper.text()).toContain('层级1');
+  wrapper.unmount();
 });

@@ -4,7 +4,33 @@
 
 展示结构化数据，提供完整的核心 API：固定表头与固定列、行选择、单选高亮行、客户端排序与远程排序、列筛选、展开行、合计行、单元格合并、行列点击事件和自定义单元格。
 
-列通过 `columns` 配置，插槽名等于列字段名。
+列可以通过 `TableColumn` 声明，也可以通过 `columns` 配置，数组配置的插槽名等于列字段名。
+
+## 声明式列
+
+```vue
+<script setup lang="ts">
+import { Table, TableColumn } from 'cool-design';
+
+const data = [{ id: 1, name: '陈晨', department: '产品设计' }];
+</script>
+
+<template>
+  <Table :data="data" row-key="id">
+    <TableColumn type="selection" width="48" />
+    <TableColumn type="index" label="序号" width="60" />
+    <TableColumn label="用户信息">
+      <TableColumn prop="name" label="姓名" width="140">
+        <template #header="{ column }">{{ column.label }}</template>
+        <template #default="{ row, $index }">{{ $index + 1 }}. {{ row.name }}</template>
+      </TableColumn>
+      <TableColumn prop="department" label="部门" />
+    </TableColumn>
+  </Table>
+</template>
+```
+
+全局注册后可使用 `<i-table>` 和 `<i-table-column>`。列支持 `v-if`、`v-for` 和属性更新；分组列使用不带 `prop` 的外层 `TableColumn`。声明式列存在时优先于 `columns`；请直接声明列，不要用自定义组件包裹列。列属性与下文的列配置一致，默认作用域插槽提供 `{ row, column, $index }`，`header` 提供 `{ column, $index }`。
 
 ## 基础用法
 

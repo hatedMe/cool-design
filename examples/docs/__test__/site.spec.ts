@@ -67,7 +67,7 @@ describe('PC 组件文档站', () => {
     const wrapper = await open();
     const search = wrapper.get('input[type="search"]');
     await search.setValue('表格');
-    expect(wrapper.findAll('.docs-sidebar a').map((link) => link.text())).toEqual(['Table 表格', 'TableV2 虚拟表格']);
+    expect(wrapper.findAll('.docs-sidebar a').map((link) => link.text())).toEqual(['Table 表格', 'TableV2 虚拟表格', 'TableColumn 表格列']);
     await search.setValue('没有这个组件');
     expect(wrapper.get('.docs-sidebar').text()).toContain('未找到组件');
     await search.setValue('');

@@ -31,6 +31,7 @@ import type {
   TableTooltipFormatter,
   TableTreeProps
 } from './types';
+import { columnSlots } from './declarative-columns';
 
 const SELECTION_KEY = '__i_selection__';
 const selectionColumn: TableColumn = { type: 'selection', key: SELECTION_KEY, width: 48 };
@@ -572,15 +573,17 @@ export default defineComponent({
     const displayData = computed(() => {
       const rows = filteredData.value;
       const state = sortState.value;
-      if (!state || state.column.sortable === 'custom') return rows;
+      if (!state) return rows;
+      const column = visibleLeaves.value.find((item) => colKeyOf(item) === colKeyOf(state.column));
+      if (!column?.sortable || column.sortable === 'custom') return rows;
       const direction = state.order === 'descending' ? -1 : 1;
-      const method = state.column.sortMethod;
+      const method = column.sortMethod;
       return rows
         .map((row, index) => ({ row, index }))
         .sort((a, b) => {
           if (method) return method(a.row as Record<string, unknown>, b.row as Record<string, unknown>) * direction;
-          const va = sortValuesOf(state.column, state.prop, a.row, a.index);
-          const vb = sortValuesOf(state.column, state.prop, b.row, b.index);
+          const va = sortValuesOf(column, fieldOf(column), a.row, a.index);
+          const vb = sortValuesOf(column, fieldOf(column), b.row, b.index);
           for (let i = 0; i < Math.max(va.length, vb.length); i += 1) {
             const diff = compareValues(va[i], vb[i]);
             if (diff !== 0) return diff * direction;
@@ -937,7 +940,7 @@ export default defineComponent({
       const filterKey = filterKeyOf(column);
       const active =
         sortState.value !== null && sortState.value.prop === field && filterKeyOf(sortState.value.column) === filterKey;
-      const label = slots[`${field}-header`]?.({ column, $index: columnIndex }) ?? titleOf(column);
+      const label = columnSlots.get(column)?.header?.({ column, $index: columnIndex }) ?? slots[`${field}-header`]?.({ column, $index: columnIndex }) ?? titleOf(column);
       return (
         <>
           {kind === 'selection' ? (
@@ -1108,7 +1111,7 @@ export default defineComponent({
                             }}
                             onClick={(event: MouseEvent) => emit('header-click', cell.column, event)}
                             onContextmenu={(event: MouseEvent) => emit('header-contextmenu', cell.column, event)}>
-                            {titleOf(cell.column)}
+                            {columnSlots.get(cell.column)?.header?.({ column: cell.column, $index: ci }) ?? titleOf(cell.column)}
                           </th>
                         ) : (
                           <th
@@ -1181,7 +1184,7 @@ export default defineComponent({
                         const record = row as Record<string, unknown>;
                         const cellValue = record[field];
                         const custom =
-                          kind === 'default' ? slots[field]?.({ row, column, index, $index: index }) : undefined;
+                          kind === 'default' ? (columnSlots.get(column)?.default ?? slots[field])?.({ row, column, index, $index: index }) : undefined;
                         const text =
                           custom === undefined && kind === 'default'
                             ? column.formatter?.(record, column, cellValue, index) ?? String(cellValue ?? '')
@@ -1342,7 +1345,7 @@ export default defineComponent({
                             class='i-table__expanded-row'
                             style={props.preserveExpandedContent && !expanded ? { display: 'none' } : undefined}>
                             <td colspan={renderColumns.value.length}>
-                              {slots[field]?.({ row, column, index, $index: index }) ??
+                              {(columnSlots.get(column)?.default ?? slots[field])?.({ row, column, index, $index: index }) ??
                                 (field ? String((row as Record<string, unknown>)[field] ?? '') : '')}
                             </td>
                           </tr>

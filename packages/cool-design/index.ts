@@ -33,6 +33,7 @@ import Switch from './switch';
 import Form from './form';
 import FormItem from './form-item';
 import Table from './table';
+import TableColumnComponent from './table-column';
 import TableV2 from './table-v2';
 import Pagination from './pagination';
 import Dialog from './dialog';
@@ -102,7 +103,9 @@ export { ClickOutside, InfiniteScroll, LoadingDirective, VPopover, directives, i
 export type { PopoverDirectiveValue } from './popover';
 import './style/index.scss';
 export type { FormRule, FormInstance, FormFieldContext, FormItemInstance } from './form';
-export type { TableColumn, SortChange } from './table';
+export type { SortChange } from './table';
+export const TableColumn = TableColumnComponent;
+export type TableColumn<T extends object = Record<string, unknown>> = import('./table/types').TableColumn<T>;
 export type {
   TableV2CellProps,
   TableV2Column,
@@ -112,7 +115,7 @@ export type {
   TableV2SortBy,
   TableV2SortOrder
 } from './table-v2';
-export type { SelectRemoteOption, SelectTagType } from './select/select';
+export type { SelectRemoteOption, SelectTagType, SelectPropsMapping } from './select/select';
 export type { CascaderFilterMethod, CascaderModelValue, CascaderNode, CascaderOption, CascaderPropsMapping } from './cascader';
 export type { Size, Config } from './config-provider/context';
 
@@ -227,6 +230,7 @@ export {
   CollapseItem
 };
 const components = [
+  TableColumn,
   Container,
   Header,
   Aside,

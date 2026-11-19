@@ -810,6 +810,9 @@ export const pages: Page[] = [
   component('table-v2', 'TableV2 虚拟表格', '数据展示', [
     ['basic', '万行数据流畅滚动', '虚拟滚动只渲染可视行；列级 fixed 或 fixedColumns 可固定首尾列。']
   ]),
+  component('table-column', 'TableColumn 表格列', '数据展示', [
+    ['index', '声明式列与作用域插槽', '使用 TableColumn 声明字段、分组及自定义单元格。']
+  ], ['Table', 'TableColumn']),
   component('pagination', 'Pagination 分页', '数据展示', [
     ['basic', '分页与每页条数', '页码从 1 开始；改变条数时，由页面把页码重置为 1。'],
     ['layout', '布局与总数', '使用 layout 组合模块，使用 page-count 直接指定总页数。']

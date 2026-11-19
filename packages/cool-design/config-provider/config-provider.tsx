@@ -1,26 +1,35 @@
 import { computed, defineComponent, provide, ref, type PropType } from 'vue';
-import { configKey, overlayKey, useConfig, type Size } from './context';
-import { idKey, namespaceKey, sizeKey } from '../../hooks/index.ts';
+import { configKey, overlayKey, useConfig, type Language, type Size, type ValueOnClear } from './context';
+import { idKey, namespaceKey, sizeKey, useNamespace } from '../../hooks/index.ts';
 export default defineComponent({
   name: 'i-config-provider',
   props: {
     theme: String as PropType<'light' | 'dark'>,
     size: String as PropType<Size>,
     themeVars: Object as PropType<Record<string, string>>,
-    namespace: String
+    namespace: String,
+    zIndex: Number,
+    emptyValues: Array as PropType<unknown[]>,
+    valueOnClear: { type: [String, Number, Boolean, Function] as PropType<ValueOnClear>, default: undefined },
+    locale: Object as PropType<Language>
   },
   setup(props, { slots }) {
     const parent = useConfig();
+    const { namespace } = useNamespace('config-provider');
     const config = computed(() => ({
       theme: props.theme ?? parent.value.theme,
       size: props.size ?? parent.value.size,
-      themeVars: { ...parent.value.themeVars, ...props.themeVars }
+      themeVars: { ...parent.value.themeVars, ...props.themeVars },
+      zIndex: props.zIndex ?? parent.value.zIndex,
+      emptyValues: props.emptyValues ?? parent.value.emptyValues,
+      valueOnClear: props.valueOnClear !== undefined ? props.valueOnClear : parent.value.valueOnClear,
+      locale: props.locale ?? parent.value.locale
     }));
     const host = ref<HTMLElement>();
     provide(configKey, config);
     provide(
       namespaceKey,
-      computed(() => props.namespace || 'i')
+      computed(() => props.namespace || namespace.value)
     );
     provide(
       sizeKey,

@@ -1,4 +1,4 @@
-import { flushPromises, mount } from '@vue/test-utils';
+import { DOMWrapper, flushPromises, mount } from '@vue/test-utils';
 import { defineComponent, h, reactive } from 'vue';
 import { describe, expect, test } from 'vitest';
 import ColorPicker from '..';
@@ -6,46 +6,49 @@ import * as CoolDesign from '../../index';
 
 describe('ColorPicker', () => {
   test('opens the panel and emits active-change while selecting a color', async () => {
-    const wrapper = mount(ColorPicker, { props: { modelValue: '#409eff' } });
+    const wrapper = mount(ColorPicker, { props: { teleported: false, modelValue: '#409eff' } });
 
     await wrapper.find('.i-color-picker__trigger').trigger('click');
     const input = wrapper.find('input[type="color"]');
     (input.element as HTMLInputElement).value = '#ff0000';
     await input.trigger('input');
 
-    expect(wrapper.emitted('update:modelValue')).toEqual([['#ff0000']]);
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
     expect(wrapper.emitted('active-change')).toEqual([['#ff0000']]);
     expect(wrapper.emitted('change')).toBeUndefined();
   });
 
-  test('emits change when the native color input is committed', async () => {
-    const wrapper = mount(ColorPicker, { props: { modelValue: '#409eff' } });
+  test('emits change only after confirming the preview', async () => {
+    const wrapper = mount(ColorPicker, { props: { teleported: false, modelValue: '#409eff' } });
 
     await wrapper.find('.i-color-picker__trigger').trigger('click');
     const input = wrapper.find('input[type="color"]');
     (input.element as HTMLInputElement).value = '#00ff00';
     await input.trigger('input');
     await input.trigger('change');
+    expect(wrapper.emitted('change')).toBeUndefined();
+    await wrapper.find('.i-color-picker__confirm').trigger('click');
 
+    expect(wrapper.emitted('update:modelValue')).toEqual([['#00ff00']]);
     expect(wrapper.emitted('change')).toEqual([['#00ff00']]);
   });
 
   test('updates alpha and formats the value as rgba', async () => {
     const wrapper = mount(ColorPicker, {
-      props: { modelValue: '#409eff', showAlpha: true, colorFormat: 'rgb' }
+      props: { teleported: false, modelValue: '#409eff', showAlpha: true, colorFormat: 'rgb' }
     });
 
     await wrapper.find('.i-color-picker__trigger').trigger('click');
     const alpha = wrapper.find('input[type="range"]');
     await alpha.setValue('50');
 
-    expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual(['rgba(64, 158, 255, 0.5)']);
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
     expect(wrapper.emitted('active-change')?.at(-1)).toEqual(['rgba(64, 158, 255, 0.5)']);
   });
 
   test('does not allow preset or alpha changes when disabled', async () => {
     const wrapper = mount(ColorPicker, {
-      props: { modelValue: '#409eff', showAlpha: true, disabled: true, predefine: ['#f00'] }
+      props: { teleported: false, modelValue: '#409eff', showAlpha: true, disabled: true, predefine: ['#f00'] }
     });
 
     expect(wrapper.find('.i-color-picker__trigger').attributes('disabled')).toBeDefined();
@@ -55,7 +58,7 @@ describe('ColorPicker', () => {
 
   test('uses hsl model values as the native color input value', async () => {
     const wrapper = mount(ColorPicker, {
-      props: { modelValue: 'hsl(120, 100%, 50%)', colorFormat: 'hsl' }
+      props: { teleported: false, modelValue: 'hsl(120, 100%, 50%)', colorFormat: 'hsl' }
     });
 
     await wrapper.find('.i-color-picker__trigger').trigger('click');
@@ -64,7 +67,7 @@ describe('ColorPicker', () => {
 
   test('synchronizes alpha when the controlled model value changes', async () => {
     const wrapper = mount(ColorPicker, {
-      props: { modelValue: 'rgba(255, 0, 0, 0.5)', showAlpha: true, colorFormat: 'rgb' }
+      props: { teleported: false, modelValue: 'rgba(255, 0, 0, 0.5)', showAlpha: true, colorFormat: 'rgb' }
     });
 
     await wrapper.find('.i-color-picker__trigger').trigger('click');
@@ -96,6 +99,7 @@ describe('ColorPicker', () => {
             () =>
               h(CoolDesign.FormItem, { prop: 'color', label: '颜色' }, () =>
                 h(ColorPicker, {
+                  teleported: false,
                   modelValue: model.color,
                   'onUpdate:modelValue': (value: string) => (model.color = value)
                 })
@@ -113,6 +117,8 @@ describe('ColorPicker', () => {
     (input.element as HTMLInputElement).value = '#ff0000';
     await input.trigger('input');
     await input.trigger('change');
+    expect(wrapper.findComponent(ColorPicker).emitted('change')).toBeUndefined();
+    await wrapper.find('.i-color-picker__confirm').trigger('click');
     await flushPromises();
 
     expect(wrapper.text()).toContain('禁止选择红色');
@@ -133,4 +139,52 @@ describe('ColorPicker', () => {
     expect(disabledWrapper.find('.i-color-picker__trigger').attributes('disabled')).toBeDefined();
     expect(disabledWrapper.find('.i-color-picker').classes()).toContain('is-disabled');
   });
+});
+
+
+test('supports show/hide, clear, teleport target and discard on hide', async () => {
+  const target = document.createElement('div');
+  document.body.appendChild(target);
+  const wrapper = mount(ColorPicker, { props: { modelValue: '#409eff', appendTo: target } });
+  const vm = wrapper.vm as unknown as { show: () => void; hide: () => void };
+  vm.show();
+  await flushPromises();
+  const panel = new DOMWrapper(target);
+  expect(wrapper.find('[role="dialog"]').exists()).toBe(false);
+  await panel.find('input[type="color"]').setValue('#ff0000');
+  vm.hide();
+  await flushPromises();
+  expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  vm.show();
+  await flushPromises();
+  expect((panel.find('input[type="color"]').element as HTMLInputElement).value).toBe('#409eff');
+  await panel.find('.i-color-picker__clear').trigger('click');
+  expect(wrapper.emitted('update:modelValue')).toEqual([[null]]);
+  expect(wrapper.emitted('change')).toEqual([[null]]);
+  expect(panel.find('[role="dialog"]').exists()).toBe(false);
+  wrapper.unmount();
+  target.remove();
+});
+
+test('clearable false hides clear and disabled show does not open', async () => {
+  const wrapper = mount(ColorPicker, { props: { teleported: false, clearable: false } });
+  await wrapper.find('button').trigger('click');
+  expect(wrapper.find('.i-color-picker__clear').exists()).toBe(false);
+  await wrapper.setProps({ disabled: true });
+  (wrapper.vm as unknown as { show: () => void }).show();
+  expect(wrapper.find('[role="dialog"]').exists()).toBe(false);
+  wrapper.unmount();
+});
+
+test('predefined alpha colors remain previews until confirmed', async () => {
+  const wrapper = mount(ColorPicker, { props: {
+    teleported: false, showAlpha: true, colorFormat: 'rgb', predefine: ['rgba(255, 0, 0, 0.5)']
+  } });
+  await wrapper.find('.i-color-picker__trigger').trigger('click');
+  await wrapper.find('.i-color-picker__presets button').trigger('click');
+  expect(wrapper.emitted('active-change')).toEqual([['rgba(255, 0, 0, 0.5)']]);
+  expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  await wrapper.find('.i-color-picker__confirm').trigger('click');
+  expect(wrapper.emitted('update:modelValue')).toEqual([['rgba(255, 0, 0, 0.5)']]);
+  wrapper.unmount();
 });

@@ -1,5 +1,7 @@
 import {
   defineComponent,
+  Comment,
+  Fragment,
   h,
   nextTick,
   ref,
@@ -11,16 +13,23 @@ import {
 } from 'vue';
 import { Teleport } from 'vue';
 import { useField } from '../form/context';
-import { useConfig, type Size } from '../config-provider/context';
+import { useConfig, useLocale, type Size } from '../config-provider/context';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 
 export interface SelectRemoteOption {
-  value: string | number;
+  value: string | number | boolean;
   label?: string;
   disabled?: boolean;
 }
 
-type SelectValue = unknown | unknown[];
+export interface SelectPropsMapping {
+  value?: string;
+  label?: string;
+  disabled?: string;
+  options?: string;
+}
+
+type SelectValue = string | number | boolean | object | null;
 type OptionRecord = {
   value: unknown;
   label: string;
@@ -49,11 +58,13 @@ export default defineComponent({
   name: 'i-select',
   inheritAttrs: false,
   props: {
-    modelValue: [String, Number, Array, Object] as PropType<SelectValue>,
+    modelValue: { type: [String, Number, Boolean, Array, Object] as PropType<SelectValue>, default: undefined },
+    options: Array as PropType<Record<string, unknown>[]>,
+    props: Object as PropType<SelectPropsMapping>,
     valueKey: { type: String, default: 'value' },
     clearable: Boolean,
     disabled: Boolean,
-    placeholder: { type: String, default: '请选择' },
+    placeholder: String,
     size: String as PropType<Size>,
     multiple: Boolean,
     multipleLimit: { type: Number, default: 0 },
@@ -69,21 +80,22 @@ export default defineComponent({
     reserveKeyword: { type: Boolean, default: true },
     automaticDropdown: Boolean,
     fitInputWidth: Boolean,
-    noDataText: { type: String, default: '暂无数据' },
-    noMatchText: { type: String, default: '无匹配数据' },
-    loadingText: { type: String, default: '加载中…' },
+    noDataText: String,
+    noMatchText: String,
+    loadingText: String,
     remote: Boolean,
-    remoteMethod: Function as PropType<(query: string) => SelectRemoteOption[] | Promise<SelectRemoteOption[]>>,
+    remoteMethod: Function as PropType<(query: string) => void | SelectRemoteOption[] | Promise<void | SelectRemoteOption[]>>,
     loading: Boolean,
     remoteLoading: Boolean,
     emptyValues: Array as PropType<unknown[]>,
-    valueOnClear: [String, Number, Array, Object] as PropType<unknown>,
+    valueOnClear: { type: [String, Number, Boolean, Function, Array, Object] as PropType<SelectValue | (() => unknown)>, default: undefined },
     validateEvent: { type: Boolean, default: true },
     virtualized: Boolean,
     itemHeight: { type: Number, default: 34 },
     height: { type: Number, default: 240 },
     teleported: { type: Boolean, default: true },
-    persistent: Boolean,
+    persistent: { type: Boolean, default: true },
+    appendTo: [String, Object] as PropType<string | HTMLElement>,
     placement: { type: String as PropType<Placement>, default: 'bottom-start' },
     fallbackPlacements: { type: Array as PropType<Placement[]>, default: () => ['top-start', 'bottom', 'top'] },
     popperOptions: { type: Object as PropType<FloatingOptions>, default: undefined },
@@ -95,6 +107,15 @@ export default defineComponent({
   setup(props, { slots, attrs, emit, expose }) {
     const field = useField();
     const config = useConfig();
+    const { t } = useLocale();
+    const placeholder = computed(() => props.placeholder ?? t('el.select.placeholder', '请选择'));
+    const noDataText = computed(() => props.noDataText ?? t('el.select.noData', '暂无数据'));
+    const noMatchText = computed(() => props.noMatchText ?? t('el.select.noMatch', '无匹配数据'));
+    const loadingText = computed(() => props.loadingText ?? t('el.select.loading', '加载中…'));
+    const clearedValue = () => {
+      const value = props.valueOnClear !== undefined ? props.valueOnClear : config.value.valueOnClear;
+      return typeof value === 'function' ? value() : value;
+    };
     const root = ref<HTMLElement>();
     const select = ref<HTMLSelectElement>();
     const input = ref<HTMLInputElement>();
@@ -116,6 +137,7 @@ export default defineComponent({
       placement: () => props.popperOptions?.placement ?? props.placement,
       fallbackPlacements: () => props.fallbackPlacements,
       offset: () => props.popperOptions?.offset ?? 4,
+      appendTo: () => props.appendTo,
       close: () => setOpen(false)
     });
 
@@ -133,7 +155,9 @@ export default defineComponent({
         nodes
           .filter((item) => item.type !== Comment)
           .flatMap((item) =>
-            isGroup(item)
+            item.type === Fragment
+              ? flatten((item.children ?? []) as VNode[], group, groupDisabled)
+              : isGroup(item)
               ? flatten(
                   ((item.children as SlotContent | undefined)?.default?.() ?? []) as VNode[],
                   (item.props?.label as string | undefined) ?? undefined,
@@ -143,12 +167,19 @@ export default defineComponent({
           );
       return flatten((slots.default?.() ?? []) as VNode[]);
     };
+    const dataOptions = (items: Record<string, unknown>[], group?: string, groupDisabled = false): OptionRecord[] => {
+      const mapping = { value: 'value', label: 'label', disabled: 'disabled', options: 'options', ...props.props };
+      return items.flatMap((item) => {
+        const children = item[mapping.options];
+        const disabled = groupDisabled || Boolean(item[mapping.disabled]);
+        if (Array.isArray(children)) return dataOptions(children, String(item[mapping.label] ?? ''), disabled);
+        return [{ value: item[mapping.value], label: String(item[mapping.label] ?? item[mapping.value] ?? ''), disabled, group }];
+      });
+    };
     const optionRecords = computed<OptionRecord[]>(() => {
-      const local: OptionRecord[] = slotOptions().map(({ vnode: item, group, groupDisabled }) => ({
+      const local: OptionRecord[] = props.options ? dataOptions(props.options) : slotOptions().map(({ vnode: item, group, groupDisabled }) => ({
         value: item.props?.value,
-        label:
-          (item.props?.label as string | undefined) ??
-          (getVNodeText(item.children) || String(keyOf(item.props?.value) ?? '')),
+        label: String(item.props?.label ?? (getVNodeText(item.children) || String(keyOf(item.props?.value) ?? ''))),
         disabled: Boolean(item.props?.disabled) || Boolean(groupDisabled),
         group,
         vnode: item
@@ -159,7 +190,8 @@ export default defineComponent({
         label: item.label ?? String(item.value),
         disabled: Boolean(item.disabled)
       }));
-      return props.remote ? remote : [...local, ...createdOptions.value.map((item) => ({ value: item.value, label: item.label ?? String(item.value), disabled: Boolean(item.disabled) }))];
+      const records = props.remote ? [...local, ...remote] : [...local, ...createdOptions.value.map((item) => ({ value: item.value, label: item.label ?? String(item.value), disabled: Boolean(item.disabled) }))];
+      return records.filter((item, index) => records.findIndex((candidate) => sameValue(candidate.value, item.value)) === index);
     });
     const selectedValues = computed<Array<unknown>>(() => {
       if (props.multiple) return Array.isArray(props.modelValue) ? props.modelValue.flat() : [];
@@ -204,10 +236,10 @@ export default defineComponent({
         });
       }
     };
-    const update = (value: SelectValue) => {
+    const update = (value: unknown, normalizeEmpty = true) => {
       const isEmptyCleared =
-        !props.multiple && (props.emptyValues ?? []).some((item) => item === value);
-      const next = isEmptyCleared ? props.valueOnClear : value;
+        !props.multiple && (props.emptyValues ?? config.value.emptyValues ?? []).some((item) => item === value);
+      const next = normalizeEmpty && isEmptyCleared ? clearedValue() : value;
       emit('update:modelValue', next);
       emit('change', next);
       if (props.validateEvent) nextTick(() => field?.validate('change'));
@@ -235,7 +267,7 @@ export default defineComponent({
     };
     const clear = () => {
       if (isDisabled()) return;
-      update(props.multiple ? [] : props.valueOnClear);
+      update(props.multiple ? [] : clearedValue(), false);
       emit('clear');
       const target = input.value ?? root.value?.querySelector<HTMLElement>('[role="combobox"]');
       target?.focus();
@@ -253,7 +285,7 @@ export default defineComponent({
         const requestId = ++remoteRequestId;
         try {
           const options = await props.remoteMethod(value);
-          if (requestId === remoteRequestId) {
+          if (requestId === remoteRequestId && Array.isArray(options)) {
             remoteOptions.value = options;
             remoteOptionCache.value = [...remoteOptionCache.value, ...options];
           }
@@ -301,7 +333,7 @@ export default defineComponent({
     const nativeValueOf = (value: unknown) => {
       const key = keyOf(value);
       const collisions = optionRecords.value.filter((item) => String(keyOf(item.value)) === String(key));
-      return collisions.length > 1 ? `${typeof key === 'number' ? 'n' : 's'}:${String(key)}` : String(key);
+      return collisions.length > 1 ? `${typeof key === 'number' ? 'n' : typeof key === 'boolean' ? 'b' : 's'}:${String(key)}` : String(key);
     };
     const nativeValue = (record: OptionRecord) => nativeValueOf(record.value);
     const resolveNativeValue = (value: string) => {
@@ -334,7 +366,7 @@ export default defineComponent({
         ? filteredRecords.value.slice(virtualOffset.value, virtualOffset.value + Math.ceil(props.height / props.itemHeight) + 4)
         : filteredRecords.value;
       const displayRecords = props.collapseTags ? selectedRecords.value.slice(0, props.maxCollapseTags) : selectedRecords.value;
-      const comboboxValue = props.filterable || props.remote ? query.value : selectedRecords.value[0]?.label ?? props.placeholder;
+      const comboboxValue = props.filterable || props.remote ? query.value : selectedRecords.value[0]?.label ?? placeholder.value;
       const nativeOptionOf = (item: OptionRecord) =>
         h('option', { value: nativeValue(item), disabled: item.disabled, key: `opt-${String(keyOf(item.value))}` }, item.label);
       const nativeOptions = groupBy(optionRecords.value).map((group) =>
@@ -383,7 +415,7 @@ export default defineComponent({
             onBlur={(event: FocusEvent) => emit('blur', event)}
             onKeydown={onKeydown}>
             {slots.prefix?.()}
-            {loading.value && <span class='i-select__loading'>{props.loadingText}</span>}
+            {loading.value && <span class='i-select__loading'>{loadingText.value}</span>}
             {props.multiple ? displayRecords.map((item) => (
               <span class={['i-select__tag', props.tagType && `i-select__tag--${props.tagType}`]} key={String(keyOf(item.value))}>
                 {slots.tag ? slots.tag({ data: item }) : item.label}
@@ -395,7 +427,7 @@ export default defineComponent({
               title={props.collapseTagsTooltip ? selectedRecords.value.map((item) => item.label).join('、') : undefined}>
               +{selectedRecords.value.length - displayRecords.length}
             </span>}
-            {(props.filterable || props.remote) && <input ref={input} value={query.value} aria-label='筛选选项' placeholder={selectedRecords.value.length ? '' : props.placeholder} onInput={(event: Event) => loadRemote((event.target as HTMLInputElement).value)} onFocus={() => setOpen(true)} />}
+            {(props.filterable || props.remote) && <input ref={input} value={query.value} aria-label='筛选选项' placeholder={selectedRecords.value.length ? '' : placeholder.value} onInput={(event: Event) => loadRemote((event.target as HTMLInputElement).value)} onFocus={() => setOpen(true)} />}
             {props.clearable && selectedValues.value.length > 0 && <button type='button' aria-label='清空' onClick={(event) => { event.stopPropagation(); clear(); }}>×</button>}
             {slots.suffix?.()}
           </div>
@@ -438,8 +470,8 @@ export default defineComponent({
                 }}
                 onMousedown={(event) => event.stopPropagation()}>
                 {slots.header?.()}
-                {loading.value && <div class='i-select__empty'>{slots.empty ? slots.empty() : props.loadingText}</div>}
-                {!loading.value && !visibleRecords.length && <div class='i-select__empty'>{slots.empty ? slots.empty() : (query.value ? props.noMatchText : props.noDataText)}</div>}
+                {loading.value && <div class='i-select__empty'>{slots.empty ? slots.empty() : loadingText.value}</div>}
+                {!loading.value && !visibleRecords.length && <div class='i-select__empty'>{slots.empty ? slots.empty() : (query.value ? noMatchText.value : noDataText.value)}</div>}
                 {!loading.value && props.virtualized && visibleRecords.map((item, index) => renderOption(item, index))}
                 {!loading.value && !props.virtualized && groupBy(filteredRecords.value).map((group) => [
                   group.label !== undefined && <div class='i-select__group' role='presentation'>{group.label}</div>,

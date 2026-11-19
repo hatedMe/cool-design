@@ -1,5 +1,6 @@
-import { defineComponent, nextTick, ref, watch } from 'vue';
+import { defineComponent, nextTick, ref, watch, Teleport, type PropType } from 'vue';
 import { useField } from '../form/context';
+import { useFloating } from '../../../src/utils/use-floating';
 
 type ColorFormat = 'hex' | 'rgb' | 'hsl' | 'hsv';
 interface RgbaColor {
@@ -127,7 +128,10 @@ export default defineComponent({
   name: 'i-color-picker',
   inheritAttrs: false,
   props: {
-    modelValue: { type: String, default: '#409eff' },
+    modelValue: { type: String as PropType<string | null>, default: '#409eff' },
+    clearable: { type: Boolean, default: true },
+    teleported: { type: Boolean, default: true },
+    appendTo: { type: [String, Object] as PropType<string | HTMLElement>, default: undefined },
     showAlpha: Boolean,
     disabled: Boolean,
     colorFormat: { type: String as () => ColorFormat, default: 'hex' },
@@ -142,34 +146,55 @@ export default defineComponent({
     const field = useField();
     const isDisabled = () => props.disabled || !!field?.disabled?.();
     const open = ref(false);
-    const currentColor = ref(props.modelValue);
-    const alpha = ref(parseColor(props.modelValue).alpha * 100);
+    const currentColor = ref(props.modelValue || '#409eff');
+    const alpha = ref(parseColor(props.modelValue || '#409eff').alpha * 100);
     const trigger = ref<HTMLButtonElement>();
+    const panel = ref<HTMLElement>();
+    const position = useFloating({
+      open,
+      reference: trigger,
+      floating: panel,
+      placement: () => 'bottom-start',
+      appendTo: () => props.appendTo,
+      close: () => close()
+    });
+    const reset = () => {
+      currentColor.value = props.modelValue || '#409eff';
+      alpha.value = parseColor(currentColor.value).alpha * 100;
+    };
     watch(
       () => props.modelValue,
-      (value) => {
-        currentColor.value = value;
-        alpha.value = parseColor(value).alpha * 100;
+      () => {
+        reset();
       }
     );
     const update = (value: string) => {
       currentColor.value = value;
       const formatted = formatColor(value, props.colorFormat, alpha.value / 100, props.showAlpha);
-      emit('update:modelValue', formatted);
       emit('active-change', formatted);
     };
-    const commit = (value: string) => {
-      emit('change', formatColor(value, props.colorFormat, alpha.value / 100, props.showAlpha));
+    const commit = (value: string | null) => {
+      if (isDisabled()) return;
+      const formatted = value === null ? null : formatColor(value, props.colorFormat, alpha.value / 100, props.showAlpha);
+      emit('update:modelValue', formatted);
+      emit('change', formatted);
       if (props.validateEvent) nextTick(() => field?.validate('change'));
+      close();
     };
     const close = () => {
       open.value = false;
+      reset();
       trigger.value?.focus();
+    };
+    const show = () => {
+      if (isDisabled() || open.value) return;
+      reset();
+      open.value = true;
     };
     const onKeydown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') close();
     };
-    expose({ focus: () => trigger.value?.focus(), blur: () => trigger.value?.blur() });
+    expose({ show, hide: close, focus: () => trigger.value?.focus(), blur: () => trigger.value?.blur() });
     // id 绑定在触发按钮上以关联表单标签，根节点不重复携带。
     const rootAttrs: Record<string, unknown> = { ...attrs };
     delete rootAttrs.id;
@@ -192,18 +217,18 @@ export default defineComponent({
           aria-haspopup='dialog'
           aria-invalid={field?.invalid() || undefined}
           aria-describedby={field?.invalid() ? field.errorId : undefined}
-          style={{ backgroundColor: props.modelValue }}
-          onClick={() => (open.value = !open.value)}
+          style={{ backgroundColor: open.value ? currentColor.value : props.modelValue || undefined }}
+          onClick={() => open.value ? close() : show()}
         >
           {slots.default?.()}
         </button>
         {open.value && !isDisabled() && (
-          <div class={['i-color-picker__panel', props.popperClass]} role='dialog'>
+          <Teleport to={position.target.value} disabled={!props.teleported}>
+          <div ref={panel} class={['i-color-picker__panel', props.popperClass]} style={position.style.value} role='dialog'>
             <input
               type='color'
-              value={nativeColor(props.modelValue)}
+              value={nativeColor(currentColor.value)}
               onInput={(event: Event) => update((event.target as HTMLInputElement).value)}
-              onChange={(event: Event) => commit((event.target as HTMLInputElement).value)}
             />
             {props.showAlpha && (
               <input
@@ -228,14 +253,19 @@ export default defineComponent({
                     style={{ backgroundColor: color }}
                     aria-label={color}
                     onClick={() => {
+                      alpha.value = parseColor(color).alpha * 100;
                       update(color);
-                      commit(color);
                     }}
                   />
                 ))}
               </div>
             )}
+            <div class='i-color-picker__actions'>
+              {props.clearable && <button type='button' class='i-color-picker__clear' onClick={() => commit(null)}>清空</button>}
+              <button type='button' class='i-color-picker__confirm' onClick={() => commit(currentColor.value)}>确定</button>
+            </div>
           </div>
+          </Teleport>
         )}
       </span>
     );

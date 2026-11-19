@@ -265,17 +265,20 @@ export default defineComponent({
     watch(
       // 页签数量或位置变化后重新评估溢出状态。
       () => [normalized.value.length, props.tabPosition],
-      () => nextTick(() => updateNavScroll())
+      async () => {
+        await nextTick();
+        updateNavScroll();
+      }
     );
     // 切换页签时把激活页签滚动进可视区。
     watch(
       () => activeName.value,
-      () =>
-        nextTick(() => {
-          const el = navScrollRef.value;
-          const activeTab = el?.querySelector<HTMLElement>('[aria-selected="true"]');
-          activeTab?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
-        })
+      async () => {
+        await nextTick();
+        const el = navScrollRef.value;
+        const activeTab = el?.querySelector<HTMLElement>('[aria-selected="true"]');
+        activeTab?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+      }
     );
 
     const normalizedType = computed(() => (props.type === '' ? 'default' : props.type));

@@ -16,6 +16,7 @@ import {
   type PropType
 } from 'vue';
 import { overlayKey } from '../config-provider/context';
+import { useZIndex } from '../../hooks/use-z-index';
 import { isTopDialog, isTopFocusDialog, lockDialog, unlockDialog } from '../dialog/stack';
 
 export type DrawerDirection = 'rtl' | 'ltr' | 'ttb' | 'btt';
@@ -93,6 +94,7 @@ export default defineComponent({
   ],
   setup(props, { slots, emit, expose }) {
     const host = inject(overlayKey, undefined);
+    const { nextZIndex } = useZIndex();
     const root = ref<HTMLElement>();
     const zIndex = ref(2000);
     const rendered = ref(false);
@@ -310,7 +312,7 @@ export default defineComponent({
       previous = document.activeElement as HTMLElement;
       active = true;
       visible.value = true;
-      const stackZIndex = lockDialog(token, props.lockScroll);
+      const stackZIndex = Math.max(lockDialog(token, props.lockScroll), nextZIndex());
       zIndex.value = props.zIndex ?? stackZIndex;
       document.addEventListener('keydown', onKeydown);
       document.addEventListener('focusin', onFocus);

@@ -10,8 +10,8 @@
 
 | 参数     | 说明                         | 类型                       | 默认值  |
 | -------- | ---------------------------- | -------------------------- | ------- |
-| value    | 选项值，必填                 | `string` / `number`        | —       |
-| label    | 显示文字                     | `string`                   | `value` |
+| value    | 选项值，必填                 | `string` / `number` / `boolean` / `object` | —       |
+| label    | 显示文字                     | `string` / `number`         | `value` |
 | disabled | 禁用当前选项                 | `boolean`                  | `false` |
 
 ### 插槽

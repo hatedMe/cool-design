@@ -2,6 +2,15 @@
 
 Container 内的侧栏，使用原生 aside 标签，不收缩；内容超出时自动滚动。
 
+## 基础用法
+
+```vue
+<Container>
+  <Aside width="240px">侧栏内容</Aside>
+  <Main>主要内容</Main>
+</Container>
+```
+
 ## API
 
 | 属性  | 类型                         | 默认    |
@@ -9,3 +18,9 @@ Container 内的侧栏，使用原生 aside 标签，不收缩；内容超出时
 | width | `number` / `string`（CSS 长度，数字按 px） | `300px` |
 
 默认插槽放侧栏内容。可通过 width 动态控制折叠宽度；组件不内置菜单或折叠状态。数字尺寸可用 0，百分比以容器宽度为参照。
+
+### 插槽
+
+| 名称 | 说明 |
+| --- | --- |
+| default | 侧栏内容 |

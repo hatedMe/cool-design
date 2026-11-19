@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -17,6 +18,28 @@ const componentDirs = readdirSync(designRoot, { withFileTypes: true })
   .filter((name) => existsSync(join(designRoot, name, 'index.ts')));
 
 describe('发布入口', () => {
+  it('构建后的 ESM 与 CJS 主入口可由 Node 直接加载', () => {
+    const script = `
+      import { createRequire } from 'node:module';
+      const esm = await import('./es/packages/cool-design/index.js');
+      const cjs = createRequire(import.meta.url)('./lib/packages/cool-design/index.cjs');
+      if (!esm.Button || !cjs.Button) throw new Error('主入口缺少 Button');
+    `;
+    expect(() => execFileSync(process.execPath, ['--input-type=module', '-e', script], { cwd: root, stdio: 'pipe' })).not.toThrow();
+  });
+
+  it('发布 CSS 引用的本地资源均随包输出', () => {
+    for (const format of ['es', 'lib']) {
+      const cssPath = resolve(root, format, 'style.css');
+      const css = readFileSync(cssPath, 'utf8');
+      for (const match of css.matchAll(/url\((['"]?)(.*?)\1\)/g)) {
+        const url = match[2];
+        if (/^(data:|https?:|#)/.test(url)) continue;
+        expect(existsSync(resolve(dirname(cssPath), url.split(/[?#]/)[0])), `${format} 缺少资源 ${url}`).toBe(true);
+      }
+    }
+  });
+
   it('每个组件子路径都应有 ESM 与 CJS 入口及类型声明', () => {
     expect(componentDirs.length).toBeGreaterThan(50);
 

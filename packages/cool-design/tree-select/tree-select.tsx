@@ -9,12 +9,12 @@ import {
 } from 'vue';
 import { Teleport } from 'vue';
 import Tree from '../tree';
-import type { TreeData, TreeExposed, TreeKey } from '../tree/types';
+import type { TreeData, TreeExposed, TreeKey, TreeLoadFunction, TreePropsMapping, TreeNode, TreeFilterMethod } from '../tree/types';
 import { useField } from '../form/context';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
-export interface TreeSelectNode {
-  value: string | number;
-  label: string;
+export interface TreeSelectNode extends TreeData {
+  value?: string | number;
+  label?: string;
   children?: TreeSelectNode[];
   disabled?: boolean;
 }
@@ -26,6 +26,18 @@ export default defineComponent({
       default: null
     },
     data: { type: Array as PropType<TreeSelectNode[]>, default: () => [] },
+    props: { type: Object as PropType<TreePropsMapping>, default: () => ({}) },
+    nodeKey: { type: String, default: 'value' },
+    lazy: Boolean,
+    load: Function as PropType<TreeLoadFunction>,
+    cacheData: { type: Array as PropType<TreeSelectNode[]>, default: () => [] },
+    defaultExpandAll: Boolean,
+    defaultExpandedKeys: { type: Array as PropType<TreeKey[]>, default: () => [] },
+    autoExpandParent: { type: Boolean, default: true },
+    accordion: Boolean,
+    indent: { type: Number, default: 18 },
+    renderAfterExpand: Boolean,
+    filterNodeMethod: Function as PropType<TreeFilterMethod>,
     multiple: Boolean,
     checkStrictly: Boolean,
     filterable: Boolean,
@@ -54,6 +66,19 @@ export default defineComponent({
     const shownOnce = ref(false);
     const query = ref('');
     const syncing = ref(false);
+    const loadedData = ref<TreeData[]>([]);
+    const load: TreeLoadFunction = (node, resolve, reject) => {
+      const onResolve = (children: TreeData[]) => {
+        loadedData.value = [...loadedData.value, ...children];
+        resolve(children);
+        nextTick(syncTree);
+      };
+      const result = props.load?.(node, onResolve, reject);
+      if (Array.isArray(result)) onResolve(result);
+      else if (result && typeof (result as Promise<TreeData[]>).then === 'function') {
+        (result as Promise<TreeData[]>).then(onResolve).catch(() => reject?.());
+      }
+    };
     const position = useFloating({
       open,
       reference: root,
@@ -69,11 +94,20 @@ export default defineComponent({
     );
     const labelMap = computed(() => {
       const map = new Map<string | number, string>();
-      const walk = (nodes: TreeSelectNode[]) =>
+      const walk = (nodes: TreeData[]) =>
         nodes.forEach((node) => {
-          map.set(node.value, node.label);
-          walk(node.children ?? []);
+          const key = node[props.nodeKey] as TreeKey;
+          const label = props.props.label;
+          const treeNode = treeRef.value?.getNode(key);
+          const text = typeof label === 'function'
+            ? treeNode ? label(node, treeNode) : node.label
+            : node[label || 'label'];
+          map.set(key, String(text ?? key));
+          const children = node[props.props.children || 'children'];
+          if (Array.isArray(children)) walk(children);
         });
+      walk(props.cacheData);
+      walk(loadedData.value);
       walk(props.data);
       return map;
     });
@@ -116,9 +150,14 @@ export default defineComponent({
       { immediate: true }
     );
 
-    const onNodeClick = (data: TreeData) => {
-      if (props.multiple) return;
-      const value = data.value as string | number;
+    const onNodeClick = (data: TreeData, node: TreeNode) => {
+      if (props.multiple || isDisabled() || node.disabled) return;
+      let parent = node.parent;
+      while (parent) {
+        if (parent.disabled) return;
+        parent = parent.parent;
+      }
+      const value = data[props.nodeKey] as string | number;
       commit(value);
       close();
     };
@@ -226,16 +265,25 @@ export default defineComponent({
                 <Tree
                   ref={treeRef}
                   data={props.data as unknown as TreeData[]}
-                  nodeKey='value'
+                  nodeKey={props.nodeKey}
+                  props={props.props}
+                  lazy={props.lazy}
+                  load={props.load ? load : undefined}
+                  defaultExpandAll={props.defaultExpandAll}
+                  defaultExpandedKeys={props.defaultExpandedKeys}
+                  autoExpandParent={props.autoExpandParent}
+                  accordion={props.accordion}
+                  indent={props.indent}
+                  filterNodeMethod={props.filterNodeMethod}
                   showCheckbox={props.multiple}
                   checkStrictly={props.checkStrictly}
                   highlightCurrent={!props.multiple}
                   expandOnClickNode={!props.multiple}
                   checkOnClickNode={false}
-                  renderAfterExpand={false}
+                  renderAfterExpand={props.renderAfterExpand}
                   disabled={isDisabled()}
                   emptyText='暂无数据'
-                  onNode-click={(data: TreeData) => onNodeClick(data)}
+                  onNode-click={onNodeClick}
                   onCheck={onCheck}
                 />
               </div>

@@ -1,10 +1,10 @@
 import dayjs, { type ConfigType, type Dayjs } from 'dayjs';
-import advancedFormat from 'dayjs/plugin/advancedFormat';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import isoWeek from 'dayjs/plugin/isoWeek';
-import localizedFormat from 'dayjs/plugin/localizedFormat';
-import quarterOfYear from 'dayjs/plugin/quarterOfYear';
-import weekOfYear from 'dayjs/plugin/weekOfYear';
+import advancedFormat from 'dayjs/plugin/advancedFormat.js';
+import customParseFormat from 'dayjs/plugin/customParseFormat.js';
+import isoWeek from 'dayjs/plugin/isoWeek.js';
+import localizedFormat from 'dayjs/plugin/localizedFormat.js';
+import quarterOfYear from 'dayjs/plugin/quarterOfYear.js';
+import weekOfYear from 'dayjs/plugin/weekOfYear.js';
 
  dayjs.extend(advancedFormat);
  dayjs.extend(customParseFormat);

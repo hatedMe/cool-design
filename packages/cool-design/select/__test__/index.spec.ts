@@ -39,7 +39,7 @@ test('Select 自定义面板显示选中标签并支持单选点击', async () =
   expect(doc().find('[role="listbox"]').exists()).toBe(true);
   await doc().get('[role="option"][data-value="b"]').trigger('click');
   expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual(['b']);
-  expect(doc().find('[role="listbox"]').exists()).toBe(false);
+  expect(doc().get('[role="listbox"]').attributes('aria-hidden')).toBe('true');
 });
 
 test('Select 多选显示标签且禁用选项不可点击', async () => {
@@ -61,7 +61,7 @@ test('Select 点击外部关闭自定义面板', async () => {
   expect(doc().find('[role="listbox"]').exists()).toBe(true);
   document.body.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
   await wrapper.vm.$nextTick();
-  expect(doc().find('[role="listbox"]').exists()).toBe(false);
+  expect(doc().get('[role="listbox"]').attributes('aria-hidden')).toBe('true');
 });
 
 test('Select 下拉默认传送到 body 并支持弹层属性族', async () => {
@@ -130,7 +130,7 @@ test('Select 键盘方向键、Enter 和 Escape 控制面板', async () => {
   await trigger.trigger('keydown', { key: 'Enter' });
   expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual(['a']);
   await trigger.trigger('keydown', { key: 'Escape' });
-  expect(doc().find('[role="listbox"]').exists()).toBe(false);
+  expect(doc().get('[role="listbox"]').attributes('aria-hidden')).toBe('true');
 });
 
 test('Select 多选空查询时 Backspace 删除最后标签', async () => {
