@@ -8,11 +8,11 @@
 
 ### 属性
 
-| 参数     | 说明                         | 类型            | 默认值 |
-| -------- | ---------------------------- | --------------- | ------ |
-| value    | 选项值，必填                 | string / number | —      |
-| label    | 显示文字                     | string          | value  |
-| disabled | 禁用当前选项                 | boolean         | false  |
+| 参数     | 说明                         | 类型                       | 默认值  |
+| -------- | ---------------------------- | -------------------------- | ------- |
+| value    | 选项值，必填                 | `string` / `number`        | —       |
+| label    | 显示文字                     | `string`                   | `value` |
+| disabled | 禁用当前选项                 | `boolean`                  | `false` |
 
 ### 插槽
 
@@ -22,4 +22,4 @@
 
 ## 使用说明
 
-在 Select 内使用。属性 value: string | number（必填）、label?: string、disabled。默认插槽优先于 label，均省略时显示 value。不独立管理选中状态。
+在 Select 内使用。默认插槽优先于 `label`，均省略时显示 `value`。不独立管理选中状态。

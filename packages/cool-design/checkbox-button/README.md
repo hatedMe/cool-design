@@ -10,20 +10,20 @@
 
 | 参数                 | 说明                       | 类型                         | 默认值 |
 | -------------------- | -------------------------- | ---------------------------- | ------ |
-| modelValue / v-model | 是否选中或绑定模型值       | string / number / boolean    | —      |
-| value                | 分组中的选项值             | string / number / boolean / object | — |
-| label                | 选项文本                   | string                       | —      |
-| trueValue            | 选中时的模型值             | string / number / boolean    | true   |
-| falseValue           | 未选中时的模型值           | string / number / boolean    | false  |
-| disabled             | 是否禁用                   | boolean                      | false  |
-| size                 | 尺寸：`small` / `default` / `large` | string | — |
+| modelValue / v-model | 是否选中或绑定模型值       | `string` / `number` / `boolean` | —  |
+| value                | 分组中的选项值             | `string` / `number` / `boolean` / `object` | — |
+| label                | 选项文本                   | `string`                     | —      |
+| trueValue            | 选中时的模型值             | `string` / `number` / `boolean` | `true` |
+| falseValue           | 未选中时的模型值           | `string` / `number` / `boolean` | `false` |
+| disabled             | 是否禁用                   | `boolean`                    | `false` |
+| size                 | 尺寸：`small` / `default` / `large` | `string`             | —      |
 
 ### 事件
 
 | 事件名            | 说明         | 回调参数             |
 | ----------------- | ------------ | -------------------- |
-| update:modelValue | 模型值变化   | value: string / number / boolean |
-| change            | 用户改变选中 | value: string / number / boolean |
+| update:modelValue | 模型值变化   | `value: string \| number \| boolean` |
+| change            | 用户改变选中 | `value: string \| number \| boolean` |
 
 ### 插槽
 

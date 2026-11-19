@@ -8,11 +8,11 @@
 
 ### 属性
 
-| 参数      | 说明                          | 类型                   | 默认值                 |
-| --------- | ----------------------------- | ---------------------- | ---------------------- |
-| theme     | 主题：light / dark            | string                 | 继承父级，根级 light   |
-| size      | 尺寸：small / default / large | string                 | 继承父级，根级 default |
-| themeVars | CSS 变量，使用完整变量名      | Record<string, string> | 与父级变量合并         |
+| 参数      | 说明                          | 类型                           | 默认值                 |
+| --------- | ----------------------------- | ------------------------------ | ---------------------- |
+| theme     | 主题：`light` / `dark`        | `string`                       | 继承父级，根级 `light` |
+| size      | 尺寸：`small` / `default` / `large` | `string`                  | 继承父级，根级 `default` |
+| themeVars | CSS 变量，使用完整变量名      | `Record<string, string>`       | 与父级变量合并         |
 
 ### 插槽
 

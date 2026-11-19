@@ -44,29 +44,29 @@
 
 | 参数                    | 说明                                     | 类型                      | 默认值       |
 | ----------------------- | ---------------------------------------- | ------------------------- | ------------ |
-| modelValue / v-model    | 输入内容                                 | string                    | 空字符串     |
-| placeholder             | 占位提示                                 | string                    | —            |
-| clearable               | 允许清空                                 | boolean                   | false        |
-| disabled                | 禁止输入和清空                           | boolean                   | false        |
-| readonly                | 只读，禁止清空                           | boolean                   | false        |
-| size                    | 尺寸：small / default / large            | string                    | 继承全局尺寸 |
-| type                    | text / password / textarea / search      | string                    | text         |
-| rows                    | 文本域行数                               | number                    | 2            |
-| maxlength / minlength   | 原生长度限制                             | string / number           | —            |
-| showWordLimit           | 显示长度统计                             | boolean                   | false        |
-| wordLimitPosition       | 长度统计位置：inside / outside          | `inside` / `outside`     | inside       |
-| showPassword            | 显示密码切换                             | boolean                   | false        |
-| loading                 | 加载态，后缀显示旋转图标                 | boolean                   | false        |
-| loadingIcon             | 自定义加载图标（字体类名或组件），缺省为内置旋转描边 | `string` / `Component` | —     |
-| prefixIcon / suffixIcon | 图标（字体类名或组件）                     | string / Component    | —            |
-| clearIcon               | 清空图标（字体类名或组件）                 | string / Component    | —            |
-| inputStyle              | 输入框内联样式                             | string / object       | —            |
-| countGraphemes          | 字数统计函数，默认按字符计数               | (value: string) => number | —         |
-| formatter               | 展示值格式化函数                         | (value: string) => string | —            |
-| parser                  | 输入值解析函数                           | (value: string) => string | —            |
-| autosize                | 文本域自适应高度，可配置 minRows/maxRows | boolean / object          | false        |
-| resize                  | 文本域调整方向：none / both / horizontal / vertical | string              | —            |
-| validateEvent           | 是否触发表单校验                         | boolean                   | true         |
+| modelValue / v-model    | 输入内容                                 | `string` / `number`       | `''`         |
+| placeholder             | 占位提示                                 | `string`                  | —            |
+| clearable               | 允许清空                                 | `boolean`                 | `false`      |
+| disabled                | 禁止输入和清空                           | `boolean`                 | `false`      |
+| readonly                | 只读，禁止清空                           | `boolean`                 | `false`      |
+| size                    | 尺寸：`small` / `default` / `large`      | `string`                  | 继承全局尺寸 |
+| type                    | `text` / `password` / `textarea` / `search` | `string`               | `text`       |
+| rows                    | 文本域行数                               | `number`                  | `2`          |
+| maxlength / minlength   | 原生长度限制                             | `string` / `number`       | —            |
+| showWordLimit           | 显示长度统计                             | `boolean`                 | `false`      |
+| wordLimitPosition       | 长度统计位置：`inside` / `outside`       | `string`                  | `inside`     |
+| showPassword            | 显示密码切换                             | `boolean`                 | `false`      |
+| loading                 | 加载态，后缀显示旋转图标                 | `boolean`                 | `false`      |
+| loadingIcon             | 自定义加载图标（字体类名或组件），缺省为内置旋转描边 | `string` / `Component` | — |
+| prefixIcon / suffixIcon | 图标（字体类名或组件）                   | `string` / `Component`    | —            |
+| clearIcon               | 清空图标（字体类名或组件）               | `string` / `Component`    | —            |
+| inputStyle              | 输入框内联样式                           | `string` / `object`       | —            |
+| countGraphemes          | 字数统计函数，默认按字符计数             | `(value: string) => number` | —          |
+| formatter               | 展示值格式化函数                         | `(value: string) => string` | —          |
+| parser                  | 输入值解析函数                           | `(value: string) => string` | —          |
+| autosize                | 文本域自适应高度，可配置 `minRows`/`maxRows` | `boolean` / `object`   | `false`      |
+| resize                  | 文本域调整方向：`none` / `both` / `horizontal` / `vertical` | `string` | —     |
+| validateEvent           | 是否触发表单校验                         | `boolean`                 | `true`       |
 
 ### 事件
 

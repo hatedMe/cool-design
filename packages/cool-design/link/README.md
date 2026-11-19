@@ -6,13 +6,13 @@
 
 | 属性      | 类型                                                  | 默认                |
 | --------- | ----------------------------------------------------- | ------------------- |
-| type      | default / primary / success / warning / danger / info | default             |
-| size      | small / default / large                               | 继承 ConfigProvider |
-| href      | string                                                | —                   |
-| target    | string                                                | \_self              |
-| disabled  | boolean                                               | false               |
-| underline | always / hover / never / boolean                      | hover               |
-| icon      | 字体图标类名                                          | —                   |
+| type      | `default` / `primary` / `success` / `warning` / `danger` / `info` | `default` |
+| size      | `small` / `default` / `large`                          | 继承 ConfigProvider |
+| href      | `string`                                              | —                   |
+| target    | `string`                                              | `_self`             |
+| disabled  | `boolean`                                             | `false`             |
+| underline | `always` / `hover` / `never` / `boolean`              | `hover`             |
+| icon      | `string`（字体图标类名）                              | —                   |
 
 - 默认插槽：链接文字；icon 插槽优先于 icon 属性，可放自定义 Icon。
 - click(event)：仅启用时触发，参数是原生 MouseEvent；需要阻止导航时调用 event.preventDefault()。

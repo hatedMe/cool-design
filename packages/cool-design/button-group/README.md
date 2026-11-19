@@ -6,11 +6,11 @@ ButtonGroup 用于将多个 Button 组合为一组相近操作。
 
 ### 属性
 
-| 参数      | 说明                            | 类型   | 默认值     |
-| --------- | ------------------------------- | ------ | ---------- |
-| type      | 统一设置子按钮类型              | string | —          |
-| size      | 统一设置子按钮尺寸              | string | —          |
-| direction | 排列方向：horizontal / vertical | string | horizontal |
+| 参数      | 说明                            | 类型                          | 默认值       |
+| --------- | ------------------------------- | ----------------------------- | ------------ |
+| type      | 统一设置子按钮类型              | `string`                      | —            |
+| size      | 统一设置子按钮尺寸              | `string`                      | —            |
+| direction | 排列方向：`horizontal` / `vertical` | `string`                   | `horizontal` |
 
 ### 插槽
 

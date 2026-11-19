@@ -4,13 +4,13 @@
 
 ## API
 
-| 属性                   | 类型                        | 默认 |
-| ---------------------- | --------------------------- | ---- |
-| tag                    | string                      | div  |
-| span                   | number，0–24                | 24   |
-| offset                 | number，左侧留白栅格数      | 0    |
-| push / pull            | number，向右/左移动的栅格数 | 0    |
-| xs / sm / md / lg / xl | number 或 ColSizeObject     | —    |
+| 属性                   | 类型                        | 默认  |
+| ---------------------- | --------------------------- | ----- |
+| tag                    | `string`                    | `div` |
+| span                   | `number`，0–24             | `24`  |
+| offset                 | `number`，左侧留白栅格数   | `0`   |
+| push / pull            | `number`，向右/左移动的栅格数 | `0` |
+| xs / sm / md / lg / xl | `number` / `ColSizeObject` | —     |
 
 ```ts
 interface ColSizeObject {

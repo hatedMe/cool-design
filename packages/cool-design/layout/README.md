@@ -45,10 +45,10 @@ import 'cool-design/style.css';
 
 | 属性名  | 说明                  | 类型 / 可选值                                                      | 默认值 |
 | ------- | --------------------- | ------------------------------------------------------------------ | ------ |
-| gutter  | 相邻列的间距，单位 px | number                                                             | 0      |
-| justify | 水平排列方式          | start / end / center / space-around / space-between / space-evenly | start  |
-| align   | 垂直对齐方式          | top / middle / bottom / center（center 为项目兼容别名）             | —      |
-| tag     | 自定义根元素标签      | string                                                             | div    |
+| gutter  | 相邻列的间距，单位 px | `number`                                                           | `0`    |
+| justify | 水平排列方式          | `start` / `end` / `center` / `space-around` / `space-between` / `space-evenly` | `start` |
+| align   | 垂直对齐方式          | `top` / `middle` / `bottom` / `center`（`center` 为项目兼容别名）   | —      |
+| tag     | 自定义根元素标签      | `string`                                                           | `div`  |
 
 #### Row Slots
 
@@ -62,16 +62,16 @@ import 'cool-design/style.css';
 
 | 属性名 | 说明                     | 类型 / 可选值          | 默认值 |
 | ------ | ------------------------ | ---------------------- | ------ |
-| span   | 占据的栅格数，0 表示隐藏 | number，0–24           | 24     |
-| offset | 左侧留白的栅格数         | number，0–24           | 0      |
-| push   | 向右移动的栅格数         | number，0–24           | 0      |
-| pull   | 向左移动的栅格数         | number，0–24           | 0      |
-| xs     | <768px 时的栅格配置      | number / ColSizeObject | —      |
-| sm     | ≥768px 时的栅格配置      | number / ColSizeObject | —      |
-| md     | ≥992px 时的栅格配置      | number / ColSizeObject | —      |
-| lg     | ≥1200px 时的栅格配置     | number / ColSizeObject | —      |
-| xl     | ≥1920px 时的栅格配置     | number / ColSizeObject | —      |
-| tag    | 自定义根元素标签         | string                 | div    |
+| span   | 占据的栅格数，0 表示隐藏 | `number`，0–24         | `24`   |
+| offset | 左侧留白的栅格数         | `number`，0–24         | `0`    |
+| push   | 向右移动的栅格数         | `number`，0–24         | `0`    |
+| pull   | 向左移动的栅格数         | `number`，0–24         | `0`    |
+| xs     | `<768px` 时的栅格配置    | `number` / `ColSizeObject` | —  |
+| sm     | `≥768px` 时的栅格配置    | `number` / `ColSizeObject` | —  |
+| md     | `≥992px` 时的栅格配置    | `number` / `ColSizeObject` | —  |
+| lg     | `≥1200px` 时的栅格配置   | `number` / `ColSizeObject` | —  |
+| xl     | `≥1920px` 时的栅格配置   | `number` / `ColSizeObject` | —  |
+| tag    | 自定义根元素标签         | `string`               | `div`  |
 
 #### Col Slots
 

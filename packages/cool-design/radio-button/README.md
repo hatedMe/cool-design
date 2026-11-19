@@ -13,14 +13,14 @@ RadioButton 是 Radio 的按钮样式变体，支持独立受控使用，也可�
 
 ## API
 
-| 参数       | 说明                 | 类型                      | 默认值 |
-| ---------- | -------------------- | ------------------------- | ------ |
-| modelValue | 当前选中值           | string / number / boolean | —      |
-| value      | 当前选项值           | string / number / boolean | —      |
-| label      | value 未传时的兼容值 | string / number / boolean | —      |
-| disabled   | 是否禁用             | boolean                   | false  |
-| name       | 原生单选组名称       | string                    | —      |
-| size       | 按钮尺寸             | small / default / large   | —      |
+| 参数       | 说明                 | 类型                                   | 默认值 |
+| ---------- | -------------------- | -------------------------------------- | ------ |
+| modelValue | 当前选中值           | `string` / `number` / `boolean`        | —      |
+| value      | 当前选项值           | `string` / `number` / `boolean`        | —      |
+| label      | value 未传时的兼容值 | `string` / `number` / `boolean`        | —      |
+| disabled   | 是否禁用             | `boolean`                              | `false` |
+| name       | 原生单选组名称       | `string`                               | —      |
+| size       | 按钮尺寸             | `small` / `default` / `large`          | —      |
 
 ### 插槽
 
