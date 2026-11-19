@@ -10,13 +10,13 @@
 <Calendar v-model="value" />
 ```
 
-通过 `range` 展示固定周范围（须从周一到周日，且不超过两个月）：
+通过 `range` 展示范围日历（须从周一到周日，且不超过两个月）：起始月与下一月**双月并排**渲染，两块网格均含完整月份日期：
 
 ```vue
 <Calendar :range="[new Date(2026, 10, 2), new Date(2026, 10, 8)]" />
 ```
 
-通过 `controller-type="select"` 使用年月选择器，通过 `formatter` 自定义选项文案。
+按钮模式的头部提供上一年 / 上个月 / 今天 / 下个月 / 下一年导航；通过 `controller-type="select"` 使用年月选择器，通过 `formatter` 自定义选项文案。
 
 ```vue
 <Calendar v-model="value">

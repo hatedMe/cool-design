@@ -35,18 +35,28 @@ test('firstDayOfWeek 调整周头与偏移，跨月日期可切换面板', async
   expect(monday.emitted('update:modelValue')).toHaveLength(1);
 });
 
-test('范围模式校验周一到周日且不超过两个月', async () => {
+test('范围模式并排双月，非法范围回退单月', async () => {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   try {
     const valid = mount(Calendar, {
       props: { range: [new Date(2026, 10, 2), new Date(2026, 10, 8)] }
     });
     await nextTick();
-    expect(valid.findAll('.i-calendar__grid button')).toHaveLength(7);
     expect(valid.classes()).toContain('is-range');
+    // 双月并排：起始月（2026-11）与下一月（2026-12）。
+    const panels = valid.findAll('.i-calendar__panel');
+    expect(panels).toHaveLength(2);
+    const grids = valid.findAll('.i-calendar__grid');
+    expect(grids).toHaveLength(2);
+    grids.forEach((grid) => expect(grid.findAll('button').length).toBeGreaterThan(28));
+    // 范围内日期可选。
+    const inRange = valid.findAll('.i-calendar__grid button').find((cell) => cell.attributes('aria-label') === '2026-11-05');
+    await inRange?.trigger('click');
+    expect(valid.emitted('update:modelValue')?.[0][0]).toBeInstanceOf(Date);
     const invalidWeek = mount(Calendar, {
       props: { range: [new Date(2026, 10, 3), new Date(2026, 10, 8)] }
     });
+    expect(invalidWeek.findAll('.i-calendar__panel')).toHaveLength(0);
     expect(invalidWeek.findAll('.i-calendar__grid button').length).toBeGreaterThan(7);
     expect(warn).toHaveBeenCalled();
     const tooLong = mount(Calendar, {
@@ -61,6 +71,17 @@ test('范围模式校验周一到周日且不超过两个月', async () => {
   } finally {
     warn.mockRestore();
   }
+});
+
+test('按钮模式提供上一年与下一年导航', async () => {
+  const w = mount(Calendar, { props: { modelValue: new Date(2026, 10, 5) } });
+  await w.get('[aria-label="上一年"]').trigger('click');
+  const prevPanel = w.emitted('panel-change')![0][0] as Date;
+  expect(prevPanel.getFullYear()).toBe(2025);
+  expect(prevPanel.getMonth()).toBe(10);
+  await w.get('[aria-label="下一年"]').trigger('click');
+  const nextPanel = w.emitted('panel-change')!.at(-1)![0] as Date;
+  expect(nextPanel.getFullYear()).toBe(2026);
 });
 
 test('支持 controllerType select、formatter、header 与 date-cell 插槽及 expose', async () => {
