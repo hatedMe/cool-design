@@ -200,7 +200,7 @@ const columns = [
 | selection               | 显示首列勾选，简写，等价于首列 `{ type: 'selection' }`                        | `boolean`                                                              | `false`              |
 | loading                 | 显示加载遮罩并禁用表格交互                                                    | `boolean`                                                              | `false`              |
 | height                  | 滚动区固定高度，设置后优先于 `maxHeight`                                      | `string \| number`                                                     | —                    |
-| maxHeight               | 滚动区最大高度，数字按 px 解析                                                | `string \| number`                                                     | `440`                |
+| maxHeight               | 滚动区最大高度，数字按 px 解析，不设默认值                                    | `string \| number`                                                     | —                    |
 | emptyText               | 空态文字                                                                      | `string`                                                               | `没有符合条件的数据` |
 | stripe                  | 是否显示斑马纹                                                                | `boolean`                                                              | `false`              |
 | border                  | 是否显示单元格边框                                                            | `boolean`                                                              | `false`              |

@@ -63,7 +63,7 @@ export default defineComponent({
     selection: Boolean,
     loading: Boolean,
     height: { type: [String, Number] as PropType<string | number>, default: undefined },
-    maxHeight: { type: [String, Number] as PropType<string | number>, default: 440 },
+    maxHeight: { type: [String, Number] as PropType<string | number>, default: undefined },
     emptyText: { type: String, default: '没有符合条件的数据' },
     stripe: Boolean,
     border: Boolean,

@@ -24,7 +24,7 @@ const props = {
   showText: Boolean,
   showScore: Boolean,
   textColor: String,
-  texts: { type: Array as PropType<string[]>, default: () => ['Extremely bad', 'Disappointed', 'Fair', 'Satisfied', 'Surprise'] },
+  texts: { type: Array as PropType<string[]>, default: () => ['极差', '失望', '一般', '满意', '惊喜'] },
   scoreTemplate: { type: String, default: '{value}' },
   clearable: Boolean,
   id: String,

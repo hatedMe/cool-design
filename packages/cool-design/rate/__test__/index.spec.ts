@@ -277,8 +277,9 @@ describe('Rate', () => {
 
   test('uses clamped text for disabled showText and raw value for showScore', async () => {
     const wrapper = mount(Rate, { props: { modelValue: 8, max: 5, disabled: true, showText: true } });
-    expect(wrapper.get('.i-rate__text').text()).toBe('Surprise');
-    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('Surprise');
+    // 默认文案为中文。
+    expect(wrapper.get('.i-rate__text').text()).toBe('惊喜');
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('惊喜');
     await wrapper.setProps({ showText: false, showScore: true, scoreTemplate: 'Score: {value}' });
     expect(wrapper.get('.i-rate__score').text()).toBe('Score: 8');
     expect(wrapper.get('[role="slider"]').attributes('aria-valuetext')).toBe('Score: 8');

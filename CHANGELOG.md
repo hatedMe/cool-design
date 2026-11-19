@@ -18,6 +18,8 @@
 | 组件 | 变更 | 迁移说明 |
 | --- | --- | --- |
 | `Tree` / `TreeV2` | `check-on-click-leaf` 默认值 `true` → `false`：点击叶节点不再默认勾选复选框 | 依赖点击叶子即勾选的场景请显式传 `:check-on-click-leaf="true"` |
+| `Table` | `maxHeight` 默认值 `440` → 不设默认：未显式传入时不再限制滚动区高度 | 依赖默认 4px 高度上限的页面请显式传 `:max-height="440"` |
+| `Rate` | `texts` 默认文案由英文改为中文：`['极差', '失望', '一般', '满意', '惊喜']` | 依赖英文文案的场景请显式传 `:texts` |
 | `Space` | `wrap` 默认值 `true` → `false`；内置尺寸 4/8/12px → 8/12/16px；数组 `size` 语义改为 `[列间距, 行间距]`；每个子项包装在 `.i-space__item` 中 | 依赖默认换行的布局请显式传 `wrap`；依赖旧间距像素的样式需复查；自定义子项选择器改用 `.i-space__item` |
 | `Popconfirm` | `hide-after` 语义反转：现在表示「确认后延迟自动关闭」（原为「打开后自动取消」） | 依赖自动取消行为的用法请改为显式处理 `cancel` |
 | `MessageBox` | `title` 默认值 `'操作确认'` → `''`；遮罩点击默认关闭（原为不关闭）；promise 拒绝值在未开启 `distinguish-cancel-and-close` 时把 `close` 归并为 `cancel` | 需要显式标题的场景请传 `title`；依赖遮罩不可关闭的场景请传 `:close-on-click-modal="false"`；依赖 `reject('close')` 的场景请开启 `distinguish-cancel-and-close` |

@@ -156,6 +156,13 @@ test('clearSelection 清空选择，表头开关与条纹边框生效，maxHeigh
   expect(w.find('thead').exists()).toBe(false);
 });
 
+test('maxHeight 无默认值，未设置时不限制高度', () => {
+  const w = mount(Table, {
+    props: { data: [{ id: 1 }], columns: [{ key: 'id', title: '编号' }] }
+  });
+  expect((w.find('.i-table__scroll').element as HTMLElement).style.maxHeight).toBe('');
+});
+
 test('空态支持自定义文字与插槽，固定列带粘性偏移', async () => {
   const w = mount(Table, {
     props: { data: [], columns: [{ key: 'a', title: '甲' }], emptyText: '暂无数据' }
