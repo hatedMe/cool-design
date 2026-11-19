@@ -72,7 +72,8 @@ describe('Dropdown', () => {
     });
     await wrapper.find('.i-dropdown__trigger').trigger('click');
     expect(wrapper.find('.i-dropdown__item.is-divided').exists()).toBe(true);
-    expect(wrapper.find('.i-dropdown__item-icon').text()).toBe('*');
+    // 字符串 icon 经 Icon 按图标类名渲染。
+    expect(wrapper.find('.i-dropdown__item-icon .i-icon').classes()).toContain('*');
   });
 
   test('splitButton 左键触发 click 右键展开', async () => {

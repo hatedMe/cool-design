@@ -1,9 +1,10 @@
-import { computed, defineComponent } from 'vue';
+import { computed, defineComponent, type Component, type PropType } from 'vue';
+import Icon from '../icon';
 
 export default defineComponent({
   name: 'i-page-header',
   props: {
-    icon: { type: String, default: '‹' },
+    icon: { type: [String, Object] as PropType<string | Component>, default: undefined },
     title: { type: String, default: '' },
     content: { type: String, default: '' },
     /** 兼容旧属性：返回按钮文字，未提供 title 时生效 */
@@ -24,7 +25,9 @@ export default defineComponent({
     };
 
     return () => {
-      const iconContent = slots.icon?.() ?? (props.icon !== '' ? props.icon : null);
+      // 字符串按图标类名经 Icon 渲染；未配置时回退默认箭头文本。
+      const iconContent =
+        slots.icon?.() ?? (props.icon === '' ? null : props.icon ? <Icon icon={props.icon} aria-hidden='true' /> : '‹');
       const titleContent = slots.title?.() ?? backLabel.value;
       const contentContent = slots.content?.() ?? props.content;
       const extraContent = slots.extra?.();

@@ -58,7 +58,7 @@ Steps 展示任务流程和当前步骤，支持水平/垂直、居中、简单�
 | ---- | ---- | ---- | ------ |
 | `title` | 标题 | `string` | `''` |
 | `description` | 描述 | `string` | `''` |
-| `icon` | 图标 | `string` | `''` |
+| `icon` | 图标，字符串按图标类名经 Icon 渲染 | `string \| Component` | `''` |
 | `status` | 显式状态（覆盖自动计算） | `StepStatus` | `''` |
 
 ### Step 插槽

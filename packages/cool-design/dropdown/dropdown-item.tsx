@@ -1,4 +1,5 @@
-import { defineComponent, getCurrentInstance, inject, type PropType } from 'vue';
+import { defineComponent, getCurrentInstance, inject, type Component, type PropType } from 'vue';
+import Icon from '../icon';
 import { dropdownKey, type DropdownCommand } from './context';
 
 export default defineComponent({
@@ -7,7 +8,7 @@ export default defineComponent({
     command: { type: [String, Number, Object] as PropType<DropdownCommand>, default: '' },
     disabled: Boolean,
     divided: Boolean,
-    icon: { type: String, default: '' }
+    icon: { type: [String, Object] as PropType<string | Component>, default: '' }
   },
   emits: ['click'],
   setup(props, { slots, emit }) {
@@ -46,7 +47,7 @@ export default defineComponent({
           onKeydown={handleKeydown}>
           {(slots.icon?.() || props.icon) && (
             <span class='i-dropdown__item-icon' aria-hidden='true'>
-              {slots.icon?.() ?? props.icon}
+              {slots.icon?.() ?? (props.icon ? <Icon icon={props.icon} /> : null)}
             </span>
           )}
           <span class='i-dropdown__item-label'>{slots.default?.()}</span>

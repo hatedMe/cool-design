@@ -38,4 +38,22 @@ describe('Breadcrumb', () => {
     });
     expect(wrapper.find('.i-breadcrumb__separator').text()).toBe('|');
   });
+
+  test('separatorIcon 与 BreadcrumbItem icon 经 Icon 渲染', () => {
+    const itemsMode = mount(Breadcrumb, {
+      props: { separatorIcon: 'icon-angle-right', items: [{ label: 'A' }, { label: 'B' }] }
+    });
+    const separator = itemsMode.find('.i-breadcrumb__separator');
+    expect(separator.find('.i-icon').classes()).toContain('icon-angle-right');
+
+    const slotMode = mount(Breadcrumb, {
+      props: { separatorIcon: 'icon-angle-right' },
+      slots: {
+        default: () => [h(BreadcrumbItem, null, () => '首页'), h(BreadcrumbItem, { icon: 'icon-home' }, () => '列表')]
+      }
+    });
+    const itemIcon = slotMode.find('.i-breadcrumb__item-icon');
+    expect(itemIcon.exists()).toBe(true);
+    expect(itemIcon.find('.i-icon').classes()).toContain('icon-home');
+  });
 });

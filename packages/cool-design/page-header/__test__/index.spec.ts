@@ -40,4 +40,13 @@ describe('PageHeader', () => {
     const wrapper = mount(PageHeader, { props: { backText: '后退', content: '页' } });
     expect(wrapper.find('.i-page-header__title').text()).toBe('后退');
   });
+
+  test('默认箭头文本与图标类名渲染', () => {
+    const plain = mount(PageHeader, { props: { content: '详情' } });
+    expect(plain.find('.i-page-header__icon').text()).toBe('‹');
+
+    const iconed = mount(PageHeader, { props: { icon: 'icon-arrow-left', content: '详情' } });
+    expect(iconed.find('.i-page-header__icon .i-icon').classes()).toContain('icon-arrow-left');
+    expect(iconed.find('.i-page-header__icon').text()).not.toBe('‹');
+  });
 });

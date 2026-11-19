@@ -29,7 +29,7 @@ Breadcrumb 显示当前页面在导航层级中的位置，支持链接、分隔
 | ---- | ---- | ---- | ------ |
 | `items` | 数据驱动项（兼容） | `BreadcrumbItemOption[]` | `[]` |
 | `separator` | 分隔符 | `string` | `/` |
-| `separator-icon` | 分隔图标（优先于 `separator`） | `string \| Component` | — |
+| `separator-icon` | 分隔图标，字符串按图标类名经 Icon 渲染（优先于 `separator`） | `string \| Component` | — |
 
 ### Breadcrumb 事件
 
@@ -50,6 +50,7 @@ Breadcrumb 显示当前页面在导航层级中的位置，支持链接、分隔
 | ---- | ---- | ---- | ------ |
 | `to` | 跳转目标：存在 vue-router 时点击走路由导航，否则渲染为 `a[href]`（对象取 `path`/`href`） | `string \| Record` | — |
 | `replace` | 路由导航时使用 `router.replace` | `boolean` | `false` |
+| `icon` | 当前项前置图标，字符串按图标类名经 Icon 渲染 | `string \| Component` | — |
 
 ### BreadcrumbItem 事件
 

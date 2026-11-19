@@ -87,7 +87,7 @@ Dropdown 将多个操作收纳到下拉菜单中，支持悬停/点击/右键触
 | `command` | 命令值 | `string \| number \| object` | `''` |
 | `disabled` | 是否禁用 | `boolean` | `false` |
 | `divided` | 是否显示分隔线 | `boolean` | `false` |
-| `icon` | 图标 | `string` | `''` |
+| `icon` | 前置图标，字符串按图标类名经 Icon 渲染 | `string \| Component` | `''` |
 
 ### DropdownItem 事件
 

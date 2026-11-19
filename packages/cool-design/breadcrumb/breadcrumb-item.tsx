@@ -1,4 +1,5 @@
-import { computed, defineComponent, getCurrentInstance, h, inject, onBeforeUnmount, onMounted, type PropType } from 'vue';
+import { computed, defineComponent, getCurrentInstance, h, inject, onBeforeUnmount, onMounted, type Component, type PropType } from 'vue';
+import Icon from '../icon';
 import { breadcrumbKey } from './context';
 
 export type BreadcrumbTo = string | Record<string, unknown>;
@@ -7,7 +8,8 @@ export default defineComponent({
   name: 'i-breadcrumb-item',
   props: {
     to: { type: [String, Object] as PropType<BreadcrumbTo>, default: undefined },
-    replace: Boolean
+    replace: Boolean,
+    icon: { type: [String, Object] as PropType<string | Component>, default: undefined }
   },
   emits: ['click'],
   setup(props, { slots, emit }) {
@@ -48,8 +50,9 @@ export default defineComponent({
       const icon = parent?.separatorIcon;
       const separatorContent = customSeparator ?? (
         icon ? (
+          // 字符串按图标类名经 Icon 渲染，不再原样输出文本。
           typeof icon === 'string' ? (
-            icon
+            <Icon icon={icon} aria-hidden='true' />
           ) : (
             h(icon as never)
           )
@@ -57,6 +60,7 @@ export default defineComponent({
           (parent?.separator ?? '/')
         )
       );
+      const itemIcon = props.icon;
       const inner = href.value ? (
         <a
           href={href.value}
@@ -72,6 +76,11 @@ export default defineComponent({
       );
       return (
         <li class={{ 'i-breadcrumb__item': true, 'is-last': isLast.value }}>
+          {itemIcon && (
+            <span class='i-breadcrumb__item-icon' aria-hidden='true'>
+              {typeof itemIcon === 'string' ? <Icon icon={itemIcon} /> : h(itemIcon as never)}
+            </span>
+          )}
           {inner}
           <span class='i-breadcrumb__separator' aria-hidden='true'>
             {separatorContent}
