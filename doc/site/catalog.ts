@@ -825,6 +825,21 @@ export const pages: Page[] = [
   component('loading', 'Loading 加载', '反馈组件', [
     ['basic', '区域加载', '切换开关观察遮罩；加载期间内部内容无法点击或通过键盘操作。']
   ]),
+  {
+    id: 'components/directives',
+    title: 'Directives 指令',
+    group: '反馈组件',
+    markdown:
+      '# Directives 指令\n\n### 介绍\n\n提供常用 Vue 3 指令：加载遮罩、点击外部、无限滚动与浮层挂载，全量安装时自动注册；按需使用时可导入 `installDirectives` 或单独导入 `LoadingDirective`、`ClickOutside`、`InfiniteScroll`、`VPopover`。\n\n## 用法\n\n```vue\n<div v-loading="pending" />\n<div v-click-outside="close">内容</div>\n<div v-infinite-scroll="loadMore" infinite-scroll-distance="20">列表</div>\n<button v-popover="\'悬停显示的说明\'">查看</button>\n```\n\n## API\n\n### Attributes\n\n| 指令 | 值 | 说明 |\n| --- | --- | --- |\n| `v-loading` | `boolean` / `{ text?; background?; fullscreen?; lock?; body?; spinner?; svg?; svgViewBox?; svgSize? }` | 显示或隐藏遮罩；支持 `fullscreen` / `lock` / `body` modifiers 与 `element-loading-*` 元素属性 |\n| `v-click-outside` | `(event: Event) => void` | 点击元素外部时触发 |\n| `v-infinite-scroll` | `() => void` | 滚动到底部指定距离时触发 |\n| `v-popover` | `string` / `PopoverDirectiveValue` | 为任意元素挂载浮层，值更新自动重建 |\n\n### v-infinite-scroll 元素属性\n\n| 属性 | 说明 | 类型 | 默认值 |\n| --- | --- | --- | --- |\n| `infinite-scroll-disabled` | 是否禁用加载 | `boolean` | `false` |\n| `infinite-scroll-delay` | 节流间隔（毫秒） | `number` | `200` |\n| `infinite-scroll-distance` | 底部触发距离（像素） | `number` | `0` |\n| `infinite-scroll-immediate` | 内容未填满时是否立即触发 | `boolean` | `true` |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/loading/demo/basic.vue',
+        'basic',
+        'v-loading 区域加载',
+        '切换开关观察指令遮罩；其余指令见 Popover 与各列表组件文档。'
+      )
+    ]
+  },
   component('tooltip', 'Tooltip 文字提示', '反馈组件', [
     ['basic', '悬停与键盘聚焦', '将鼠标移到按钮上或用 Tab 聚焦，按 Esc 关闭提示。']
   ]),

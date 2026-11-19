@@ -16,6 +16,7 @@
 >
   列表
 </div>
+<button v-popover="'悬停显示的说明'">查看</button>
 ```
 
 全量安装 `cool-design` 时会自动注册；按需使用时可导入 `installDirectives`，或单独导入 `LoadingDirective`、`ClickOutside`、`InfiniteScroll`。
@@ -27,6 +28,7 @@
 | `v-loading` | `boolean` / `{ text?: string; background?: string; fullscreen?: boolean; lock?: boolean; body?: boolean; spinner?: string; svg?: string; svgViewBox?: string; svgSize?: number }` | 显示或隐藏遮罩 |
 | `v-click-outside` | `(event: Event) => void` | 点击元素外部时触发 |
 | `v-infinite-scroll` | `() => void` | 滚动到距离底部指定距离时触发 |
+| `v-popover` | `string` / `{ content?; title?; placement?; trigger?; effect?; offset?; showArrow?; disabled? }` | 为任意元素挂载浮层，值更新自动重建 |
 
 `v-loading` 支持的 modifiers 与元素属性：
 
