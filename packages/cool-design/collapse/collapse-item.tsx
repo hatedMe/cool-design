@@ -1,4 +1,4 @@
-import { computed, defineComponent, inject, onBeforeUnmount, type Component, type PropType } from 'vue';
+import { Transition, computed, defineComponent, inject, onBeforeUnmount, vShow, withDirectives, type Component, type PropType } from 'vue';
 import Icon from '../icon';
 import { collapseKey, type CollapseName } from './context';
 
@@ -12,7 +12,7 @@ export default defineComponent({
     disabled: Boolean,
     icon: { type: [String, Object, Function] as PropType<string | Component>, default: undefined }
   },
-  setup(props, { slots }) {
+  setup(props, { slots, expose }) {
     const context = inject(collapseKey);
     if (!context) throw new Error('CollapseItem must be used inside Collapse.');
     const uid = Symbol('collapse-item');
@@ -25,7 +25,7 @@ export default defineComponent({
     const itemName = computed(() => props.name ?? fallback);
     const expanded = computed(() => context.activeNames.value.includes(itemName.value));
     const arrow = () =>
-      slots.icon?.() ??
+      slots.icon?.({ isActive: expanded.value }) ??
       (props.icon ? (
         <Icon icon={props.icon} class='i-collapse-item__icon' />
       ) : (
@@ -33,6 +33,40 @@ export default defineComponent({
           ›
         </span>
       ));
+
+    // 高度过渡：展开从 0 到内容高，收起反向；0.2s 的 height 过渡由样式类提供。
+    const beforeEnter = (el: Element) => {
+      const wrap = el as HTMLElement;
+      wrap.style.height = '0px';
+      wrap.style.overflow = 'hidden';
+    };
+    const enter = (el: Element) => {
+      const wrap = el as HTMLElement;
+      wrap.style.height = `${wrap.scrollHeight}px`;
+    };
+    const afterEnter = (el: Element) => {
+      const wrap = el as HTMLElement;
+      wrap.style.height = '';
+      wrap.style.overflow = '';
+    };
+    const beforeLeave = (el: Element) => {
+      const wrap = el as HTMLElement;
+      wrap.style.height = `${wrap.scrollHeight}px`;
+      wrap.style.overflow = 'hidden';
+    };
+    const leave = (el: Element) => {
+      const wrap = el as HTMLElement;
+      // 强制浏览器记录当前高度，再折叠到 0。
+      void wrap.offsetHeight;
+      wrap.style.height = '0px';
+    };
+    const afterLeave = (el: Element) => {
+      const wrap = el as HTMLElement;
+      wrap.style.height = '';
+      wrap.style.overflow = '';
+    };
+
+    expose({ isActive: computed(() => expanded.value) });
 
     return () => (
       <div
@@ -50,17 +84,24 @@ export default defineComponent({
           disabled={props.disabled}
           onClick={() => !props.disabled && context.toggle(itemName.value)}>
           {context.expandIconPosition.value === 'left' && arrow()}
-          <span class='i-collapse-item__title'>{slots.title?.() ?? props.title}</span>
+          <span class='i-collapse-item__title'>{slots.title?.({ isActive: expanded.value }) ?? props.title}</span>
           {context.expandIconPosition.value === 'right' && arrow()}
         </button>
-        <div
-          id={panelId}
-          class='i-collapse-item__wrap'
-          role='region'
-          aria-labelledby={headerId}
-          style={expanded.value ? undefined : { display: 'none' }}>
-          <div class='i-collapse-item__content'>{slots.default?.()}</div>
-        </div>
+        <Transition
+          name='i-collapse'
+          onBeforeEnter={beforeEnter}
+          onEnter={enter}
+          onAfterEnter={afterEnter}
+          onBeforeLeave={beforeLeave}
+          onLeave={leave}
+          onAfterLeave={afterLeave}>
+          {withDirectives(
+            <div id={panelId} class='i-collapse-item__wrap' role='region' aria-labelledby={headerId}>
+              <div class='i-collapse-item__content'>{slots.default?.()}</div>
+            </div>,
+            [[vShow, expanded.value]]
+          )}
+        </Transition>
       </div>
     );
   }

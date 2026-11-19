@@ -1,5 +1,5 @@
 import { mount, flushPromises } from '@vue/test-utils';
-import { defineComponent, h, ref } from 'vue';
+import { defineComponent, h, ref, type PropType } from 'vue';
 import { afterEach, expect, test } from 'vitest';
 import { Collapse, CollapseItem } from '..';
 
@@ -146,4 +146,41 @@ test('图标位置与自定义图标', async () => {
   const header = w.get('.i-collapse-item__header');
   expect(header.find('.i-icon').exists()).toBe(true);
   expect(header.element.firstElementChild?.classList.contains('i-icon')).toBe(true);
+});
+
+test('title 与 icon 插槽接收 isActive 作用域，Item 暴露 isActive', async () => {
+  const w = mount(Collapse, {
+    props: { modelValue: ['1'] },
+    slots: {
+      default: () =>
+        h(CollapseItem, { name: '1' }, {
+          default: () => '内容',
+          title: ({ isActive }: { isActive: boolean }) => (isActive ? '展开标题' : '收起标题'),
+          icon: ({ isActive }: { isActive: boolean }) => (isActive ? '箭头向上' : '箭头向下')
+        })
+    }
+  });
+  wrappers.push(w);
+  const header = w.get('.i-collapse-item__header');
+  expect(header.text()).toContain('展开标题');
+  expect(header.text()).toContain('箭头向上');
+  await w.setProps({ modelValue: [] });
+  expect(header.text()).toContain('收起标题');
+  expect(header.text()).toContain('箭头向下');
+
+  // 模板引用访问暴露的 isActive（与组件库使用方一致）。
+  const itemRef = ref<{ isActive: boolean } | null>(null);
+  const Host = defineComponent({
+    props: { active: { type: Array as PropType<(string | number)[]>, default: () => ['1'] } },
+    setup: (hostProps) => () =>
+      h(Collapse, { modelValue: hostProps.active }, () => h(CollapseItem, { name: '1', ref: itemRef }, () => '内容'))
+  });
+  const host = mount(Host);
+  wrappers.push(host);
+  expect(itemRef.value?.isActive).toBe(true);
+  await host.setProps({ active: [] });
+  await flushPromises();
+  expect(itemRef.value?.isActive).toBe(false);
+  // v-show 折叠时节点保留在 DOM。
+  expect(host.find('.i-collapse-item__wrap').exists()).toBe(true);
 });

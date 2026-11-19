@@ -42,6 +42,17 @@
 .i-collapse-item__wrap {
   overflow: hidden;
 }
+.i-collapse-enter-active,
+.i-collapse-leave-active {
+  overflow: hidden;
+  transition: height 0.2s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .i-collapse-enter-active,
+  .i-collapse-leave-active {
+    transition: none;
+  }
+}
 .i-collapse-item__content {
   padding: 12px 0;
   color: var(--i-text);
