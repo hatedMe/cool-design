@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import { afterEach, describe, expect, test } from 'vitest';
 import Tour from '..';
@@ -69,7 +69,7 @@ describe('test `Tour` component', () => {
     expect(spotlight!.style.left).toBe('0px');
     expect(spotlight!.style.width).toBe('120px');
     await wrapper.setProps({ gap: 0 });
-    await nextTick();
+    await flushPromises();
     expect((document.querySelector('.i-tour__spotlight') as HTMLElement).style.top).toBe('120px');
 
     await wrapper.setProps({ mask: false });
