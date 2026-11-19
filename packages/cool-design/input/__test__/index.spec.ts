@@ -126,6 +126,19 @@ test('textarea 支持 resize 属性', () => {
   expect(w.get('textarea').attributes('style')).toContain('resize: none');
 });
 
+test('loading 显示旋转图标，loadingIcon 可自定义', () => {
+  const plain = mount(Input, { props: { modelValue: 'a' } });
+  expect(plain.find('.i-input__loading').exists()).toBe(false);
+
+  const w = mount(Input, { props: { modelValue: 'a', loading: true } });
+  expect(w.find('.i-input__loading-spinner').exists()).toBe(true);
+  expect(w.get('input').attributes('disabled')).toBeUndefined();
+
+  const custom = mount(Input, { props: { modelValue: 'a', loading: true, loadingIcon: 'icon-refresh' } });
+  expect(custom.find('.i-input__loading .i-input__icon.icon-refresh').exists()).toBe(true);
+  expect(custom.find('.i-input__loading-spinner').exists()).toBe(false);
+});
+
 test('支持自定义字符计数和输入样式', () => {
   const w = mount(Input, {
     props: {

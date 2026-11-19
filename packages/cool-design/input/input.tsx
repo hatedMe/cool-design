@@ -19,6 +19,8 @@ export default defineComponent({
     showWordLimit: Boolean,
     wordLimitPosition: { type: String as PropType<'inside' | 'outside'>, default: 'inside' },
     showPassword: Boolean,
+    loading: Boolean,
+    loadingIcon: [String, Object] as PropType<string | Component>,
     prefixIcon: [String, Object] as PropType<string | Component>,
     suffixIcon: [String, Object] as PropType<string | Component>,
     clearIcon: [String, Object] as PropType<string | Component>,
@@ -218,11 +220,17 @@ export default defineComponent({
       );
       // 设置了 maxlength 才显示字数统计
       const countNode = props.showWordLimit && maxLength !== undefined && <span class='i-input__count'>{count}</span>;
+      const loadingNode = props.loading && (
+        <span class='i-input__loading' aria-hidden='true'>
+          {props.loadingIcon ? renderIcon(props.loadingIcon) : <span class='i-input__loading-spinner' />}
+        </span>
+      );
       const wrapper = (
         <span class={['i-input', `i-control--${props.size || config.value.size}`, isTextarea && 'is-textarea']}>
           {slots.prefix?.() ?? renderIcon(props.prefixIcon)}
           {control}
           {props.wordLimitPosition === 'inside' && countNode}
+          {loadingNode}
           {passwordToggle}
           {slots.suffix?.() ?? renderIcon(props.suffixIcon)}
           {props.clearable && !isTextarea && hasValue() && (

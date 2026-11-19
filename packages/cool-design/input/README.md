@@ -56,6 +56,8 @@
 | showWordLimit           | 显示长度统计                             | boolean                   | false        |
 | wordLimitPosition       | 长度统计位置：inside / outside          | `inside` / `outside`     | inside       |
 | showPassword            | 显示密码切换                             | boolean                   | false        |
+| loading                 | 加载态，后缀显示旋转图标                 | boolean                   | false        |
+| loadingIcon             | 自定义加载图标（字体类名或组件），缺省为内置旋转描边 | `string` / `Component` | —     |
 | prefixIcon / suffixIcon | 图标（字体类名或组件）                     | string / Component    | —            |
 | clearIcon               | 清空图标（字体类名或组件）                 | string / Component    | —            |
 | inputStyle              | 输入框内联样式                             | string / object       | —            |
