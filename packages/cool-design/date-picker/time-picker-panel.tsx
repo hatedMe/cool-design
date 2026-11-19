@@ -16,7 +16,9 @@ export default defineComponent({
   emits: ['select'],
   setup(props, { emit }) {
     const units = computed<TimeUnit[]>(() => {
-      const result: TimeUnit[] = ['hour', 'minute'];
+      // 列粒度跟随 format：无 mm 不渲染分列，无 ss 不渲染秒列。
+      const result: TimeUnit[] = ['hour'];
+      if (props.format.includes('mm')) result.push('minute');
       if (props.format.includes('ss')) result.push('second');
       return result;
     });

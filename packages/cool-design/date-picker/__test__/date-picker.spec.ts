@@ -259,6 +259,50 @@ test('DatePicker week 高亮遵循 firstDayOfWeek', async () => {
   expect(wrapper.get('[data-value="2026-11-07"]').classes()).toContain('is-in-week');
 });
 
+test('DatePicker week 类型默认按周 token 回显', () => {
+  const wrapper = mount(DatePicker, { props: { type: 'week', modelValue: '2026-11-02', showConfirm: false } });
+  const displayed = (wrapper.get('input').element as HTMLInputElement).value;
+  expect(displayed).toBe('2026-第45周');
+});
+
+test('DatePicker datetime 面板时间粒度跟随 format', async () => {
+  const wrapper = mount(DatePicker, {
+    props: { type: 'datetime', modelValue: new Date(2026, 10, 5, 8, 30, 0), format: 'YYYY-MM-DD HH:mm', teleported: false }
+  });
+  await wrapper.get('input').trigger('click');
+  const columns = wrapper.findAll('.i-time-picker__column');
+  expect(columns).toHaveLength(2);
+  expect(columns.map((column) => column.attributes('data-unit'))).toEqual(['hour', 'minute']);
+  const seconds = mount(DatePicker, {
+    props: { type: 'datetime', modelValue: new Date(2026, 10, 5, 8, 30, 0), teleported: false }
+  });
+  await seconds.get('input').trigger('click');
+  expect(seconds.findAll('.i-time-picker__column')).toHaveLength(3);
+});
+
+test('DatePicker 范围选择悬停预览高亮中间日期', async () => {
+  const wrapper = mount(DatePicker, { props: { type: 'daterange', modelValue: [null, null], showConfirm: false, teleported: false } });
+  await wrapper.get('input').trigger('click');
+  await wrapper.get('[data-value="2026-11-02"]').trigger('click');
+  // 已选起点未选终点时，悬停其它日期会高亮区间预览。
+  const target = wrapper.get('[data-value="2026-11-06"]');
+  await target.trigger('mouseenter');
+  expect(wrapper.get('[data-value="2026-11-04"]').classes()).toContain('is-in-range');
+  expect(target.classes()).toContain('is-in-range');
+  expect(wrapper.get('[data-value="2026-11-08"]').classes()).not.toContain('is-in-range');
+  await wrapper.get('[data-value="2026-11-06"]').trigger('click');
+  expect(wrapper.emitted('update:modelValue')?.at(-1)?.[0]).toEqual([
+    expect.any(Date),
+    expect.any(Date)
+  ]);
+});
+
+test('DatePicker 不再渲染隐藏的格式化死节点', async () => {
+  const wrapper = mount(DatePicker, { props: { modelValue: '2026-11-04', teleported: false } });
+  expect(wrapper.find('.i-date-picker__formatted').exists()).toBe(false);
+  expect((wrapper.get('input').element as HTMLInputElement).value).toBe('2026-11-04');
+});
+
 test('DatePicker 季度面板显示当前季度选中状态和年份导航', async () => {
   const wrapper = mount(DatePicker, { props: { type: 'quarter', modelValue: '2026-Q2', showConfirm: false, teleported: false } });
   await wrapper.get('input').trigger('click');

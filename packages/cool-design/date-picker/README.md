@@ -27,7 +27,9 @@ DatePicker 用于选择日期、月份、年份、周、多个日期和日期范
 
 ## API
 
-属性：`model-value`、`type`（`date` / `dates` / `week` / `month` / `months` / `year` / `years` / `quarter` / `quarters` / `quarterrange` / `datetime` / `daterange` / `datetimerange` / `monthrange` / `yearrange`）、`format`（季度默认 `YYYY-[Q]Q`）、`value-format`、`placeholder`、`start-placeholder`、`end-placeholder`、`range-separator`、`range`、`disabled-date`（季度按季度内日期整体判断）、`disabled`、`readonly`、`editable`、`clearable`、`size`、`teleported`、`placement`、`popper-class`、`show-now`（默认 `false`）、`single-panel`、`unlink-panels`、`id`、`name`。
+属性：`model-value`、`type`（`date` / `dates` / `week` / `month` / `months` / `year` / `years` / `quarter` / `quarters` / `quarterrange` / `datetime` / `daterange` / `datetimerange` / `monthrange` / `yearrange`）、`format`（季度默认 `YYYY-[Q]Q`，周类型默认 `YYYY-[第]ww[周]`；`datetime` 面板的时间列粒度跟随 `format`，不含 `ss` 时无秒列）、`value-format`、`placeholder`、`start-placeholder`、`end-placeholder`、`range-separator`、`range`、`disabled-date`（季度按季度内日期整体判断）、`disabled`、`readonly`、`editable`、`clearable`、`size`、`teleported`、`placement`、`popper-class`、`show-now`（默认 `false`）、`single-panel`、`unlink-panels`、`id`、`name`、`validate-event`。
+
+范围选择已定起点、未定终点时，鼠标悬停的日期区间会实时预览高亮。
 
 事件：`update:modelValue`、`change`、`focus`、`blur`、`clear`、`visible-change`、`calendar-change`、`panel-change`。
 
@@ -39,6 +41,6 @@ DatePicker 用于选择日期、月份、年份、周、多个日期和日期范
 
 部分支持：完整 Day.js token、完整键盘导航和高级 ARIA。
 
-扩展说明：`show-confirm` 是本项目提供的确认流程扩展；`quarter`、`quarters`、`quarterrange` 已支持。暂不支持：`validate-event`、完整 Popper.js options、IANA 时区选择。
+扩展说明：`show-confirm` 是本项目提供的确认流程扩展；`quarter`、`quarters`、`quarterrange` 已支持，`validate-event` 已实现（默认 `true`，值为 `false` 时不触发校验）。暂不支持：完整 Popper.js options、IANA 时区选择。
 
 `TimeSelect` 和 Element UI 遗留的 `selectableRange` 不属于本组件范围。

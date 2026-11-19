@@ -101,20 +101,8 @@ export default defineComponent({
       return 'current-month';
     };
 
-    const days = computed<{ date: Date; type: CalendarCellType }[]>(() => {
-      if (isRangeMode.value) {
-        const [start, end] = validatedRange.value;
-        const result: { date: Date; type: CalendarCellType }[] = [];
-        const current = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-        while (current.getTime() <= end.getTime()) {
-          const date = new Date(current);
-          result.push({ date, type: cellTypeForMonth(date, start.getFullYear(), start.getMonth()) });
-          current.setDate(current.getDate() + 1);
-        }
-        return result;
-      }
-      const year = cursor.value.getFullYear();
-      const month = cursor.value.getMonth();
+    // 单月网格：含前后补位日期，行对齐周起始。
+    const monthGrid = (year: number, month: number): { date: Date; type: CalendarCellType }[] => {
       const first = new Date(year, month, 1);
       const offset = (first.getDay() - firstDow.value + 7) % 7;
       const count = new Date(year, month + 1, 0).getDate();
@@ -123,6 +111,23 @@ export default defineComponent({
         const date = new Date(year, month, i - offset + 1);
         return { date, type: cellTypeForMonth(date, year, month) };
       });
+    };
+
+    const days = computed<{ date: Date; type: CalendarCellType }[]>(() => {
+      if (isRangeMode.value) return [];
+      return monthGrid(cursor.value.getFullYear(), cursor.value.getMonth());
+    });
+
+    // 单月网格：含前后补位日期，行对齐周起始。
+    const monthPanels = computed<{ anchor: Date; days: { date: Date; type: CalendarCellType }[] }[]>(() => {
+      if (!isRangeMode.value) return [];
+      const [start] = validatedRange.value;
+      const first = startOfMonth(start);
+      const anchors = [first, new Date(first.getFullYear(), first.getMonth() + 1, 1)];
+      return anchors.map((anchor) => ({
+        anchor,
+        days: monthGrid(anchor.getFullYear(), anchor.getMonth())
+      }));
     });
 
     const headerDate = computed(() => {
@@ -257,6 +262,9 @@ export default defineComponent({
           <div class='i-calendar__header'>
             <strong class='i-calendar__title'>{headerLabel.value}</strong>
             <div class='i-calendar__controls'>
+              <button type='button' aria-label='上一年' onClick={() => selectDate('prev-year')}>
+                «
+              </button>
               <button type='button' aria-label='上个月' onClick={() => selectDate('prev-month')}>
                 ‹
               </button>
@@ -266,50 +274,75 @@ export default defineComponent({
               <button type='button' aria-label='下个月' onClick={() => selectDate('next-month')}>
                 ›
               </button>
+              <button type='button' aria-label='下一年' onClick={() => selectDate('next-year')}>
+                »
+              </button>
             </div>
           </div>
         );
       };
       const cellSlot = slots['date-cell'] ?? slots.date;
+      const renderCell = ({ date, type }: { date: Date; type: CalendarCellType }) => {
+        const data: CalendarCellData = {
+          day: formatDate(date, 'YYYY-MM-DD'),
+          date,
+          isSelected: !!selected.value && sameDay(date, selected.value),
+          type
+        };
+        const disabled = props.disabledDate?.(date) ?? false;
+        return (
+          <button
+            type='button'
+            key={data.day}
+            role='gridcell'
+            aria-label={data.day}
+            aria-pressed={data.isSelected ? 'true' : undefined}
+            aria-disabled={disabled ? 'true' : undefined}
+            class={{
+              'is-other-month': type !== 'current-month',
+              'is-selected': data.isSelected,
+              'is-today': props.highlightCurrent && sameDay(date, new Date()),
+              [`is-${type}`]: true
+            }}
+            disabled={disabled}
+            onClick={() => pickDay(date)}>
+            {cellSlot?.({ data, date }) ?? date.getDate()}
+          </button>
+        );
+      };
+      const renderWeekRow = () => (
+        <div class='i-calendar__week' role='row'>
+          {weekNames.value.map((day, index) => (
+            <span key={`${day}-${index}`} role='columnheader'>
+              {day}
+            </span>
+          ))}
+        </div>
+      );
+      if (isRangeMode.value) {
+        // 范围模式：起始月与下一月并排双面板。
+        return (
+          <div class={['i-calendar', { 'is-range': isRangeMode.value }]}>
+            {renderHeader()}
+            <div class='i-calendar__range-panels'>
+              {monthPanels.value.map((panel) => (
+                <div class='i-calendar__panel' key={formatDate(panel.anchor, 'YYYY-MM')}>
+                  {renderWeekRow()}
+                  <div class='i-calendar__grid' role='grid'>
+                    {panel.days.map(renderCell)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
       return (
         <div class={['i-calendar', { 'is-range': isRangeMode.value }]}>
           {renderHeader()}
-          <div class='i-calendar__week' role='row'>
-            {weekNames.value.map((day, index) => (
-              <span key={`${day}-${index}`} role='columnheader'>
-                {day}
-              </span>
-            ))}
-          </div>
+          {renderWeekRow()}
           <div class='i-calendar__grid' role='grid'>
-            {days.value.map(({ date, type }) => {
-              const data: CalendarCellData = {
-                day: formatDate(date, 'YYYY-MM-DD'),
-                date,
-                isSelected: !!selected.value && sameDay(date, selected.value),
-                type
-              };
-              const disabled = props.disabledDate?.(date) ?? false;
-              return (
-                <button
-                  type='button'
-                  key={data.day}
-                  role='gridcell'
-                  aria-label={data.day}
-                  aria-pressed={data.isSelected ? 'true' : undefined}
-                  aria-disabled={disabled ? 'true' : undefined}
-                  class={{
-                    'is-other-month': type !== 'current-month',
-                    'is-selected': data.isSelected,
-                    'is-today': props.highlightCurrent && sameDay(date, new Date()),
-                    [`is-${type}`]: true
-                  }}
-                  disabled={disabled}
-                  onClick={() => pickDay(date)}>
-                  {cellSlot?.({ data, date }) ?? date.getDate()}
-                </button>
-              );
-            })}
+            {days.value.map(renderCell)}
           </div>
         </div>
       );
