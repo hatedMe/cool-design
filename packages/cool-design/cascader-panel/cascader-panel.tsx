@@ -23,7 +23,7 @@ export default defineComponent({
     const nodes = useCascaderNodes({
       options: () => props.options,
       mapping: () => props.props,
-      model: () => props.modelValue,
+      model: () => props.modelValue ?? null,
       multiple: () => props.multiple,
       checkStrictly: () => props.checkStrictly,
       lazy: () => props.lazy,

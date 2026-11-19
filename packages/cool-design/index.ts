@@ -97,6 +97,7 @@ import {
   prompt as promptBox
 } from './message-box';
 import type { MessageBoxOptions } from './message-box';
+import type { AppContext } from 'vue';
 export { ClickOutside, InfiniteScroll, LoadingDirective, VPopover, directives, installDirectives } from './directives';
 export type { PopoverDirectiveValue } from './popover';
 import './style/index.scss';
@@ -338,10 +339,14 @@ const components = [
 export const install = (app: App) => {
   components.forEach((component) => app.use(component));
   installDirectives(app);
-  // 全局服务属性：$message / $notify / $loading 携带应用上下文注册。
-  app.use(ElMessage);
-  app.use(Notify);
-  app.use(ElLoading);
+  // 函数型服务不可走 app.use（Vue 会把函数本体当安装器调用），显式挂到全局属性并携带应用上下文。
+  const attachService = (fn: { _context?: AppContext | null }, name: string): void => {
+    fn._context = app._context;
+    (app.config.globalProperties as Record<string, unknown>)[name] = fn;
+  };
+  attachService(ElMessage, '$message');
+  attachService(Notify, '$notify');
+  attachService(ElLoading, '$loading');
   // $msgbox 家族绑定为当前应用上下文，全局配置随之生效。
   const context = app._context;
   const properties = app.config.globalProperties;

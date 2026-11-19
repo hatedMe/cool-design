@@ -80,7 +80,7 @@ export default defineComponent({
       model: () => props.modelValue,
       multiple: () => props.multiple,
       checkStrictly: () => props.checkStrictly,
-      disabled: isDisabled,
+      disabled: () => isDisabled() === true,
       lazy: () => props.lazy,
       lazyLoad: () => props.lazyLoad,
       rootLevel: 1
