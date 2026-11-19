@@ -11,6 +11,7 @@ import { Teleport } from 'vue';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 import { useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
+import { useComposition } from '../../hooks/index.ts';
 
 export interface MentionOption {
   value?: string;
@@ -59,6 +60,7 @@ export default defineComponent({
   setup(props, { emit, slots, expose }) {
     const field = useField();
     const config = useConfig();
+    const { isComposing, handleCompositionStart, handleCompositionEnd } = useComposition();
     const inputRef = ref<HTMLInputElement | HTMLTextAreaElement>();
     const floating = ref<HTMLElement>();
     const open = ref(false);
@@ -107,7 +109,8 @@ export default defineComponent({
       }
       return null;
     };
-    const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // `-` 不转义时可能在字符类中形成范围，一并纳入转义集合。
+    const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
     const prefixsToString = () => prefixes.value.map(escapeRegExp).join('');
 
     const syncToken = () => {
@@ -230,7 +233,15 @@ export default defineComponent({
         placeholder: props.placeholder,
         disabled: isDisabled(),
         rows: props.type === 'textarea' ? props.rows : undefined,
-        onInput: handleInput,
+        onInput: (event: Event) => {
+          // IME 组合期间跳过触发符探测，组合结束后再统一处理。
+          if (!isComposing.value) handleInput(event);
+        },
+        onCompositionstart: handleCompositionStart,
+        onCompositionend: (event: CompositionEvent) => {
+          handleCompositionEnd();
+          handleInput(event);
+        },
         onChange,
         onKeydown,
         onFocus: (event: FocusEvent) => {
@@ -264,6 +275,7 @@ export default defineComponent({
                 data-placement={position.placement.value}
                 role='listbox'>
                 {slots.header?.()}
+                {props.showArrow && <div class='i-mention__arrow' style={position.arrowStyle.value} aria-hidden='true' />}
                 {props.loading && (
                   <div class='i-mention__loading'>{slots.loading?.() ?? '加载中…'}</div>
                 )}

@@ -28,7 +28,7 @@
 | `filterOption`  | 过滤逻辑，`false` 全量展示，缺省按文本包含过滤 | `boolean` / `(pattern, option) => boolean` | `true` |
 | `placement`     | 下拉位置                                   | `string`                               | `bottom` |
 | `offset`        | 下拉偏移                                   | `number`                               | `0`      |
-| `showArrow`     | 下拉显示箭头                               | `boolean`                              | `false`  |
+| `showArrow`     | 下拉朝输入框一侧显示小箭头，建议配合 `offset ≥ 8` 使用 | `boolean`                  | `false`  |
 | `teleported`    | 下拉是否传送到 body                        | `boolean`                              | `true`   |
 | `persistent`    | 关闭后是否保留下拉节点                     | `boolean`                              | `false`  |
 | `fallbackPlacements` | 主位置放不下时的候选位置            | `Placement[]`                          | `['top', 'bottom']` |

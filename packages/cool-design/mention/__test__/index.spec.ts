@@ -119,4 +119,30 @@ describe('test `Mention` component', () => {
     expect(panel.classes()).toContain('i-mention__dropdown--dark');
     expect(panel.attributes('data-placement')).toBe('bottom-start');
   });
+
+  test('showArrow 渲染朝向输入框的小箭头，默认不渲染', async () => {
+    const { wrapper } = mountMention({ options, showArrow: true, offset: 8 });
+    await wrapper.get('input').setValue('@');
+    const panel = doc().get('.i-mention__dropdown');
+    expect(panel.find('.i-mention__arrow').exists()).toBe(true);
+    wrapper.unmount();
+
+    const plain = mountMention({ options });
+    await plain.wrapper.get('input').setValue('@');
+    expect(doc().find('.i-mention__arrow').exists()).toBe(false);
+  });
+
+  test('IME 组合期间不触发搜索，组合结束后统一处理', async () => {
+    const { wrapper, mention } = mountMention({ options });
+    const input = wrapper.get('input');
+    await input.setValue('@');
+    expect(mention.emitted('search')).toHaveLength(1);
+    await input.trigger('compositionstart');
+    await input.setValue('@ni');
+    // 拼音组合输入期间不触发 search。
+    expect(mention.emitted('search')).toHaveLength(1);
+    await input.trigger('compositionend');
+    expect(mention.emitted('search')!.at(-1)).toEqual(['ni', '@']);
+    expect(doc().findAll('.i-mention__option')).toHaveLength(1);
+  });
 });
