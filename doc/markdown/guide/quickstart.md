@@ -90,6 +90,21 @@ createApp(App).use(CoolDesign).mount('#app');
 </template>
 ```
 
+同时会注册全局服务属性：`$message`、`$notify`、`$msgbox`（以及 `$alert` / `$confirm` / `$prompt`）、`$loading`，均携带当前应用上下文，可直接在模板或选项式组件中使用：
+
+```ts
+export default {
+  methods: {
+    save() {
+      this.$message.success('已保存');
+      this.$confirm('确认删除该记录？', '删除确认')
+        .then(() => this.$message.success('已删除'))
+        .catch(() => undefined);
+    }
+  }
+};
+```
+
 ## 应用级配置
 
 建议在应用根部放置一个 ConfigProvider。主题、支持尺寸继承的控件和浮层会读取最近的配置；具体覆盖方式见 [自定义主题](#/guide/theme)。

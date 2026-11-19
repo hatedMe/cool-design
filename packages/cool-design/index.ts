@@ -14,7 +14,6 @@ import Loading from './loading';
 import Tag from './tag';
 import Tooltip from './tooltip';
 import Popconfirm from './popconfirm';
-import { MessageBoxComponent } from './message-box';
 import type { App } from 'vue';
 // 版本号内联为字面量，避免构建时读取 package.json 产生多余产物；发版由 scripts/sync-version.mjs 同步。
 export const version: string = '1.14.0';
@@ -36,7 +35,7 @@ import FormItem from './form-item';
 import Table from './table';
 import Pagination from './pagination';
 import Dialog from './dialog';
-import Message from './message';
+import Message, { ElMessage } from './message';
 import Affix from './affix';
 import { Anchor, AnchorLink } from './anchor';
 import InputTag from './input-tag';
@@ -81,13 +80,22 @@ import Steps, { Step } from './steps';
 import PageHeader from './page-header';
 import Alert from './alert';
 import Drawer from './drawer';
-import { Notification } from './notification';
+import { Notification, Notify } from './notification';
 import Popover from './popover';
 import Watermark from './watermark';
 import Progress from './progress';
 import Carousel, { CarouselItem } from './carousel';
 import Collapse, { CollapseItem } from './collapse';
 import { installDirectives } from './directives';
+import { ElLoading } from './loading';
+import {
+  MessageBoxComponent,
+  alert as alertBox,
+  confirm as confirmBox,
+  msgbox,
+  prompt as promptBox
+} from './message-box';
+import type { MessageBoxOptions } from './message-box';
 export { ClickOutside, InfiniteScroll, LoadingDirective, VPopover, directives, installDirectives } from './directives';
 export type { PopoverDirectiveValue } from './popover';
 import './style/index.scss';
@@ -316,6 +324,20 @@ const components = [
 export const install = (app: App) => {
   components.forEach((component) => app.use(component));
   installDirectives(app);
+  // 全局服务属性：$message / $notify / $loading 携带应用上下文注册。
+  app.use(ElMessage);
+  app.use(Notify);
+  app.use(ElLoading);
+  // $msgbox 家族绑定为当前应用上下文，全局配置随之生效。
+  const context = app._context;
+  const properties = app.config.globalProperties;
+  properties.$msgbox = (options: Parameters<typeof msgbox>[0]) => msgbox(options, context);
+  properties.$alert = (message: string, title?: string, options?: MessageBoxOptions) =>
+    alertBox(message, title ?? '', options ?? {}, context);
+  properties.$confirm = (message: string, title?: string, options?: MessageBoxOptions) =>
+    confirmBox(message, title ?? '', options ?? {}, context);
+  properties.$prompt = (message: string, title?: string, options?: MessageBoxOptions) =>
+    promptBox(message, title ?? '', options ?? {}, context);
 };
 export default { version, install };
 
