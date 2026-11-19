@@ -1,4 +1,4 @@
-import { h } from 'vue';
+import { h, nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 import { describe, expect, test, vi } from 'vitest';
 import Tabs from '../index';
@@ -113,5 +113,48 @@ describe('Tabs', () => {
     // tabs-a 的页签没有被聚焦或切换
     expect(wrapper.findAll('#tabs-a [role="tab"]')[1].attributes('aria-selected')).not.toBe('true');
     wrapper.unmount();
+  });
+
+  test('add-icon 插槽自定义新增按钮', async () => {
+    const wrapper = mount(Tabs, {
+      props: { modelValue: 'a', addable: true, panes: [{ name: 'a', label: 'A' }] },
+      slots: { 'add-icon': () => '加个页签' }
+    });
+    expect(wrapper.get('.i-tabs__add').text()).toBe('加个页签');
+    await wrapper.get('.i-tabs__add').trigger('click');
+    expect(wrapper.emitted('tab-add')).toHaveLength(1);
+    expect(wrapper.emitted('edit')?.[0]).toEqual([null, 'add']);
+  });
+
+  test('页签溢出时显示滚动箭头并随边界禁用', async () => {
+    const wrapper = mount(Tabs, {
+      props: {
+        modelValue: '0',
+        panes: Array.from({ length: 6 }, (_, index) => ({ name: String(index), label: `页签${index}` }))
+      }
+    });
+    expect(wrapper.find('.i-tabs__nav-prev').exists()).toBe(false);
+    const scroll = wrapper.get('.i-tabs__nav-scroll').element as HTMLElement;
+
+    // 模拟溢出：内容宽 400、视口宽 200。
+    Object.defineProperty(scroll, 'scrollWidth', { configurable: true, value: 400 });
+    Object.defineProperty(scroll, 'clientWidth', { configurable: true, value: 200 });
+    Object.defineProperty(scroll, 'scrollLeft', { configurable: true, writable: true, value: 0 });
+    scroll.dispatchEvent(new Event('scroll'));
+    await nextTick();
+    const prev = wrapper.get('.i-tabs__nav-prev');
+    const next = wrapper.get('.i-tabs__nav-next');
+    expect(prev.attributes('disabled')).toBeDefined();
+    expect(next.attributes('disabled')).toBeUndefined();
+
+    await next.trigger('click');
+    // 每次滚动视口的 60%。
+    expect(scroll.scrollLeft).toBe(120);
+    expect(prev.attributes('disabled')).toBeUndefined();
+
+    scroll.scrollLeft = 200;
+    scroll.dispatchEvent(new Event('scroll'));
+    await nextTick();
+    expect(wrapper.get('.i-tabs__nav-next').attributes('disabled')).toBeDefined();
   });
 });

@@ -3,6 +3,9 @@ import {
   Fragment,
   computed,
   defineComponent,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
   ref,
   watch,
   type PropType,
@@ -71,6 +74,51 @@ export default defineComponent({
     const internalActive = ref<string | number>(props.modelValue ?? props.defaultValue ?? '');
     const visited = ref<Set<string | number>>(new Set());
     const rootRef = ref<HTMLElement>();
+    const navScrollRef = ref<HTMLElement>();
+    const navScrollable = ref(false);
+    const navAtStart = ref(true);
+    const navAtEnd = ref(true);
+
+    const isVerticalHeader = () => props.tabPosition === 'left' || props.tabPosition === 'right';
+    // 页签溢出时显示左右（上下）滚动箭头，箭头到边界时禁用。
+    const updateNavScroll = () => {
+      const el = navScrollRef.value;
+      if (!el) return;
+      if (isVerticalHeader()) {
+        navScrollable.value = el.scrollHeight > el.clientHeight + 1;
+        navAtStart.value = el.scrollTop <= 0;
+        navAtEnd.value = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+      } else {
+        navScrollable.value = el.scrollWidth > el.clientWidth + 1;
+        navAtStart.value = el.scrollLeft <= 0;
+        navAtEnd.value = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+      }
+    };
+    const scrollNav = (direction: 1 | -1) => {
+      const el = navScrollRef.value;
+      if (!el) return;
+      const delta = (isVerticalHeader() ? el.clientHeight : el.clientWidth) * 0.6;
+      if (isVerticalHeader()) el.scrollTop += direction * delta;
+      else el.scrollLeft += direction * delta;
+      // 同步设置 scroll 偏移不一定派发 scroll 事件，主动刷新一次边界状态。
+      updateNavScroll();
+    };
+    let navObserver: ResizeObserver | undefined;
+    const scrollHandler = () => updateNavScroll();
+    onMounted(() => {
+      const el = navScrollRef.value;
+      el?.addEventListener('scroll', scrollHandler);
+      if (typeof ResizeObserver !== 'undefined' && el) {
+        navObserver = new ResizeObserver(() => updateNavScroll());
+        navObserver.observe(el);
+      }
+      updateNavScroll();
+    });
+    onBeforeUnmount(() => {
+      navScrollRef.value?.removeEventListener('scroll', scrollHandler);
+      navObserver?.disconnect();
+      navObserver = undefined;
+    });
 
     const normalizedFromProps = computed<NormalizedPane[]>(() =>
       props.panes.map((pane) => ({
@@ -214,6 +262,22 @@ export default defineComponent({
 
     expose({ setActive });
 
+    watch(
+      // 页签数量或位置变化后重新评估溢出状态。
+      () => [normalized.value.length, props.tabPosition],
+      () => nextTick(() => updateNavScroll())
+    );
+    // 切换页签时把激活页签滚动进可视区。
+    watch(
+      () => activeName.value,
+      () =>
+        nextTick(() => {
+          const el = navScrollRef.value;
+          const activeTab = el?.querySelector<HTMLElement>('[aria-selected="true"]');
+          activeTab?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+        })
+    );
+
     const normalizedType = computed(() => (props.type === '' ? 'default' : props.type));
 
     return () => {
@@ -231,52 +295,74 @@ export default defineComponent({
             [`is-${headerPosition}`]: true,
             'is-stretch': props.stretch
           }}>
-          <div
-            class='i-tabs__nav'
-            role='tablist'
-            aria-orientation={vertical ? 'vertical' : 'horizontal'}>
-            {panes.map((pane, index) => {
-              const isActive = pane.name === active;
-              const closable = isClosable(pane);
-              return (
-                <div
-                  key={String(pane.name)}
-                  role='tab'
-                  data-tabs-tab={String(pane.name)}
-                  id={`i-tabs-tab-${String(pane.name)}`}
-                  aria-selected={isActive}
-                  aria-disabled={pane.disabled || undefined}
-                  aria-controls={`i-tabs-panel-${String(pane.name)}`}
-                  tabindex={pane.disabled ? -1 : isActive ? 0 : -1}
-                  class={{ 'i-tabs__item': true, 'is-active': isActive, 'is-disabled': pane.disabled }}
-                  onClick={(event) => setActive(pane.name, event)}
-                  onKeydown={(event) => handleKeydown(event, index)}>
-                  <span class='i-tabs__label'>{pane.labelSlot?.() ?? pane.label}</span>
-                  {closable && (
-                    <span
-                      class='i-tabs__close'
-                      role='button'
-                      aria-label={`关闭${pane.label || pane.name}`}
-                      tabindex={pane.disabled ? -1 : 0}
-                      onClick={(event) => handleRemove(pane, event)}
-                      onKeydown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault();
-                          handleRemove(pane, event);
-                        }
-                      }}>
-                      ×
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-            {showAdd.value && (
-              <button type='button' class='i-tabs__add' aria-label='新增页签' onClick={handleAdd}>
-                +
-              </button>
-            )}
+          {navScrollable.value && (
+            <button
+              type='button'
+              class={{ 'i-tabs__nav-prev': true, 'is-disabled': navAtStart.value }}
+              aria-label='上一个可视页签'
+              disabled={navAtStart.value}
+              onClick={() => scrollNav(-1)}>
+              ‹
+            </button>
+          )}
+          <div class='i-tabs__nav-scroll' ref={navScrollRef}>
+            <div
+              class='i-tabs__nav'
+              role='tablist'
+              aria-orientation={vertical ? 'vertical' : 'horizontal'}>
+              {panes.map((pane, index) => {
+                const isActive = pane.name === active;
+                const closable = isClosable(pane);
+                return (
+                  <div
+                    key={String(pane.name)}
+                    role='tab'
+                    data-tabs-tab={String(pane.name)}
+                    id={`i-tabs-tab-${String(pane.name)}`}
+                    aria-selected={isActive}
+                    aria-disabled={pane.disabled || undefined}
+                    aria-controls={`i-tabs-panel-${String(pane.name)}`}
+                    tabindex={pane.disabled ? -1 : isActive ? 0 : -1}
+                    class={{ 'i-tabs__item': true, 'is-active': isActive, 'is-disabled': pane.disabled }}
+                    onClick={(event) => setActive(pane.name, event)}
+                    onKeydown={(event) => handleKeydown(event, index)}>
+                    <span class='i-tabs__label'>{pane.labelSlot?.() ?? pane.label}</span>
+                    {closable && (
+                      <span
+                        class='i-tabs__close'
+                        role='button'
+                        aria-label={`关闭${pane.label || pane.name}`}
+                        tabindex={pane.disabled ? -1 : 0}
+                        onClick={(event) => handleRemove(pane, event)}
+                        onKeydown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            handleRemove(pane, event);
+                          }
+                        }}>
+                        ×
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+              {showAdd.value && (
+                <button type='button' class='i-tabs__add' aria-label='新增页签' onClick={handleAdd}>
+                  {slots['add-icon']?.() ?? '+'}
+                </button>
+              )}
+            </div>
           </div>
+          {navScrollable.value && (
+            <button
+              type='button'
+              class={{ 'i-tabs__nav-next': true, 'is-disabled': navAtEnd.value }}
+              aria-label='下一个可视页签'
+              disabled={navAtEnd.value}
+              onClick={() => scrollNav(1)}>
+              ›
+            </button>
+          )}
         </div>
       );
 
