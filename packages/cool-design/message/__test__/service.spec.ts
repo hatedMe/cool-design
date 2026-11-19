@@ -56,6 +56,27 @@ test('支持 offset 与 placement', () => {
   b.close();
 });
 
+test('closeAll 支持按类型过滤', () => {
+  ElMessage.success('成功消息');
+  ElMessage({ message: '提示', type: 'info' });
+  ElMessage({ message: '错误', type: 'error' });
+  expect(document.querySelectorAll('.i-message')).toHaveLength(3);
+  ElMessage.closeAll('info');
+  expect(document.querySelectorAll('.i-message')).toHaveLength(2);
+  expect(document.querySelector('.i-message--info')).toBeNull();
+  ElMessage.closeAll();
+  expect(document.querySelectorAll('.i-message')).toHaveLength(0);
+});
+
+test('plain 朴素样式与 VNode 消息', () => {
+  const a = ElMessage({ message: '朴素提示', plain: true, duration: 0 });
+  expect(document.querySelector('.i-message.is-plain')).not.toBeNull();
+  a.close();
+  const b = ElMessage({ message: h('b', null, '加粗提示'), duration: 0 });
+  expect(document.querySelector('.i-message b')?.textContent).toBe('加粗提示');
+  b.close();
+});
+
 test('自动关闭与 appContext', async () => {
   vi.useFakeTimers();
   const onClose = vi.fn();

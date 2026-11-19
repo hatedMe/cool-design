@@ -1,10 +1,10 @@
-import { createVNode, render, type AppContext } from 'vue';
+import { createVNode, render, type AppContext, type VNode } from 'vue';
 import MessageComponent, { type MessageIcon, type MessageType } from './message';
 
 export type MessagePlacement = 'top' | 'bottom';
 
 export interface MessageOptions {
-  message: string;
+  message: string | VNode;
   type?: MessageType;
   duration?: number;
   showClose?: boolean;
@@ -12,6 +12,7 @@ export interface MessageOptions {
   placement?: MessagePlacement;
   dangerouslyUseHTMLString?: boolean;
   center?: boolean;
+  plain?: boolean;
   customClass?: string;
   icon?: MessageIcon;
   closeIcon?: MessageIcon;
@@ -30,12 +31,12 @@ type MessageFn = {
   info(options: string | MessageOptions, appContext?: AppContext | null): MessageHandle;
   error(options: string | MessageOptions, appContext?: AppContext | null): MessageHandle;
   primary(options: string | MessageOptions, appContext?: AppContext | null): MessageHandle;
-  closeAll(): void;
+  closeAll(type?: MessageType): void;
   _context?: AppContext | null;
 };
 
 const containers = new Map<MessagePlacement, HTMLElement>();
-const closers = new Set<() => void>();
+const closers = new Set<{ close: () => void; type: MessageType }>();
 const grouped = new Map<string, { handle: MessageHandle; bump: () => void }>();
 
 function getContainer(placement: MessagePlacement, offset: number): HTMLElement {
@@ -60,7 +61,9 @@ function messageFn(input: string | MessageOptions, appContext?: AppContext | nul
   const opts = normalize(input);
   const placement = opts.placement ?? 'top';
   const offset = opts.offset ?? 20;
-  const groupKey = opts.grouping ? `${opts.type ?? 'info'}|${placement}|${opts.message}` : undefined;
+  // VNode 消息不参与合并：徽标计数依赖稳定的文本标识。
+  const groupKey =
+    opts.grouping && typeof opts.message === 'string' ? `${opts.type ?? 'info'}|${placement}|${opts.message}` : undefined;
   if (groupKey) {
     const existing = grouped.get(groupKey);
     if (existing) {
@@ -73,10 +76,11 @@ function messageFn(input: string | MessageOptions, appContext?: AppContext | nul
   container.appendChild(wrapper);
   let closed = false;
   let count = 1;
+  const entry = { close: () => doClose(), type: (opts.type ?? 'info') as MessageType };
   const doClose = () => {
     if (closed) return;
     closed = true;
-    closers.delete(doClose);
+    closers.delete(entry);
     if (groupKey) grouped.delete(groupKey);
     render(null, wrapper);
     wrapper.remove();
@@ -86,15 +90,17 @@ function messageFn(input: string | MessageOptions, appContext?: AppContext | nul
     }
     opts.onClose?.();
   };
-  closers.add(doClose);
+  closers.add(entry);
   const draw = () => {
     const vnode = createVNode(MessageComponent, {
-      message: count > 1 ? `${opts.message} ×${count}` : opts.message,
+      message: opts.message,
+      repeatNum: count,
       type: opts.type ?? 'info',
       duration: opts.duration ?? 3000,
       showClose: opts.showClose ?? false,
       dangerouslyUseHTMLString: opts.dangerouslyUseHTMLString ?? false,
       center: opts.center ?? false,
+      plain: opts.plain ?? false,
       customClass: opts.customClass ?? '',
       icon: opts.icon,
       closeIcon: opts.closeIcon,
@@ -114,8 +120,10 @@ const fn = messageFn as MessageFn;
   fn[type] = (input: string | MessageOptions, appContext?: AppContext | null) =>
     messageFn(normalize(input, type), appContext);
 });
-fn.closeAll = () => {
-  [...closers].forEach((close) => close());
+fn.closeAll = (type?: MessageType) => {
+  [...closers].forEach((entry) => {
+    if (!type || entry.type === type) entry.close();
+  });
 };
 
 export const message = fn;

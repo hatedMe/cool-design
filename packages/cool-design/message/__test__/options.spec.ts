@@ -22,17 +22,32 @@ describe('Message 新增选项', () => {
     expect(wrapper.find('.i-message__close .i-icon').classes()).toContain('icon-close');
   });
 
-  test('grouping 合并同内容消息并累计次数', async () => {
+  test('grouping 合并同内容消息并以徽标累计次数', async () => {
     MessageService({ message: '保存成功', grouping: true });
     MessageService({ message: '保存成功', grouping: true });
     MessageService({ message: '保存成功', grouping: true });
     await flushPromises();
-    const texts = [...document.querySelectorAll('.i-message')].map((item) => item.textContent);
-    expect(texts).toEqual(['保存成功 ×3']);
+    const messages = [...document.querySelectorAll('.i-message')];
+    expect(messages).toHaveLength(1);
+    const badge = messages[0].querySelector('.i-message__badge');
+    expect(badge?.textContent).toBe('3');
+    // 原文案保持不变，计数交给徽标。
+    expect(messages[0].textContent).toBe('保存成功3');
+    expect(messages[0].textContent).not.toContain('×3');
 
     MessageService({ message: '其他消息' });
     await flushPromises();
     expect(document.querySelectorAll('.i-message')).toHaveLength(2);
+  });
+
+  test('grouping 不破坏 HTML 消息', async () => {
+    MessageService({ message: '<b>成功</b>', dangerouslyUseHTMLString: true, grouping: true });
+    MessageService({ message: '<b>成功</b>', dangerouslyUseHTMLString: true, grouping: true });
+    await flushPromises();
+    const messages = [...document.querySelectorAll('.i-message')];
+    expect(messages).toHaveLength(1);
+    expect(messages[0].querySelectorAll('b')).toHaveLength(1);
+    expect(messages[0].querySelector('.i-message__badge')?.textContent).toBe('2');
   });
 
   test('grouping 合并后关闭即移除', async () => {

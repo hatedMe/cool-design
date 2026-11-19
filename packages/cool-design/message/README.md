@@ -60,11 +60,12 @@ ElMessage('你好', getCurrentInstance()?.appContext ?? null);
 | 参数 | 说明 | 类型 | 默认值 |
 | ---- | ---- | ---- | ------ |
 | `type` | 消息类型：`primary` / `success` / `warning` / `info` / `error` | `MessageType` | `info` |
-| `message` | 消息文本，必填 | `string` | — |
-| `duration` | 自动关闭毫秒数，`0` 不自动关闭 | `number` | `3000` |
+| `message` | 消息文本或 VNode，必填 | `string` / `VNode` | — |
+| `duration` | 自动关闭毫秒数，`0` 不自动关闭；悬停时暂停倒计时，移开后按剩余时长继续 | `number` | `3000` |
 | `show-close` | 是否显示关闭按钮 | `boolean` | `false` |
 | `dangerously-use-h-t-m-l-string` | 是否解析 HTML | `boolean` | `false` |
 | `center` | 文本是否居中 | `boolean` | `false` |
+| `plain` | 朴素样式（浅色底、同色系边框） | `boolean` | `false` |
 | `custom-class` | 自定义类名 | `string` | — |
 | `icon` | 自定义前置图标 | `string` / `Component` | — |
 | `close-icon` | 自定义关闭图标 | `string` / `Component` | — |
@@ -79,7 +80,7 @@ ElMessage('你好', getCurrentInstance()?.appContext ?? null);
 
 | 参数 | 说明 | 类型 | 默认值 |
 | ---- | ---- | ---- | ------ |
-| `message` | 消息文本，必填 | `string` | — |
+| `message` | 消息文本或 VNode，必填 | `string` / `VNode` | — |
 | `type` | 类型：`primary` / `success` / `warning` / `info` / `error` | `MessageType` | `info` |
 | `duration` | 自动关闭毫秒数，`0` 不自动关闭 | `number` | `3000` |
 | `show-close` / `showClose` | 是否显示关闭按钮 | `boolean` | `false` |
@@ -87,10 +88,11 @@ ElMessage('你好', getCurrentInstance()?.appContext ?? null);
 | `placement` | 位置：`top` / `bottom` | `MessagePlacement` | `top` |
 | `dangerouslyUseHTMLString` | 是否解析 HTML | `boolean` | `false` |
 | `center` | 文本是否居中 | `boolean` | `false` |
+| `plain` | 朴素样式（浅色底、同色系边框） | `boolean` | `false` |
 | `customClass` | 自定义类名 | `string` | — |
 | `icon` | 自定义前置图标 | `string` / `Component` | — |
 | `closeIcon` | 自定义关闭图标 | `string` / `Component` | — |
-| `grouping` | 合并同内容消息并以 `×N` 累计次数 | `boolean` | `false` |
+| `grouping` | 合并同内容消息，重复次数以徽标展示（不改动消息原文，HTML 消息不受影响） | `boolean` | `false` |
 | `onClose` | 关闭回调 | `() => void` | — |
 
 ### 服务方法
@@ -99,7 +101,7 @@ ElMessage('你好', getCurrentInstance()?.appContext ?? null);
 | ---- | ---- | ---- |
 | `ElMessage(options, appContext?)` | 显示消息，`options` 可为字符串或选项，返回关闭句柄 | `(options: string \| MessageOptions, appContext?: AppContext \| null) => MessageHandle` |
 | `ElMessage.primary/success/warning/info/error(options, appContext?)` | 指定类型的快捷方法 | 同上 |
-| `ElMessage.closeAll()` | 关闭全部消息 | `() => void` |
+| `ElMessage.closeAll(type?)` | 关闭全部消息，可传类型只关该类 | `(type?: MessageType) => void` |
 | `handle.close()` | 关闭单条，幂等 | `() => void` |
 
 `error` 类型使用 `role="alert"`，其余使用 `role="status"`。计时结束、关闭按钮或句柄关闭均触发 `onClose` 一次。

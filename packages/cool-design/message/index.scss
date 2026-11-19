@@ -68,3 +68,21 @@
   justify-content: center;
   text-align: center;
 }
+.i-message__badge {
+  flex: none;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 9px;
+  background: currentColor;
+  color: var(--i-bg);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+}
+.i-message.is-plain {
+  border-color: color-mix(in srgb, currentColor 40%, var(--i-bg));
+  background: color-mix(in srgb, currentColor 10%, var(--i-bg));
+}
