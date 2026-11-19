@@ -88,3 +88,14 @@
 | 变更 | 迁移说明 |
 | --- | --- |
 | `Form.validate()` 失败时由 resolve `false` 改为 reject 携带无效字段映射 | `await form.validate()` 判断失败的写法改为 `try/catch` 或 `.catch()`；拒绝值为 `{ [prop]: string[] }` |
+
+### Overlay Unification（弹层体系统一）
+
+- **Select / SelectV2 / TreeSelect / Mention / TimeSelect**：下拉层迁移到共享浮层体系——默认传送 `body`（`teleported`），`overflow: hidden` 祖先不再裁剪；统一补齐 `persistent` / `placement` / `fallback-placements` / `popper-options` / `popper-class` / `popper-style` / `effect` 属性族；外点关闭由浮层统一处理，移除各组件手写的文档级监听
+- **Select / SelectV2**：打开时优先高亮选中项；键盘导航时高亮项滚动跟随（SelectV2 为虚拟窗口滚动对齐）
+- **SelectV2**：补隐藏 `name` 输入，原生表单提交不再丢值（多选序列化为 JSON 数组）
+- **Tooltip / Popover**：新增 `auto-close`（打开指定毫秒后自动关闭，独立计时不与显隐延迟冲突）与 `fallback-placements`；实例方法补 `updatePopper` 兼容别名；新增 `v-popover` 指令——值为内容字符串或配置对象，随值更新自动重建
+- **Dropdown**：新增 `effect` / `role` / `tabindex` / `trigger-keys` 属性；`command` 事件第二参数补 DropdownItem 组件实例；split-button 复用按钮组件与按钮组，新增 `type` / `button-props`
+- **Drawer**：新增 `close-icon`（字符串按文本、组件按节点渲染）；开关补遮罩淡入淡出与面板按方向滑入滑出过渡
+- **Menu**：折叠弹层默认传送 `body`，菜单级新增 `popper-offset` / `popper-effect` / `popper-class` / `teleported` / `show-timeout` / `hide-timeout`，子菜单配置优先、回退菜单级
+- 面板均补暗色主题（`effect="dark"`）样式与传送回归测试
