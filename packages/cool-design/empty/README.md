@@ -26,7 +26,7 @@
 
 | 参数 | 说明 | 类型 | 默认值 |
 | ---- | ---- | ---- | ------ |
-| description | 空态描述 | `string` | `''` |
+| description | 空态描述 | `string` | `'No Data'` |
 | image | 自定义图片地址，默认使用内置 SVG | `string` | — |
 | image-size | 图片宽高，支持数字（px）或 CSS 尺寸 | `number` / `string` | — |
 
