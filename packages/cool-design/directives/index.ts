@@ -2,56 +2,163 @@ import type { App, Directive } from 'vue';
 import { createApp, h } from 'vue';
 import PopoverComponent from '../popover/popover';
 import type { PopoverDirectiveValue } from '../popover/popover';
+import { lockScroll, unlockScroll } from '../loading/scroll-lock';
 
-type LoadingValue = boolean | { text?: string; background?: string; fullscreen?: boolean; lock?: boolean };
+type LoadingValue = boolean | {
+  text?: string;
+  background?: string;
+  fullscreen?: boolean;
+  lock?: boolean;
+  body?: boolean;
+  spinner?: string;
+  svg?: string;
+  svgViewBox?: string;
+  svgSize?: number;
+};
 const loadingLock = Symbol('loading-lock');
-type LoadingElement = HTMLElement & { [loadingLock]?: boolean };
+const loadingMaskKey = Symbol('loading-mask');
+type LoadingElement = HTMLElement & { [loadingMaskKey]?: HTMLElement; [loadingLock]?: boolean };
 
-const loadingMask = (el: HTMLElement) => el.querySelector<HTMLElement>(':scope > .i-loading-mask');
+const readStringAttr = (el: HTMLElement, name: string): string => {
+  try {
+    return el.getAttribute(name) ?? '';
+  } catch {
+    return '';
+  }
+};
 
-const setLoading = (el: HTMLElement, value: LoadingValue) => {
+const readSvgSizeAttr = (el: HTMLElement): number => {
+  try {
+    const value = el.getAttribute('element-loading-svg-size');
+    if (value === null || value === '') return 0;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  } catch {
+    return 0;
+  }
+};
+
+interface ResolvedLoadingOptions {
+  active: boolean;
+  text: string;
+  background: string;
+  fullscreen: boolean;
+  lock: boolean;
+  body: boolean;
+  spinner: string;
+  svg: string;
+  svgViewBox: string;
+  svgSize: number;
+}
+
+// 选项对象优先，其次 element-loading-* 元素属性，最后指令 modifiers。
+const resolveLoadingOptions = (
+  el: HTMLElement,
+  value: LoadingValue,
+  modifiers: Record<string, boolean>
+): ResolvedLoadingOptions => {
   const options = typeof value === 'object' ? value : {};
-  const active = typeof value === 'boolean' ? value : true;
-  let mask = loadingMask(el);
-  if (!active) {
+  return {
+    active: typeof value === 'boolean' ? value : true,
+    text: options.text ?? readStringAttr(el, 'element-loading-text'),
+    background: options.background ?? readStringAttr(el, 'element-loading-background'),
+    fullscreen: options.fullscreen ?? Boolean(modifiers.fullscreen),
+    lock: options.lock ?? Boolean(modifiers.lock),
+    body: options.body ?? Boolean(modifiers.body),
+    spinner: options.spinner ?? readStringAttr(el, 'element-loading-spinner'),
+    svg: options.svg ?? readStringAttr(el, 'element-loading-svg'),
+    svgViewBox: options.svgViewBox ?? readStringAttr(el, 'element-loading-svg-view-box'),
+    svgSize: options.svgSize ?? readSvgSizeAttr(el)
+  };
+};
+
+const buildLoadingSpinner = (options: ResolvedLoadingOptions): HTMLElement => {
+  if (options.svg) {
+    const wrapper = document.createElement('span');
+    wrapper.className = 'i-loading-mask__svg';
+    wrapper.setAttribute('aria-hidden', 'true');
+    try {
+      const viewBox = options.svgViewBox ? ` viewBox="${options.svgViewBox.replace(/"/g, '&quot;')}"` : '';
+      const parsed = new DOMParser().parseFromString(
+        `<svg xmlns="http://www.w3.org/2000/svg"${viewBox}>${options.svg}</svg>`,
+        'image/svg+xml'
+      );
+      const svg = parsed.documentElement;
+      if (options.svgSize) {
+        svg.setAttribute('width', String(options.svgSize));
+        svg.setAttribute('height', String(options.svgSize));
+      }
+      svg.setAttribute('class', 'i-loading-mask__svg-item');
+      wrapper.appendChild(svg);
+    } catch {
+      // 解析失败时回退默认旋转描边。
+      return buildLoadingSpinner({ ...options, svg: '', spinner: '' });
+    }
+    return wrapper;
+  }
+  if (options.spinner) {
+    const icon = document.createElement('i');
+    icon.className = `iconfont i-icon i-loading-mask__icon ${options.spinner}`;
+    icon.setAttribute('aria-hidden', 'true');
+    return icon;
+  }
+  const spinner = document.createElement('span');
+  spinner.className = 'i-loading-mask__spinner';
+  spinner.setAttribute('aria-hidden', 'true');
+  return spinner;
+};
+
+const setLoading = (el: LoadingElement, options: ResolvedLoadingOptions) => {
+  let mask = el[loadingMaskKey];
+  if (!options.active) {
     mask?.remove();
+    el[loadingMaskKey] = undefined;
     el.removeAttribute('aria-busy');
-    if ((el as LoadingElement)[loadingLock]) document.body.style.overflow = '';
+    if (el[loadingLock]) {
+      unlockScroll();
+      el[loadingLock] = false;
+    }
     return;
   }
+  const target = options.fullscreen || options.body ? document.body : el;
   if (!mask) {
-    if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+    if (target === el && getComputedStyle(el).position === 'static') el.style.position = 'relative';
     mask = document.createElement('div');
     mask.className = 'i-loading-mask';
     mask.setAttribute('role', 'status');
     mask.setAttribute('aria-live', 'polite');
-    const spinner = document.createElement('span');
-    spinner.className = 'i-loading-mask__spinner';
-    spinner.setAttribute('aria-hidden', 'true');
-    mask.append(spinner, document.createElement('span'));
-    el.appendChild(mask);
+    el[loadingMaskKey] = mask;
   }
-  const text = mask.lastElementChild as HTMLElement;
-  text.textContent = options.text ?? '';
-  mask.classList.toggle('is-fullscreen', Boolean(options.fullscreen));
+  mask.classList.toggle('is-fullscreen', options.fullscreen);
+  mask.textContent = '';
+  mask.append(buildLoadingSpinner(options), document.createElement('span'));
+  const textNode = mask.lastElementChild as HTMLElement;
+  textNode.className = 'i-loading-mask__text';
+  textNode.textContent = options.text;
   if (options.background) mask.style.background = options.background;
+  target.appendChild(mask);
   el.setAttribute('aria-busy', 'true');
-  if (options.lock) document.body.style.overflow = 'hidden';
+  if (options.lock && !el[loadingLock]) {
+    lockScroll();
+    el[loadingLock] = true;
+  }
 };
 
 export const LoadingDirective: Directive<LoadingElement, LoadingValue> = {
   mounted: (el, binding) => {
-    setLoading(el, binding.value);
-    el[loadingLock] = typeof binding.value === 'object' && Boolean(binding.value.lock);
+    setLoading(el, resolveLoadingOptions(el, binding.value, binding.modifiers ?? {}));
   },
   updated: (el, binding) => {
-    setLoading(el, binding.value);
-    el[loadingLock] = typeof binding.value === 'object' && Boolean(binding.value.lock);
+    setLoading(el, resolveLoadingOptions(el, binding.value, binding.modifiers ?? {}));
   },
   unmounted: (el) => {
-    loadingMask(el)?.remove();
+    el[loadingMaskKey]?.remove();
+    el[loadingMaskKey] = undefined;
     el.removeAttribute('aria-busy');
-    if (el[loadingLock]) document.body.style.overflow = '';
+    if (el[loadingLock]) {
+      unlockScroll();
+      el[loadingLock] = false;
+    }
     delete el[loadingLock];
   }
 };

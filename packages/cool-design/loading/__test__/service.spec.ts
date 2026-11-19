@@ -67,3 +67,42 @@ test('服务接受 appContext 参数', () => {
   expect(document.body.textContent).toContain('ctx');
   inst.close();
 });
+
+test('setText 更新提示文字', () => {
+  const inst = Loading.service({ fullscreen: true, text: '加载中' });
+  closers.push(inst);
+  expect(document.body.textContent).toContain('加载中');
+  inst.setText('仍在加载');
+  expect(document.body.textContent).toContain('仍在加载');
+  expect(document.body.textContent).not.toContain('加载中');
+  inst.setText('第三次');
+  expect(document.body.textContent).toContain('第三次');
+  inst.close();
+  inst.setText('关闭后无效');
+  expect(document.body.textContent).not.toContain('关闭后无效');
+});
+
+test('支持自定义 spinner 图标类名', () => {
+  const inst = Loading.service({ fullscreen: true, spinner: 'icon-refresh' });
+  closers.push(inst);
+  expect(document.querySelector('.i-loading__icon')).not.toBeNull();
+  expect(document.querySelector('.i-loading__icon')?.className).toContain('icon-refresh');
+  expect(document.querySelector('.i-loading__spinner')).toBeNull();
+  inst.close();
+});
+
+test('支持自定义 SVG 片段与尺寸', () => {
+  const inst = Loading.service({
+    fullscreen: true,
+    svg: '<circle cx="25" cy="25" r="20" fill="none" />',
+    svgViewBox: '25 25 50 50',
+    svgSize: 64
+  });
+  closers.push(inst);
+  const svg = document.querySelector('.i-loading__svg');
+  expect(svg).not.toBeNull();
+  expect(svg?.getAttribute('viewBox')).toBe('25 25 50 50');
+  expect(svg?.getAttribute('width')).toBe('64');
+  expect(svg?.innerHTML).toContain('<circle');
+  inst.close();
+});

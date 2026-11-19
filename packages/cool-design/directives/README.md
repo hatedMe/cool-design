@@ -24,9 +24,25 @@
 
 | 指令 | 值 | 说明 |
 | --- | --- | --- |
-| `v-loading` | `boolean` / `{ text?: string; background?: string; fullscreen?: boolean; lock?: boolean }` | 显示或隐藏遮罩 |
+| `v-loading` | `boolean` / `{ text?: string; background?: string; fullscreen?: boolean; lock?: boolean; body?: boolean; spinner?: string; svg?: string; svgViewBox?: string; svgSize?: number }` | 显示或隐藏遮罩 |
 | `v-click-outside` | `(event: Event) => void` | 点击元素外部时触发 |
 | `v-infinite-scroll` | `() => void` | 滚动到距离底部指定距离时触发 |
+
+`v-loading` 支持的 modifiers 与元素属性：
+
+| 名称 | 来源 | 说明 |
+| --- | --- | --- |
+| `fullscreen` | modifier / 选项 | 全屏遮罩，挂载到 `body` |
+| `lock` | modifier / 选项 | 锁定页面滚动，关闭时恢复 |
+| `body` | modifier / 选项 | 遮罩挂载到 `body`（避免 `overflow` 裁剪） |
+| `element-loading-text` | 元素属性 | 提示文字 |
+| `element-loading-background` | 元素属性 | 背景色 |
+| `element-loading-spinner` | 元素属性 | 图标类名 |
+| `element-loading-svg` | 元素属性 | 自定义 SVG 片段 |
+| `element-loading-svg-view-box` | 元素属性 | SVG 的 `viewBox` |
+| `element-loading-svg-size` | 元素属性 | SVG 尺寸，单位 px |
+
+选项对象的优先级高于元素属性。
 
 `v-infinite-scroll` 支持以下属性：
 

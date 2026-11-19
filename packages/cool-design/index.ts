@@ -368,6 +368,7 @@ export type {
 } from './notification';
 export { ElMessage } from './message';
 export type { MessageHandle, MessageOptions, MessagePlacement, MessageType } from './message';
+export { ElLoading } from './loading';
 export type { LoadingInstance, LoadingServiceOptions } from './loading';
 export type { AlertEffect, AlertType } from './alert';
 export type { TimelineMode, TimelineItem as TimelineItemData } from './timeline';

@@ -10,7 +10,8 @@ const loading = hooks(LoadingDirective);
 const outside = hooks(ClickOutside);
 const infinite = hooks(InfiniteScroll);
 
-const binding = <T>(value: T, oldValue?: T) => ({ value, oldValue } as DirectiveBinding<T>);
+const binding = <T>(value: T, oldValue?: T, modifiers?: Record<string, boolean>) =>
+  ({ value, oldValue, modifiers } as DirectiveBinding<T>);
 
 const scrollable = (overrides: { scrollTop?: number; clientHeight?: number; scrollHeight?: number } = {}) => {
   const el = document.createElement('div');
@@ -29,6 +30,45 @@ describe('directives', () => {
     expect(el.querySelector('.i-loading-mask')).not.toBeNull();
     loading.updated?.(el, binding(false, true));
     expect(el.querySelector('.i-loading-mask')).toBeNull();
+    loading.unmounted?.(el);
+  });
+
+  it('modifiers 让全屏遮罩挂到 body 并锁定滚动', () => {
+    const el = document.createElement('div');
+    const mods = { fullscreen: true, lock: true, body: true };
+    loading.mounted?.(el, binding(true, undefined, mods));
+    const mask = document.querySelector<HTMLElement>('.i-loading-mask');
+    expect(mask).not.toBeNull();
+    expect(mask?.parentElement).toBe(document.body);
+    expect(mask?.classList.contains('is-fullscreen')).toBe(true);
+    expect(document.body.style.overflow).toBe('hidden');
+    loading.updated?.(el, binding(false, true, mods));
+    expect(document.querySelector('.i-loading-mask')).toBeNull();
+    expect(document.body.style.overflow).toBe('');
+  });
+
+  it('element-loading-* 元素属性声明文案、背景与图标', () => {
+    const el = document.createElement('div');
+    el.setAttribute('element-loading-text', '自定义文案');
+    el.setAttribute('element-loading-background', 'rgba(0, 0, 0, 0.4)');
+    el.setAttribute('element-loading-spinner', 'icon-refresh');
+    loading.mounted?.(el, binding(true));
+    const mask = el.querySelector<HTMLElement>('.i-loading-mask');
+    expect(mask?.textContent).toContain('自定义文案');
+    expect(mask?.style.background).toBe('rgba(0, 0, 0, 0.4)');
+    expect(mask?.querySelector('.i-loading-mask__icon')?.className).toContain('icon-refresh');
+    loading.unmounted?.(el);
+  });
+
+  it('选项对象声明 SVG 指示器并应用 viewBox 与尺寸', () => {
+    const el = document.createElement('div');
+    loading.mounted?.(el, binding({ svg: '<circle cx="12" cy="12" r="10" />', svgViewBox: '0 0 24 24', svgSize: 48 }));
+    const svgWrap = el.querySelector<HTMLElement>('.i-loading-mask__svg');
+    expect(svgWrap).not.toBeNull();
+    const svg = svgWrap?.querySelector('svg');
+    expect(svg?.getAttribute('viewBox')).toBe('0 0 24 24');
+    expect(svg?.getAttribute('width')).toBe('48');
+    expect(svg?.innerHTML).toContain('circle');
     loading.unmounted?.(el);
   });
 

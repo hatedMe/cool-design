@@ -50,6 +50,12 @@ Loading.service({ text: '加载中…' }, getCurrentInstance()?.appContext ?? nu
 ```vue
 <div v-loading="pending">内容</div>
 <div v-loading="{ text: '加载中…', background: 'rgba(255,255,255,.8)', fullscreen: false, lock: true }">内容</div>
+
+<!-- modifiers：全屏遮罩挂到 body 并锁定滚动 -->
+<div v-loading.fullscreen.lock.body="pending">内容</div>
+
+<!-- element-loading-* 元素属性声明文案与图标 -->
+<div v-loading element-loading-text="加载中…" element-loading-background="rgba(0,0,0,.4)" element-loading-spinner="icon-refresh">内容</div>
 ```
 
 ## API
@@ -83,6 +89,10 @@ Loading.service({ text: '加载中…' }, getCurrentInstance()?.appContext ?? nu
 | `text` | 提示文字 | `string` | `正在加载…` |
 | `background` | 背景色 | `string` | — |
 | `custom-class` / `customClass` | 自定义类名 | `string` | — |
+| `spinner` | 自定义图标类名（优先于内置旋转描边） | `string` | — |
+| `svg` | 自定义 SVG 片段，与 `svg-view-box` / `svg-size` 配合 | `string` | — |
+| `svg-view-box` / `svgViewBox` | SVG 的 `viewBox` | `string` | — |
+| `svg-size` / `svgSize` | SVG 尺寸，单位 px | `number` | — |
 
 ### 服务方法
 
@@ -90,5 +100,6 @@ Loading.service({ text: '加载中…' }, getCurrentInstance()?.appContext ?? nu
 | ---- | ---- | ---- |
 | `Loading.service(options?, appContext?)` | 打开加载层，返回关闭句柄 | `(options?: LoadingServiceOptions, appContext?: AppContext \| null) => LoadingInstance` |
 | `instance.close()` | 关闭并卸载，幂等 | `() => void` |
+| `instance.setText(text)` | 更新提示文字 | `(text: string) => void` |
 
 遮罩期间内容具有 `inert` 属性并阻止点击与键盘事件，结束后恢复。状态使用 `role="status"` 与 `aria-live="polite"`，减少动态效果偏好下停止旋转。

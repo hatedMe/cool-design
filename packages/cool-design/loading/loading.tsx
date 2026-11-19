@@ -1,5 +1,6 @@
 import { defineComponent, onBeforeUnmount, watch } from 'vue';
 import { lockScroll, unlockScroll } from './scroll-lock';
+import Icon from '../icon';
 export default defineComponent({
   name: 'i-loading',
   props: {
@@ -9,7 +10,11 @@ export default defineComponent({
     fullscreen: Boolean,
     background: { type: String, default: '' },
     lock: Boolean,
-    customClass: { type: String, default: '' }
+    customClass: { type: String, default: '' },
+    spinner: { type: String, default: '' },
+    svg: { type: String, default: '' },
+    svgViewBox: { type: String, default: '' },
+    svgSize: { type: Number, default: 0 }
   },
   setup(props, { slots }) {
     watch(
@@ -28,6 +33,22 @@ export default defineComponent({
         event.preventDefault();
         event.stopPropagation();
       }
+    };
+    const spinnerNode = () => {
+      if (props.svg) {
+        return (
+          <svg
+            class='i-loading__svg'
+            viewBox={props.svgViewBox || undefined}
+            width={props.svgSize || undefined}
+            height={props.svgSize || undefined}
+            innerHTML={props.svg}
+            aria-hidden='true'
+          />
+        );
+      }
+      if (props.spinner) return <Icon class='i-loading__icon' icon={props.spinner} aria-hidden='true' />;
+      return <span class='i-loading__spinner' aria-hidden='true' />;
     };
     return () => (
       <div
@@ -48,7 +69,7 @@ export default defineComponent({
         )}
         {props.loading && (
           <div class='i-loading__status' role='status' aria-live='polite'>
-            <span class='i-loading__spinner' aria-hidden='true' />
+            {spinnerNode()}
             <span>{props.text}</span>
           </div>
         )}

@@ -10,10 +10,15 @@ export interface LoadingServiceOptions {
   text?: string;
   background?: string;
   customClass?: string;
+  spinner?: string;
+  svg?: string;
+  svgViewBox?: string;
+  svgSize?: number;
 }
 
 export interface LoadingInstance {
   close(): void;
+  setText(text: string): void;
 }
 
 let fullscreenInstance: LoadingInstance | null = null;
@@ -59,16 +64,24 @@ export function service(
     container.style.zIndex = '1000';
   }
   parent.appendChild(container);
-  const vnode = createVNode(LoadingComponent, {
-    loading: true,
-    text: options.text ?? '正在加载…',
-    background: options.background ?? '',
-    fullscreen,
-    overlay: !fullscreen,
-    customClass: options.customClass ?? ''
-  });
-  vnode.appContext = appContext ?? null;
-  render(vnode, container);
+  let currentText = options.text ?? '正在加载…';
+  const draw = () => {
+    const vnode = createVNode(LoadingComponent, {
+      loading: true,
+      text: currentText,
+      background: options.background ?? '',
+      fullscreen,
+      overlay: !fullscreen,
+      customClass: options.customClass ?? '',
+      spinner: options.spinner ?? '',
+      svg: options.svg ?? '',
+      svgViewBox: options.svgViewBox ?? '',
+      svgSize: options.svgSize ?? 0
+    });
+    vnode.appContext = appContext ?? null;
+    render(vnode, container);
+  };
+  draw();
   let closed = false;
   const instance: LoadingInstance = {
     close() {
@@ -79,6 +92,11 @@ export function service(
       if (changedPosition) target.style.position = positionBackup;
       if (options.lock) unlockScroll();
       if (fullscreen && fullscreenInstance === instance) fullscreenInstance = null;
+    },
+    setText(text: string) {
+      currentText = text;
+      if (closed) return;
+      draw();
     }
   };
   if (fullscreen) fullscreenInstance = instance;
