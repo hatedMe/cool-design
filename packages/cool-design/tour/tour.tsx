@@ -30,11 +30,12 @@ export default defineComponent({
     nextButtonText: String,
     prevButtonText: String,
     zIndex: { type: Number, default: 2000 },
+    gap: { type: Number, default: 10 },
     scrollIntoViewOptions: [Boolean, Object] as PropType<boolean | ScrollIntoViewOptions>,
     target: [String, Object, Function] as PropType<TourTarget>
   },
   emits: ['update:modelValue', 'update:current', 'change', 'prev', 'next', 'finish', 'close'],
-  setup(props, { emit, expose }) {
+  setup(props, { emit, expose, slots }) {
     const floating = ref<HTMLElement>();
     const reference = ref<HTMLElement>();
     const spotlight = ref<{ top: number; left: number; width: number; height: number }>();
@@ -76,7 +77,14 @@ export default defineComponent({
         const scrollOptions = step.value.scrollIntoViewOptions ?? props.scrollIntoViewOptions;
         target.scrollIntoView?.(scrollOptions === true ? undefined : scrollOptions ?? undefined);
         const rect = target.getBoundingClientRect();
-        spotlight.value = { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
+        // 聚光框向四周扩张 gap，让遮罩与目标之间留出呼吸空间。
+        const gap = Math.max(0, props.gap);
+        spotlight.value = {
+          top: rect.top - gap,
+          left: rect.left - gap,
+          width: rect.width + gap * 2,
+          height: rect.height + gap * 2
+        };
       } else {
         spotlight.value = undefined;
       }
@@ -87,7 +95,7 @@ export default defineComponent({
     };
 
     watch(
-      () => [props.modelValue, props.current, props.steps],
+      () => [props.modelValue, props.current, props.steps, props.gap],
       () => {
         if (props.modelValue) nextTick(() => refresh());
       },
@@ -177,19 +185,29 @@ export default defineComponent({
             {showArrow && <div class='i-tour__arrow' style={position.arrowStyle.value} />}
             {showClose && (
               <button type='button' class='i-tour__close' aria-label='关闭引导' onClick={close}>
-                {props.closeIcon ? <Icon icon={props.closeIcon} aria-hidden='true' /> : '×'}
+                {slots.close?.({ current: innerCurrent.value }) ??
+                  (props.closeIcon ? <Icon icon={props.closeIcon} aria-hidden='true' /> : '×')}
               </button>
             )}
-            {currentStep.title && <div class='i-tour__title'>{currentStep.title}</div>}
-            {currentStep.description && <div class='i-tour__description'>{currentStep.description}</div>}
+            {slots.default ? (
+              slots.default({ current: innerCurrent.value })
+            ) : (
+              <>
+                {currentStep.title && <div class='i-tour__title'>{currentStep.title}</div>}
+                {currentStep.description && <div class='i-tour__description'>{currentStep.description}</div>}
+              </>
+            )}
             <div class='i-tour__footer'>
+              {slots.indicator?.({ current: innerCurrent.value, total: props.steps.length })}
               {innerCurrent.value > 0 && (
                 <button type='button' class='i-tour__prev' onClick={prev}>
-                  {currentStep.prevButtonText ?? props.prevButtonText ?? '上一步'}
+                  {slots['prev-btn']?.({ current: innerCurrent.value }) ??
+                    (currentStep.prevButtonText ?? props.prevButtonText ?? '上一步')}
                 </button>
               )}
               <button type='button' class='i-tour__next' onClick={next}>
-                {currentStep.nextButtonText ?? props.nextButtonText ?? (isLast.value ? '完成' : '下一步')}
+                {slots['next-btn']?.({ current: innerCurrent.value }) ??
+                  (currentStep.nextButtonText ?? props.nextButtonText ?? (isLast.value ? '完成' : '下一步'))}
               </button>
             </div>
           </div>

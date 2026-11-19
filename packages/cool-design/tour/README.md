@@ -32,6 +32,7 @@
 | `nextButtonText`      | 下一步按钮文案（末步默认"完成"）           | `string`                               | —        |
 | `prevButtonText`      | 上一步按钮文案                             | `string`                               | —        |
 | `zIndex`              | 层级                                       | `number`                               | `2000`   |
+| `gap`                 | 聚光框与目标四周的留白，单位 px            | `number`                               | `10`     |
 | `scrollIntoViewOptions` | 步骤切换时滚动目标到视口的选项           | `boolean` / `ScrollIntoViewOptions`    | —        |
 | `target`              | 覆盖所有步骤的目标                         | `TourTarget`                           | —        |
 
@@ -65,3 +66,13 @@
 | `go(index)`    | 跳转到指定步骤         |
 | `prev()`       | 上一步                 |
 | `next()`       | 下一步（末步为完成）   |
+
+### Tour 插槽
+
+| 名称        | 说明                                       | 作用域                          |
+| ----------- | ------------------------------------------ | ------------------------------- |
+| `default`   | 自定义面板内容，替代标题与描述             | `{ current: number }`           |
+| `indicator` | 自定义底部指示器，位于按钮左侧             | `{ current: number, total: number }` |
+| `close`     | 自定义关闭按钮内容                         | `{ current: number }`           |
+| `prev-btn`  | 自定义上一步按钮内容（首步不渲染该按钮）   | `{ current: number }`           |
+| `next-btn`  | 自定义下一步按钮内容                       | `{ current: number }`           |

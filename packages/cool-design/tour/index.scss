@@ -47,9 +47,14 @@
 }
 .i-tour__footer {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
   margin-top: 16px;
+}
+.i-tour__indicator {
+  margin-right: auto;
+  color: var(--i-text-secondary, #606266);
 }
 .i-tour__prev,
 .i-tour__next {

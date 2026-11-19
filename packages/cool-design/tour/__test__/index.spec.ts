@@ -64,12 +64,45 @@ describe('test `Tour` component', () => {
     const spotlight = document.querySelector<HTMLElement>('.i-tour__spotlight');
     expect(spotlight).not.toBeNull();
     expect(spotlight!.style.boxShadow).toContain('9999px');
-    expect(spotlight!.style.top).toBe('120px');
+    // 默认 gap=10：聚光框向四周扩张。
+    expect(spotlight!.style.top).toBe('110px');
+    expect(spotlight!.style.left).toBe('0px');
+    expect(spotlight!.style.width).toBe('120px');
+    await wrapper.setProps({ gap: 0 });
+    await nextTick();
+    expect((document.querySelector('.i-tour__spotlight') as HTMLElement).style.top).toBe('120px');
 
     await wrapper.setProps({ mask: false });
     await nextTick();
     expect(document.querySelector('.i-tour__spotlight')).toBeNull();
     expect(document.querySelector('.i-tour__mask')).toBeNull();
+    wrapper.unmount();
+  });
+
+  test('default、indicator、close 与按钮插槽可自定义', async () => {
+    const wrapper = mount(Tour, {
+      props: { modelValue: true, current: 0, steps },
+      slots: {
+        default: ({ current }: { current: number }) => `自定义内容-${current}`,
+        indicator: ({ current, total }: { current: number; total: number }) => `指示 ${current + 1}/${total}`,
+        close: () => '关闭引导',
+        'prev-btn': () => '返回',
+        'next-btn': () => '继续'
+      },
+      attachTo: document.body
+    });
+    await nextTick();
+    const text = document.body.textContent ?? '';
+    expect(text).toContain('自定义内容-0');
+    expect(text).toContain('指示 1/2');
+    expect(text).toContain('关闭引导');
+    expect(text).toContain('继续');
+    expect(text).not.toContain('第一步');
+    // 第一步不渲染 prev 按钮，插槽仅在按钮存在时生效。
+    expect(text).not.toContain('返回');
+    document.querySelector<HTMLButtonElement>('.i-tour__next')!.click();
+    await nextTick();
+    expect(document.body.textContent).toContain('返回');
     wrapper.unmount();
   });
 
