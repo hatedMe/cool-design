@@ -33,3 +33,11 @@
 .i-segmented.is-disabled {
   opacity: 0.5;
 }
+.i-segmented--block {
+  display: flex;
+  width: 100%;
+}
+.i-segmented--block .i-segmented__item {
+  flex: 1;
+  text-align: center;
+}

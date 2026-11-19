@@ -21,6 +21,7 @@
 | `options`   | 选项列表                                                 | `(string \| number \| SegmentedOption)[]` | `[]`   |
 | `modelValue` | 选中值（`v-model`）                                     | `string` / `number`                      | —      |
 | `disabled`  | 是否禁用整个组件                                         | `boolean`                                | `false` |
+| `block`     | 是否撑满容器宽度，选项均分                               | `boolean`                                | `false` |
 | `size`      | 尺寸：`small` / `default` / `large`                      | `string`                                 | —      |
 
 `SegmentedOption`：`{ label?: string; value: string | number; disabled?: boolean }`。
@@ -34,7 +35,17 @@
 
 ### 插槽
 
-无。
+| 名称      | 说明                                                         |
+| --------- | ------------------------------------------------------------ |
+| `default` | 不传 `options` 时，插槽元素映射为选项：取元素 `value` 属性为值、`disabled` 属性为禁用态，元素本身作为选项内容 |
+
+```vue
+<Segmented v-model="view">
+  <span :value="1">日</span>
+  <span :value="2">周</span>
+  <span :value="3" disabled>月</span>
+</Segmented>
+```
 
 ### 交互
 
