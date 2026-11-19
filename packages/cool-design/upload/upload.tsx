@@ -404,9 +404,30 @@ export default defineComponent({
       return url;
     };
     const renderTrigger = () => slots.trigger?.({ choose }) ?? <button type='button' disabled={props.disabled} onClick={choose}>{slots.default?.() ?? '选择文件'}</button>;
-    const renderFile = (file: UploadFile, index: number) => slots.file?.({ file, index }) ?? <>{props.listType !== 'text' && <img src={getFileUrl(file)} alt={file.name} crossorigin={props.crossorigin || undefined} />}{props.listType === 'text' && <span>{file.name}</span>}<em>{file.status}</em>{file.status === 'uploading' && <progress max='100' value={file.percentage ?? 0} />}{file.status === 'fail' && <button type='button' onClick={() => upload(file)}>重试</button>}{props.onPreview && <button type='button' onClick={() => callback('onPreview', file)}>预览</button>}{!props.disabled && <button type='button' onClick={() => remove(file)}>删除</button>}</>;
+    const renderFile = (file: UploadFile, index: number) => slots.file?.({ file, index }) ?? <>{props.listType !== 'text' && <img src={getFileUrl(file)} alt={file.name} crossorigin={props.crossorigin || undefined} />}{props.listType === 'text' && <span>{file.name}</span>}<em class={{ 'i-upload__status': true, 'is-success': file.status === 'success', 'is-fail': file.status === 'fail' }}>{file.status}</em>{file.status === 'uploading' && <progress max='100' value={file.percentage ?? 0} />}{file.status === 'fail' && <button type='button' onClick={() => upload(file)}>重试</button>}{props.onPreview && <button type='button' onClick={() => callback('onPreview', file)}>预览</button>}{!props.disabled && <button type='button' class='i-upload__remove' onClick={() => remove(file)}>删除</button>}</>;
+    // 拖拽悬停高亮：dragenter/dragleave 计数处理子元素穿行，drop 后复位。
+    const dragover = ref(false);
+    let dragDepth = 0;
+    const handleDragEnter = (event: DragEvent) => {
+      if (!props.drag) return;
+      event.preventDefault();
+      dragDepth++;
+      dragover.value = true;
+    };
+    const handleDragLeave = () => {
+      if (!props.drag) return;
+      dragDepth = Math.max(0, dragDepth - 1);
+      if (dragDepth === 0) dragover.value = false;
+    };
+    const handleDrop = (event: DragEvent) => {
+      dragDepth = 0;
+      dragover.value = false;
+      if (!props.drag) return;
+      event.preventDefault();
+      void add(event.dataTransfer?.files ? [...event.dataTransfer.files] : null);
+    };
     return () => (
-      <div class={{ 'i-upload': true, 'is-drag': props.drag }} role={props.drag ? 'button' : undefined} tabindex={props.drag ? 0 : undefined} aria-disabled={props.disabled || undefined} onKeydown={(event: KeyboardEvent) => { if (props.drag && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); choose(); } }} onDragover={(event: DragEvent) => { if (props.drag) event.preventDefault(); }} onDrop={(event: DragEvent) => { if (props.drag) { event.preventDefault(); void add(event.dataTransfer?.files ? [...event.dataTransfer.files] : null); } }}>
+      <div class={{ 'i-upload': true, 'is-drag': props.drag, 'is-dragover': props.drag && dragover.value }} role={props.drag ? 'button' : undefined} tabindex={props.drag ? 0 : undefined} aria-disabled={props.disabled || undefined} onKeydown={(event: KeyboardEvent) => { if (props.drag && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); choose(); } }} onDragenter={handleDragEnter} onDragover={(event: DragEvent) => { if (props.drag) event.preventDefault(); }} onDragleave={handleDragLeave} onDrop={handleDrop}>
         <input ref={input} type='file' name={props.name} accept={props.accept} multiple={props.multiple} disabled={props.disabled} {...(props.directory ? { webkitdirectory: '' } : {})} hidden onChange={(e: Event) => add((e.target as HTMLInputElement).files)} />
         {props.showFileList && <ul class={{ 'i-upload__list': true, [`i-upload__list--${props.listType}`]: true }}>{files.value.map((file, index) => <li key={file.uid} data-uid={file.uid} class={{ 'i-upload__item': true, 'is-picture': props.listType !== 'text' }}>{renderFile(file, index)}</li>)}{props.listType === 'picture-card' && <li class='i-upload__trigger'>{renderTrigger()}</li>}</ul>}
         {(!props.showFileList || props.listType !== 'picture-card') && renderTrigger()}

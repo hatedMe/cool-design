@@ -177,6 +177,44 @@
   background: color-mix(in srgb, var(--i-primary) 4%, var(--i-bg));
 }
 
+// 拖拽悬停高亮：文件悬于区域之上时给出明确反馈。
+.i-upload.is-drag.is-dragover {
+  border-color: var(--i-primary);
+  background: color-mix(in srgb, var(--i-primary) 8%, var(--i-bg));
+}
+
+.i-upload__status {
+  margin-left: 8px;
+  color: var(--i-text-secondary);
+  font-style: normal;
+}
+
+.i-upload__status.is-success {
+  color: var(--i-success);
+}
+
+.i-upload__status.is-success::before {
+  content: '✓ ';
+}
+
+.i-upload__status.is-fail {
+  color: var(--i-danger);
+}
+
+.i-upload__status.is-fail::before {
+  content: '✕ ';
+}
+
+.i-upload__remove {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.i-upload__item:hover .i-upload__remove,
+.i-upload__item:focus-within .i-upload__remove {
+  opacity: 1;
+}
+
 .i-upload.is-drag > p {
   margin: 12px 0 0;
   color: var(--i-text-secondary);

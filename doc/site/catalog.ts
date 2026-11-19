@@ -727,6 +727,21 @@ export const pages: Page[] = [
     ['directory', '目录上传', '选择目录并在列表中展示目录内的文件。'],
     ['avatar', '头像上传', '使用 before-upload 校验文件类型和大小，并隐藏文件列表。']
   ]),
+  {
+    id: 'components/upload-dragger',
+    title: 'UploadDragger 拖拽上传区',
+    group: '表单组件',
+    markdown:
+      '# UploadDragger 拖拽上传区\n\n### 介绍\n\n拖拽上传的独立形态，内部即 Upload 的 `drag` 模式，文件悬停时区域高亮；插槽与属性透传给 Upload。\n\n## API\n\n### Attributes\n\n除 `drag`（恒为 `true`）外，其余属性与 `Upload` 一致，见 [Upload](#/components/upload)。\n\n### Slot\n\n| 插槽 | 说明 |\n| ---- | ---- |\n| `default` | 区域内容 |\n| `tip` | 底部提示 |\n',
+    demos: [
+      demo(
+        '../../packages/cool-design/upload/demo/drag.vue',
+        'basic',
+        '拖拽区域即组件本体',
+        '使用 UploadDragger 免去手动声明 drag，拖入文件即上传。'
+      )
+    ]
+  },
   component('cascader', 'Cascader 级联选择', '表单组件', [
     ['basic', '基础用法', '从级联数据中选择单个值，支持 emitPath 与路径展示。'],
     ['multiple', '多选与过滤', '多选级联勾选、标签折叠和关键字过滤。'],

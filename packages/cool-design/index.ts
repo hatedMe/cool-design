@@ -59,7 +59,7 @@ import Slider from './slider';
 import Transfer from './transfer';
 import TreeSelect from './tree-select';
 import Cascader from './cascader';
-import Upload from './upload';
+import Upload, { UploadDragger } from './upload';
 import Card from './card';
 import Descriptions, { DescriptionsItem } from './descriptions';
 import Image, { ImageViewer } from './image';
@@ -181,6 +181,7 @@ export {
   TreeSelect,
   Cascader,
   Upload,
+  UploadDragger,
   Card,
   Descriptions,
   DescriptionsItem,
@@ -290,6 +291,7 @@ const components = [
   TreeSelect,
   Cascader,
   Upload,
+  UploadDragger,
   Card,
   Descriptions,
   DescriptionsItem,

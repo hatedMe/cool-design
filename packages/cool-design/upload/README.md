@@ -149,7 +149,7 @@ const files = ref<UploadFiles>([{ name: 'cover.png', uid: 1, status: 'success', 
 
 ### 拖拽上传
 
-设置 `drag` 开启拖拽区域。拖拽区域同时支持点击选择，配合 `multiple` 可一次添加多个文件：
+设置 `drag` 开启拖拽区域。拖拽区域同时支持点击选择，配合 `multiple` 可一次添加多个文件；文件悬停在区域上时区域高亮：
 
 ```vue
 <Upload drag multiple action="/api/upload">
@@ -157,6 +157,16 @@ const files = ref<UploadFiles>([{ name: 'cover.png', uid: 1, status: 'success', 
   <template #tip><p>单个文件大小不超过 2MB</p></template>
 </Upload>
 ```
+
+也可以使用 `UploadDragger` 组件，它等价于强制 `drag` 模式的 `Upload`，插槽与属性透传：
+
+```vue
+<UploadDragger multiple action="/api/upload">
+  <p>将文件拖到此处，或点击选择</p>
+</UploadDragger>
+```
+
+文件列表中成功项显示对勾、失败项显示叉号，删除按钮在行悬停时浮现。
 
 ### 目录上传
 

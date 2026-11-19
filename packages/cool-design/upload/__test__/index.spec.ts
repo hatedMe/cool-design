@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils';
 import { h } from 'vue';
 import { expect, test, vi } from 'vitest';
 import Upload, { type UploadFile, type UploadFiles, type UploadRawFile, type UploadStatus, type UploadUserFile } from '..';
+import { UploadDragger } from '..';
 
 const exportedTypes: [UploadStatus, UploadRawFile, UploadFile, UploadUserFile, UploadFiles] | undefined = undefined;
 void exportedTypes;
@@ -599,6 +600,53 @@ test('拖拽添加文件、目录属性和目录文件类型信息', async () =>
   expect(wrapper.text()).toContain('folder.txt');
   expect((wrapper.emitted('change')?.[0]?.[0] as UploadFile).raw?.isDirectory).toBe(true);
   expect((wrapper.emitted('change')?.[0]?.[0] as UploadFile).raw?.webkitRelativePath).toBe('folder/folder.txt');
+});
+
+test('拖拽悬停高亮在 dragenter/dragleave 间切换', async () => {
+  const wrapper = mount(Upload, { props: { drag: true, autoUpload: false } });
+  const enter = new Event('dragenter', { cancelable: true, bubbles: true });
+  wrapper.element.dispatchEvent(enter);
+  await wrapper.vm.$nextTick();
+  expect(wrapper.classes()).toContain('is-dragover');
+  const leave = new Event('dragleave', { bubbles: true });
+  wrapper.element.dispatchEvent(leave);
+  await wrapper.vm.$nextTick();
+  expect(wrapper.classes()).not.toContain('is-dragover');
+});
+
+test('UploadDragger 即拖拽模式并透传插槽', async () => {
+  const wrapper = mount(UploadDragger, {
+    props: { autoUpload: false },
+    slots: { default: () => '拖到这里来', tip: () => '提示信息' }
+  });
+  expect(wrapper.classes()).toContain('is-drag');
+  expect(wrapper.attributes('role')).toBe('button');
+  expect(wrapper.text()).toContain('拖到这里来');
+  expect(wrapper.text()).toContain('将文件拖到此处，或点击选择');
+  expect(wrapper.text()).toContain('提示信息');
+
+  const raw = new File(['x'], 'd.txt') as UploadRawFile;
+  const drop = new Event('drop', { cancelable: true });
+  Object.defineProperty(drop, 'dataTransfer', { value: { files: [raw] } });
+  wrapper.element.dispatchEvent(drop);
+  await wrapper.vm.$nextTick();
+  expect(wrapper.text()).toContain('d.txt');
+});
+
+test('文件列表状态渲染成功与失败标记', async () => {
+  const wrapper = mount(Upload, {
+    props: { drag: true, autoUpload: false, showFileList: true },
+    slots: { default: () => '选择' }
+  });
+  const raw = new File(['x'], 's.txt') as UploadRawFile;
+  const drop = new Event('drop', { cancelable: true });
+  Object.defineProperty(drop, 'dataTransfer', { value: { files: [raw] } });
+  wrapper.element.dispatchEvent(drop);
+  await wrapper.vm.$nextTick();
+  const status = wrapper.get('em');
+  // 未上传时状态为 ready，删除按钮带 hover 显隐类。
+  expect(status.classes()).toContain('i-upload__status');
+  expect(wrapper.get('.i-upload__remove').exists()).toBe(true);
 });
 
 test('图片列表渲染缩略图、file 插槽和预览回调', async () => {
