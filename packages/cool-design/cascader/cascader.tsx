@@ -3,6 +3,7 @@ import {
   computed,
   defineComponent,
   nextTick,
+  onBeforeUnmount,
   ref,
   type PropType
 } from 'vue';
@@ -10,9 +11,11 @@ import { useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useFloating } from '../../../src/utils/use-floating';
 import { createNamespace } from '../../../src/utils/create';
+import { useCascaderNodes } from './node';
 import type {
   CascaderFilterMethod,
   CascaderItemValue,
+  CascaderLazyLoad,
   CascaderModelValue,
   CascaderNode,
   CascaderNodeValue,
@@ -21,8 +24,6 @@ import type {
 } from './types';
 
 const [name, bem] = createNamespace('cascader');
-
-type NodeState = 'checked' | 'indeterminate' | 'unchecked';
 
 export default defineComponent({
   name,
@@ -48,6 +49,11 @@ export default defineComponent({
     size: String as PropType<Size>,
     filterable: Boolean,
     filterMethod: Function as PropType<CascaderFilterMethod>,
+    beforeFilter: Function as PropType<(query: string) => boolean | Promise<boolean>>,
+    debounce: { type: Number, default: 300 },
+    lazy: Boolean,
+    lazyLoad: Function as PropType<CascaderLazyLoad>,
+    expandTrigger: { type: String as PropType<'click' | 'hover'>, default: 'click' },
     popperClass: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>,
     teleported: { type: Boolean, default: true },
     validateEvent: { type: Boolean, default: true }
@@ -67,136 +73,25 @@ export default defineComponent({
 
     const isDisabled = () => props.disabled || field?.disabled?.();
 
-    const labelKey = computed(() => props.props?.label || 'label');
-    const valueKey = computed(() => props.props?.value || 'value');
-    const childrenKey = computed(() => props.props?.children || 'children');
-    const disabledKey = computed(() => props.props?.disabled || 'disabled');
-    const leafKey = computed(() => props.props?.leaf || 'leaf');
-
-    const createNode = (data: CascaderOption, parent: CascaderNode | null): CascaderNode => {
-      const rawChildren = data[childrenKey.value] as CascaderOption[] | undefined;
-      const childrenData = Array.isArray(rawChildren) ? rawChildren : [];
-      const rawLeaf = data[leafKey.value];
-      const node: CascaderNode = {
-        value: data[valueKey.value] as CascaderNodeValue,
-        label: String(data[labelKey.value] ?? ''),
-        disabled: Boolean(data[disabledKey.value]),
-        leaf: rawLeaf === undefined ? childrenData.length === 0 : Boolean(rawLeaf),
-        level: parent ? parent.level + 1 : 1,
-        data,
-        parent,
-        children: [],
-        path: []
-      };
-      node.path = parent ? [...parent.path, node] : [node];
-      node.children = childrenData.map((child) => createNode(child, node));
-      return node;
-    };
-
-    const trees = computed(() => props.options.map((option) => createNode(option, null)));
-    const nodeByValue = computed(() => {
-      const map = new Map<CascaderNodeValue, CascaderNode>();
-      const walk = (list: CascaderNode[]) =>
-        list.forEach((node) => {
-          if (node.value !== undefined && node.value !== null && !map.has(node.value)) map.set(node.value, node);
-          walk(node.children);
-        });
-      walk(trees.value);
-      return map;
+    // 节点建树、勾选级联、半选计算与展开列：与独立面板共享同一实现。
+    const nodes = useCascaderNodes({
+      options: () => props.options,
+      mapping: () => props.props,
+      model: () => props.modelValue,
+      multiple: () => props.multiple,
+      checkStrictly: () => props.checkStrictly,
+      disabled: isDisabled,
+      lazy: () => props.lazy,
+      lazyLoad: () => props.lazyLoad,
+      rootLevel: 1
     });
-
-    const resolveNode = (item: CascaderItemValue): CascaderNode | null => {
-      if (Array.isArray(item)) {
-        let list = trees.value;
-        let node: CascaderNode | null = null;
-        for (const value of item) {
-          node = list.find((candidate) => candidate.value === value) ?? null;
-          if (!node) return null;
-          list = node.children;
-        }
-        return node;
-      }
-      return nodeByValue.value.get(item) ?? null;
-    };
-
-    const modelItems = computed<CascaderItemValue[]>(() => {
-      const value = props.modelValue;
-      if (value === null || value === undefined) return [];
-      if (props.multiple) return (Array.isArray(value) ? value : [value]) as CascaderItemValue[];
-      return [value as CascaderItemValue];
-    });
-
-    const selectedNodes = computed(() =>
-      modelItems.value.map(resolveNode).filter((node): node is CascaderNode => !!node)
-    );
-
-    const isEffectivelyDisabled = (node: CascaderNode): boolean => {
-      if (isDisabled()) return true;
-      let cursor: CascaderNode | null = node;
-      while (cursor) {
-        if (cursor.disabled) return true;
-        cursor = cursor.parent;
-      }
-      return false;
-    };
-
-    const checkState = computed(() => {
-      const checked = new Set<CascaderNode>();
-      const indeterminate = new Set<CascaderNode>();
-      if (!props.multiple) return { checked, indeterminate };
-      const add = (node: CascaderNode, isRoot: boolean) => {
-        if (node.disabled && !isRoot) return;
-        checked.add(node);
-        node.children.forEach((child) => add(child, false));
-      };
-      selectedNodes.value.forEach((node) => add(node, true));
-      if (props.checkStrictly) return { checked, indeterminate };
-      const recalc = (node: CascaderNode) => {
-        node.children.forEach(recalc);
-        if (node.children.length === 0) return;
-        const enabled = node.children.filter((child) => !child.disabled);
-        const list = enabled.length ? enabled : node.children;
-        if (list.every((child) => checked.has(child))) {
-          checked.add(node);
-          indeterminate.delete(node);
-        } else {
-          checked.delete(node);
-          if (list.some((child) => checked.has(child) || indeterminate.has(child))) indeterminate.add(node);
-          else indeterminate.delete(node);
-        }
-      };
-      trees.value.forEach(recalc);
-      return { checked, indeterminate };
-    });
-
-    const nodeState = (node: CascaderNode): NodeState => {
-      if (checkState.value.checked.has(node)) return 'checked';
-      if (checkState.value.indeterminate.has(node)) return 'indeterminate';
-      return 'unchecked';
-    };
+    const { trees, resolveNode, modelItems, selectedNodes, checkState, nodeState, isEffectivelyDisabled } = nodes;
 
     const nodeValue = (node: CascaderNode): CascaderItemValue =>
       props.emitPath ? node.path.map((item) => item.value) : node.value;
 
-    const valueFromChecked = (set: Set<CascaderNode>): CascaderItemValue[] => {
-      const result: CascaderItemValue[] = [];
-      const walk = (list: CascaderNode[]) =>
-        list.forEach((node) => {
-          if (props.checkStrictly) {
-            if (set.has(node)) result.push(nodeValue(node));
-            walk(node.children);
-          } else if (node.leaf) {
-            if (set.has(node)) result.push(nodeValue(node));
-          } else {
-            walk(node.children);
-          }
-        });
-      walk(trees.value);
-      return result;
-    };
-
     const displayEntries = computed<{ item: CascaderItemValue; node: CascaderNode | null }[]>(() => {
-      const items = props.multiple ? valueFromChecked(checkState.value.checked) : modelItems.value;
+      const items = props.multiple ? nodes.valueFromChecked(checkState.value.checked, nodeValue) : modelItems.value;
       return items.map((item) => ({ item, node: resolveNode(item) }));
     });
 
@@ -216,27 +111,39 @@ export default defineComponent({
 
     const displayText = computed(() => (displayEntries.value[0] ? entryLabel(displayEntries.value[0]) : ''));
 
-    const columns = computed<CascaderNode[][]>(() => {
-      const result: CascaderNode[][] = [trees.value];
-      let list = trees.value;
-      for (const value of activeValues.value) {
-        const node = list.find((candidate) => candidate.value === value);
-        if (!node || node.children.length === 0) break;
-        list = node.children;
-        result.push(list);
-      }
-      return result;
-    });
-
-    const activePathValues = (node: CascaderNode): CascaderNodeValue[] =>
-      (node.children.length ? node.path : node.path.slice(0, -1)).map((item) => item.value);
+    const columns = computed<CascaderNode[][]>(() => nodes.columns(activeValues.value));
 
     const expandTo = (node: CascaderNode) => {
-      const values = activePathValues(node);
+      const values = nodes.activePathValues(node);
       if (values.join('\u0000') === activeValues.value.join('\u0000')) return;
       activeValues.value = values;
       emit('expand-change', [...activeValues.value]);
     };
+
+    // 过滤入口：beforeFilter 钩子通过后才进入防抖查询。
+    const applyQuery = async (value: string) => {
+      if (props.beforeFilter) {
+        try {
+          if (!(await props.beforeFilter(value))) return;
+        } catch {
+          return;
+        }
+      }
+      query.value = value;
+    };
+    let filterTimer: ReturnType<typeof setTimeout> | undefined;
+    const scheduleQuery = (value: string) => {
+      if (filterTimer !== undefined) clearTimeout(filterTimer);
+      if (props.debounce > 0) {
+        filterTimer = setTimeout(() => {
+          filterTimer = undefined;
+          void applyQuery(value);
+        }, props.debounce);
+      } else void applyQuery(value);
+    };
+    onBeforeUnmount(() => {
+      if (filterTimer !== undefined) clearTimeout(filterTimer);
+    });
 
     const suggestionNodes = computed(() => {
       if (!props.filterable || !query.value) return [];
@@ -270,7 +177,7 @@ export default defineComponent({
       open.value = value;
       if (value) {
         const node = selectedNodes.value[0];
-        activeValues.value = node ? activePathValues(node) : [];
+        activeValues.value = node ? nodes.activePathValues(node) : [];
         nextTick(() => position.update());
       } else {
         query.value = '';
@@ -288,29 +195,7 @@ export default defineComponent({
       if (!props.multiple || isEffectivelyDisabled(node)) return;
       const { checked, indeterminate } = checkState.value;
       const checking = !(checked.has(node) && !indeterminate.has(node));
-      const next = new Set(checked);
-      const apply = (target: CascaderNode, value: boolean) => {
-        if (target.disabled && target !== node) return;
-        if (value) next.add(target);
-        else next.delete(target);
-        target.children.forEach((child) => apply(child, value));
-      };
-      if (props.checkStrictly) {
-        if (checking) next.add(node);
-        else next.delete(node);
-      } else {
-        apply(node, checking);
-        const recalc = (target: CascaderNode) => {
-          target.children.forEach(recalc);
-          if (target.children.length === 0) return;
-          const enabled = target.children.filter((child) => !child.disabled);
-          const list = enabled.length ? enabled : target.children;
-          if (list.every((child) => next.has(child))) next.add(target);
-          else next.delete(target);
-        };
-        trees.value.forEach(recalc);
-      }
-      update(valueFromChecked(next));
+      update(nodes.valueFromChecked(nodes.cascadeCheckedSet(checked, node, checking), nodeValue) as CascaderModelValue);
     };
 
     const selectNode = (node: CascaderNode) => {
@@ -318,13 +203,16 @@ export default defineComponent({
       if (props.multiple) {
         toggleCheck(node);
         if (node.children.length) expandTo(node);
+        else nodes.ensureChildren(node);
         return;
       }
-      if (props.checkStrictly || node.leaf || node.children.length === 0) {
+      // 非懒加载模式下无子级即视为最终选择；懒加载节点先补齐子级再展开。
+      if (props.checkStrictly || node.leaf || (!props.lazy && node.children.length === 0)) {
         update(nodeValue(node));
         setOpen(false);
         return;
       }
+      nodes.ensureChildren(node);
       expandTo(node);
     };
 
@@ -332,26 +220,7 @@ export default defineComponent({
       if (!props.multiple || isDisabled()) return;
       const node = resolveNode(item);
       if (node) {
-        const next = new Set(checkState.value.checked);
-        if (props.checkStrictly) {
-          next.delete(node);
-        } else {
-          const remove = (target: CascaderNode) => {
-            next.delete(target);
-            target.children.forEach(remove);
-          };
-          remove(node);
-          const recalc = (target: CascaderNode) => {
-            target.children.forEach(recalc);
-            if (target.children.length === 0) return;
-            const enabled = target.children.filter((child) => !child.disabled);
-            const list = enabled.length ? enabled : target.children;
-            if (list.every((child) => next.has(child))) next.add(target);
-            else next.delete(target);
-          };
-          trees.value.forEach(recalc);
-        }
-        update(valueFromChecked(next));
+        update(nodes.valueFromChecked(nodes.pruneCheckedSet(checkState.value.checked, node), nodeValue) as CascaderModelValue);
       } else {
         update(modelItems.value.filter((candidate) => candidate !== item) as CascaderModelValue);
       }
@@ -410,12 +279,19 @@ export default defineComponent({
             bem('node'),
             active && 'is-active',
             disabled && 'is-disabled',
-            (state === 'checked' || singleSelected) && 'is-checked'
+            (state === 'checked' || singleSelected) && 'is-checked',
+            node.loading && 'is-loading'
           ]}
           role='option'
           aria-selected={singleSelected || state === 'checked' || undefined}
           aria-disabled={disabled || undefined}
-          onClick={() => selectNode(node)}>
+          onClick={() => selectNode(node)}
+          onMouseenter={() => {
+            if (props.expandTrigger === 'hover' && !node.leaf && !disabled) {
+              nodes.ensureChildren(node);
+              expandTo(node);
+            }
+          }}>
           {props.multiple && (
             <input
               type='checkbox'
@@ -435,9 +311,10 @@ export default defineComponent({
               aria-hidden='true'
               onClick={(event: MouseEvent) => {
                 event.stopPropagation();
+                nodes.ensureChildren(node);
                 expandTo(node);
               }}>
-              ›
+              {node.loading ? '…' : '›'}
             </span>
           )}
         </li>
@@ -569,7 +446,7 @@ export default defineComponent({
                 onClick={(event: MouseEvent) => event.stopPropagation()}
                 onFocus={() => setOpen(true)}
                 onInput={(event: Event) => {
-                  query.value = (event.target as HTMLInputElement).value;
+                  scheduleQuery((event.target as HTMLInputElement).value);
                   setOpen(true);
                 }}
                 onKeydown={(event: KeyboardEvent) => {

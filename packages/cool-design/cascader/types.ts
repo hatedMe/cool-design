@@ -28,12 +28,25 @@ export interface CascaderNode {
   label: string;
   disabled: boolean;
   leaf: boolean;
+  /** 懒加载中标记 */
+  loading?: boolean;
+  /** 懒加载已完成标记 */
+  loaded?: boolean;
   level: number;
   data: CascaderOption;
   parent: CascaderNode | null;
   children: CascaderNode[];
   path: CascaderNode[];
 }
+
+/** 懒加载回调收到的节点信息 */
+export interface CascaderLazyNode {
+  level: number;
+  value: CascaderNodeValue;
+  data: CascaderOption;
+}
+
+export type CascaderLazyLoad = (node: CascaderLazyNode, resolve: (children: CascaderOption[]) => void) => void;
 
 export type CascaderFilterMethod = (
   query: string,

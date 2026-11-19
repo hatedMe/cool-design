@@ -31,6 +31,11 @@
 | size | 尺寸：`small` / `default` / `large` | `string` | 继承 ConfigProvider |
 | filterable | 是否可搜索过滤 | `boolean` | `false` |
 | filterMethod | 自定义过滤方法 | `(query: string, option: CascaderOption, path: CascaderOption[]) => boolean` | — |
+| beforeFilter | 过滤前置钩子，返回 `false` 或被拒绝的 Promise 时停止过滤 | `(query: string) => boolean \| Promise<boolean>` | — |
+| debounce | 过滤输入防抖延迟，单位 ms，`0` 表示不防抖 | `number` | `300` |
+| lazy | 是否懒加载子级（无子级且未声明 `leaf` 的节点展开时调用 `lazyLoad`） | `boolean` | `false` |
+| lazyLoad | 懒加载回调，`resolve(children)` 注入子级；子级可用 `leaf: true` 标记为叶子 | `(node: { level, value, data }, resolve) => void` | — |
+| expandTrigger | 展开触发方式：`click` / `hover` | `string` | `click` |
 | popperClass | 下拉面板自定义类名 | `string` | — |
 | teleported | 下拉面板是否传送到 body | `boolean` | `true` |
 | validateEvent | 值变化/失焦时是否触发表单校验 | `boolean` | `true` |

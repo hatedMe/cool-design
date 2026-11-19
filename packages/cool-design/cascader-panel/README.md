@@ -25,6 +25,11 @@
 | `multiple`      | 多选（复选框级联）                         | `boolean`             | `false` |
 | `checkStrictly` | 父子勾选解耦（单选时任意层级可选）         | `boolean`             | `false` |
 | `border`        | 显示面板边框                               | `boolean`             | `true` |
+| `lazy`          | 懒加载子级（展开无子级节点时调用 `lazyLoad`） | `boolean`          | `false` |
+| `lazyLoad`      | 懒加载回调，`resolve(children)` 注入子级   | `(node, resolve) => void` | — |
+| `expandTrigger` | 展开触发方式：`click` / `hover`            | `string`              | `click` |
+
+与 `Cascader` 共享同一份节点建树、勾选级联与展开列逻辑，行为保持一致。
 
 `CascaderOption`：`{ value?, label?, children?, disabled?, leaf?, ... }`；`CascaderModelValue`：`value | value[] | (value | value[])[] | null`。
 

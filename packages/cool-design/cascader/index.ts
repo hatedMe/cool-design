@@ -7,6 +7,8 @@ export default Cascader;
 export type {
   CascaderFilterMethod,
   CascaderItemValue,
+  CascaderLazyLoad,
+  CascaderLazyNode,
   CascaderModelValue,
   CascaderNode,
   CascaderNodePath,

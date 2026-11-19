@@ -203,7 +203,8 @@ describe('test `Cascader` component', () => {
   });
 
   test('filterable 过滤叶子完整路径并点击选中', async () => {
-    const wrapper = mount(Cascader, { props: { options, filterable: true, teleported: false } });
+    // debounce 0 便于断言；默认 300ms 的防抖行为由专项用例覆盖。
+    const wrapper = mount(Cascader, { props: { options, filterable: true, debounce: 0, teleported: false } });
     await open(wrapper);
     await wrapper.find('.i-cascader__input').setValue('反馈');
     expect(wrapper.findAll('.i-cascader__suggestion')).toHaveLength(1);
@@ -218,6 +219,7 @@ describe('test `Cascader` component', () => {
       props: {
         options,
         filterable: true,
+        debounce: 0,
         teleported: false,
         filterMethod: (query: string, option: CascaderOption) => String(option.label ?? '').includes(query)
       },
@@ -392,5 +394,70 @@ describe('test `Cascader` component', () => {
     await flushPromises();
     expect(calls).toBeGreaterThan(0);
     run.wrapper.unmount();
+  });
+
+  test('lazy 懒加载子级并支持选中', async () => {
+    const lazyLoad = vi.fn((node: { value: string }, resolve: (children: Array<{ value: string; label: string; leaf: boolean }>) => void) => {
+      resolve([{ value: `${node.value}-lazy`, label: '懒子级', leaf: true }]);
+    });
+    const wrapper = mount(Cascader, {
+      props: { options: [{ value: 'x', label: '加载' }], lazy: true, lazyLoad, teleported: false }
+    });
+    await open(wrapper);
+    await clickNode(wrapper, '加载');
+    expect(lazyLoad).toHaveBeenCalledTimes(1);
+    await flushPromises();
+    const menus = wrapper.findAll('.i-cascader__menu');
+    expect(menus).toHaveLength(2);
+    expect(menus[1].text()).toContain('懒子级');
+    // 展开箭头加载完成后恢复，且不重复加载。
+    await clickNode(wrapper, '加载');
+    expect(lazyLoad).toHaveBeenCalledTimes(1);
+    await clickNode(wrapper, '懒子级');
+    expect(wrapper.emitted('update:modelValue')?.at(-1)![0]).toEqual(['x', 'x-lazy']);
+  });
+
+  test('expandTrigger=hover 悬停展开', async () => {
+    const wrapper = mount(Cascader, {
+      props: { options, expandTrigger: 'hover', teleported: false }
+    });
+    await open(wrapper);
+    const first = wrapper.findAll('.i-cascader__node')[0];
+    await first.trigger('mouseenter');
+    expect(wrapper.findAll('.i-cascader__menu')).toHaveLength(2);
+    expect(wrapper.emitted('expand-change')?.[0]).toEqual([['zhinan']]);
+  });
+
+  test('debounce 过滤防抖，仅应用最后一次输入', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const wrapper = mount(Cascader, {
+      props: { options, filterable: true, debounce: 200, teleported: false }
+    });
+    await open(wrapper);
+    const input = wrapper.get('.i-cascader__input');
+    await input.setValue('反');
+    vi.advanceTimersByTime(199);
+    expect(wrapper.findAll('.i-cascader__suggestion')).toHaveLength(0);
+    vi.advanceTimersByTime(1);
+    await flushPromises();
+    expect(wrapper.findAll('.i-cascader__suggestion')).toHaveLength(1);
+    vi.useRealTimers();
+    wrapper.unmount();
+  });
+
+  test('beforeFilter 拦截不通过的关键词', async () => {
+    const beforeFilter = vi.fn((query: string) => query.length >= 2);
+    const wrapper = mount(Cascader, {
+      props: { options, filterable: true, debounce: 0, beforeFilter, teleported: false }
+    });
+    await open(wrapper);
+    await wrapper.get('.i-cascader__input').setValue('反');
+    // 单字被拦截：不进入过滤态，仍展示菜单。
+    expect(wrapper.findAll('.i-cascader__suggestion')).toHaveLength(0);
+    expect(wrapper.findAll('.i-cascader__menu')).toHaveLength(1);
+    await wrapper.get('.i-cascader__input').setValue('反馈');
+    await flushPromises();
+    expect(wrapper.findAll('.i-cascader__suggestion')).toHaveLength(1);
+    expect(beforeFilter).toHaveBeenCalledTimes(2);
   });
 });
