@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { defineComponent, h } from 'vue';
+import { defineComponent, h, ref } from 'vue';
 import { describe, expect, test } from 'vitest';
 
 import Radio from '..';
@@ -106,5 +106,75 @@ describe('test `Radio` component', () => {
 
     const fallback = mount(Radio);
     expect(fallback.classes()).not.toContain('i-radio--small');
+  });
+
+  test('roving tabindex 与方向键在可用项间移动并聚焦', async () => {
+    const { default: RadioGroup } = await import('../group');
+    const value = ref('a');
+    const wrapper = mount(
+      defineComponent({
+        setup: () => () =>
+          h(
+            RadioGroup,
+            {
+              modelValue: value.value,
+              'onUpdate:modelValue': (v: string) => {
+                value.value = v;
+              }
+            },
+            () => [
+              h(Radio, { value: 'a' }, () => 'A'),
+              h(Radio, { value: 'b', disabled: true }, () => 'B'),
+              h(Radio, { value: 'c' }, () => 'C')
+            ]
+          )
+      }),
+      { attachTo: document.body }
+    );
+    const inputs = wrapper.findAll('input[type="radio"]');
+    // 选中项是键盘停靠点，其余项从 tab 序中移除。
+    expect(inputs[0].attributes('tabindex')).toBe('0');
+    expect(inputs[1].attributes('tabindex')).toBe('-1');
+    expect(inputs[2].attributes('tabindex')).toBe('-1');
+
+    await wrapper.get('.i-radio-group').trigger('keydown', { key: 'ArrowRight' });
+    // 跳过禁用的 b，方向键选中并聚焦 c。
+    expect(value.value).toBe('c');
+    expect(document.activeElement).toBe(inputs[2].element);
+    expect(inputs[2].attributes('tabindex')).toBe('0');
+    expect(inputs[0].attributes('tabindex')).toBe('-1');
+
+    await wrapper.get('.i-radio-group').trigger('keydown', { key: 'ArrowLeft' });
+    expect(value.value).toBe('a');
+    expect(document.activeElement).toBe(inputs[0].element);
+    wrapper.unmount();
+  });
+
+  test('RadioButton 同样参与 roving tabindex 导航', async () => {
+    const { default: RadioGroup } = await import('../group');
+    const value = ref('a');
+    const wrapper = mount(
+      defineComponent({
+        setup: () => () =>
+          h(
+            RadioGroup,
+            {
+              modelValue: value.value,
+              'onUpdate:modelValue': (v: string) => {
+                value.value = v;
+              }
+            },
+            () => [h(RadioButton, { value: 'a' }, () => 'A'), h(RadioButton, { value: 'b' }, () => 'B')]
+          )
+      }),
+      { attachTo: document.body }
+    );
+    const inputs = wrapper.findAll('input[type="radio"]');
+    expect(inputs[0].attributes('tabindex')).toBe('0');
+    expect(inputs[1].attributes('tabindex')).toBe('-1');
+    await wrapper.get('.i-radio-group').trigger('keydown', { key: 'ArrowDown' });
+    expect(value.value).toBe('b');
+    expect(document.activeElement).toBe(inputs[1].element);
+    wrapper.unmount();
   });
 });
