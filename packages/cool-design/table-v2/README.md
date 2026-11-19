@@ -65,6 +65,8 @@ const data = Array.from({ length: 10000 }, (_, i) => ({ id: i + 1, name: `行${i
 | rowClass         | 行类名，字符串或函数                    | `string \| (({ rowData, rowIndex }) => string)`                           | —          |
 | cellProps        | 单元格类名与样式                        | `({ rowData, column, rowIndex }) => { class?; style? }`                   | —          |
 | emptyText        | 空态文字                                | `string`                                                                  | `暂无数据` |
+| fixedColumns     | 自动固定的列数（列级 `fixed` 声明优先）  | `number`                                                                  | `0`        |
+| fixedColumnsMode | 自动固定方向：首列侧或尾列侧            | `'left' \| 'right'`                                                       | `left`     |
 
 行事件参数为 `{ rowData: object; rowIndex: number; event: Event }`。
 
@@ -105,7 +107,7 @@ const data = Array.from({ length: 10000 }, (_, i) => ({ id: i + 1, name: `行${i
 | sortable | 是否可排序                   | `boolean`                    |
 | fixed    | 固定列，`true` 等价于 `left` | `boolean` / `left` / `right` |
 
-`TableV2`、`TableV2Column`、`TableV2SortBy`、`TableV2RowEventHandlers`、`TableV2RowHeight` 可从 `cool-design/table-v2` 子路径导入；主包公共入口只保留普通 `Table`。
+`TableV2`、`TableV2Column`、`TableV2SortBy`、`TableV2RowEventHandlers`、`TableV2RowHeight` 可从 `cool-design/table-v2` 子路径导入，也可从主包公共入口导入（与 `Table` 并列注册）。
 
 ## 行为约定
 

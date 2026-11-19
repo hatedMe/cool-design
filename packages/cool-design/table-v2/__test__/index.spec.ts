@@ -106,6 +106,43 @@ test('固定列粘性定位并累积偏移', async () => {
   expect((bodyCells[3].element as HTMLElement).style.right).toBe('0px');
 });
 
+test('fixedColumns 按模式自动固定首尾列', () => {
+  const cols = [
+    { key: 'a', dataKey: 'a', title: '甲', width: 100 },
+    { key: 'b', dataKey: 'b', title: '乙', width: 50 },
+    { key: 'c', dataKey: 'c', title: '丙', width: 200 },
+    { key: 'd', dataKey: 'd', title: '丁', width: 80 }
+  ];
+  const left = mount(TableV2, {
+    props: { columns: cols, data: [{ a: 1, b: 2, c: 3, d: 4 }], width: 300, height: 200, fixedColumns: 2 }
+  });
+  const leftCells = left.findAll('.i-table-v2__cell.is-header');
+  const leftStyle = (i: number) => (leftCells[i].element as HTMLElement).style;
+  expect(leftStyle(0).position).toBe('sticky');
+  expect(leftStyle(0).left).toBe('0px');
+  expect(leftStyle(1).position).toBe('sticky');
+  expect(leftStyle(1).left).toBe('100px');
+  expect(leftStyle(2).position).toBe('');
+  expect(leftStyle(3).position).toBe('');
+
+  const right = mount(TableV2, {
+    props: {
+      columns: cols,
+      data: [{ a: 1, b: 2, c: 3, d: 4 }],
+      width: 300,
+      height: 200,
+      fixedColumns: 1,
+      fixedColumnsMode: 'right'
+    }
+  });
+  const rightCells = right.findAll('.i-table-v2__cell.is-header');
+  const rightStyle = (i: number) => (rightCells[i].element as HTMLElement).style;
+  expect(rightStyle(0).position).toBe('');
+  expect(rightStyle(2).position).toBe('');
+  expect(rightStyle(3).position).toBe('sticky');
+  expect(rightStyle(3).right).toBe('0px');
+});
+
 test('动态行高计算偏移与窗口', async () => {
   const data = Array.from({ length: 10 }, (_, i) => ({ id: i + 1 }));
   const w = mount(TableV2, {

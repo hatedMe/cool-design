@@ -792,6 +792,9 @@ export const pages: Page[] = [
     ['states', '空态与加载', '无数据时显示空态，loading 遮罩阻止数据区域交互。'],
     ['advanced', '拖拽列宽、编辑与列显隐', '拖拽表头边缘调整列宽，双击编辑单元格，编程式控制列显示与顺序。']
   ]),
+  component('table-v2', 'TableV2 虚拟表格', '数据展示', [
+    ['basic', '万行数据流畅滚动', '虚拟滚动只渲染可视行；列级 fixed 或 fixedColumns 可固定首尾列。']
+  ]),
   component('pagination', 'Pagination 分页', '数据展示', [
     ['basic', '分页与每页条数', '页码从 1 开始；改变条数时，由页面把页码重置为 1。'],
     ['layout', '布局与总数', '使用 layout 组合模块，使用 page-count 直接指定总页数。']

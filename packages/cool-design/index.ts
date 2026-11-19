@@ -33,6 +33,7 @@ import Switch from './switch';
 import Form from './form';
 import FormItem from './form-item';
 import Table from './table';
+import TableV2 from './table-v2';
 import Pagination from './pagination';
 import Dialog from './dialog';
 import Message, { ElMessage } from './message';
@@ -101,6 +102,15 @@ export type { PopoverDirectiveValue } from './popover';
 import './style/index.scss';
 export type { FormRule, FormInstance, FormFieldContext, FormItemInstance } from './form';
 export type { TableColumn, SortChange } from './table';
+export type {
+  TableV2CellProps,
+  TableV2Column,
+  TableV2RowEventHandlers,
+  TableV2RowEventParams,
+  TableV2RowHeight,
+  TableV2SortBy,
+  TableV2SortOrder
+} from './table-v2';
 export type { SelectRemoteOption, SelectTagType } from './select/select';
 export type { CascaderFilterMethod, CascaderModelValue, CascaderNode, CascaderOption, CascaderPropsMapping } from './cascader';
 export type { Size, Config } from './config-provider/context';
@@ -140,6 +150,7 @@ export {
   Form,
   FormItem,
   Table,
+  TableV2,
   Pagination,
   Dialog,
   Message,
@@ -248,6 +259,7 @@ const components = [
   Form,
   FormItem,
   Table,
+  TableV2,
   Pagination,
   Dialog,
   Message,

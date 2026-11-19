@@ -38,7 +38,10 @@ export default defineComponent({
       >,
       default: undefined
     },
-    emptyText: { type: String, default: '暂无数据' }
+    emptyText: { type: String, default: '暂无数据' },
+    /** 前（后）N 列自动视为固定列，列级 fixed 声明优先 */
+    fixedColumns: { type: Number, default: 0 },
+    fixedColumnsMode: { type: String as PropType<'left' | 'right'>, default: 'left' }
   },
   emits: ['column-sort', 'expanded-rows-change', 'scroll', 'end-reached'],
   setup(props, { emit, slots, expose }) {
@@ -216,16 +219,29 @@ export default defineComponent({
       minWidth: `${column.width}px`,
       textAlign: column.align ?? 'left'
     });
-    const fixedSideOf = (column: TableV2Column) =>
-      column.fixed === true ? 'left' : column.fixed === 'left' || column.fixed === 'right' ? column.fixed : undefined;
+    // 列级 fixed 声明优先；fixedColumns 按模式自动把前/后 N 列视为固定列。
+    const fixedSideOf = (column: TableV2Column, index: number): 'left' | 'right' | undefined => {
+      if (column.fixed === true) return 'left';
+      if (column.fixed === 'left' || column.fixed === 'right') return column.fixed;
+      const total = props.columns.length;
+      if (props.fixedColumns > 0) {
+        if (props.fixedColumnsMode === 'right' && index >= total - props.fixedColumns) return 'right';
+        if (props.fixedColumnsMode === 'left' && index < props.fixedColumns) return 'left';
+      }
+      return undefined;
+    };
     const cellFixedStyle = (column: TableV2Column, index: number, header: boolean): CSSProperties => {
-      const side = fixedSideOf(column);
+      const side = fixedSideOf(column, index);
       if (!side) return {};
       const cols = props.columns;
       const offset =
         side === 'left'
-          ? cols.slice(0, index).reduce((n, c) => n + (fixedSideOf(c) === 'left' ? c.width : 0), 0)
-          : cols.slice(index + 1).reduce((n, c) => n + (fixedSideOf(c) === 'right' ? c.width : 0), 0);
+          ? cols
+              .slice(0, index)
+              .reduce((n, c, i) => n + (fixedSideOf(c, i) === 'left' ? c.width : 0), 0)
+          : cols
+              .slice(index + 1)
+              .reduce((n, c, i) => n + (fixedSideOf(c, index + 1 + i) === 'right' ? c.width : 0), 0);
       const style: CSSProperties = {
         position: 'sticky',
         zIndex: header ? 3 : 1,
