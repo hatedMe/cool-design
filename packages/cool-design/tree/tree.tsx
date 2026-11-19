@@ -54,7 +54,7 @@ export default defineComponent({
     icon: { type: [String, Object, Function] as PropType<string | Component>, default: '' },
     showCheckbox: Boolean,
     checkStrictly: Boolean,
-    checkOnClickLeaf: { type: Boolean, default: true },
+    checkOnClickLeaf: { type: Boolean, default: false },
     checkDescendants: Boolean,
     defaultCheckedKeys: { type: Array as PropType<TreeKey[]>, default: () => [] },
     defaultCurrentKey: { type: [String, Number] as PropType<TreeKey | undefined>, default: undefined },
@@ -984,9 +984,32 @@ export default defineComponent({
       insertAt(data, ref, true);
     };
 
+    const getExpandedKeys = (): TreeKey[] => {
+      const result: TreeKey[] = [];
+      const walk = (list: InnerNode[]) => {
+        list.forEach((node) => {
+          if (node.expanded && !node.isLeaf && node.key !== null && node.key !== undefined) result.push(node.key);
+          walk(node.children);
+        });
+      };
+      walk(rootNodes.value);
+      return result;
+    };
+    const isChecked = (param: TreeNodeParam): boolean => resolveNode(param)?.checked ?? false;
+    const isIndeterminate = (param: TreeNodeParam): boolean => resolveNode(param)?.indeterminate ?? false;
+    const toggleCheckbox = (param: TreeNodeParam, checked?: boolean): void => {
+      const node = resolveNode(param);
+      if (!node || isEffectivelyDisabled(node)) return;
+      applyChecked(node, checked ?? !node.checked, undefined, true);
+    };
+
     expose({
       filter,
       getNode,
+      getExpandedKeys,
+      isChecked,
+      isIndeterminate,
+      toggleCheckbox,
       getCheckedNodes,
       getCheckedKeys,
       getHalfCheckedNodes,

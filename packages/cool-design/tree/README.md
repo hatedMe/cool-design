@@ -90,7 +90,7 @@ const loadNode = (node: any, resolve: (children: any[]) => void) => {
 | auto-expand-parent | 展开子节点时是否自动展开父节点 | `boolean` | `true` |
 | expand-on-click-node | 点击节点是否展开收起 | `boolean` | `true` |
 | check-on-click-node | 点击节点是否勾选复选框 | `boolean` | `false` |
-| check-on-click-leaf | 点击叶节点是否勾选复选框 | `boolean` | `true` |
+| check-on-click-leaf | 点击叶节点是否勾选复选框 | `boolean` | `false` |
 | accordion | 手风琴模式，同级只展开一个 | `boolean` | `false` |
 | indent | 相邻层级缩进，单位 px | `number` | `18` |
 | icon | 自定义展开图标类名或组件 | `string` / `Component` | — |
@@ -152,6 +152,10 @@ const loadNode = (node: any, resolve: (children: any[]) => void) => {
 | --- | --- | --- |
 | filter | 过滤节点 | `value: string` |
 | getNode | 获取节点实例 | `param: TreeKey \| TreeData \| TreeNode` |
+| getExpandedKeys | 获取展开节点的 `key` | — |
+| isChecked | 节点是否勾选 | `param: TreeKey \| TreeData \| TreeNode` |
+| isIndeterminate | 节点是否半选 | `param: TreeKey \| TreeData \| TreeNode` |
+| toggleCheckbox | 切换节点勾选，不传目标值时取反 | `param: TreeKey \| TreeData \| TreeNode`、`checked?: boolean` |
 | getCheckedNodes | 获取勾选节点数据 | `leafOnly?: boolean`、`includeHalfChecked?: boolean` |
 | getCheckedKeys | 获取勾选节点 `key` | `leafOnly?: boolean` |
 | getHalfCheckedNodes | 获取半选节点数据 | — |

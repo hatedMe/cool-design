@@ -31,7 +31,7 @@ export default defineComponent({
     highlightCurrent: Boolean,
     expandOnClickNode: { type: Boolean, default: true },
     checkOnClickNode: Boolean,
-    checkOnClickLeaf: { type: Boolean, default: true },
+    checkOnClickLeaf: { type: Boolean, default: false },
     defaultExpandedKeys: { type: Array as PropType<TreeV2Key[]>, default: () => [] },
     showCheckbox: Boolean,
     checkStrictly: Boolean,
@@ -235,6 +235,22 @@ export default defineComponent({
 
     expose({
       filter,
+      getExpandedKeys: () => {
+        const result: TreeV2Key[] = [];
+        const walk = (list: TreeV2InnerNode[]) =>
+          list.forEach((node) => {
+            if (node.expanded && !node.isLeaf) result.push(node.key);
+            walk(node.children);
+          });
+        walk(nodes.value);
+        return result;
+      },
+      isChecked: (key: TreeV2Key) => keyMap.get(key)?.checked ?? false,
+      isIndeterminate: (key: TreeV2Key) => keyMap.get(key)?.indeterminate ?? false,
+      toggleCheckbox: (key: TreeV2Key, checked?: boolean) => {
+        const node = keyMap.get(key);
+        if (node && !isEffectivelyDisabled(node)) applyChecked(node, checked ?? !node.checked, undefined);
+      },
       getCheckedNodes: (leafOnly = false) => {
         const result: TreeV2Data[] = [];
         const walk = (list: TreeV2InnerNode[]) =>

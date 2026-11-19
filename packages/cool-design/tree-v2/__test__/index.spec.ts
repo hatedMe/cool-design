@@ -88,12 +88,40 @@ describe('test `TreeV2` component', () => {
 
   test('checkOnClickLeaf 点击叶子勾选', async () => {
     const wrapper = mount(TreeV2, {
-      props: { data: data(), showCheckbox: true, expandOnClickNode: false, defaultExpandedKeys: ['a'] }
+      props: { data: data(), showCheckbox: true, checkOnClickLeaf: true, expandOnClickNode: false, defaultExpandedKeys: ['a'] }
     });
     // 行序：a, a1, a2, b —— 点击叶子 a2 行
     await rows(wrapper)[2].trigger('click');
     const payload = wrapper.emitted('check')!.at(-1)![1] as { checkedKeys: string[] };
     expect(payload.checkedKeys).toEqual(['a2']);
+  });
+
+  test('叶节点点击默认不勾选', async () => {
+    const wrapper = mount(TreeV2, {
+      props: { data: data(), showCheckbox: true, expandOnClickNode: false, defaultExpandedKeys: ['a'] }
+    });
+    await rows(wrapper)[2].trigger('click');
+    expect(wrapper.emitted('check')).toBeUndefined();
+  });
+
+  test('暴露 getExpandedKeys、isChecked、isIndeterminate 与 toggleCheckbox', () => {
+    const wrapper = mount(TreeV2, {
+      props: { data: data(), showCheckbox: true, defaultExpandedKeys: ['a'] }
+    });
+    const api = wrapper.vm as unknown as {
+      getExpandedKeys: () => string[];
+      isChecked: (key: string) => boolean;
+      isIndeterminate: (key: string) => boolean;
+      toggleCheckbox: (key: string, checked?: boolean) => void;
+    };
+    expect(api.getExpandedKeys()).toEqual(['a']);
+    expect(api.isChecked('a1')).toBe(false);
+    api.toggleCheckbox('a1', true);
+    expect(api.isChecked('a1')).toBe(true);
+    expect(api.isIndeterminate('a')).toBe(true);
+    api.toggleCheckbox('a1');
+    expect(api.isChecked('a1')).toBe(false);
+    expect(api.isIndeterminate('a')).toBe(false);
   });
 
   test('filter 过滤节点并保留祖先', async () => {

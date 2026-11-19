@@ -69,6 +69,10 @@ export type TreeNodeParam = TreeKey | TreeData | TreeNode;
 export interface TreeExposed {
   filter: (value: string) => void;
   getNode: (param: TreeNodeParam) => TreeNode | null;
+  getExpandedKeys: () => TreeKey[];
+  isChecked: (param: TreeNodeParam) => boolean;
+  isIndeterminate: (param: TreeNodeParam) => boolean;
+  toggleCheckbox: (param: TreeNodeParam, checked?: boolean) => void;
   getCheckedNodes: (leafOnly?: boolean, includeHalfChecked?: boolean) => TreeData[];
   getCheckedKeys: (leafOnly?: boolean) => TreeKey[];
   getHalfCheckedNodes: () => TreeData[];

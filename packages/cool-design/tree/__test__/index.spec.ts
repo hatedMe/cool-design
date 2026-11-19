@@ -137,15 +137,37 @@ describe('Tree', () => {
     expect(exposedOf(wrapper).getCheckedKeys()).toEqual([1]);
   });
 
-  test('叶节点点击默认勾选，可通过 check-on-click-leaf 关闭', async () => {
+  test('叶节点点击默认不勾选，开启 check-on-click-leaf 后点击勾选', async () => {
     const wrapper = mount(Tree, {
       props: { data: [{ id: 1, label: '叶节点' }], nodeKey: 'id', showCheckbox: true }
     });
     await contents(wrapper)[0].trigger('click');
-    expect(exposedOf(wrapper).getCheckedKeys()).toEqual([1]);
-    await wrapper.setProps({ checkOnClickLeaf: false });
+    expect(exposedOf(wrapper).getCheckedKeys()).toEqual([]);
+
+    await wrapper.setProps({ checkOnClickLeaf: true });
     await contents(wrapper)[0].trigger('click');
     expect(exposedOf(wrapper).getCheckedKeys()).toEqual([1]);
+    await contents(wrapper)[0].trigger('click');
+    expect(exposedOf(wrapper).getCheckedKeys()).toEqual([]);
+  });
+
+  test('暴露 getExpandedKeys、isChecked、isIndeterminate 与 toggleCheckbox', () => {
+    const wrapper = mount(Tree, {
+      props: { data: basicData(), nodeKey: 'id', showCheckbox: true, defaultExpandedKeys: [1] }
+    });
+    const api = exposedOf(wrapper);
+    expect(api.getExpandedKeys()).toEqual([1]);
+
+    expect(api.isChecked(11)).toBe(false);
+    expect(api.isIndeterminate(1)).toBe(false);
+    // 勾选子节点后父级变为半选，叶子选中。
+    api.toggleCheckbox(11, true);
+    expect(api.isChecked(11)).toBe(true);
+    expect(api.isIndeterminate(1)).toBe(true);
+    // 不传目标值时取反。
+    api.toggleCheckbox(11);
+    expect(api.isChecked(11)).toBe(false);
+    expect(api.isChecked(1)).toBe(false);
   });
 
   test('setChecked 的 deep 在 check-strictly 下仍可级联', () => {

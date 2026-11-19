@@ -12,7 +12,7 @@
 <TreeV2 :data="data" :props="{ value: 'id', label: 'label', children: 'children' }" :height="200" />
 ```
 
-`show-checkbox` 显示复选框（勾选级联，`check-strictly` 解耦，`check-on-click-leaf` 叶子点选默认开）；`default-expanded-keys` / `default-checked-keys` / `current-node-key` 初始化状态；`filter-method` + 实例 `filter()` 过滤；`highlight-current` 高亮当前行；`icon` 自定义展开图标（或使用默认插槽 `{ node }` 自定义行内容）。
+`show-checkbox` 显示复选框（勾选级联，`check-strictly` 解耦，`check-on-click-leaf` 叶子点选默认关）；`default-expanded-keys` / `default-checked-keys` / `current-node-key` 初始化状态；`filter-method` + 实例 `filter()` 过滤；`highlight-current` 高亮当前行；`icon` 自定义展开图标（或使用默认插槽 `{ node }` 自定义行内容）。
 
 ## API
 
@@ -29,7 +29,7 @@
 | `highlightCurrent`    | 高亮当前节点                               | `boolean`                   | `false` |
 | `expandOnClickNode`   | 点击节点展开/收起                          | `boolean`                   | `true`  |
 | `checkOnClickNode`    | 点击节点切换勾选                           | `boolean`                   | `false` |
-| `checkOnClickLeaf`    | 点击叶子切换勾选                           | `boolean`                   | `true`  |
+| `checkOnClickLeaf`    | 点击叶子切换勾选                           | `boolean`                   | `false` |
 | `showCheckbox`        | 显示复选框                                 | `boolean`                   | `false` |
 | `checkStrictly`       | 勾选父子解耦                               | `boolean`                   | `false` |
 | `defaultExpandedKeys` | 初始展开的节点 key                         | `TreeV2Key[]`               | `[]`    |
@@ -64,6 +64,9 @@
 | 方法                              | 说明                                   |
 | --------------------------------- | -------------------------------------- |
 | `filter(query)`                   | 过滤节点（需 `filter-method`）         |
+| `getExpandedKeys()`               | 获取展开节点的 key                     |
+| `isChecked(key)` / `isIndeterminate(key)` | 节点勾选/半选状态            |
+| `toggleCheckbox(key, checked?)`   | 切换节点勾选，不传目标值时取反         |
 | `getCheckedNodes(leafOnly?)`      | 获取勾选节点数据                       |
 | `getCheckedKeys(leafOnly?)`       | 获取勾选节点 key                       |
 | `setCheckedKeys(keys)`            | 设置勾选的 key                         |
