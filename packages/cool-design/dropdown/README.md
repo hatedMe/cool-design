@@ -2,7 +2,7 @@
 
 ## 组件介绍
 
-Dropdown 将多个操作收纳到下拉菜单中，支持悬停/点击/右键触发、分裂按钮与键盘操作。API 对标 Element Plus，支持 `DropdownMenu` / `DropdownItem` 子组件与 `dropdown` 插槽，同时兼容旧版 `items` 数据驱动用法。
+Dropdown 将多个操作收纳到下拉菜单中，支持悬停/点击/右键触发、分裂按钮与键盘操作。支持 `DropdownMenu` / `DropdownItem` 子组件与 `dropdown` 插槽，同时兼容旧版 `items` 数据驱动用法。
 
 ## 基础用法
 

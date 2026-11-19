@@ -85,7 +85,7 @@ Transfer 用于在两个列表之间移动和管理选项，支持搜索过滤�
 
 | 插槽名 | 说明 | 参数 |
 | --- | --- | --- |
-| default | 自定义数据项（Element Plus 兼容） | `{ option: TransferItem }` |
+| default | 自定义数据项（兼容通用字段） | `{ option: TransferItem }` |
 | item | 自定义数据项（`default` 别名） | `{ option: TransferItem }` |
 | left-footer | 左侧面板底部 | — |
 | right-footer | 右侧面板底部 | — |

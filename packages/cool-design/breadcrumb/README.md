@@ -2,7 +2,7 @@
 
 ## 组件介绍
 
-Breadcrumb 显示当前页面在导航层级中的位置，支持链接、分隔符与末项语义。API 对标 Element Plus，支持 `BreadcrumbItem` 子组件与默认插槽，同时兼容旧版 `items` 数据驱动用法。
+Breadcrumb 显示当前页面在导航层级中的位置，支持链接、分隔符与末项语义。提供完整组件 API，支持 `BreadcrumbItem` 子组件与默认插槽，同时兼容旧版 `items` 数据驱动用法。
 
 ## 基础用法
 

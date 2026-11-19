@@ -246,7 +246,7 @@ const beforeUpload = (file: UploadRawFile) => file.type.startsWith('image/') && 
 | remove | 文件移除 | `file: UploadFile, files: UploadFiles` |
 | exceed | 超出数量限制 | `files: UploadRawFile[], fileList: UploadFiles` |
 
-短名事件与同名 `on-*` 属性回调会同时触发；`on-*` 属性回调属于兼容 Element Plus 的便捷写法。
+短名事件与同名 `on-*` 属性回调会同时触发；`on-*` 属性回调属于兼容的便捷写法。
 
 ### 插槽
 
@@ -269,7 +269,7 @@ const beforeUpload = (file: UploadRawFile) => file.type.startsWith('image/') && 
 
 ### 类型
 
-以下类型可从 `cool-design` 导入。before-upload 返回转换文件时，列表展示名称仍保留原始选择文件名，转换文件仅用于实际上传。`UploadRequest`、`UploadRequestHandle` 和 `UploadRequestResult` 是内部组合类型，未从包入口导出；自定义请求可直接按 `UploadRequestOptions` 标注参数。`submit()` 返回 Promise 是本项目保留的扩展行为，不是 Element Plus 的完全一致契约。`UploadDataValue` 中的 `string[]` 表示多个普通字段值，`[string | Blob, string]` 表示带文件名的字段；项目按 Element Plus 的 tuple 优先规则处理长度为 2 的二元数组，因此长度为 2 的字符串数组会按 filename tuple 解释：
+以下类型可从 `cool-design` 导入。before-upload 返回转换文件时，列表展示名称仍保留原始选择文件名，转换文件仅用于实际上传。`UploadRequest`、`UploadRequestHandle` 和 `UploadRequestResult` 是内部组合类型，未从包入口导出；自定义请求可直接按 `UploadRequestOptions` 标注参数。`submit()` 返回 Promise 是本项目保留的扩展行为。`UploadDataValue` 中的 `string[]` 表示多个普通字段值，`[string | Blob, string]` 表示带文件名的字段；长度为 2 的二元数组按 tuple 优先规则处理，因此长度为 2 的字符串数组会按 filename tuple 解释：
 
 ```ts
  type UploadStatus = 'ready' | 'uploading' | 'success' | 'fail';

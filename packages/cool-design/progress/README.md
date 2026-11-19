@@ -2,7 +2,7 @@
 
 ### 组件介绍
 
-Progress 用于展示操作进度，支持线形、环形和仪表盘三种样式，可自定义颜色、文本与条纹动画，对标 Element Plus Progress 的公开 API。
+Progress 用于展示操作进度，支持线形、环形和仪表盘三种样式，可自定义颜色、文本与条纹动画。
 
 ## 用法
 
@@ -48,7 +48,7 @@ import { Progress } from 'cool-design';
 
 ### 事件
 
-无自定义事件（与 Element Plus 一致）。
+无自定义事件。
 
 ### 插槽
 

@@ -2,7 +2,7 @@
 
 ## 组件介绍
 
-Menu 用于页面导航和分组操作，支持水平/垂直模式、折叠、子菜单展开收起。API 对标 Element Plus，支持 `MenuItem`、`SubMenu`、`MenuItemGroup` 子组件与默认插槽，同时兼容旧版 `items` 数据驱动用法。
+Menu 用于页面导航和分组操作，支持水平/垂直模式、折叠、子菜单展开收起。支持 `MenuItem`、`SubMenu`、`MenuItemGroup` 子组件与默认插槽，同时兼容旧版 `items` 数据驱动用法。
 
 ## 基础用法
 

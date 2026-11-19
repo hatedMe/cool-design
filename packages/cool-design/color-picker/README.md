@@ -2,7 +2,7 @@
 
 ### 介绍
 
-颜色选择器用于选择颜色，支持透明度、预定义颜色、颜色格式和受控值。组件名称、事件名称与 Element Plus `ColorPicker` 保持一致；组件注册名为 `i-color-picker`。
+颜色选择器用于选择颜色，支持透明度、预定义颜色、颜色格式和受控值。组件注册名为 `i-color-picker`。
 
 > `Color` 色彩不是可注册组件，而是项目提供的 CSS 颜色变量和色板规范，详见 `packages/cool-design/color/README.md`。
 
@@ -72,4 +72,4 @@
 | `focus()` | 聚焦触发器 |
 | `blur()` | 取消触发器焦点 |
 
-> 当前版本使用原生颜色输入控件，不承诺 Element Plus 的完整调色板布局、`teleported`、`validate-event` 和 Popper 定位 API。
+> 当前版本使用原生颜色输入控件，不包含完整调色板布局、`teleported`、`validate-event` 和 Popper 定位 API。

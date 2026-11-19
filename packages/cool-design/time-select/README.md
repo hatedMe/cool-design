@@ -56,4 +56,4 @@
 
 ## 使用说明
 
-只对齐 Element Plus 的 TimeSelect（固定时间点），动态时间范围请使用 TimePicker（`disabled-hours` 等）。
+本组件即固定时间点的 TimeSelect，动态时间范围请使用 TimePicker（`disabled-hours` 等）。

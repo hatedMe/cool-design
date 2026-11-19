@@ -2,9 +2,9 @@
 
 ### 介绍
 
-展示结构化数据，对标 Element Plus Table 的核心 API：固定表头与固定列、行选择、单选高亮行、客户端排序与远程排序、列筛选、展开行、合计行、单元格合并、行列点击事件和自定义单元格。
+展示结构化数据，提供完整的核心 API：固定表头与固定列、行选择、单选高亮行、客户端排序与远程排序、列筛选、展开行、合计行、单元格合并、行列点击事件和自定义单元格。
 
-列通过 `columns` 配置（等价于 Element Plus 的 `el-table-column` 属性），插槽名等于列字段名。
+列通过 `columns` 配置，插槽名等于列字段名。
 
 ## 基础用法
 
@@ -30,7 +30,7 @@ const data = [
 </template>
 ```
 
-列定义支持 Element Plus 风格的 `prop` / `property` / `label` 别名，分别等价于 `key` / `title`。
+列定义支持 `prop` / `property` / `label` 兼容别名，分别等价于 `key` / `title`。
 
 ## 选择与当前行
 
@@ -313,10 +313,10 @@ const columns = [
 | index               | 序号列自定义序号，数字为起点偏移，函数接收 `0` 起始下标                             | `number \| ((index: number) => number \| string)`           |
 | columnKey           | 列标识，用于 `filter-change` 键名与 `sort(prop)` 查找                               | `string`                                                    |
 | key                 | 字段名及单元格插槽名，与 `prop` / `property` 任选其一                               | `string`                                                    |
-| prop                | Element Plus 风格，等价于 `key`                                                     | `string`                                                    |
-| property            | Element Plus 旧别名，等价于 `prop`                                                  | `string`                                                    |
+| prop                | 兼容别名，等价于 `key`                                                     | `string`                                                    |
+| property            | 兼容旧别名，等价于 `prop`                                                  | `string`                                                    |
 | title               | 表头文字，与 `label` 任选其一                                                       | `string`                                                    |
-| label               | Element Plus 风格，等价于 `title`                                                   | `string`                                                    |
+| label               | 兼容别名，等价于 `title`                                                   | `string`                                                    |
 | width               | 列宽，固定列请显式指定，可传数字或 CSS 高度字符串                                   | `string \| number`                                          |
 | minWidth            | 最小列宽，可传数字或 CSS 宽度字符串                                                 | `string \| number`                                          |
 | fixed               | 固定列，`true` 等价于 `left`                                                        | `boolean` / `left` / `right`                                |
@@ -350,7 +350,7 @@ const columns = [
 
 ## 升级说明
 
-第二轮实现将 `sort-change` 载荷由 `{ key, order: 'asc' \| 'desc' \| null }` 改为 Element Plus 官方形状 `{ column, prop, order: 'ascending' \| 'descending' \| null }`，`sortable: true` 改为客户端自动排序；远程排序请改用 `sortable: 'custom'` 并在事件中自行处理。
+第二轮实现将 `sort-change` 载荷由 `{ key, order: 'asc' \| 'desc' \| null }` 改为官方载荷形状 `{ column, prop, order: 'ascending' \| 'descending' \| null }`，`sortable: true` 改为客户端自动排序；远程排序请改用 `sortable: 'custom'` 并在事件中自行处理。
 
 ## 行为约定
 
@@ -366,4 +366,4 @@ const columns = [
 
 ## 实现状态
 
-普通 `Table` 已覆盖本组件文档列出的 Element Plus Table 常用属性、事件、插槽、树形数据、展开行、选择、排序、筛选、列宽调整、列移动、编辑与合计能力。
+普通 `Table` 已覆盖本组件文档列出的常用属性、事件、插槽、树形数据、展开行、选择、排序、筛选、列宽调整、列移动、编辑与合计能力。
