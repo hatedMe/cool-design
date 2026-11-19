@@ -8,7 +8,14 @@ import { renderMarkdown } from '../../../doc/site/markdown';
 describe('文档内容与组件覆盖', () => {
   it('每个公开注册的组件都有 API 文档和运行示例', () => {
     const names: string[] = [];
-    install({ use: (component: { name: string }) => names.push(component.name) } as unknown as App);
+    install({
+      // 函数型服务（$message 等）也走 use，仅登记组件名。
+      use: (plugin: unknown) => {
+        if (plugin && typeof plugin === 'object' && 'name' in plugin) names.push((plugin as { name: string }).name);
+      },
+      _context: null,
+      config: { globalProperties: {} }
+    } as unknown as App);
     for (const name of names) {
       const page = pages.find((item) => item.id === `components/${name.replace(/^i-/, '')}`);
       expect(page, name).toBeDefined();
