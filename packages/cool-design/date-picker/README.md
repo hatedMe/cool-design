@@ -27,20 +27,83 @@ DatePicker 用于选择日期、月份、年份、周、多个日期和日期范
 
 ## API
 
-属性：`model-value`、`type`（`date` / `dates` / `week` / `month` / `months` / `year` / `years` / `quarter` / `quarters` / `quarterrange` / `datetime` / `daterange` / `datetimerange` / `monthrange` / `yearrange`）、`format`（季度默认 `YYYY-[Q]Q`，周类型默认 `YYYY-[第]ww[周]`；`datetime` 面板的时间列粒度跟随 `format`，不含 `ss` 时无秒列）、`value-format`、`placeholder`、`start-placeholder`、`end-placeholder`、`range-separator`、`range`、`disabled-date`（季度按季度内日期整体判断）、`disabled`、`readonly`、`editable`、`clearable`、`size`、`teleported`、`placement`、`popper-class`、`show-now`（默认 `false`）、`single-panel`、`unlink-panels`、`id`、`name`、`validate-event`。
+### 属性
+
+| 参数                | 说明                                                           | 类型                                   | 默认值         |
+| ------------------- | -------------------------------------------------------------- | -------------------------------------- | -------------- |
+| model-value         | 绑定值                                                         | `string` / `number` / `Date` / `Array<string \| number \| Date> \| null` | — |
+| type                | `date` / `dates` / `week` / `month` / `months` / `year` / `years` / `quarter` / `quarters` / `quarterrange` / `datetime` / `daterange` / `datetimerange` / `monthrange` / `yearrange` | `string` | `date` |
+| format              | 显示格式：季度默认 `YYYY-[Q]Q`，周类型默认 `YYYY-[第]ww[周]`；`datetime` 面板时间列粒度跟随 format | `string` | 按 type |
+| value-format        | 绑定值格式，`x` / `timestamp` 返回毫秒时间戳                   | `string`                               | —              |
+| placeholder         | 占位文本                                                       | `string`                               | —              |
+| start-placeholder   | 范围开始占位                                                   | `string`                               | —              |
+| end-placeholder     | 范围结束占位                                                   | `string`                               | —              |
+| range-separator     | 范围分隔符                                                     | `string`                               | —              |
+| range               | 是否为范围选择                                                 | `boolean`                              | `false`        |
+| disabled-date       | 禁用日期（季度按季度内日期整体判断）                           | `(date: Date) => boolean`             | —              |
+| disabled            | 禁用                                                           | `boolean`                              | `false`        |
+| readonly            | 只读                                                           | `boolean`                              | `false`        |
+| editable            | 是否允许手动输入                                               | `boolean`                              | `true`         |
+| clearable           | 是否可清空                                                     | `boolean`                              | `false`        |
+| size                | 尺寸                                                           | `string`                               | 继承全局尺寸   |
+| shortcuts           | 快捷选项                                                       | `Array<{ text: string; value: ... }>`  | —              |
+| default-value       | 初始值                                                         | `Date` / `Date[]`                      | —              |
+| default-time         | 选择日期时的初始时间                                           | `string` / `number` / `Date` / `Array<string \| number \| Date>` | — |
+| show-confirm        | 确认流程扩展，开启后需点击确认提交                             | `boolean`                              | `false`        |
+| show-now             | 是否显示"此刻"按钮                                             | `boolean`                              | `false`        |
+| show-footer          | 是否显示底部栏                                                 | `boolean`                              | —              |
+| show-week-number     | 是否显示周数列                                                 | `boolean`                              | `false`        |
+| single-panel        | 范围选择使用单面板                                             | `boolean`                              | `false`        |
+| unlink-panels       | 范围双面板取消联动                                             | `boolean`                              | `false`        |
+| first-day-of-week   | 周起始日，`0` 为周日                                           | `number`                               | `0`            |
+| cell-class-name     | 日期单元格自定义类名                                           | `string` / `(date: Date) => string`    | —              |
+| empty-values        | 视为空的输入值                                                 | `Array<string \| number>`             | —              |
+| value-on-clear      | 清空时的回退值                                                 | `string` / `number` / `null`           | —              |
+| validate-event      | 值变化时触发表单校验                                           | `boolean`                              | `true`         |
+| automatic-dropdown  | 聚焦即展开                                                     | `boolean`                              | `false`        |
+| prefix-icon         | 前置图标                                                       | `string` / `Component`                 | —              |
+| clear-icon          | 清空图标                                                       | `string` / `Component`                 | —              |
+| id                  | 原生 id                                                        | `string` / `string[]`                  | —              |
+| name                | 原生名称                                                       | `string`                               | —              |
+| teleported          | 弹层是否传送到 body                                            | `boolean`                              | `true`         |
+| placement           | 弹层位置                                                       | `string`                               | `bottom-start` |
+| popper-class        | 弹层自定义类名                                                 | `string`                               | —              |
+| popper-style        | 弹层自定义样式                                                 | `string` / `CSSProperties`             | —              |
+| popper-options      | 浮层参数覆盖                                                   | `object`                               | —              |
+| fallback-placements | 候选位置                                                       | `string[]`                             | —              |
 
 范围选择已定起点、未定终点时，鼠标悬停的日期区间会实时预览高亮。
 
-事件：`update:modelValue`、`change`、`focus`、`blur`、`clear`、`visible-change`、`calendar-change`、`panel-change`。
+### 事件
 
-方法：`focus()`、`blur()`、`handleOpen()`、`handleClose()`。
+| 事件名            | 说明               | 回调参数                                   |
+| ----------------- | ------------------ | ------------------------------------------ |
+| update:modelValue | 绑定值变化         | `value`                                    |
+| change            | 值确认变化         | `value`                                    |
+| focus             | 聚焦               | `event: FocusEvent`                        |
+| blur              | 失焦               | `event: FocusEvent`                        |
+| clear             | 点击清空           | —                                          |
+| visible-change    | 弹层显隐变化       | `visible: boolean`                         |
+| calendar-change    | 范围起止选择变化   | `values`                                   |
+| panel-change      | 面板年月切换       | `date: Date, type: string`                 |
+
+### 插槽
+
+| 名称     | 说明               | 作用域              |
+| -------- | ------------------ | ------------------- |
+| default  | 自定义日期单元格   | `{ date }`          |
+
+### 实例方法
+
+| 方法                    | 说明         |
+| ----------------------- | ------------ |
+| `focus()`               | 聚焦输入框   |
+| `blur()`                | 取消聚焦     |
+| `handleOpen()`           | 手动打开面板 |
+| `handleClose()`          | 手动关闭面板 |
 
 ## API 支持状态
 
-已支持：`date`、`dates`、`week`、`month`、`months`、`year`、`years`、`quarter`、`quarters`、`quarterrange`、`datetime`、`daterange`、`datetimerange`、`monthrange`、`yearrange`、`format`、`value-format`、`disabled-date`、`shortcuts`、`default-value`、`default-time`、`show-confirm`、`show-now`、`show-footer`、`show-week-number`、`single-panel`、`unlink-panels`、`empty-values`、`value-on-clear`、`prefix-icon`、`clear-icon`、`automatic-dropdown`、`first-day-of-week`、`cell-class-name`、`teleported`、`placement`、`popper-class`、`popper-style`、`popper-options`、`fallback-placements`。
+已支持全部列出的类型、`format`、`value-format`、`disabled-date`、`shortcuts`、`default-time`、`show-confirm`（项目扩展）、`empty-values`、`value-on-clear`、`validate-event` 与基础浮层配置。部分支持完整 Day.js token、高级键盘导航与 ARIA。
 
-部分支持：完整 Day.js token、完整键盘导航和高级 ARIA。
-
-扩展说明：`show-confirm` 是本项目提供的确认流程扩展；`quarter`、`quarters`、`quarterrange` 已支持，`validate-event` 已实现（默认 `true`，值为 `false` 时不触发校验）。暂不支持：完整 Popper.js options、IANA 时区选择。
-
-`TimeSelect` 和 Element UI 遗留的 `selectableRange` 不属于本组件范围。
+`TimeSelect` 和 `selectableRange` 不属于本组件范围。

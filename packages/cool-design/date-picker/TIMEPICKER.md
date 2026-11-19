@@ -2,7 +2,7 @@
 
 ## 介绍
 
-TimePicker 用于选择一天中的时间，支持单时间和时间范围选择。组件 API 对齐 Element Plus TimePicker 的核心能力。
+TimePicker 用于选择一天中的时间，支持单时间和时间范围选择。
 
 ## 基础用法
 
@@ -47,54 +47,66 @@ TimePicker 用于选择一天中的时间，支持单时间和时间范围选择
 
 禁用规则会同时作用于面板候选项和最终提交校验。
 
-## 状态
-
-- 禁用：`disabled`
-- 只读：`readonly`
-- 禁止手动输入但允许面板选择：`editable="false"`
-- 可清空：`clearable`
-
 ## API
 
 ### 属性
 
-- 绑定值：`model-value`
-- 显示格式：`format`
-- 绑定值格式：`value-format`
-- 占位文本：`placeholder` / `start-placeholder` / `end-placeholder`
-- 范围：`is-range`
-- 范围分隔符：`range-separator`
-- 状态：`disabled` / `readonly` / `editable` / `clearable`
-- 尺寸：`size`
-- 禁用小时：`disabled-hours`
-- 禁用分钟：`disabled-minutes`
-- 禁用秒：`disabled-seconds`
-- 弹层：`teleported` / `placement` / `popper-class` / `popper-options`
-- 草稿确认扩展：`show-confirm`（本项目扩展，默认关闭） / `save-on-blur`（默认开启）
-- 图标：`prefix-icon` / `clear-icon`
+| 参数             | 说明                                                       | 类型                                   | 默认值       |
+| ---------------- | ---------------------------------------------------------- | -------------------------------------- | ------------ |
+| modelValue       | 绑定值                                                     | `string` / `number` / `Date` / `Date[]` / `null` | — |
+| format           | 显示格式                                                   | `string`                               | `HH:mm:ss`   |
+| value-format      | 绑定值格式，未设置时返回 `Date`                            | `string`                               | —            |
+| placeholder      | 占位文本                                                   | `string`                               | —            |
+| start-placeholder | 范围开始占位文本                                           | `string`                               | —            |
+| end-placeholder  | 范围结束占位文本                                           | `string`                               | —            |
+| is-range         | 是否为范围选择                                             | `boolean`                              | `false`      |
+| range-separator  | 范围分隔符                                                 | `string`                               | `'-'`        |
+| disabled         | 禁用                                                       | `boolean`                              | `false`      |
+| readonly         | 只读                                                       | `boolean`                              | `false`      |
+| editable         | 是否允许手动输入（面板仍可选择）                           | `boolean`                              | `true`       |
+| clearable        | 是否可清空                                                 | `boolean`                              | `false`      |
+| size             | 尺寸：`large` / `default` / `small`                        | `string`                               | 继承全局尺寸 |
+| disabled-hours   | 禁用小时列表                                               | `() => number[]`                       | —            |
+| disabled-minutes | 禁用分钟列表                                               | `(hour: number) => number[]`           | —            |
+| disabled-seconds | 禁用秒列表                                                 | `(hour: number, minute: number) => number[]` | —      |
+| arrow-control    | 面板方向键选择                                             | `boolean`                              | `false`      |
+| show-confirm     | 草稿确认扩展，开启后需点击确认才提交                      | `boolean`                              | `false`      |
+| save-on-blur     | 失焦时保存草稿                                             | `boolean`                              | `true`       |
+| default-value    | 初始值                                                     | `string` / `number` / `Date`            | —            |
+| empty-values     | 视为空的输入值                                             | `Array<string \| number>`             | —            |
+| value-on-clear   | 清空时的回退值                                             | `string` / `number` / `null`            | —            |
+| name             | 原生 input 名称                                            | `string`                               | —            |
+| tabindex         | Tab 顺序                                                   | `string` / `number`                     | —            |
+| aria-label       | 无障碍名称                                                 | `string`                               | —            |
+| prefix-icon      | 前置图标                                                   | `string` / `Component`                 | —            |
+| clear-icon       | 清空图标                                                   | `string` / `Component`                 | —            |
+| teleported       | 弹层是否传送到 body                                        | `boolean`                              | `true`       |
+| placement        | 弹层位置                                                   | `string`                               | `bottom-start` |
+| popper-class     | 弹层自定义类名                                             | `string`                               | —            |
+| popper-style     | 弹层自定义样式                                             | `string` / `CSSProperties`             | —            |
+| popper-options   | 浮层参数覆盖                                               | `object`                               | —            |
+| fallback-placements | 候选位置                                                | `string[]`                             | —            |
 
 ### 事件
 
-- `update:modelValue`
-- `change`
-- `focus`
-- `blur`
-- `clear`
-- `visible-change`
+| 事件名            | 说明           | 回调参数              |
+| ----------------- | -------------- | --------------------- |
+| update:modelValue | 绑定值变化     | `value`               |
+| change            | 值确认变化     | `value`               |
+| focus             | 聚焦           | `event: FocusEvent`   |
+| blur              | 失焦           | `event: FocusEvent`   |
+| clear             | 点击清空       | —                     |
+| visible-change    | 弹层显隐变化   | `visible: boolean`    |
 
-### 方法
+### 实例方法
 
-通过组件 ref 使用：
-
-- `focus()`
-- `blur()`
-- `handleOpen()`
-- `handleClose()`
+| 方法                    | 说明                 |
+| ----------------------- | -------------------- |
+| `focus()`               | 聚焦输入框           |
+| `blur()`                | 取消聚焦             |
+| `handleOpen()`           | 手动打开面板         |
+| `handleClose()`         | 手动关闭面板         |
 
 ## API 支持状态
 
-已支持：`format`、`value-format`、`is-range`、`disabled-hours`、`disabled-minutes`、`disabled-seconds`、`arrow-control`、`show-confirm`（项目扩展）、`save-on-blur`、`empty-values`、`prefix-icon`、`clear-icon`、`value-on-clear`、`teleported`、`placement`、`popper-class`、`popper-options`、`focus()`、`blur()`、`handleOpen()`、`handleClose()`。
-
-部分支持：`format` 的完整 Day.js token、时间范围双面板、键盘方向键、完整 ARIA、Popper 高级配置。
-
-本组件不实现 Element UI 遗留的 `selectableRange`，也不包含 `TimeSelect` 的 `start`、`end`、`step` 等 API。
+已支持 `format`、`value-format`、`is-range`、`disabled-hours`、`disabled-minutes`、`disabled-seconds`、`arrow-control`、`show-confirm`（项目扩展）、`save-on-blur`、`empty-values`、`value-on-clear` 与基础浮层配置。部分支持完整时间 token、时间范围双面板与完整 ARIA。不支持 `TimeSelect` 的 `start` / `end` / `step` 等 API。
