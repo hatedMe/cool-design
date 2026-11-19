@@ -60,8 +60,15 @@ export default defineComponent({
     const index = ref(0);
     const scaleValue = ref(props.scale);
     const rotation = ref(0);
+    const translateX = ref(0);
+    const translateY = ref(0);
     const loading = ref(true);
     const error = ref(false);
+    const dragging = ref(false);
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let dragOriginX = 0;
+    let dragOriginY = 0;
 
     const total = computed(() => props.urlList.length);
     const currentUrl = computed(() => props.urlList[index.value] ?? '');
@@ -77,6 +84,8 @@ export default defineComponent({
     const resetMedia = () => {
       scaleValue.value = props.scale;
       rotation.value = 0;
+      translateX.value = 0;
+      translateY.value = 0;
       loading.value = true;
       error.value = false;
     };
@@ -100,11 +109,41 @@ export default defineComponent({
     const reset = () => {
       scaleValue.value = props.scale;
       rotation.value = 0;
+      translateX.value = 0;
+      translateY.value = 0;
     };
     const rotate = (clockwise = true) => {
       rotation.value = (rotation.value + (clockwise ? 90 : -90)) % 360;
     };
     const close = () => emit('close');
+
+    // 滚轮缩放：向上放大、向下缩小，跟随 zoomRate 步进。
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      const factor = event.deltaY < 0 ? props.zoomRate : 1 / props.zoomRate;
+      scaleValue.value = clampScale(scaleValue.value * factor);
+    };
+    // 拖拽平移：按住图片移动，document 级监听避免快速移出图外丢事件。
+    const onDragMove = (event: MouseEvent) => {
+      if (!dragging.value) return;
+      translateX.value = dragOriginX + (event.clientX - dragStartX);
+      translateY.value = dragOriginY + (event.clientY - dragStartY);
+    };
+    const onDragEnd = () => {
+      dragging.value = false;
+      document.removeEventListener('mousemove', onDragMove, true);
+      document.removeEventListener('mouseup', onDragEnd, true);
+    };
+    const onDragStart = (event: MouseEvent) => {
+      if (event.button !== 0) return;
+      dragging.value = true;
+      dragStartX = event.clientX;
+      dragStartY = event.clientY;
+      dragOriginX = translateX.value;
+      dragOriginY = translateY.value;
+      document.addEventListener('mousemove', onDragMove, true);
+      document.addEventListener('mouseup', onDragEnd, true);
+    };
 
     expose({
       prev,
@@ -159,6 +198,7 @@ export default defineComponent({
       document.addEventListener('keydown', onKeydown, true);
     });
     onBeforeUnmount(() => {
+      onDragEnd();
       unlockDialog(token);
       document.removeEventListener('keydown', onKeydown, true);
     });
@@ -193,6 +233,7 @@ export default defineComponent({
           role='dialog'
           aria-modal='true'
           aria-label='图片预览'
+          onWheel={onWheel}
           onClick={(event: MouseEvent) => {
             if (event.target === event.currentTarget && props.hideOnClickModal) close();
           }}>
@@ -228,7 +269,11 @@ export default defineComponent({
                       src={currentUrl.value}
                       alt=''
                       draggable={false}
-                      style={{ transform: `scale(${scaleValue.value}) rotate(${rotation.value}deg)` }}
+                      style={{
+                        transform: `translate(${translateX.value}px, ${translateY.value}px) scale(${scaleValue.value}) rotate(${rotation.value}deg)`,
+                        cursor: dragging.value ? 'grabbing' : 'grab'
+                      }}
+                      onMousedown={onDragStart}
                       onLoad={() => {
                         loading.value = false;
                       }}

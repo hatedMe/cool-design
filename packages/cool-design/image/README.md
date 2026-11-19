@@ -84,6 +84,8 @@
 
 独立预览组件，`Image` 内部复用该组件实现预览，多实例共享滚动锁计数。
 
+预览打开后支持滚轮缩放（向上放大、向下缩小，跟随 `zoom-rate` 步进）与按住图片拖拽平移，`reset` 会同时复位缩放、旋转与位移。
+
 属性：`url-list`、`initial-index`、`infinite`、`zoom-rate`、`scale`、`min-scale`、`max-scale`、`show-progress`、`teleported`、`hide-on-click-modal`、`close-on-press-escape`、`z-index`。
 
 事件：`switch`（索引）、`close`。

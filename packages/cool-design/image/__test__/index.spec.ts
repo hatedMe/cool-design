@@ -26,6 +26,38 @@ test('加载成功触发 load，失败使用 fallback 并支持 error 插槽', a
   expect(w2.get('.i-image__error').text()).toBe('加载失败');
 });
 
+test('预览支持滚轮缩放与拖拽平移', async () => {
+  const w = mount(ImageViewer, {
+    attachTo: document.body,
+    props: { urlList: ['a.jpg'], hideOnClickModal: false }
+  });
+  await nextTick();
+  const img = document.querySelector('.i-image-viewer__stage img') as HTMLElement;
+
+  const wheel = (deltaY: number) => {
+    (document.querySelector('.i-image-viewer__mask') as HTMLElement).dispatchEvent(
+      new WheelEvent('wheel', { deltaY, bubbles: true, cancelable: true })
+    );
+  };
+  wheel(-120);
+  await nextTick();
+  expect(img.style.transform).toContain('scale(1.2)');
+  wheel(120);
+  await nextTick();
+  expect(img.style.transform).toContain('scale(1)');
+
+  // 按住拖动产生位移，松开后保留，重置后归零。
+  img.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 10, clientY: 10 }));
+  document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 50, clientY: 30 }));
+  document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+  await nextTick();
+  expect(img.style.transform).toContain('translate(40px, 20px)');
+  (document.querySelector('[aria-label="重置"]') as HTMLButtonElement).click();
+  await nextTick();
+  expect(img.style.transform).toContain('translate(0px, 0px)');
+  w.unmount();
+});
+
 test('预览支持多图、切换、缩放旋转、进度与 showPreview', async () => {
   const urls = ['a.jpg', 'b.jpg', 'c.jpg'];
   const w = mount(Image, {
