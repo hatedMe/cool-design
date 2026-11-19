@@ -1,4 +1,4 @@
-import { computed, defineComponent, nextTick, ref, type PropType, type Component } from 'vue';
+import { computed, defineComponent, nextTick, onBeforeUnmount, ref, type PropType, type Component } from 'vue';
 import { useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import Icon from '../icon';
@@ -26,7 +26,8 @@ export default defineComponent({
     minlength: [String, Number],
     prefixIcon: [String, Object] as PropType<AutocompleteIcon>,
     suffixIcon: [String, Object] as PropType<AutocompleteIcon>,
-    validateEvent: { type: Boolean, default: true }
+    validateEvent: { type: Boolean, default: true },
+    debounce: { type: Number, default: 300 }
   },
   emits: ['update:modelValue', 'input', 'change', 'select', 'clear', 'focus', 'blur'],
   setup(props, { emit, slots, expose }) {
@@ -39,26 +40,66 @@ export default defineComponent({
     const highlightedIndex = ref(-1);
     const normalize = (item: string | AutocompleteSuggestion) => (typeof item === 'string' ? { value: item } : item);
     const isDisabled = () => props.disabled || !!field?.disabled?.();
+    // 请求序号：只采纳最后一次发起的远程结果，过期响应直接丢弃。
+    let requestId = 0;
+    let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+    const applySuggestions = (result: AutocompleteSuggestion[]) => {
+      items.value = result;
+      highlightedIndex.value = props.highlightFirstItem && result.length ? 0 : -1;
+    };
+    const fetchRemote = (value: string) => {
+      loading.value = true;
+      const id = ++requestId;
+      props.fetchSuggestions?.(value, (result) => {
+        if (id !== requestId) return;
+        loading.value = false;
+        applySuggestions(result);
+      });
+    };
+    const fetchSuggestionsFor = (value: string, immediate: boolean) => {
+      if (props.fetchSuggestions) {
+        if (debounceTimer !== undefined) {
+          clearTimeout(debounceTimer);
+          debounceTimer = undefined;
+        }
+        if (immediate || props.debounce <= 0) fetchRemote(value);
+        else debounceTimer = setTimeout(() => {
+          debounceTimer = undefined;
+          fetchRemote(value);
+        }, props.debounce);
+      } else {
+        applySuggestions(
+          props.suggestions
+            .map(normalize)
+            .filter((item) => !value || item.value.toLowerCase().includes(value.toLowerCase()))
+        );
+      }
+    };
     const query = (value: string) => {
       emit('update:modelValue', value);
       emit('input', value);
       if (props.validateEvent) nextTick(() => field?.validate('change'));
-      if (props.fetchSuggestions) {
-        loading.value = true;
-        props.fetchSuggestions(value, (result) => {
-          loading.value = false;
-          items.value = result;
-          highlightedIndex.value = props.highlightFirstItem && result.length ? 0 : -1;
-        });
-      } else {
-        items.value = props.suggestions
-          .map(normalize)
-          .filter((item) => !value || item.value.toLowerCase().includes(value.toLowerCase()));
-        highlightedIndex.value = props.highlightFirstItem && items.value.length ? 0 : -1;
-      }
+      fetchSuggestionsFor(value, false);
     };
+    const queryImmediate = (value: string) => {
+      emit('update:modelValue', value);
+      emit('input', value);
+      if (props.validateEvent) nextTick(() => field?.validate('change'));
+      fetchSuggestionsFor(value, true);
+    };
+    onBeforeUnmount(() => {
+      if (debounceTimer !== undefined) clearTimeout(debounceTimer);
+      requestId++;
+    });
     const visible = computed(() => focused.value && items.value.length > 0);
     const handleSelect = (item: AutocompleteSuggestion) => {
+      // 选中后丢弃未决请求，避免迟到的建议覆盖已选值。
+      if (debounceTimer !== undefined) {
+        clearTimeout(debounceTimer);
+        debounceTimer = undefined;
+      }
+      requestId++;
+      loading.value = false;
       emit('update:modelValue', item.value);
       emit('select', item);
       if (props.validateEvent) nextTick(() => field?.validate('change'));
@@ -107,7 +148,7 @@ export default defineComponent({
             onFocus={(e: FocusEvent) => {
               focused.value = true;
               emit('focus', e);
-              if (props.triggerOnFocus) query(props.modelValue);
+              if (props.triggerOnFocus) queryImmediate(props.modelValue);
             }}
             onBlur={(e: FocusEvent) => {
               setTimeout(() => (focused.value = false), 120);
@@ -123,7 +164,7 @@ export default defineComponent({
               class='i-autocomplete__clear'
               aria-label='清空'
               onClick={() => {
-                query('');
+                queryImmediate('');
                 emit('clear');
                 input.value?.focus();
               }}>

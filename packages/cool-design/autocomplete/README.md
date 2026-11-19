@@ -17,6 +17,7 @@
 | `modelValue`         | 输入值                                      | `string`                                                     | `''`   |
 | `suggestions`        | 静态建议列表                                | `(string \| AutocompleteSuggestion)[]`                       | `[]`   |
 | `fetchSuggestions`   | 远程获取建议，回调返回结果                  | `(query, cb: (items) => void) => void`                       | —      |
+| `debounce`           | 远程建议防抖延迟，单位 ms，`0` 表示不防抖   | `number`                                                     | `300`  |
 | `placeholder`        | 占位文本                                    | `string`                                                     | —      |
 | `disabled`           | 是否禁用                                    | `boolean`                                                    | `false` |
 | `clearable`          | 是否可清空                                  | `boolean`                                                    | `false` |

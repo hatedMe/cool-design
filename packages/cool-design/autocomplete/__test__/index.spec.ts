@@ -68,6 +68,49 @@ describe('test `Autocomplete` component', () => {
     expect(hidden.find('.i-autocomplete__loading').exists()).toBe(false);
   });
 
+  test('debounce 防抖远程请求，连续输入只发起最后一次', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const fetchSuggestions = vi.fn((q: string, cb: (items: { value: string }[]) => void) => cb([{ value: q }]));
+    const wrapper = mount(Autocomplete, { props: { fetchSuggestions, debounce: 200 } });
+    const input = wrapper.get('input');
+    await input.trigger('focus');
+    // 聚焦触发的请求不走防抖。
+    expect(fetchSuggestions).toHaveBeenCalledTimes(1);
+    await input.setValue('a');
+    vi.advanceTimersByTime(199);
+    expect(fetchSuggestions).toHaveBeenCalledTimes(1);
+    await input.setValue('ab');
+    vi.advanceTimersByTime(1);
+    // 原 'a' 的定时器已被取消：到达原定时刻也不发起请求。
+    expect(fetchSuggestions).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(199);
+    expect(fetchSuggestions).toHaveBeenCalledTimes(2);
+    expect(fetchSuggestions).toHaveBeenLastCalledWith('ab', expect.any(Function));
+    await flushPromises();
+    expect(wrapper.findAll('li').map((li) => li.text())).toEqual(['ab']);
+    vi.useRealTimers();
+  });
+
+  test('过期响应被丢弃，仅采纳最后一次请求的结果', async () => {
+    const callbacks: ((items: { value: string }[]) => void)[] = [];
+    const wrapper = mount(Autocomplete, {
+      props: {
+        debounce: 0,
+        fetchSuggestions: (_q: string, cb: (items: { value: string }[]) => void) => {
+          callbacks.push(cb);
+        }
+      }
+    });
+    const input = wrapper.get('input');
+    await input.trigger('focus');
+    await input.setValue('a');
+    await input.setValue('ab');
+    callbacks[2]([{ value: 'ab-result' }]);
+    callbacks[0]([{ value: 'stale-result' }]);
+    await flushPromises();
+    expect(wrapper.findAll('li').map((li) => li.text())).toEqual(['ab-result']);
+  });
+
   test('暴露 focus、blur、select、handleSelect', async () => {
     const wrapper = mount(Autocomplete, {
       props: { suggestions: ['Apple'] },
