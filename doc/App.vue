@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, ref, watchEffect } from 'vue';
 import { ConfigProvider, version } from '../packages/cool-design/index';
-import { pages } from './site/catalog';
+import { navigationGroups, pages } from './site/catalog';
 import { renderMarkdown } from './site/markdown';
 import { highlightCode } from './site/highlight';
 import DemoBlock from './site/DemoBlock.vue';
@@ -32,11 +32,13 @@ watchEffect(() => {
       : `${route.value === 'examples/user-management' ? '用户管理示例' : page.value?.title || '页面未找到'} · Cool Design`;
 });
 const groups = computed(() => {
-  const matching = pages.filter((item) => item.title.toLowerCase().includes(query.value.trim().toLowerCase()));
-  return [...new Set(matching.map((item) => item.group))].map((title) => ({
-    title,
-    pages: matching.filter((item) => item.group === title)
-  }));
+  const keyword = query.value.trim().toLowerCase();
+  return navigationGroups
+    .map((group) => ({
+      title: group.title,
+      pages: group.pages.filter((item) => item.title.toLowerCase().includes(keyword))
+    }))
+    .filter((group) => group.pages.length);
 });
 const intro = computed(() => renderMarkdown((page.value?.markdown || '').split(/^## API\s*$/m)[0]));
 const api = computed(() => {

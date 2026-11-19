@@ -67,11 +67,42 @@ describe('PC 组件文档站', () => {
     const wrapper = await open();
     const search = wrapper.get('input[type="search"]');
     await search.setValue('表格');
-    expect(wrapper.findAll('.docs-sidebar a').map((link) => link.text())).toEqual(['Table 表格', 'TableV2 虚拟表格', 'TableColumn 表格列']);
+    expect(wrapper.findAll('.docs-sidebar a').map((link) => link.text())).toEqual(['Table 表格', 'TableV2 虚拟表格']);
     await search.setValue('没有这个组件');
     expect(wrapper.get('.docs-sidebar').text()).toContain('未找到组件');
     await search.setValue('');
     expect(wrapper.findAll('.docs-sidebar a').length).toBeGreaterThan(24);
+  });
+
+  it('侧边栏按 Element Plus 分组，只展示主组件入口', async () => {
+    const wrapper = await open();
+    const groups = wrapper.findAll('.docs-nav-group');
+    expect(groups.map((group) => group.get('h2').text())).toEqual([
+      '开发指南', '基础组件', '配置组件', '表单组件', '数据展示', '导航组件', '反馈组件', '其他组件'
+    ]);
+    const links = (title: string) => groups.find((group) => group.get('h2').text() === title)!
+      .findAll('a').map((link) => link.attributes('href'));
+    expect(links('基础组件')).toEqual([
+      'button', 'border', 'color', 'container', 'icon', 'layout', 'link', 'text', 'scrollbar', 'space', 'splitter'
+    ].map((id) => `#/components/${id}`));
+    expect(links('配置组件')).toEqual(['#/components/config-provider']);
+    expect(links('数据展示')).toEqual([
+      'avatar', 'badge', 'calendar', 'card', 'carousel', 'collapse', 'descriptions', 'empty', 'image',
+      'pagination', 'progress', 'result', 'skeleton', 'table', 'table-v2', 'tag', 'timeline', 'tour',
+      'tree', 'tree-v2', 'statistic', 'segmented'
+    ].map((id) => `#/components/${id}`));
+    expect(links('其他组件')).toEqual(['#/components/divider', '#/components/watermark']);
+    const hrefs = wrapper.findAll('.docs-sidebar a').map((link) => link.attributes('href'));
+    for (const id of ['button-group', 'row', 'col', 'header', 'menu-item', 'table-column', 'radio-group', 'form-item', 'directives']) {
+      expect(hrefs).not.toContain(`#/components/${id}`);
+    }
+    expect(new Set(hrefs).size).toBe(hrefs.length);
+  });
+
+  it('子组件文档仍可通过原地址访问', async () => {
+    const wrapper = await open('#/components/table-column');
+    expect(wrapper.get('h1').text()).toBe('TableColumn 表格列');
+    expect(wrapper.find('#api').exists()).toBe(true);
   });
 
   it('代码可复制，剪贴板不可用时提示手动复制', async () => {

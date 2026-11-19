@@ -121,13 +121,13 @@ export const pages: Page[] = [
     [['basic', '按钮组', '统一按钮类型并组合相近操作。']],
     ['Button', 'ButtonGroup']
   ),
-  component('avatar', 'Avatar 头像', '基础组件', [
+  component('avatar', 'Avatar 头像', '数据展示', [
     ['basic', '基础用法', '使用 shape 和 size 设置头像的形状与大小。'],
     ['types', '展示类型', '展示图片、图标和文字三种头像内容。'],
     ['fallback', '回退行为', '图片加载失败后显示 fallback 内容并触发 error 事件。'],
     ['fit', '适应容器', '对照不同 fit 值下图片在头像容器中的展示方式。']
   ]),
-  component('badge', 'Badge 徽标', '基础组件', [
+  component('badge', 'Badge 徽标', '数据展示', [
     ['basic', '数量与状态', '展示数量上限、状态颜色和圆点徽标。'],
     ['options', '隐藏、零值与偏移', '控制徽标隐藏、零值显示、自定义颜色和位置。'],
     ['content', '自定义内容', '使用 content 插槽替换徽标文本。']
@@ -201,11 +201,11 @@ export const pages: Page[] = [
     ['catalog', '图标目录', '搜索全部内置图标，点击复制完整用法。']
   ]),
   component('space', 'Space 间距', '基础组件', [['basic', '工具栏间距', '使用水平或垂直间距组织桌面工具栏与操作组。']]),
-  component('divider', 'Divider 分割线', '基础组件', [
+  component('divider', 'Divider 分割线', '其他组件', [
     ['basic', '内容分隔', '横向分割章节，支持文字、虚线和竖向分隔行内操作。']
   ]),
   {
-    ...component('layout', 'Layout 布局', '布局组件', [], ['Row', 'Col']),
+    ...component('layout', 'Layout 布局', '基础组件', [], ['Row', 'Col']),
     demos: [
       demo(
         '../../packages/cool-design/layout/demo/grid.vue',
@@ -268,7 +268,7 @@ export const pages: Page[] = [
   component(
     'container',
     'Container 布局容器',
-    '布局组件',
+    '基础组件',
     [
       ['basic', '常见页面布局', '七种页面组合：通过嵌套 Container 控制页头、侧栏、主内容和页脚的位置。'],
       ['admin', '后台布局示例', '侧栏导航、页头工具栏、内容表格与页脚组合；点击按钮可折叠侧栏。'],
@@ -286,7 +286,7 @@ export const pages: Page[] = [
   ]),
   component('main', 'Main 主内容', '布局组件', [['basic', '滚动主区域', '主区域自动填充，超出内容在区域内部滚动。']]),
   component('footer', 'Footer 页脚', '布局组件', [['basic', '自定义页脚高度', '页脚区域支持数字与 CSS 长度。']]),
-  component('config-provider', 'ConfigProvider 全局配置', '基础组件', [
+  component('config-provider', 'ConfigProvider 全局配置', '配置组件', [
     ['basic', '主题与尺寸', '局部配置作用于内部控件，切换主题也会作用于内部浮层。']
   ]),
   component('input', 'Input 输入框', '表单组件', [
@@ -311,7 +311,7 @@ export const pages: Page[] = [
   component('date-time-picker', 'DateTimePicker 日期时间选择器', '表单组件', [
     ['basic', '日期时间选择', '在同一个控件中选择日期和时间。']
   ]),
-  component('calendar', 'Calendar 日历', '表单组件', [
+  component('calendar', 'Calendar 日历', '数据展示', [
     ['basic', '日历选择', '按月浏览并选择日期，支持自定义单元格。'],
     ['range', '范围与选择器', '使用固定周范围或年月选择器切换面板。']
   ]),
@@ -529,7 +529,7 @@ export const pages: Page[] = [
   ]),
   component('notification', 'Notification 通知', '反馈组件', [['basic', '全局通知', '通过 Notify 展示操作反馈。']]),
   component('popover', 'Popover 弹出框', '反馈组件', [['basic', '补充说明', '展示目标元素的补充内容。']]),
-  component('watermark', 'Watermark 水印', '反馈组件', [['basic', '内容水印', '为内容添加重复水印。']]),
+  component('watermark', 'Watermark 水印', '其他组件', [['basic', '内容水印', '为内容添加重复水印。']]),
   component('card', 'Card 卡片', '数据展示', [['basic', '卡片内容', '使用标题、内容和底部插槽组织信息。']]),
   component(
     'carousel',
@@ -714,7 +714,7 @@ export const pages: Page[] = [
   ]),
   component('slider', 'Slider 滑块', '表单组件', [['basic', '数值滑块', '通过滑块选择数值。']]),
   component('rate', 'Rate 评分', '表单组件', [['basic', '评分用法', '支持整数、半星、辅助文字、分数和清零。']]),
-  component('progress', 'Progress 进度条', '反馈组件', [
+  component('progress', 'Progress 进度条', '数据展示', [
     ['basic', '进度条用法', '展示线形、环形和仪表盘进度，并支持状态、颜色和动画。']
   ]),
   component('transfer', 'Transfer 穿梭框', '表单组件', [['basic', '选项转移', '在两个列表之间移动选项。']]),
@@ -858,4 +858,46 @@ export const pages: Page[] = [
   component('message-box', 'MessageBox 消息确认框', '反馈组件', [
     ['basic', '确认与异步失败重试', '勾选模拟失败，确认时显示错误并保持窗口，取消勾选后可重试。']
   ])
+];
+
+// 侧边栏按 Element Plus 的主组件组织；子组件文档保留独立地址。
+const componentNavigation: { title: string; ids: string[] }[] = [
+  {
+    title: '基础组件',
+    ids: ['button', 'border', 'color', 'container', 'icon', 'layout', 'link', 'text', 'scrollbar', 'space', 'splitter']
+  },
+  { title: '配置组件', ids: ['config-provider'] },
+  {
+    title: '表单组件',
+    ids: [
+      'autocomplete', 'cascader', 'checkbox', 'color-picker', 'date-picker', 'date-time-picker', 'form',
+      'input', 'input-number', 'input-tag', 'input-otp', 'mention', 'radio', 'rate', 'select', 'select-v2',
+      'slider', 'switch', 'time-picker', 'time-select', 'transfer', 'tree-select', 'upload'
+    ]
+  },
+  {
+    title: '数据展示',
+    ids: [
+      'avatar', 'badge', 'calendar', 'card', 'carousel', 'collapse', 'descriptions', 'empty', 'image',
+      'pagination', 'progress', 'result', 'skeleton', 'table', 'table-v2', 'tag', 'timeline', 'tour',
+      'tree', 'tree-v2', 'statistic', 'segmented'
+    ]
+  },
+  {
+    title: '导航组件',
+    ids: ['affix', 'anchor', 'backtop', 'breadcrumb', 'dropdown', 'menu', 'page-header', 'steps', 'tabs']
+  },
+  {
+    title: '反馈组件',
+    ids: ['alert', 'dialog', 'drawer', 'loading', 'message', 'message-box', 'notification', 'popconfirm', 'popover', 'tooltip']
+  },
+  { title: '其他组件', ids: ['divider', 'watermark'] }
+];
+
+export const navigationGroups = [
+  { title: '开发指南', pages: pages.filter((page) => page.group === '开发指南') },
+  ...componentNavigation.map(({ title, ids }) => ({
+    title,
+    pages: ids.map((id) => pages.find((page) => page.id === `components/${id}`)!)
+  }))
 ];
