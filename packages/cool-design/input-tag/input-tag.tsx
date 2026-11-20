@@ -1,3 +1,4 @@
+import Tooltip from '../tooltip';
 import { computed, defineComponent, inject, nextTick, ref, watch, type PropType } from 'vue';
 import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
@@ -13,6 +14,7 @@ export default defineComponent({
     modelValue: Array as PropType<string[]>,
     max: Number,
     tagType: { type: String as PropType<InputTagTagType>, default: 'info' },
+    effect: { type: String, default: 'light' },
     tagEffect: { type: String as PropType<InputTagTagEffect>, default: 'light' },
     trigger: { type: String as PropType<InputTagTrigger>, default: 'Enter' },
     draggable: Boolean,
@@ -172,7 +174,7 @@ export default defineComponent({
               onDragstart={onDragStart(index)}
               onDragover={(event: DragEvent) => event.preventDefault()}
               onDrop={onDrop(index)}>
-              {slots.tag?.({ value }) ?? value}
+              {slots.tag?.({ value, index }) ?? value}
               {!isDisabled() && !isReadonly() && (
                 <button
                   type='button'
@@ -184,13 +186,23 @@ export default defineComponent({
               )}
             </span>
           ))}
-          {rest > 0 && (
-            <span
-              class='i-input-tag__more'
-              title={props.collapseTagsTooltip ? tags.value.join(', ') : undefined}>
-              +{rest}
-            </span>
-          )}
+          {rest > 0 && (props.collapseTagsTooltip ? (
+            <Tooltip effect={props.effect}>
+              {{
+                default: () => <span class='i-input-tag__more'>+{rest}</span>,
+                content: () => tags.value.slice(shown.length).map((value, offset) => {
+                  const index = shown.length + offset;
+                  return <span key={index} class={['i-input-tag__tag', `is-${props.tagType}`, `is-${props.tagEffect}`]}>
+                    {slots.tag?.({ value, index }) ?? value}
+                    {!isDisabled() && !isReadonly() && (
+                      <button type='button' class='i-input-tag__remove' aria-label={`移除 ${value}`}
+                        onClick={() => removeTag(index)}>×</button>
+                    )}
+                  </span>;
+                })
+              }}
+            </Tooltip>
+          ) : <span class='i-input-tag__more'>+{rest}</span>)}
           <input
             ref={input}
             class='i-input-tag__input'

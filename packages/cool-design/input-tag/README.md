@@ -29,7 +29,8 @@
 | `draggable`           | 标签可拖拽排序                             | `boolean`             | `false`  |
 | `size`                | 尺寸：`small` / `default` / `large`        | `string`              | 继承 FormItem、Form 或 ConfigProvider |
 | `collapseTags`        | 折叠标签                                   | `boolean`             | `false`  |
-| `collapseTagsTooltip` | 折叠文本悬浮显示全部标签                   | `boolean`             | `false`  |
+| `effect` | 折叠提示主题，内置 `light` 和 `dark` | `string` | `light` |
+| `collapseTagsTooltip` | 折叠文本悬浮显示隐藏的标签                   | `boolean`             | `false`  |
 | `maxCollapseTags`     | 折叠时展示的标签数                         | `number`              | `1`      |
 | `saveOnBlur`          | 失焦时保存输入内容为标签                   | `boolean`             | `true`   |
 | `clearable`           | 显示清空按钮                               | `boolean`             | `false`  |
@@ -67,3 +68,5 @@
 | --------- | ------------ |
 | `focus()` | 聚焦输入框   |
 | `blur()`  | 取消聚焦     |
+
+`tagEffect` 控制标签本身的主题。`tag({ value, index })` 在可见标签和提示内接收原数组索引。

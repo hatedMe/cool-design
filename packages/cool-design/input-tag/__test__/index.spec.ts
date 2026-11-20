@@ -60,7 +60,7 @@ describe('test `InputTag` component', () => {
     });
     expect(collapsed.findAll('.i-input-tag__tag')).toHaveLength(1);
     expect(collapsed.text()).toContain('+2');
-    expect(collapsed.find('.i-input-tag__more').attributes('title')).toBe('a, b, c');
+    expect(collapsed.find('.i-input-tag__more').attributes('title')).toBeUndefined();
   });
 
   test('拖拽排序标签并触发 drag-tag', async () => {
@@ -120,5 +120,21 @@ test('InputTag 禁用后拦截正在进行的拖拽与键盘添加', async () =>
   await tags[1].trigger('drop');
   input.element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
   expect(control.emitted('update:modelValue')).toBeUndefined();
+  wrapper.unmount();
+});
+
+test('has independent folded tooltip effect and slot indexes', async () => {
+  const wrapper = mount(InputTag, {
+    props: { modelValue: ['a', 'b', 'c'], collapseTags: true, collapseTagsTooltip: true, effect: 'custom-theme', tagEffect: 'plain' },
+    slots: { tag: ({ value, index }) => `${index}:${value}` }
+  });
+  expect(wrapper.get('.i-input-tag__tag').text()).toContain('0:a');
+  await wrapper.get('.i-tooltip__trigger').trigger('mouseenter');
+  const tooltip = document.body.querySelector('.i-tooltip--custom-theme');
+  expect(tooltip?.textContent).toContain('1:b');
+  expect(tooltip?.textContent).toContain('2:c');
+  expect(tooltip?.querySelector('.is-plain')).toBeTruthy();
+  (tooltip?.querySelector('button') as HTMLButtonElement).click();
+  expect(wrapper.emitted('update:modelValue')).toEqual([[['a', 'c']]]);
   wrapper.unmount();
 });
