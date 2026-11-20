@@ -55,6 +55,7 @@ import RadioGroup from './radio-group';
 import RadioButton from './radio-button';
 import Rate from './rate';
 import { DatePicker, TimePicker, DateTimePicker, Calendar } from './date-picker';
+import DatePickerPanel from './date-picker-panel';
 import TimeSelect from './time-select';
 import Autocomplete from './autocomplete';
 import ColorPicker from './color-picker';
@@ -179,6 +180,7 @@ export {
   RadioButton,
   Rate,
   DatePicker,
+  DatePickerPanel,
   TimePicker,
   TimeSelect,
   DateTimePicker,
@@ -294,6 +296,7 @@ const components = [
   RadioButton,
   Rate,
   DatePicker,
+  DatePickerPanel,
   TimePicker,
   TimeSelect,
   DateTimePicker,
@@ -378,6 +381,12 @@ export * from './hooks';
 export type { ColSize, ColSizeObject } from './col';
 export type { LinkType, LinkUnderline } from './link/link';
 export type { DatePickerType } from './date-picker';
+export { datePickerPanelProps, datePickerPanelEmits } from './date-picker-panel';
+export type {
+  DatePickerPanelCalendarRange, DatePickerPanelCell, DatePickerPanelEmits, DatePickerPanelInstance,
+  DatePickerPanelModelValue, DatePickerPanelNavigation, DatePickerPanelProps, DatePickerPanelShortcut,
+  DatePickerPanelSlots, DatePickerPanelTimeRules
+} from './date-picker-panel';
 export type {
   UploadBeforeResult,
   UploadData,
@@ -480,6 +489,7 @@ export {
   RadioButton as ElRadioButton,
   Rate as ElRate,
   DatePicker as ElDatePicker,
+  DatePickerPanel as ElDatePickerPanel,
   TimePicker as ElTimePicker,
   TimeSelect as ElTimeSelect,
   Calendar as ElCalendar,
@@ -601,6 +611,7 @@ declare module 'vue' {
     ElRadioButton: typeof import('./index')['ElRadioButton'];
     ElRate: typeof import('./index')['ElRate'];
     ElDatePicker: typeof import('./index')['ElDatePicker'];
+    ElDatePickerPanel: typeof import('./index')['ElDatePickerPanel'];
     ElTimePicker: typeof import('./index')['ElTimePicker'];
     ElTimeSelect: typeof import('./index')['ElTimeSelect'];
     ElCalendar: typeof import('./index')['ElCalendar'];
@@ -708,6 +719,7 @@ declare module 'vue' {
     IRadioButton: typeof RadioButton;
     IRate: typeof Rate;
     IDatePicker: typeof DatePicker;
+    IDatePickerPanel: typeof DatePickerPanel;
     ITimePicker: typeof TimePicker;
     ITimeSelect: typeof TimeSelect;
     ICalendar: typeof Calendar;

@@ -304,6 +304,9 @@ export const pages: Page[] = [
   component('date-picker', 'DatePicker 日期选择器', '表单组件', [
     ['basic', '日期选择', '选择日期、日期时间以及日期范围。']
   ]),
+  component('date-picker-panel', 'DatePickerPanel 日期选择面板', '表单组件', [
+    ['basic', '独立日期面板', '直接选择日期或范围，并用插槽自定义日期单元格。']
+  ]),
   component('time-picker', 'TimePicker 时间选择器', '表单组件', [['basic', '时间选择', '选择时间或时间范围。']]),
   component('time-select', 'TimeSelect 时间选择', '表单组件', [
     ['basic', '基础用法', '在 start/step/end 生成的固定时间点中选择。']
@@ -882,7 +885,7 @@ const componentNavigation: { title: string; ids: string[] }[] = [
   {
     title: '表单组件',
     ids: [
-      'autocomplete', 'cascader', 'checkbox', 'color-picker', 'color-picker-panel', 'date-picker', 'date-time-picker', 'form',
+      'autocomplete', 'cascader', 'checkbox', 'color-picker', 'color-picker-panel', 'date-picker', 'date-picker-panel', 'date-time-picker', 'form',
       'input', 'input-number', 'input-tag', 'input-otp', 'mention', 'radio', 'rate', 'select', 'select-v2',
       'slider', 'switch', 'time-picker', 'time-select', 'transfer', 'tree-select', 'upload'
     ]

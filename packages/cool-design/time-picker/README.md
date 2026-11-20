@@ -25,6 +25,8 @@ const time = ref(null);
 <TimePicker v-model="range" is-range range-separator="-" />
 ```
 
+范围默认返回两个 `Date` 值。设置 `value-format` 后按端点格式化，启用 `show-confirm` 时在确认后提交两个端点。
+
 ## API
 
 ### 属性

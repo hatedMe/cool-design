@@ -9,6 +9,8 @@ export default defineComponent({
   props: {
     value: { type: Object as PropType<TimeParts>, required: true },
     format: { type: String, default: 'HH:mm:ss' },
+    disabled: Boolean,
+    arrowControl: Boolean,
     disabledHours: Function as PropType<TimeDisabledRule>,
     disabledMinutes: Function as PropType<TimeDisabledRule>,
     disabledSeconds: Function as PropType<TimeDisabledRule>
@@ -24,14 +26,26 @@ export default defineComponent({
     });
     const values = (unit: TimeUnit) => unit === 'hour' && (props.format.includes('hh') || props.format.includes('h')) ? Array.from({ length: 12 }, (_, index) => index + 1) : Array.from({ length: unit === 'hour' ? 24 : 60 }, (_, index) => index);
     const disabled = (unit: TimeUnit, value: number) => {
+      if (props.disabled) return true;
       if (unit === 'hour') return props.disabledHours?.()?.includes(value) || false;
       if (unit === 'minute') return props.disabledMinutes?.(props.value.hour)?.includes(value) || false;
       return props.disabledSeconds?.(props.value.hour, props.value.minute)?.includes(value) || false;
     };
     const selected = (unit: TimeUnit) => unit === 'hour' && (props.format.includes('hh') || props.format.includes('h')) ? ((props.value.hour % 12) || 12) : props.value[unit];
+    const label = { hour: '小时', minute: '分钟', second: '秒' };
     return () => (
       <div class='i-time-picker__panel' role='dialog'>
-        {units.value.map((unit) => (
+        {props.arrowControl && units.value.map((unit) => {
+          const options = values(unit);
+          const previous = options.filter((value) => value < selected(unit) && !disabled(unit, value)).pop();
+          const next = options.find((value) => value > selected(unit) && !disabled(unit, value));
+          return <div key={unit} class='i-time-picker__column'>
+            <button type='button' aria-label={`增加${label[unit]}`} disabled={next == null} onClick={() => next != null && emit('select', unit, next)}>↑</button>
+            <span>{String(selected(unit)).padStart(2, '0')}</span>
+            <button type='button' aria-label={`减少${label[unit]}`} disabled={previous == null} onClick={() => previous != null && emit('select', unit, previous)}>↓</button>
+          </div>;
+        })}
+        {!props.arrowControl && units.value.map((unit) => (
           <div class='i-time-picker__column' role='listbox' data-unit={unit} aria-label={unit} key={unit}>
             {values(unit).map((value) => {
               const isDisabled = disabled(unit, value);

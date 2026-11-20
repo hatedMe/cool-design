@@ -8,7 +8,7 @@ DateTimePicker 用于选择日期和时间，支持单值和日期时间范围�
 <DateTimePicker v-model="dateTime" />
 ```
 
-未设置 `value-format` 时返回 `Date`，设置后返回对应格式的字符串或时间戳，并支持秒精度。
+未设置 `value-format` 时，单值返回 `Date`，范围返回 `Date[]`。设置后返回指定格式的字符串或时间戳，支持秒精度。启用 `show-confirm` 时，确认后提交草稿。
 
 ## API
 
