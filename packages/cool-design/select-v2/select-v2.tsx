@@ -1,5 +1,6 @@
 import { computed, defineComponent, nextTick, ref, watch, type CSSProperties, type PropType } from 'vue';
 import { Teleport } from 'vue';
+import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
@@ -12,7 +13,7 @@ type FlatRow =
 export default defineComponent({
   name: 'i-select-v2',
   props: {
-    modelValue: [String, Number, Array, Object] as PropType<SelectV2Value>,
+    modelValue: [String, Number, Boolean, Array, Object] as PropType<SelectV2Value>,
     options: { type: Array as PropType<SelectV2Option[]>, default: () => [] },
     props: Object as PropType<SelectV2PropsMapping>,
     valueKey: { type: String, default: 'value' },
@@ -25,6 +26,8 @@ export default defineComponent({
     maxCollapseTags: { type: Number, default: 1 },
     tagType: String,
     clearable: Boolean,
+    emptyValues: Array as PropType<unknown[]>,
+    valueOnClear: { type: [String, Number, Boolean, Function], default: undefined },
     disabled: Boolean,
     loading: Boolean,
     placeholder: { type: String, default: '请选择' },
@@ -49,6 +52,10 @@ export default defineComponent({
   setup(props, { emit, slots, expose }) {
     const field = useField();
     const config = useConfig();
+    const { getValueOnClear, isEmptyValue } = useEmptyValues({
+      emptyValues: computed(() => props.emptyValues),
+      valueOnClear: computed(() => props.valueOnClear)
+    });
     const root = ref<HTMLElement>();
     const input = ref<HTMLInputElement>();
     const listRef = ref<HTMLElement>();
@@ -136,7 +143,7 @@ export default defineComponent({
 
     const selectedValues = computed<SelectV2Value[]>(() => {
       if (props.multiple) return Array.isArray(props.modelValue) ? props.modelValue : [];
-      return props.modelValue === undefined || props.modelValue === null || Array.isArray(props.modelValue)
+      return isEmptyValue(props.modelValue) || Array.isArray(props.modelValue)
         ? []
         : [props.modelValue];
     });
@@ -218,7 +225,7 @@ export default defineComponent({
 
     const clear = () => {
       if (isDisabled()) return;
-      update(props.multiple ? [] : undefined);
+      update(props.multiple ? [] : getValueOnClear());
       emit('clear');
       input.value?.focus();
     };

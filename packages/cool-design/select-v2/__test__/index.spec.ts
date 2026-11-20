@@ -1,7 +1,8 @@
 import { mount, DOMWrapper } from '@vue/test-utils';
 import { defineComponent, h, ref } from 'vue';
-import { beforeEach, describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import SelectV2 from '..';
+import ConfigProvider from '../../config-provider';
 import type { SelectV2Option } from '../types';
 
 // 下拉面板默认传送到 document.body，测试中用文档级查询访问传送内容。
@@ -120,6 +121,34 @@ describe('test `SelectV2` component', () => {
     await wrapper.get('[role="combobox"]').trigger('keydown', { key: 'ArrowDown' });
     await wrapper.get('[role="combobox"]').trigger('keydown', { key: 'Enter' });
     expect(value.value).toBe(1);
+  });
+
+  test('单选读取 Provider 空值和清空工厂，多选保持数组', async () => {
+    const factory = vi.fn(() => undefined);
+    const wrapper = mount(ConfigProvider, {
+      props: { emptyValues: ['none'], valueOnClear: 0 },
+      slots: { default: () => [
+        h(SelectV2, { modelValue: 'none', clearable: true }),
+        h(SelectV2, { modelValue: 1, clearable: true }),
+        h(SelectV2, { modelValue: false, clearable: true, valueOnClear: factory }),
+        h(SelectV2, { modelValue: [1], multiple: true, clearable: true, valueOnClear: factory })
+      ] }
+    });
+    const [empty, inherited, local, multiple] = wrapper.findAllComponents(SelectV2);
+    const clear = 'button[aria-label="清空"]';
+    expect(empty.find(clear).exists()).toBe(false);
+    expect(factory).not.toHaveBeenCalled();
+    await inherited.get(clear).trigger('click');
+    await local.get(clear).trigger('click');
+    await multiple.get(clear).trigger('click');
+    expect(inherited.emitted('update:modelValue')).toEqual([[0]]);
+    expect(inherited.emitted('change')).toEqual([[0]]);
+    expect(local.emitted('update:modelValue')).toEqual([[undefined]]);
+    expect(local.emitted('change')).toEqual([[undefined]]);
+    expect(local.emitted('clear')).toEqual([[]]);
+    expect(multiple.emitted('update:modelValue')).toEqual([[[]]]);
+    expect(factory).toHaveBeenCalledTimes(1);
+    wrapper.unmount();
   });
 
   test('下拉默认传送到 body，属性族透传到面板', async () => {

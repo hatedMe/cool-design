@@ -21,6 +21,8 @@
 | 参数            | 说明                                       | 类型                                   | 默认值   |
 | --------------- | ------------------------------------------ | -------------------------------------- | -------- |
 | `modelValue`    | 选中值（`v-model`），多选时为数组          | `SelectV2Value`                        | —        |
+| `emptyValues` | 单选中视作未选中的值 | `unknown[]` | 继承 ConfigProvider |
+| `valueOnClear` | 单选清空值或工厂，多选清空为 `[]` | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider |
 | `options`       | 选项列表（支持嵌套 `options` 分组）        | `SelectV2Option[]`                     | `[]`     |
 | `props`         | 字段映射（`label` / `value` / `disabled` / `options`） | `SelectV2PropsMapping`           | —        |
 | `valueKey`      | 对象值的唯一标识字段                       | `string`                               | `value`  |

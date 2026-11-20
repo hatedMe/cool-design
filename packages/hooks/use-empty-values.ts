@@ -1,7 +1,7 @@
 import { computed, type MaybeRef, unref } from 'vue';
 import { useConfig } from '../cool-design/config-provider/context';
 export const DEFAULT_EMPTY_VALUES = ['', undefined, null];
-export function useEmptyValues(options: { emptyValues?: MaybeRef<unknown[]>; valueOnClear?: MaybeRef<unknown> } = {}) {
+export function useEmptyValues(options: { emptyValues?: MaybeRef<unknown[] | undefined>; valueOnClear?: MaybeRef<unknown> } = {}) {
   const config = useConfig();
   const emptyValues = computed(() => unref(options.emptyValues) ?? config.value.emptyValues ?? DEFAULT_EMPTY_VALUES);
   const valueOnClear = computed(() => {
