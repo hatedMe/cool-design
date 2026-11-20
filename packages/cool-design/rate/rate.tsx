@@ -52,7 +52,7 @@ export default defineComponent({
     const form = inject(formKey, undefined);
     const field = inject(fieldKey, undefined);
     const config = useConfig();
-    const isDisabled = computed(() => props.disabled ?? Boolean(form?.disabled?.()));
+    const isDisabled = computed(() => props.disabled || Boolean(form?.disabled?.()));
     const effectiveSize = computed(() => props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size);
     const currentValue = ref(normalizeValue(props.modelValue, props.max));
     const hoverValue = ref(0);

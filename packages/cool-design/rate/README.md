@@ -44,7 +44,7 @@ import Rate from 'cool-design/rate';
 
 ## 只读与清零
 
-设置 `disabled` 可只读展示并禁止鼠标和键盘交互。设置 `clearable` 后再次点击当前评分可以清零。
+设置 `disabled` 可只读展示并禁止鼠标和键盘交互。Form 禁用时，Rate 也会禁用。设置 `clearable` 后再次点击当前评分可以清零。
 
 ## API
 

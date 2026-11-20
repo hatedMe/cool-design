@@ -89,7 +89,7 @@ describe('Rate', () => {
     expect(wrapper.find('.i-rate__icon').attributes('style')).toContain('--i-rate-void-color: var(--el-rate-disabled-void-color');
   });
 
-  test('explicit false and default override Form disabled and size', () => {
+  test('explicit size overrides Form size while Form disabled is enforced', () => {
     const Host = defineComponent({
       setup() {
         provide(formKey, {
@@ -105,8 +105,8 @@ describe('Rate', () => {
     });
     const wrapper = mount(Host);
     const slider = wrapper.get('[role="slider"]');
-    expect(slider.attributes('aria-disabled')).toBeUndefined();
-    expect(slider.attributes('tabindex')).toBe('0');
+    expect(slider.attributes('aria-disabled')).toBe('true');
+    expect(slider.attributes('tabindex')).toBeUndefined();
     expect(slider.classes()).toContain('i-rate--default');
   });
 
@@ -463,4 +463,16 @@ describe('Rate', () => {
     const outside = mount(Rate);
     expect(outside.classes()).toContain('i-rate--default');
   });
+});
+
+test('禁用 Form 优先于 Rate 显式 disabled=false', async () => {
+  const wrapper = mount(CoolDesign.Form, {
+    props: { model: {}, disabled: true },
+    slots: { default: () => h(Rate, { modelValue: 1, disabled: false }) }
+  });
+  const rate = wrapper.getComponent(Rate);
+  await rate.get('[role="slider"]').trigger('keydown', { key: 'ArrowRight' });
+  expect(rate.get('[role="slider"]').attributes('aria-disabled')).toBe('true');
+  expect(rate.emitted('update:modelValue')).toBeUndefined();
+  wrapper.unmount();
 });
