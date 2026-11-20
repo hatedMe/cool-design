@@ -51,7 +51,14 @@
 | `validateEvent` | 值变化时触发表单校验                       | `boolean`                              | `true`   |
 | `name`           | 原生表单提交用的隐藏输入名称，多选时值为 JSON 数组 | `string`                      | —        |
 | `teleported`     | 下拉面板是否传送到 body                   | `boolean`                              | `true`   |
-| `persistent`     | 关闭后是否保留面板节点                    | `boolean`                              | `false`  |
+| `persistent`     | 关闭后是否保留面板节点                    | `boolean`                              | `true`  |
+| `appendTo` | 浮层目标容器 | `string \| HTMLElement` | `body` |
+| `loadingText` | 加载文案 | `string` | 加载中… |
+| `showArrow` / `offset` | 显示箭头和浮层距离 | `boolean` / `number` | `true` / `12` |
+| `suffixIcon` / `clearIcon` | 后缀和清空图标 | `string \| Component` | — |
+| `remoteShowSuffix` | 远程筛选时显示后缀 | `boolean` | `false` |
+| `tagEffect` | 标签主题 | `light` / `dark` / `plain` | `light` |
+| `tagTooltip` | 折叠标签提示配置 | `SelectV2TagTooltipOptions` | — |
 | `placement`      | 面板位置及 `-start` / `-end` 变体        | `string`                               | `bottom-start` |
 | `fallbackPlacements` | 主位置放不下时的候选位置              | `Placement[]`                          | `['top-start', 'bottom', 'top']` |
 | `popperOptions`  | 浮层参数覆盖（`offset` / `placement`）     | `{ offset?: number; placement?: Placement }` | — |
@@ -71,15 +78,18 @@
 | `clear`             | 清空               | —                  |
 | `visible-change`    | 面板展开/收起      | `visible: boolean` |
 | `remove-tag`        | 多选删除标签       | `value`            |
+| `end-reached` | 滚动到边界 | `top` / `bottom` |
 
 ### 插槽
 
 | 名称      | 说明                                  |
 | --------- | ------------------------------------- |
-| `label`   | 自定义选项内容，作用域 `{ option }`   |
-| `tag`     | 自定义标签内容，作用域 `{ data }`     |
+| `default` | 自定义下拉选项，作用域 `{ item, index }` |
+| `label` | 自定义选中标签，作用域 `{ index, label, value }` |
+| `tag`     | 自定义全部多选标签，作用域 `{ data, deleteTag, selectDisabled }`     |
 | `header`  | 面板顶部                              |
 | `footer`  | 面板底部                              |
+| `loading` | 自定义加载内容 |
 | `empty`   | 自定义空/加载文案                     |
 
 ### 实例方法
@@ -88,6 +98,10 @@
 | --------- | ------------ |
 | `focus()` | 聚焦输入框   |
 | `blur()`  | 取消聚焦     |
+| `scrollTo(index)` | 滚动到筛选后平铺列表的索引，包含分组行 |
+| `selectedLabel` | 当前单选标签或全部多选标签，类型为 `string \| string[]` |
 
 
 配置 `filterable`、`remote` 和 `remote-method` 后，回调可更新外部 `options`。外部写入由调用方管理，异步请求宜用序号避免过时结果覆盖。`remoteMethod` 也可直接返回选项数组或相应的 Promise，组件只采纳当前查询的结果。旧的双参数 `filterMethod` 保留逐项过滤语义，新代码可显式使用 `optionFilterMethod`。
+
+原先使用 `label` 插槽渲染下拉选项的代码可迁移到默认插槽。多选 `tag` 插槽一次接收整个选项数组。

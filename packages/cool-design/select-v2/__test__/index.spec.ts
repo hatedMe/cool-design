@@ -167,7 +167,7 @@ describe('test `SelectV2` component', () => {
 
     document.body.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
     await wrapper.vm.$nextTick();
-    expect(doc().find('.i-select-v2__dropdown').exists()).toBe(false);
+    expect(doc().get('.i-select-v2__dropdown').attributes('aria-hidden')).toBe('true');
   });
 
   test('name 渲染隐藏输入，多选时序列化为数组', async () => {
@@ -322,4 +322,18 @@ test('SelectV2 外部远程结果更新后重新高亮并缓存已选标签', as
   await wrapper.vm.$nextTick();
   expect(wrapper.find('[aria-label="移除 外部结果"]').exists()).toBe(true);
   wrapper.unmount();
+});
+
+test('SelectV2 默认保留浮层，并能指定挂载容器', async () => {
+  const target = document.body.appendChild(document.createElement('div'));
+  const { wrapper } = mountSelect({ options: manyOptions(5), appendTo: target, loading: true, loadingText: '加载远程列表' });
+  try {
+    await openSelect(wrapper);
+    expect(target.querySelector('[role="listbox"]')?.textContent).toContain('加载远程列表');
+    await wrapper.get('[role="combobox"]').trigger('click');
+    expect(target.querySelector('[role="listbox"]')?.getAttribute('aria-hidden')).toBe('true');
+  } finally {
+    wrapper.unmount();
+    target.remove();
+  }
 });

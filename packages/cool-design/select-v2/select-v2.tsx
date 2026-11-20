@@ -1,11 +1,12 @@
-import { computed, defineComponent, inject, nextTick, onBeforeUnmount, ref, watch, type CSSProperties, type PropType } from 'vue';
+import { computed, defineComponent, h, inject, nextTick, onBeforeUnmount, ref, watch, type Component, type CSSProperties, type PropType } from 'vue';
 import { Teleport } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useComposition } from '../../hooks/use-composition';
 import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
+import Tooltip from '../tooltip';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
-import type { SelectV2FilterMethod, SelectV2OptionFilterMethod, SelectV2RemoteMethod, SelectV2Option, SelectV2PropsMapping, SelectV2Value } from './types';
+import type { SelectV2TagTooltipOptions, SelectV2FilterMethod, SelectV2OptionFilterMethod, SelectV2RemoteMethod, SelectV2Option, SelectV2PropsMapping, SelectV2Value } from './types';
 
 type FlatRow =
   | { type: 'group'; label: string }
@@ -32,7 +33,7 @@ export default defineComponent({
     collapseTags: Boolean,
     collapseTagsTooltip: Boolean,
     maxCollapseTags: { type: Number, default: 1 },
-    tagType: String,
+    tagType: { type: String, default: 'info' },
     clearable: Boolean,
     emptyValues: Array as PropType<unknown[]>,
     valueOnClear: { type: [String, Number, Boolean, Function], default: undefined },
@@ -48,15 +49,24 @@ export default defineComponent({
     name: String,
     validateEvent: { type: Boolean, default: true },
     teleported: { type: Boolean, default: true },
-    persistent: Boolean,
+    persistent: { type: Boolean, default: true },
+    appendTo: [String, Object] as PropType<string | HTMLElement>,
+    loadingText: String,
+    suffixIcon: [String, Object, Function] as PropType<string | Component>,
+    clearIcon: [String, Object, Function] as PropType<string | Component>,
+    remoteShowSuffix: Boolean,
+    tagTooltip: Object as PropType<SelectV2TagTooltipOptions>,
+    showArrow: { type: Boolean, default: true },
+    offset: { type: Number, default: 12 },
+    tagEffect: { type: String as PropType<'light' | 'dark' | 'plain'>, default: 'light' },
     placement: { type: String as PropType<Placement>, default: 'bottom-start' },
-    fallbackPlacements: { type: Array as PropType<Placement[]>, default: () => ['top-start', 'bottom', 'top'] },
+    fallbackPlacements: { type: Array as PropType<Placement[]>, default: () => ['bottom-start', 'top-start', 'right', 'left'] },
     popperOptions: { type: Object as PropType<FloatingOptions>, default: undefined },
     popperClass: { type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>, default: undefined },
     popperStyle: { type: [String, Array, Object] as PropType<string | CSSProperties | CSSProperties[]>, default: undefined },
     effect: { type: String as PropType<'light' | 'dark'>, default: 'light' }
   },
-  emits: ['update:modelValue', 'change', 'focus', 'blur', 'clear', 'visible-change', 'remove-tag'],
+  emits: ['update:modelValue', 'change', 'focus', 'blur', 'clear', 'visible-change', 'remove-tag', 'end-reached'],
   setup(props, { emit, slots, expose }) {
     const field = useField();
     const form = inject(formKey, undefined);
@@ -95,7 +105,8 @@ export default defineComponent({
       floating: dropdown,
       placement: () => props.popperOptions?.placement ?? props.placement,
       fallbackPlacements: () => props.fallbackPlacements,
-      offset: () => props.popperOptions?.offset ?? 4,
+      offset: () => props.popperOptions?.offset ?? props.offset,
+      appendTo: () => props.appendTo,
       close: () => setOpen(false)
     });
 
@@ -197,8 +208,10 @@ export default defineComponent({
     );
 
     const windowRows = computed(() => {
-      const count = Math.ceil(props.height / props.itemHeight) + 4;
-      const start = Math.max(0, Math.floor(scrollTop.value / props.itemHeight) - 2);
+      const height = dropdown.value?.clientHeight || props.height;
+      const top = scrollTop.value - (listRef.value?.offsetTop ?? 0);
+      const count = Math.ceil(height / props.itemHeight) + 4;
+      const start = Math.max(0, Math.floor(top / props.itemHeight) - 2);
       return { start, items: visibleRows.value.slice(start, start + count) };
     });
 
@@ -230,15 +243,17 @@ export default defineComponent({
 
     watch(isDisabled, (disabled) => { if (disabled) setOpen(false); });
 
-    const syncScrollToHighlighted = () => {
+    const scrollTo = (index: number) => {
       const view = dropdown.value;
-      if (!view) return;
-      const target = highlighted.value * props.itemHeight;
+      if (!view || !visibleRows.value.length || !Number.isFinite(index) || index < 0) return;
+      const contentTop = listRef.value?.offsetTop ?? (parseFloat(getComputedStyle(view).paddingTop) || 0);
+      const target = Math.min(Math.floor(index), visibleRows.value.length - 1) * props.itemHeight + contentTop;
       if (target < view.scrollTop) view.scrollTop = target;
-      else if (target + props.itemHeight > view.scrollTop + props.height)
-        view.scrollTop = target + props.itemHeight - props.height;
+      else if (target + props.itemHeight > view.scrollTop + view.clientHeight)
+        view.scrollTop = target + props.itemHeight - view.clientHeight;
       scrollTop.value = view.scrollTop;
     };
+    const syncScrollToHighlighted = () => scrollTo(highlighted.value);
     watch(highlighted, () => {
       nextTick(syncScrollToHighlighted);
     });
@@ -321,6 +336,30 @@ export default defineComponent({
       emit('remove-tag', value);
     };
 
+    const optionIndex = (option: SelectV2Option) => flatOptions.value.findIndex((row) => sameValue(row.option[valueKey.value], option[valueKey.value]));
+    const selectedLabels = computed(() => selectedValues.value.map((value, index) => {
+      const option = selectedOptions.value[index];
+      return option ? optionLabel(option) : String(value ?? '');
+    }));
+    const selectedLabel = computed(() => props.multiple ? selectedLabels.value : (selectedLabels.value[0] ?? ''));
+    const renderIcon = (icon: string | Component | undefined, fallback: string) =>
+      typeof icon === 'string' ? <i class={icon} aria-hidden='true' /> : icon ? h(icon, { 'aria-hidden': true }) : fallback;
+    const deleteTag = (event: MouseEvent, option: SelectV2Option) => {
+      event.stopPropagation();
+      removeTag(option[valueKey.value]);
+    };
+    let lastScrollTop = 0;
+    const onScroll = (event: Event) => {
+      const list = event.currentTarget as HTMLElement;
+      const top = list.scrollTop;
+      scrollTop.value = top;
+      if (top !== lastScrollTop) {
+        if (top <= 0 && top < lastScrollTop) emit('end-reached', 'top');
+        else if (top > lastScrollTop && top + list.clientHeight + 1 >= list.scrollHeight) emit('end-reached', 'bottom');
+      }
+      lastScrollTop = top;
+    };
+
     const onKeydown = (event: KeyboardEvent) => {
       if (isDisabled()) return;
       if (isComposing.value || event.isComposing) return;
@@ -348,7 +387,9 @@ export default defineComponent({
 
     expose({
       focus: () => input.value?.focus(),
-      blur: () => input.value?.blur()
+      blur: () => input.value?.blur(),
+      selectedLabel,
+      scrollTo
     });
 
     return () => {
@@ -381,11 +422,13 @@ export default defineComponent({
               if (props.validateEvent) nextTick(() => field?.validate('blur'));
             }}
             onKeydown={onKeydown}>
-            {shown.map((option, index) =>
+            {props.multiple && slots.tag
+              ? slots.tag({ data: selectedOptions.value.map((option, index) => option ?? { [valueKey.value]: selectedValues.value[index], [labelKey.value]: selectedLabels.value[index] }), deleteTag, selectDisabled: isDisabled() })
+              : shown.map((option, index) =>
               option ? (
-                <span class={['i-select-v2__tag', props.tagType && `is-${props.tagType}`]} key={index}>
-                  {slots.tag?.({ data: option }) ?? optionLabel(option)}
-                  {!isDisabled() && (
+                <span class={['i-select-v2__tag', props.multiple && [`is-${props.tagType}`, `is-${props.tagEffect}`]]} key={index}>
+                  {slots.label?.({ index: optionIndex(option), label: optionLabel(option), value: option[valueKey.value] }) ?? optionLabel(option)}
+                  {props.multiple && !isDisabled() && (
                     <button
                       type='button'
                       aria-label={`移除 ${optionLabel(option)}`}
@@ -399,16 +442,34 @@ export default defineComponent({
                 </span>
               ) : (
                 <span class='i-select-v2__tag' key={index}>
-                  {String(selectedValues.value[index])}
+                  {slots.label?.({ index: -1, label: selectedLabels.value[index], value: selectedValues.value[index] }) ?? selectedLabels.value[index]}
                 </span>
               )
             )}
-            {rest > 0 && (
-              <span
-                class='i-select-v2__more'
-                title={props.collapseTagsTooltip ? selectedOptions.value.map((option) => (option ? optionLabel(option) : '')).join('、') : undefined}>
-                +{rest}
-              </span>
+            {rest > 0 && !slots.tag && (
+              props.collapseTagsTooltip ? (
+                <Tooltip
+                  disabled={open.value}
+                  teleported={props.tagTooltip?.teleported ?? props.teleported}
+                  appendTo={props.tagTooltip?.appendTo ?? props.appendTo}
+                  effect={props.tagTooltip?.effect ?? props.effect}
+                  popperClass={props.tagTooltip?.popperClass ?? props.popperClass}
+                  popperStyle={props.tagTooltip?.popperStyle ?? props.popperStyle}
+                  placement={props.tagTooltip?.placement ?? props.tagTooltip?.popperOptions?.placement}
+                  offset={props.tagTooltip?.offset ?? props.tagTooltip?.popperOptions?.offset}
+                  fallbackPlacements={props.tagTooltip?.fallbackPlacements}
+                  showAfter={props.tagTooltip?.showAfter}
+                  hideAfter={props.tagTooltip?.hideAfter}
+                  autoClose={props.tagTooltip?.autoClose}>
+                  {{
+                    default: () => <span class='i-select-v2__more'>+{rest}</span>,
+                    content: () => selectedLabels.value.slice(shown.length).map((label, offset) => {
+                      const index = shown.length + offset;
+                      return <span key={index}>{slots.label?.({ index: selectedOptions.value[index] ? optionIndex(selectedOptions.value[index]!) : -1, label, value: selectedValues.value[index] }) ?? label}</span>;
+                    })
+                  }}
+                </Tooltip>
+              ) : <span class='i-select-v2__more'>+{rest}</span>
             )}
             <input
               ref={input}
@@ -438,9 +499,12 @@ export default defineComponent({
                   event.stopPropagation();
                   clear();
                 }}>
-                ×
+                {renderIcon(props.clearIcon, '×')}
               </button>
             )}
+            {!props.clearable || !selectedValues.value.length ? (!props.remote || !props.filterable || props.remoteShowSuffix) && (
+              <span class='i-select-v2__suffix' aria-hidden='true'>{renderIcon(props.suffixIcon, '⌄')}</span>
+            ) : null}
           </div>
           {props.name && (
             <input
@@ -460,13 +524,12 @@ export default defineComponent({
                 aria-hidden={kept ? 'true' : undefined}
                 data-placement={position.placement.value}
                 style={[position.style.value, { maxHeight: `${props.height}px` }, props.popperStyle, kept ? { display: 'none' } : undefined]}
-                onScroll={(event: Event) => {
-                  scrollTop.value = (event.target as HTMLElement).scrollTop;
-                }}>
-                {slots.header?.()}
-                {props.loading && <div class='i-select-v2__empty'>{slots.empty?.() ?? '加载中…'}</div>}
+                onScroll={onScroll}>
+                {props.showArrow && <span class='i-select-v2__arrow' style={position.arrowStyle.value} aria-hidden='true' />}
+                {slots.header && <div onClick={(event: MouseEvent) => event.stopPropagation()}>{slots.header()}</div>}
+                {props.loading && <div class='i-select-v2__empty'>{slots.loading?.() ?? slots.empty?.() ?? (props.loadingText || '加载中…')}</div>}
                 {!props.loading && !visibleRows.value.length && (
-                  <div class='i-select-v2__empty'>{slots.empty?.() ?? (query.value ? props.noMatchText : props.noDataText)}</div>
+                  <div class='i-select-v2__empty'>{slots.empty?.() ?? (query.value && rows.value.length ? props.noMatchText : props.noDataText)}</div>
                 )}
                 {!props.loading && visibleRows.value.length > 0 && (
                   <div
@@ -501,14 +564,14 @@ export default defineComponent({
                               }
                             ]}
                             onClick={() => choose(row)}>
-                            {slots.label?.({ option }) ?? optionLabel(option)}
+                            {slots.default?.({ item: option, index: rowIndex }) ?? optionLabel(option)}
                           </div>
                         );
                       })}
                     </div>
                   </div>
                 )}
-                {slots.footer?.()}
+                {slots.footer && <div onClick={(event: MouseEvent) => event.stopPropagation()}>{slots.footer()}</div>}
               </div>
             );
             return props.teleported ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;

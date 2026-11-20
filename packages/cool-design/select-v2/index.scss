@@ -123,3 +123,21 @@
 .i-select-v2.i-control--large .i-select-v2__control {
   min-height: 40px;
 }
+
+.i-select-v2__tag.is-dark {
+  background: var(--i-text, #303133);
+  color: var(--i-bg, #fff);
+}
+.i-select-v2__tag.is-plain {
+  background: transparent;
+  border: 1px solid currentColor;
+}
+.i-select-v2__arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: inherit;
+  border: inherit;
+  pointer-events: none;
+}
