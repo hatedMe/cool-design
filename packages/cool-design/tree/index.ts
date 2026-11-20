@@ -2,7 +2,9 @@ import { withInstall } from '../../../src/utils/with-install';
 import Component from './tree';
 import './index.scss';
 
-export const Tree = withInstall(Component);
+import type { TreeExposed } from './types';
+export type { TreeExposed as TreeInstance } from './types';
+export const Tree = withInstall<typeof Component, TreeExposed>(Component);
 export default Tree;
 export type {
   TreeAllowDrag,
