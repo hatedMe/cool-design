@@ -1,5 +1,6 @@
 import { computed, defineComponent, nextTick, ref, type CSSProperties, type PropType } from 'vue';
 import { Teleport } from 'vue';
+import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
@@ -15,7 +16,9 @@ const formatTime = (minutes: number) =>
 export default defineComponent({
   name: 'i-time-select',
   props: {
-    modelValue: String,
+    modelValue: { type: [String, Number, Boolean] as PropType<string | number | boolean | null>, default: undefined },
+    emptyValues: Array as PropType<unknown[]>,
+    valueOnClear: { type: [String, Number, Boolean, Function] as PropType<string | number | boolean | null | (() => unknown)>, default: undefined },
     start: { type: String, default: '09:00' },
     step: { type: String, default: '00:30' },
     end: { type: String, default: '18:00' },
@@ -40,6 +43,11 @@ export default defineComponent({
   setup(props, { emit, expose }) {
     const field = useField();
     const config = useConfig();
+    const { getValueOnClear, isEmptyValue } = useEmptyValues({
+      emptyValues: computed(() => props.emptyValues),
+      valueOnClear: computed(() => props.valueOnClear)
+    });
+    const hasValue = computed(() => !isEmptyValue(props.modelValue));
     const root = ref<HTMLElement>();
     const dropdown = ref<HTMLElement>();
     const open = ref(false);
@@ -86,8 +94,9 @@ export default defineComponent({
     };
     const clear = () => {
       if (isDisabled()) return;
-      emit('update:modelValue', '');
-      emit('change', '');
+      const value = getValueOnClear();
+      emit('update:modelValue', value);
+      emit('change', value);
       if (props.validateEvent) nextTick(() => field?.validate('change'));
       emit('clear');
     };
@@ -127,11 +136,11 @@ export default defineComponent({
             if (props.validateEvent) nextTick(() => field?.validate('blur'));
           }}
           onKeydown={onKeydown}>
-          <span class={props.modelValue ? 'i-time-select__value' : 'i-time-select__placeholder'}>
-            {props.modelValue || props.placeholder}
+          <span class={hasValue.value ? 'i-time-select__value' : 'i-time-select__placeholder'}>
+            {hasValue.value ? String(props.modelValue) : props.placeholder}
           </span>
         </button>
-        {props.clearable && props.modelValue && !isDisabled() && (
+        {props.clearable && hasValue.value && !isDisabled() && (
           <button
             type='button'
             class='i-time-select__clear'
@@ -143,7 +152,7 @@ export default defineComponent({
             ×
           </button>
         )}
-        <input type='hidden' name={props.name} value={props.modelValue ?? ''} />
+        <input type='hidden' name={props.name} value={hasValue.value ? String(props.modelValue) : ''} />
         {(() => {
           const kept = props.persistent && shownOnce.value && !open.value;
           if (!open.value && !kept) return null;

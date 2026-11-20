@@ -16,7 +16,7 @@
 
 | 参数            | 说明                                       | 类型      | 默认值   |
 | --------------- | ------------------------------------------ | --------- | -------- |
-| `modelValue`    | 选中时间（`v-model`），格式 `HH:mm`        | `string`  | —        |
+| `modelValue`    | 选中时间（`v-model`），格式 `HH:mm`        | `string \| number \| boolean \| null`  | —        |
 | `start`         | 开始时间                                   | `string`  | `09:00`  |
 | `step`          | 时间间隔                                   | `string`  | `00:30`  |
 | `end`           | 结束时间                                   | `string`  | `18:00`  |
@@ -24,7 +24,9 @@
 | `maxTime`       | 最晚可选时间，晚于它的选项禁用             | `string`  | —        |
 | `placeholder`   | 占位文本                                   | `string`  | `请选择` |
 | `disabled`      | 是否禁用                                   | `boolean` | `false`  |
-| `clearable`     | 是否可清空（清空输出空字符串）             | `boolean` | `true`   |
+| `emptyValues` | 视为空的模型值 | `unknown[]` | 继承 ConfigProvider |
+| `valueOnClear` | 清空值或工厂 | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider，根级 `undefined` |
+| `clearable`     | 是否可清空             | `boolean` | `true`   |
 | `size`          | 尺寸：`small` / `default` / `large`        | `string`  | 继承全局尺寸 |
 | `name`          | 原生隐藏 input 名称                        | `string`  | —        |
 | `validateEvent` | 值变化时触发表单校验                       | `boolean` | `true`   |
@@ -41,8 +43,8 @@
 
 | 事件名              | 说明               | 回调参数           |
 | ------------------- | ------------------ | ------------------ |
-| `update:modelValue` | 选中或清空         | `value: string`    |
-| `change`            | 选中或清空         | `value: string`    |
+| `update:modelValue` | 选中或清空         | `value: string \| number \| boolean \| null \| undefined`    |
+| `change`            | 选中或清空         | `value: string \| number \| boolean \| null \| undefined`    |
 | `focus` / `blur`    | 聚焦 / 失焦        | `event: FocusEvent` |
 | `clear`             | 点击清空           | —                  |
 | `visible-change`    | 下拉展开或收起     | `visible: boolean` |
@@ -57,3 +59,5 @@
 ## 使用说明
 
 本组件即固定时间点的 TimeSelect，动态时间范围请使用 TimePicker（`disabled-hours` 等）。
+
+`empty-values` 自定义未选中时的模型值，`value-on-clear` 接受清空值或函数。两者均继承 ConfigProvider。单选默认清空为 `undefined`。依赖原空字符串的页面可设置 `value-on-clear=""`。清空只执行一次工厂，`clear` 无参数。

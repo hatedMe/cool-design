@@ -8,6 +8,7 @@ beforeEach(() => {
 const doc = () => new DOMWrapper(document.body);
 import TimeSelect from '..';
 import Form from '../../form';
+import ConfigProvider from '../../config-provider';
 import FormItem from '../../form-item';
 
 describe('test `TimeSelect` component', () => {
@@ -39,12 +40,12 @@ describe('test `TimeSelect` component', () => {
     expect(wrapper.emitted('update:modelValue')).toBeUndefined();
   });
 
-  test('清空输出空字符串并触发 clear', async () => {
+  test('默认清空输出 undefined 并触发 clear', async () => {
     const wrapper = mount(TimeSelect, {
       props: { modelValue: '09:00' }
     });
     await wrapper.find('.i-time-select__clear').trigger('click');
-    expect(wrapper.emitted('update:modelValue')).toEqual([['']]);
+    expect(wrapper.emitted('update:modelValue')).toEqual([[undefined]]);
     expect(wrapper.emitted('clear')).toHaveLength(1);
   });
 
@@ -97,4 +98,23 @@ describe('test `TimeSelect` component', () => {
     expect(mine().exists()).toBe(false);
     wrapper.unmount();
   });
+});
+
+test('TimeSelect 继承 Provider 空值配置和清空工厂', async () => {
+  let calls = 0;
+  const state = reactive<{ value: string | boolean }>({ value: '09:00' });
+  const wrapper = mount(ConfigProvider, {
+    props: { emptyValues: [false], valueOnClear: () => { calls++; return false; } },
+    slots: { default: () => h(TimeSelect, { name: 'time', modelValue: state.value,
+      'onUpdate:modelValue': (value: unknown) => { if (typeof value === 'boolean') state.value = value; } }) }
+  });
+  const time = wrapper.getComponent(TimeSelect);
+  expect(calls).toBe(0);
+  await time.get('.i-time-select__clear').trigger('click');
+  expect(time.emitted('change')).toEqual([[false]]);
+  expect(time.emitted('clear')).toEqual([[]]);
+  expect(time.get('input[type="hidden"]').element.value).toBe('');
+  expect(time.find('.i-time-select__clear').exists()).toBe(false);
+  expect(calls).toBe(1);
+  wrapper.unmount();
 });
