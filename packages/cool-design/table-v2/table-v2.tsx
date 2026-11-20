@@ -77,20 +77,26 @@ export default defineComponent({
     };
 
     // 排序与过滤（作用于根行；sortState 受控优先）
-    const sortState = ref<{ key: string; order: 'asc' | 'desc' } | null>(
-      props.sortState ? { ...props.sortState } : props.sortBy ? { ...props.sortBy } : null
-    );
+    const sortState = ref<TableV2SortBy | null>(null);
     watch(
-      () => props.sortState,
+      () => props.sortState ?? props.sortBy,
       (value) => {
-        sortState.value = value ? { ...value } : null;
+        const validOrder = value?.order === 'asc' || value?.order === 'desc';
+        sortState.value = validOrder ? { key: value.key, order: value.order } : null;
       },
-      { deep: true }
+      { deep: true, immediate: true }
+    );
+    const sortColumn = computed(() => props.columns.find((column) => column.key === sortState.value?.key));
+    watch(
+      [() => sortState.value?.key, () => !!sortColumn.value],
+      ([key, found], [previousKey, wasFound]) => {
+        if (key === previousKey && wasFound && !found) sortState.value = null;
+      }
     );
     const cycleSort = (column: TableV2Column) => {
       if (!column.sortable) return;
       const next: TableV2SortOrder =
-        sortState.value?.key !== column.key || sortState.value.order === null
+        sortState.value?.key !== column.key
           ? 'asc'
           : sortState.value.order === 'asc'
             ? 'desc'
@@ -108,7 +114,7 @@ export default defineComponent({
     const viewRows = computed(() => {
       const rows = props.filter ? props.data.filter(props.filter) : [...props.data];
       const state = sortState.value;
-      const column = state ? props.columns.find((c) => c.key === state.key) : undefined;
+      const column = sortColumn.value;
       if (!state || !column) return rows;
       const direction = state.order === 'desc' ? -1 : 1;
       return rows
@@ -289,7 +295,7 @@ export default defineComponent({
                       {column.title ?? column.key}{' '}
                       {column.sortable && (
                         <span aria-hidden='true'>
-                          {sortState.value?.key !== column.key || sortState.value.order === null
+                          {sortState.value?.key !== column.key
                             ? '↕'
                             : sortState.value.order === 'asc'
                               ? '↑'

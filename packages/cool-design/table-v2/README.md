@@ -39,6 +39,10 @@ const data = Array.from({ length: 10000 }, (_, i) => ({ id: i + 1, name: `行${i
 
 含子节点的行在首列（或 `expandColumnKey` 指定列）渲染展开开关。
 
+### 排序
+
+替换 `sortBy` 对象或更新其 `key`、`order` 会同步表头和根行顺序。`sortState` 优先，移除后使用当前 `sortBy`。目标列异步加载后会应用已传入的排序。两项属性均清空或已匹配的排序列被移除时，根行恢复输入顺序，表头清除排序标记。启用 `sortable` 可通过点击表头按 `asc`、`desc`、`null` 循环并触发 `column-sort`。外部排序可作用于所有列。
+
 ## API
 
 ### 属性
@@ -56,12 +60,12 @@ const data = Array.from({ length: 10000 }, (_, i) => ({ id: i + 1, name: `行${i
 | expandedRowKeys  | 受控展开行键值                          | `(string \| number)[]`                                                    | —          |
 | expandColumnKey  | 树形开关所在列，默认首列                | `string`                                                                  | —          |
 | childrenKey      | 子节点字段名                            | `string`                                                                  | `children` |
-| sortBy           | 初始排序                                | `{ key: string; order: 'asc' \| 'desc' }`                                 | —          |
+| sortBy           | 排序列与方向，支持动态更新              | `{ key: string; order: 'asc' \| 'desc' }`                                 | —          |
 | filter           | 根行过滤函数                            | `(rowData: object) => boolean`                                            | —          |
 | rowEventHandlers | 行事件处理器                            | `{ onClick?; onDblclick?; onContextmenu?; onMouseenter?; onMouseleave? }` | —          |
 | overscan         | 可视窗口上下预渲染行数，`cache` 优先    | `number`                                                                  | `3`        |
 | cache            | 预渲染行数，官方别名，优先于 `overscan` | `number`                                                                  | —          |
-| sortState        | 受控排序                                | `{ key: string; order: 'asc' \| 'desc' }`                                 | —          |
+| sortState        | 排序扩展，优先于 `sortBy`               | `{ key: string; order: 'asc' \| 'desc' }`                                 | —          |
 | rowClass         | 行类名，字符串或函数                    | `string \| (({ rowData, rowIndex }) => string)`                           | —          |
 | cellProps        | 单元格类名与样式                        | `({ rowData, column, rowIndex }) => { class?; style? }`                   | —          |
 | emptyText        | 空态文字                                | `string`                                                                  | `暂无数据` |

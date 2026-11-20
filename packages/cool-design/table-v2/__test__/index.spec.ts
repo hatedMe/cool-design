@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
-import { h } from 'vue';
+import { h, nextTick, reactive } from 'vue';
 import { expect, test, vi } from 'vitest';
-import TableV2 from '../index';
+import TableV2, { type TableV2SortBy } from '../index';
 
 const columns = [
   { key: 'id', dataKey: 'id', title: '编号', width: 100, sortable: true },
@@ -40,6 +40,101 @@ test('表头排序循环并发出 column-sort，filter 过滤根行', async () =
     props: { columns, data: rows(5), height: 400, filter: (row: object) => (row as { id: number }).id > 3 }
   });
   expect(filtered.findAll('.i-table-v2__row.is-body')).toHaveLength(2);
+});
+
+test('替换和清空 sortBy 会同步表头及行顺序', async () => {
+  const [first, second, third] = rows(3);
+  const data = [second, first, third];
+  const w = mount(TableV2, { props: { columns, data } });
+  const header = w.find('[role="columnheader"]');
+
+  await w.setProps({ sortBy: { key: 'id', order: 'desc' } });
+  expect(header.attributes('aria-sort')).toBe('descending');
+  expect(w.find('.i-table-v2__row.is-body').text()).toContain('行3');
+
+  await w.setProps({ sortBy: undefined });
+  expect(header.attributes('aria-sort')).toBe('none');
+  expect(w.find('.i-table-v2__row.is-body').text()).toContain('行2');
+  expect(w.emitted('column-sort')).toBeUndefined();
+});
+
+test('异步加载目标列后应用已有的 sortBy', async () => {
+  const sortBy = { key: 'id', order: 'desc' } as const;
+  const w = mount(TableV2, { props: { columns: [], data: rows(3), sortBy } });
+
+  await w.setProps({ columns });
+
+  expect(w.find('[role="columnheader"]').attributes('aria-sort')).toBe('descending');
+  expect(w.find('.i-table-v2__row.is-body').text()).toContain('行3');
+});
+
+test('不可点击排序的列仍应用外部排序', async () => {
+  const sortBy = { key: 'id', order: 'desc' } as const;
+  const w = mount(TableV2, {
+    props: { columns: [{ ...columns[0], sortable: false }], data: rows(3), sortBy }
+  });
+
+  expect(w.find('.i-table-v2__row.is-body').text()).toBe('3');
+  await w.find('[role="columnheader"]').trigger('click');
+  expect(w.emitted('column-sort')).toBeUndefined();
+});
+
+test('原地修改 sortBy 的 key 和 order 会同步表头及行顺序', async () => {
+  const sortBy = reactive<TableV2SortBy>({ key: 'id', order: 'asc' });
+  const sortableColumns = [columns[0], { ...columns[1], sortable: true }];
+  const data = [
+    { id: 1, name: 'Zulu' },
+    { id: 2, name: 'Alpha' }
+  ];
+  const w = mount(TableV2, { props: { columns: sortableColumns, data, sortBy } });
+  const [idHeader, nameHeader] = w.findAll('[role="columnheader"]');
+
+  sortBy.key = 'name';
+  await nextTick();
+  expect(idHeader.attributes('aria-sort')).toBe('none');
+  expect(nameHeader.attributes('aria-sort')).toBe('ascending');
+  expect(w.find('.i-table-v2__row.is-body').text()).toContain('Alpha');
+
+  sortBy.order = 'desc';
+  await nextTick();
+  expect(nameHeader.attributes('aria-sort')).toBe('descending');
+  expect(w.find('.i-table-v2__row.is-body').text()).toContain('Zulu');
+});
+
+test('sortState 优先于 sortBy，移除后同步最新 sortBy', async () => {
+  const sortBy = reactive<TableV2SortBy>({ key: 'id', order: 'asc' });
+  const sortState = reactive<TableV2SortBy>({ key: 'id', order: 'desc' });
+  const w = mount(TableV2, { props: { columns, data: rows(3), sortBy, sortState } });
+  const header = w.find('[role="columnheader"]');
+
+  expect(header.attributes('aria-sort')).toBe('descending');
+  sortBy.order = 'desc';
+  sortState.order = 'asc';
+  await nextTick();
+  expect(header.attributes('aria-sort')).toBe('ascending');
+
+  sortBy.order = 'asc';
+  await nextTick();
+  sortBy.order = 'desc';
+  await nextTick();
+  expect(header.attributes('aria-sort')).toBe('ascending');
+  expect(w.find('.i-table-v2__row.is-body').text()).toContain('行1');
+
+  await w.setProps({ sortState: undefined });
+  expect(header.attributes('aria-sort')).toBe('descending');
+  expect(w.find('.i-table-v2__row.is-body').text()).toContain('行3');
+});
+
+test('排序列移除后恢复时不会沿用旧排序', async () => {
+  const w = mount(TableV2, { props: { columns, data: rows(3), sortBy: { key: 'id', order: 'desc' } } });
+  expect(w.find('.i-table-v2__row.is-body').text()).toContain('行3');
+
+  await w.setProps({ columns: [columns[1]] });
+  expect(w.find('.i-table-v2__row.is-body').text()).toContain('行1');
+
+  await w.setProps({ columns });
+  expect(w.find('[role="columnheader"]').attributes('aria-sort')).toBe('none');
+  expect(w.find('.i-table-v2__row.is-body').text()).toContain('行1');
 });
 
 test('树形展开收起并发出 expanded-rows-change，受控 keys 生效', async () => {
