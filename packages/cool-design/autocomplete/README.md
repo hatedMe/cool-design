@@ -25,7 +25,7 @@
 | `highlightFirstItem` | 是否默认高亮第一个建议项                    | `boolean`                                                    | `false` |
 | `selectWhenUnmatched` | 无匹配时回车是否选中当前输入值             | `boolean`                                                    | `false` |
 | `hideLoading`        | 隐藏远程加载状态                            | `boolean`                                                    | `false` |
-| `size`               | 尺寸：`small` / `default` / `large`         | `string`                                                     | 继承全局尺寸 |
+| `size`               | 尺寸：`small` / `default` / `large`         | `string`                                                     | 继承 FormItem、Form 或 ConfigProvider |
 | `name`               | 原生 input 名称                             | `string`                                                     | —      |
 | `maxlength` / `minlength` | 原生长度限制                           | `string \| number`                                           | —      |
 | `prefixIcon`         | 输入框前置图标                              | `string \| Component`                                        | —      |

@@ -159,3 +159,38 @@ describe('test `Autocomplete` component', () => {
     expect(wrapper.text()).not.toContain('名称必填');
   });
 });
+
+test('Autocomplete 禁用 Form 后不接受已显示的建议', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, size: 'large' },
+    slots: { default: () => h(Autocomplete, { suggestions: ['苹果'] }) }
+  });
+  const control = wrapper.getComponent(Autocomplete);
+  await control.get('input').trigger('focus');
+  const previousUpdates = control.emitted('update:modelValue')?.slice();
+  const suggestion = control.get('li');
+  await wrapper.setProps({ disabled: true });
+  suggestion.element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+  suggestion.element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  expect(control.emitted('update:modelValue')).toEqual(previousUpdates);
+  expect(control.get('input').attributes('disabled')).toBeDefined();
+  expect(control.classes()).toContain('i-control--large');
+  wrapper.unmount();
+});
+
+test('Autocomplete 禁用 Form 后丢弃未完成的建议请求', async () => {
+  let finish!: (items: Array<{ value: string }>) => void;
+  const wrapper = mount(Form, {
+    props: { model: {} },
+    slots: { default: () => h(Autocomplete, { fetchSuggestions: (_query, complete) => { finish = complete; } }) }
+  });
+  const control = wrapper.getComponent(Autocomplete);
+  await control.get('input').trigger('focus');
+  expect(control.find('.i-autocomplete__loading').exists()).toBe(true);
+  await wrapper.setProps({ disabled: true });
+  expect(control.find('.i-autocomplete__list').exists()).toBe(false);
+  finish([{ value: '迟到建议' }]);
+  await wrapper.setProps({ disabled: false });
+  expect(control.find('.i-autocomplete__list').exists()).toBe(false);
+  wrapper.unmount();
+});

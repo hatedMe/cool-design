@@ -1,5 +1,5 @@
-import { computed, defineComponent, nextTick, onBeforeUnmount, ref, type PropType, type Component } from 'vue';
-import { useField } from '../form/context';
+import { computed, defineComponent, inject, nextTick, onBeforeUnmount, ref, watch, type PropType, type Component } from 'vue';
+import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import Icon from '../icon';
 export interface AutocompleteSuggestion {
@@ -32,6 +32,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'input', 'change', 'select', 'clear', 'focus', 'blur'],
   setup(props, { emit, slots, expose }) {
     const field = useField();
+    const form = inject(formKey, undefined);
     const config = useConfig();
     const input = ref<HTMLInputElement>();
     const focused = ref(false);
@@ -39,7 +40,7 @@ export default defineComponent({
     const items = ref<AutocompleteSuggestion[]>([]);
     const highlightedIndex = ref(-1);
     const normalize = (item: string | AutocompleteSuggestion) => (typeof item === 'string' ? { value: item } : item);
-    const isDisabled = () => props.disabled || !!field?.disabled?.();
+    const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
     // 请求序号：只采纳最后一次发起的远程结果，过期响应直接丢弃。
     let requestId = 0;
     let debounceTimer: ReturnType<typeof setTimeout> | undefined;
@@ -76,12 +77,14 @@ export default defineComponent({
       }
     };
     const query = (value: string) => {
+      if (isDisabled()) return;
       emit('update:modelValue', value);
       emit('input', value);
       if (props.validateEvent) nextTick(() => field?.validate('change'));
       fetchSuggestionsFor(value, false);
     };
     const queryImmediate = (value: string) => {
+      if (isDisabled()) return;
       emit('update:modelValue', value);
       emit('input', value);
       if (props.validateEvent) nextTick(() => field?.validate('change'));
@@ -91,8 +94,19 @@ export default defineComponent({
       if (debounceTimer !== undefined) clearTimeout(debounceTimer);
       requestId++;
     });
-    const visible = computed(() => focused.value && items.value.length > 0);
+    watch(isDisabled, (disabled) => {
+      if (!disabled) return;
+      focused.value = false;
+      loading.value = false;
+      requestId++;
+      if (debounceTimer !== undefined) {
+        clearTimeout(debounceTimer);
+        debounceTimer = undefined;
+      }
+    });
+    const visible = computed(() => !isDisabled() && focused.value && items.value.length > 0);
     const handleSelect = (item: AutocompleteSuggestion) => {
+      if (isDisabled()) return;
       // 选中后丢弃未决请求，避免迟到的建议覆盖已选值。
       if (debounceTimer !== undefined) {
         clearTimeout(debounceTimer);
@@ -106,6 +120,7 @@ export default defineComponent({
       focused.value = false;
     };
     const onKeydown = (event: KeyboardEvent) => {
+      if (isDisabled()) return;
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
         if (!items.value.length) return;
@@ -129,7 +144,7 @@ export default defineComponent({
       handleSelect
     });
     return () => (
-      <span class={['i-autocomplete', `i-control--${props.size ?? field?.size?.() ?? config.value.size}`]}>
+      <span class={['i-autocomplete', `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`]}>
         {slots.prepend?.()}
         <span class='i-autocomplete__control'>
           {slots.prefix?.()}
