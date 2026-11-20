@@ -1,8 +1,8 @@
 import { computed, defineComponent, inject, nextTick, ref, watch, type CSSProperties, type PropType } from 'vue';
 import { Teleport } from 'vue';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import 'dayjs/locale/zh-cn';
+import utc from 'dayjs/plugin/utc.js';
+import 'dayjs/locale/zh-cn.js';
 import { useId } from '../../hooks/use-id';
 import Icon from '../icon';
 import type { Component } from 'vue';
