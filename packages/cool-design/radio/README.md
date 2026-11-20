@@ -46,6 +46,9 @@ Radio 用于在互斥选项中选择一个值；RadioGroup 用于管理同一组
 | fill         | 选中按钮背景色（仅按钮形态生效）       | `string`                               | —          |
 | text-color   | 选中按钮文字色（仅按钮形态生效）       | `string`                               | —          |
 | validateEvent | 值变化时触发表单校验                  | `boolean`                              | `true`     |
+| options | 选项数据 | `Record<string, unknown>[]` | — |
+| props | 选项字段映射 | `{ value?: string; label?: string; disabled?: string }` | — |
+| type | 选项组件 | `'radio'` / `'button'` | `'radio'` |
 
 ### RadioGroup 事件
 
@@ -59,3 +62,5 @@ Radio 用于在互斥选项中选择一个值；RadioGroup 用于管理同一组
 选中项（未选中时第一个可用项）是 Tab 停靠点；方向键在可用选项间移动选中并聚焦，自动跳过禁用项。
 
 尺寸优先使用组件及分组的显式设置，再读取最近的 FormItem、Form 或 ConfigProvider。Form 禁用时，选项也会禁用。
+
+RadioGroup 的 `options` 接收选项数组，默认读取 `value`、`label` 和 `disabled`。通过 `props` 将三个字段映射到自定义键，设置 `type="button"` 可使用 RadioButton。默认插槽优先于 `options`。

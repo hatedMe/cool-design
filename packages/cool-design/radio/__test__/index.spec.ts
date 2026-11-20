@@ -212,3 +212,25 @@ test('RadioGroup 方向键跳过位于禁用 Form 内的子项', async () => {
   expect(wrapper.emitted('update:modelValue')).toBeUndefined();
   wrapper.unmount();
 });
+
+test('renders mapped group options through RadioButton', () => {
+  const wrapper = mount(CoolDesign.RadioGroup, {
+    props: {
+      modelValue: true, type: 'button',
+      options: [{ id: true, text: 'First' }, { id: false, text: 'Second', off: true }],
+      props: { value: 'id', label: 'text', disabled: 'off' }
+    }
+  });
+  expect(wrapper.findAll('.i-radio-button')).toHaveLength(2);
+  expect(wrapper.get('.i-radio-button').text()).toBe('First');
+});
+
+test('preserves numeric label fallback and follows reordered options', async () => {
+  const wrapper = mount(CoolDesign.RadioGroup, {
+    props: { modelValue: 0, options: [{ label: 0 }, { label: 1 }, { label: 2 }] }
+  });
+  expect(wrapper.get('input').element.checked).toBe(true);
+  await wrapper.setProps({ options: [{ label: 0 }, { label: 2 }, { label: 1 }] });
+  await wrapper.get('[role="radiogroup"]').trigger('keydown', { key: 'ArrowRight' });
+  expect(wrapper.emitted('update:modelValue')).toEqual([[2]]);
+});

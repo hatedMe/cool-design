@@ -1,5 +1,6 @@
 import { defineComponent, inject, nextTick, provide, type InjectionKey, type PropType } from 'vue';
-import type { RadioValue } from './radio';
+import Radio, { type RadioValue } from './radio';
+import RadioButton from '../radio-button/radio-button';
 import { formKey, useField } from '../form/context';
 
 export interface RadioItem {
@@ -26,6 +27,9 @@ export default defineComponent({
   props: {
     modelValue: [String, Number, Boolean] as PropType<RadioValue>,
     name: String,
+    options: Array as PropType<Record<string, unknown>[]>,
+    props: Object as PropType<{ value?: string; label?: string; disabled?: string }>,
+    type: { type: String as PropType<'radio' | 'button'>, default: 'radio' },
     disabled: Boolean,
     size: String,
     fill: String,
@@ -104,7 +108,15 @@ export default defineComponent({
           '--i-radio-button-checked-bg-color': props.fill,
           '--i-radio-button-checked-text-color': props.textColor
         }}>
-        {slots.default?.()}
+        {slots.default ? slots.default() : props.options?.map((option, index) => {
+          const { value = 'value', label = 'label', disabled = 'disabled' } = props.props ?? {};
+          const Component = props.type === 'button' ? RadioButton : Radio;
+          const { [value]: rawValue, [label]: rawLabel, [disabled]: rawDisabled, ...attributes } = option;
+          const optionValue = rawValue as RadioValue | undefined;
+          const optionLabel = rawLabel as RadioValue | undefined;
+          return <Component {...attributes} value={optionValue} label={optionLabel}
+            key={index} disabled={Boolean(rawDisabled)}>{String(optionLabel ?? '')}</Component>;
+        })}
       </div>
     );
   }
