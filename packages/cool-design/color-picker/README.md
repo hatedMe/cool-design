@@ -49,7 +49,7 @@
 | `disabled` | 是否禁用；表单内继承 FormItem 的禁用状态 | `boolean` | `false` |
 | `color-format` | 输出颜色格式：`hex` / `rgb` / `hsl` / `hsv` | `string` | `hex` |
 | `predefine` | 预定义颜色列表 | `string[]` | `[]` |
-| `size` | 组件尺寸：`small` / `default` / `large` | `string` | `default` |
+| `size` | 组件尺寸：`small` / `default` / `large` | `string` | 继承 FormItem、Form 或 ConfigProvider |
 | `tabindex` | 触发器的 Tab 顺序 | `string` / `number` | `0` |
 | `popper-class` | 面板自定义 class | `string` | `''` |
 | `validate-event` | 确认颜色后是否触发表单校验 | `boolean` | `true` |

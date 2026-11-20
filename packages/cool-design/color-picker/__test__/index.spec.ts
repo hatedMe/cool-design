@@ -223,3 +223,27 @@ test('ColorPicker 受控 undefined 清空后维持空颜色', async () => {
   expect((wrapper.get('.i-color-picker__trigger').element as HTMLElement).style.backgroundColor).toBe('');
   wrapper.unmount();
 });
+
+test('ColorPicker 尺寸按组件、FormItem、Form、Provider 顺序继承', async () => {
+  const state = reactive<{ size?: 'small' | 'large' }>({});
+  const wrapper = mount(CoolDesign.ConfigProvider, {
+    props: { size: 'small' },
+    slots: { default: () => [
+      h(ColorPicker),
+      h(CoolDesign.Form, { size: 'large', model: {} }, { default: () => [
+        h(ColorPicker),
+        h(CoolDesign.FormItem, {}, { default: () => h(ColorPicker) }),
+        h(CoolDesign.FormItem, { size: 'small' }, { default: () => h(ColorPicker, { size: state.size }) })
+      ] })
+    ] }
+  });
+  const pickers = wrapper.findAll('.i-color-picker');
+  expect(pickers[0].classes()).toContain('i-color-picker--small');
+  expect(pickers[1].classes()).toContain('i-color-picker--large');
+  expect(pickers[2].classes()).toContain('i-color-picker--large');
+  expect(pickers[3].classes()).toContain('i-color-picker--small');
+  state.size = 'large';
+  await wrapper.vm.$nextTick();
+  expect(pickers[3].classes()).toContain('i-color-picker--large');
+  wrapper.unmount();
+});

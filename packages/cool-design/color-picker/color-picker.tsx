@@ -1,6 +1,7 @@
-import { computed, defineComponent, getCurrentInstance, nextTick, ref, watch, Teleport, type PropType } from 'vue';
+import { computed, defineComponent, getCurrentInstance, inject, nextTick, ref, watch, Teleport, type PropType } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
-import { useField } from '../form/context';
+import { useConfig, type Size } from '../config-provider/context';
+import { formKey, useField } from '../form/context';
 import { useFloating } from '../../../src/utils/use-floating';
 
 type ColorFormat = 'hex' | 'rgb' | 'hsl' | 'hsv';
@@ -139,7 +140,7 @@ export default defineComponent({
     disabled: Boolean,
     colorFormat: { type: String as () => ColorFormat, default: 'hex' },
     predefine: { type: Array as () => string[], default: () => [] },
-    size: { type: String as () => 'small' | 'default' | 'large', default: 'default' },
+    size: String as PropType<Size>,
     tabindex: { type: [String, Number], default: 0 },
     popperClass: { type: String, default: '' },
     validateEvent: { type: Boolean, default: true }
@@ -147,6 +148,9 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'active-change', 'clear'],
   setup(props, { attrs, emit, slots, expose }) {
     const field = useField();
+    const form = inject(formKey, undefined);
+    const config = useConfig();
+    const size = computed(() => props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size);
     const isDisabled = () => props.disabled || !!field?.disabled?.();
     const { getValueOnClear, isEmptyValue } = useEmptyValues({
       emptyValues: computed(() => props.emptyValues),
@@ -216,7 +220,7 @@ export default defineComponent({
     return () => (
       <span
         {...rootAttrs}
-        class={['i-color-picker', `i-color-picker--${props.size}`, { 'is-disabled': isDisabled() }]}
+        class={['i-color-picker', `i-color-picker--${size.value}`, { 'is-disabled': isDisabled() }]}
         aria-disabled={isDisabled() ? 'true' : undefined}
         onKeydown={onKeydown}
       >
