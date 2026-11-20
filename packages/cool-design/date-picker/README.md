@@ -45,7 +45,7 @@ DatePicker 用于选择日期、月份、年份、周、多个日期和日期范
 | readonly            | 只读                                                           | `boolean`                              | `false`        |
 | editable            | 是否允许手动输入                                               | `boolean`                              | `true`         |
 | clearable           | 是否可清空                                                     | `boolean`                              | `false`        |
-| size                | 尺寸                                                           | `string`                               | 继承全局尺寸   |
+| size                | 尺寸                                                           | `string`                               | 继承 FormItem、Form 或 ConfigProvider   |
 | shortcuts           | 快捷选项                                                       | `Array<{ text: string; value: ... }>`  | —              |
 | default-value       | 初始值                                                         | `Date` / `Date[]`                      | —              |
 | default-time         | 选择日期时的初始时间                                           | `string` / `number` / `Date` / `Array<string \| number \| Date>` | — |

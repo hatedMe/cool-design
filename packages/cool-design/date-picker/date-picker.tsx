@@ -1,7 +1,7 @@
-import { Teleport, computed, defineComponent, h, markRaw, nextTick, onBeforeUnmount, onMounted, ref, toRaw, type Component, type PropType } from 'vue';
+import { Teleport, computed, defineComponent, h, inject, markRaw, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch, type Component, type PropType } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useConfig, type Size } from '../config-provider/context';
-import { useField } from '../form/context';
+import { formKey, useField } from '../form/context';
 import { emitValue, formatDate, getWeekStart, parseFormattedDate, toDate, type DateModelValue, type DateValue, type TimeParts } from './date';
 import DatePickerPanel, { type DatePanelType } from './date-picker-panel';
 import TimePickerPanel, { type TimeUnit } from './time-picker-panel';
@@ -62,7 +62,8 @@ export default defineComponent({
   setup(props, { attrs, emit, expose, slots }) {
     const config = useConfig();
     const field = useField();
-    const disabledOf = () => props.disabled || !!field?.disabled?.();
+    const form = inject(formKey, undefined);
+    const disabledOf = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
     const validate = (trigger: 'blur' | 'change') => {
       if (props.validateEvent) nextTick(() => field?.validate(trigger));
     };
@@ -113,6 +114,7 @@ export default defineComponent({
     const isDisabled = (date: Date) => Boolean(props.disabledDate?.(date));
     const mergeDateTime = (date: Date, time: TimeParts) => new Date(date.getFullYear(), date.getMonth(), date.getDate(), time.hour, time.minute, time.second);
     const commit = (value: DateValue | null | Array<DateValue | null>) => {
+      if (disabledOf() || props.readonly) return;
       if (props.showConfirm) {
         draftValue.value = value;
         return;
@@ -122,6 +124,7 @@ export default defineComponent({
       if (!isRange.value && !isMultiple.value) close();
     };
     const chooseTime = (unit: TimeUnit, value: number) => {
+      if (disabledOf() || props.readonly) return;
       timeDraft.value = { ...timeDraft.value, [unit]: value };
       // 粒度跟随 format：有秒等秒、有分等分、仅时则选时即完成。
       const complete =
@@ -150,10 +153,12 @@ export default defineComponent({
     };
     const chooseNow = () => commit(output(new Date()));
     const chooseShortcut = (shortcut: { text: string; value: DateValue | DateValue[] | (() => DateValue | DateValue[]) }) => {
+      if (disabledOf() || props.readonly) return;
       const value = typeof shortcut.value === 'function' ? shortcut.value() : shortcut.value;
       commit(value);
     };
     const confirm = () => {
+      if (disabledOf() || props.readonly) return;
       if (draftValue.value !== null) {
         const value = draftValue.value;
         draftValue.value = null;
@@ -163,6 +168,7 @@ export default defineComponent({
       close();
     };
     const choose = (date: Date) => {
+      if (disabledOf() || props.readonly) return;
       if (props.type === 'week') {
         date = getWeekStart(date, props.firstDayOfWeek);
       }
@@ -210,7 +216,7 @@ export default defineComponent({
       commit(output(date));
     };
     const setOpen = (value: boolean) => {
-      if (disabledOf() || props.readonly || open.value === value) return;
+      if (open.value === value || (value && (disabledOf() || props.readonly))) return;
       if (value && props.automaticDropdown === false && !manualOpen.value) return;
       open.value = value;
       emit('visible-change', value);
@@ -229,6 +235,11 @@ export default defineComponent({
       }
     };
     const close = () => { manualOpen.value = false; draftValue.value = null; hoverPreview.value = null; setOpen(false); };
+    watch(disabledOf, (disabled) => {
+      if (!disabled) return;
+      pendingInputs.length = 0;
+      close();
+    });
     const updateInput = (index: number | undefined, value: string) => {
       pendingInputs[index ?? 0] = value;
     };
@@ -242,6 +253,7 @@ export default defineComponent({
       emit('clear');
     };
     const commitInput = (index: number | undefined) => {
+      if (disabledOf() || props.readonly) return;
       const value = pendingInputs[index ?? 0];
       if (value === undefined) return;
       if (value === '' || emptyValues.value.some((empty) => String(empty) === value)) {
@@ -277,7 +289,7 @@ export default defineComponent({
       const value = model.value;
       const panel = open.value ? <div id={panelId} ref={floating} class={['i-date-picker__dropdown', props.popperClass]} style={[position.style.value, props.popperStyle]}><div class='i-date-picker__datetime-panel'>{isRange.value && !props.singlePanel ? <div class='i-date-picker__range-panels'><DatePickerPanel showWeekNumber={props.showWeekNumber} cursorValue={rangePanelCursors.value[0]} firstDayOfWeek={props.firstDayOfWeek} cellClassName={props.cellClassName} defaultValue={props.defaultValue} modelValue={(props.showConfirm && draftValue.value !== null ? draftValue.value : isMultiple.value ? dateDraft.value : rangeDraft.value) as DateModelValue} type={panelType.value} disabledDate={props.disabledDate} onSelect={choose} hoverValue={hoverPreview.value} onHover={(date: Date | null) => (hoverPreview.value = date)} onPanel-change={(date: Date) => { rangePanelCursors.value[0] = date; if (!props.unlinkPanels) rangePanelCursors.value[1] = new Date(date.getFullYear(), date.getMonth() + (panelType.value === 'quarter' ? 3 : panelType.value === 'year' ? 12 : 1), 1); emit('panel-change', date, panelType.value); }}>{ { date: slots.default } }</DatePickerPanel><DatePickerPanel showWeekNumber={props.showWeekNumber} cursorValue={rangePanelCursors.value[1]} firstDayOfWeek={props.firstDayOfWeek} cellClassName={props.cellClassName} defaultValue={props.defaultValue} modelValue={(props.showConfirm && draftValue.value !== null ? draftValue.value : isMultiple.value ? dateDraft.value : rangeDraft.value) as DateModelValue} type={panelType.value} disabledDate={props.disabledDate} onSelect={choose} hoverValue={hoverPreview.value} onHover={(date: Date | null) => (hoverPreview.value = date)} onPanel-change={(date: Date) => { rangePanelCursors.value[1] = date; if (!props.unlinkPanels) rangePanelCursors.value[0] = new Date(date.getFullYear(), date.getMonth() - (panelType.value === 'quarter' ? 3 : panelType.value === 'year' ? 12 : 1), 1); emit('panel-change', date, panelType.value); }}>{ { date: slots.default } }</DatePickerPanel></div> : <DatePickerPanel showWeekNumber={props.showWeekNumber} cursorValue={rangePanelCursors.value[0]} firstDayOfWeek={props.firstDayOfWeek} cellClassName={props.cellClassName} defaultValue={props.defaultValue} modelValue={(props.showConfirm && draftValue.value !== null ? draftValue.value : isMultiple.value ? dateDraft.value : isRange.value ? rangeDraft.value : value) as DateModelValue} type={panelType.value} disabledDate={props.disabledDate} onSelect={choose} hoverValue={hoverPreview.value} onHover={(date: Date | null) => (hoverPreview.value = date)} onPanel-change={(date: Date) => { rangePanelCursors.value[0] = date; if (!props.unlinkPanels) rangePanelCursors.value[1] = new Date(date.getFullYear(), date.getMonth() + (panelType.value === 'quarter' ? 3 : panelType.value === 'year' ? 12 : 1), 1); emit('panel-change', date, panelType.value); }}>{ { date: slots.default } }</DatePickerPanel>}{(props.type === 'datetime' || props.type === 'datetimerange') && <TimePickerPanel value={timeDraft.value} format={timePanelFormat.value} disabledHours={props.disabledHours} disabledMinutes={props.disabledMinutes} disabledSeconds={props.disabledSeconds} onSelect={chooseTime} />}</div>{props.showFooter && <div class='i-date-picker__footer'>{props.showNow && !isRange.value && !isMultiple.value && (props.type === 'date' || props.type === 'datetime') && <button type='button' aria-label='现在' onClick={chooseNow}>现在</button>}{props.shortcuts?.map((shortcut) => <button type='button' data-shortcut={shortcut.text} onClick={() => chooseShortcut(shortcut)}>{shortcut.text}</button>)}{props.showConfirm && <button type='button' aria-label='确认' onClick={confirm}>确认</button>}</div>}</div> : null;
       const content = props.teleported && panel ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
-      return <span ref={root} class={['i-date-picker', `i-control--${props.size ?? field?.size?.() ?? config.value.size}`, isRange.value && 'is-range']}><div ref={reference}>{isRange.value ? <>{renderInput(Array.isArray(value) ? value[0] : null, 0)}<span class='i-date-picker__separator'>{props.rangeSeparator}</span>{renderInput(Array.isArray(value) ? value[1] : null, 1)}</> : renderInput(value as DateValue | null)}</div>{props.clearable && (Array.isArray(value) ? value.some((item) => item != null && !isEmptyValue(item)) : value != null) && <button type='button' class='i-date-picker__clear' aria-label='清空' disabled={disabledOf() || props.readonly} onClick={clear}>{props.clearIcon ? <span class='i-date-picker__clear-icon'>{renderIcon(props.clearIcon as string | Component, 'i-date-picker__icon')}</span> : '×'}</button>}{content}</span>;
+      return <span ref={root} class={['i-date-picker', `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`, isRange.value && 'is-range']}><div ref={reference}>{isRange.value ? <>{renderInput(Array.isArray(value) ? value[0] : null, 0)}<span class='i-date-picker__separator'>{props.rangeSeparator}</span>{renderInput(Array.isArray(value) ? value[1] : null, 1)}</> : renderInput(value as DateValue | null)}</div>{props.clearable && (Array.isArray(value) ? value.some((item) => item != null && !isEmptyValue(item)) : value != null) && <button type='button' class='i-date-picker__clear' aria-label='清空' disabled={disabledOf() || props.readonly} onClick={clear}>{props.clearIcon ? <span class='i-date-picker__clear-icon'>{renderIcon(props.clearIcon as string | Component, 'i-date-picker__icon')}</span> : '×'}</button>}{content}</span>;
     };
   }
 });
