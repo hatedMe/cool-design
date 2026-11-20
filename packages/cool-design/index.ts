@@ -765,3 +765,9 @@ export type { SwitchInstance } from './switch';
 export type { MentionInstance } from './mention';
 export type { AutocompleteInstance } from './autocomplete';
 export type { ColorPickerInstance } from './color-picker';
+
+export type { SelectInstance } from './select';
+export type { SelectV2Instance } from './select-v2';
+export type { TreeSelectInstance } from './tree-select';
+export type { TimeSelectInstance } from './time-select';
+export type { CalendarInstance, DatePickerInstance, DateTimePickerInstance, TimePickerInstance } from './date-picker';
