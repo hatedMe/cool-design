@@ -28,7 +28,6 @@
 | --------- | ------------------------------------------ |
 | `default` | 一个表单输入控件                           |
 | `label`   | 自定义标签内容                             |
-| `validateStatus` | 校验状态，可选 `''` / `validating` / `success` / `error` | `FormValidateState` | `''` |
 | `error`   | 自定义错误内容，作用域参数 `{ error }`     |
 
 ### 实例方法
