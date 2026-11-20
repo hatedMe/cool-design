@@ -10,9 +10,13 @@ export interface AutocompleteSuggestion {
   value?: string | number;
   [key: string]: unknown;
 }
-export type AutocompleteFetchSuggestions = AutocompleteSuggestion[] | ((
+type FetchSuggestions<Result> = (
   query: string, callback: (items: AutocompleteSuggestion[]) => void
-) => AutocompleteSuggestion[] | void | Promise<AutocompleteSuggestion[] | void>);
+) => Result;
+export type AutocompleteFetchSuggestions =
+  | AutocompleteSuggestion[]
+  | FetchSuggestions<void>
+  | FetchSuggestions<AutocompleteSuggestion[] | Promise<AutocompleteSuggestion[] | void>>;
 export type AutocompleteIcon = string | Component;
 export default defineComponent({
   name: 'i-autocomplete',
