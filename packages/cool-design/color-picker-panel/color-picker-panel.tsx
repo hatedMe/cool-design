@@ -6,6 +6,7 @@ import { nativeColor, type ColorFormat } from '../color-picker/color';
 
 export const colorPickerPanelProps = {
     modelValue: { type: String as PropType<string | null>, default: '' },
+    popupEditor: Boolean,
     border: { type: Boolean, default: true },
     disabled: Boolean,
     showAlpha: Boolean,
@@ -38,6 +39,7 @@ export default defineComponent({
       const format = props.colorFormat ?? (props.showAlpha ? 'rgb' : 'hex');
       return color.toString(format === 'hex' && props.showAlpha ? 'hex8' : format);
     };
+    let synchronizedText: string | undefined;
     const load = (value: string | null) => {
       const parsed = new TinyColor(value ?? '');
       const { h, s, v, a } = parsed.isValid ? parsed.toHsv() : new TinyColor('red').toHsv();
@@ -48,13 +50,26 @@ export default defineComponent({
       text.value = parsed.isValid ? serialize(parsed) : '';
     };
     load(props.modelValue);
-    watch(() => props.modelValue, (value) => { if (value !== text.value) load(value); });
+    watch(() => props.modelValue, (value) => {
+      if (value === text.value) return;
+      load(value);
+      if (props.popupEditor) synchronizedText = text.value;
+    });
     watch(text, (value) => {
+      if (props.popupEditor && value === synchronizedText) {
+        synchronizedText = undefined;
+        return;
+      }
+      synchronizedText = undefined;
       emit('update:modelValue', value);
       if (props.validateEvent) nextTick(() => field?.validate('change'));
     });
     const choose = (value: string) => {
       if (disabled.value) return;
+      if (props.popupEditor && !new TinyColor(value).isValid) {
+        if (inputRef.value?.input) inputRef.value.input.value = text.value;
+        return;
+      }
       load(value);
     };
     const changeChannels = () => { if (!disabled.value) text.value = serialize(current()); };
@@ -118,15 +133,19 @@ export default defineComponent({
           class={['i-color-picker-editor__hue', props.hueSliderClass]} style={props.hueSliderStyle}
           onInput={(event: Event) => { hue.value = Number((event.target as HTMLInputElement).value); changeChannels(); }} />
         <input type='color' value={nativeColor(text.value || '#409eff')} aria-label='颜色' disabled={disabled.value}
-          onInput={(event: Event) => choose((event.target as HTMLInputElement).value)} />
+          onInput={(event: Event) => {
+            const selected = new TinyColor((event.target as HTMLInputElement).value);
+            if (props.popupEditor) selected.setAlpha(alpha.value);
+            choose(selected.toRgbString());
+          }} />
         {props.showAlpha && <input type='range' min='0' max='100' value={alpha.value * 100} aria-label='透明度' disabled={disabled.value}
           onInput={(event: Event) => { alpha.value = Number((event.target as HTMLInputElement).value) / 100; changeChannels(); }} />}
-        <div class='i-color-picker-editor__presets'>
+        <div class='i-color-picker-editor__presets i-color-picker__presets'>
           {props.predefine.map((value) => <button type='button' key={value} aria-label={value}
             disabled={disabled.value} style={{ backgroundColor: value }} onClick={() => choose(value)} />)}
         </div>
         <Input ref={inputRef} modelValue={text.value} aria-label='颜色文本' disabled={disabled.value} validateEvent={false}
-          onChange={(value: string) => choose(value)} />
+          {...{ onChangeCapture: (event: Event) => choose((event.target as HTMLInputElement).value) }} />
         {slots.footer?.()}
       </section>
     );

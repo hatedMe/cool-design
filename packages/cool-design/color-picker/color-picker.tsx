@@ -1,10 +1,11 @@
-import { computed, defineComponent, getCurrentInstance, inject, nextTick, ref, watch, Teleport, type PropType } from 'vue';
+import { computed, defineComponent, getCurrentInstance, inject, nextTick, ref, watch, Teleport, type PropType, type CSSProperties } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useConfig, type Size } from '../config-provider/context';
 import { formKey, useField } from '../form/context';
 import { useFloating } from '../../../src/utils/use-floating';
 
-import { parseColor, formatColor, nativeColor, type ColorFormat } from './color';
+import ColorPickerPanel from '../color-picker-panel';
+import { parseColor, formatColor, type ColorFormat } from './color';
 
 export default defineComponent({
   name: 'i-color-picker',
@@ -22,6 +23,8 @@ export default defineComponent({
     predefine: { type: Array as () => string[], default: () => [] },
     size: String as PropType<Size>,
     tabindex: { type: [String, Number], default: 0 },
+    persistent: { type: Boolean, default: true },
+    popperStyle: [String, Object, Array] as PropType<string | CSSProperties | CSSProperties[]>,
     popperClass: { type: String, default: '' },
     validateEvent: { type: Boolean, default: true }
   },
@@ -44,6 +47,7 @@ export default defineComponent({
       return typeof value === 'string' && !isEmptyValue(value) ? value : '';
     };
     const open = ref(false);
+    const shown = ref(false);
     const currentColor = ref(modelColor() || '#409eff');
     const alpha = ref(parseColor(modelColor() || '#409eff').alpha * 100);
     const trigger = ref<HTMLButtonElement>();
@@ -67,7 +71,9 @@ export default defineComponent({
       }
     );
     const update = (value: string) => {
+      if (!open.value || isDisabled() || currentColor.value === value) return;
       currentColor.value = value;
+      alpha.value = parseColor(value).alpha * 100;
       const formatted = formatColor(value, props.colorFormat, alpha.value / 100, props.showAlpha);
       emit('active-change', formatted);
     };
@@ -89,6 +95,7 @@ export default defineComponent({
     const show = () => {
       if (isDisabled() || open.value) return;
       reset();
+      shown.value = true;
       open.value = true;
     };
     const onKeydown = (event: KeyboardEvent) => {
@@ -122,44 +129,14 @@ export default defineComponent({
         >
           {slots.default?.()}
         </button>
-        {open.value && !isDisabled() && (
+        {(open.value || (shown.value && props.persistent)) && (
           <Teleport to={position.target.value} disabled={!props.teleported}>
-          <div ref={panel} class={['i-color-picker__panel', props.popperClass]} style={position.style.value} role='dialog'>
-            <input
-              type='color'
-              value={nativeColor(currentColor.value)}
-              onInput={(event: Event) => update((event.target as HTMLInputElement).value)}
-            />
-            {props.showAlpha && (
-              <input
-                type='range'
-                min='0'
-                max='100'
-                value={alpha.value}
-                aria-label='透明度'
-                onInput={(event: Event) => {
-                  alpha.value = Number((event.target as HTMLInputElement).value);
-                  update(currentColor.value);
-                }}
-              />
-            )}
-            {props.predefine.length > 0 && (
-              <div class='i-color-picker__presets'>
-                {props.predefine.map((color) => (
-                  <button
-                    type='button'
-                    key={color}
-                    disabled={isDisabled()}
-                    style={{ backgroundColor: color }}
-                    aria-label={color}
-                    onClick={() => {
-                      alpha.value = parseColor(color).alpha * 100;
-                      update(color);
-                    }}
-                  />
-                ))}
-              </div>
-            )}
+          <div ref={panel} class={['i-color-picker__panel', props.popperClass]}
+            style={[position.style.value, props.popperStyle, !open.value ? { display: 'none' } : undefined]}
+            aria-hidden={!open.value || undefined} role='dialog'>
+            <ColorPickerPanel popupEditor modelValue={currentColor.value} border={false} disabled={isDisabled()}
+              showAlpha={props.showAlpha} colorFormat={props.colorFormat} predefine={props.predefine}
+              validateEvent={false} onUpdate:modelValue={update} />
             <div class='i-color-picker__actions'>
               {props.clearable && <button type='button' class='i-color-picker__clear' onClick={() => commit(null)}>清空</button>}
               <button type='button' class='i-color-picker__confirm' onClick={() => commit(currentColor.value)}>确定</button>

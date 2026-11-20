@@ -39,7 +39,7 @@ describe('ColorPicker', () => {
     });
 
     await wrapper.find('.i-color-picker__trigger').trigger('click');
-    const alpha = wrapper.find('input[type="range"]');
+    const alpha = wrapper.find('input[aria-label="透明度"]');
     await alpha.setValue('50');
 
     expect(wrapper.emitted('update:modelValue')).toBeUndefined();
@@ -73,7 +73,7 @@ describe('ColorPicker', () => {
     await wrapper.find('.i-color-picker__trigger').trigger('click');
     await wrapper.setProps({ modelValue: '#00ff00' });
 
-    expect((wrapper.find('input[type="range"]').element as HTMLInputElement).value).toBe('100');
+    expect((wrapper.find('input[aria-label="透明度"]').element as HTMLInputElement).value).toBe('100');
   });
 
   test('integrates with form field context for id, disabled and validation', async () => {
@@ -161,7 +161,7 @@ test('supports show/hide, clear, teleport target and discard on hide', async () 
   await panel.find('.i-color-picker__clear').trigger('click');
   expect(wrapper.emitted('update:modelValue')).toEqual([[null]]);
   expect(wrapper.emitted('change')).toEqual([[null]]);
-  expect(panel.find('[role="dialog"]').exists()).toBe(false);
+  expect(panel.find('[role="dialog"]').isVisible()).toBe(false);
   wrapper.unmount();
   target.remove();
 });
@@ -172,7 +172,7 @@ test('clearable false hides clear and disabled show does not open', async () => 
   expect(wrapper.find('.i-color-picker__clear').exists()).toBe(false);
   await wrapper.setProps({ disabled: true });
   (wrapper.vm as unknown as { show: () => void }).show();
-  expect(wrapper.find('[role="dialog"]').exists()).toBe(false);
+  expect(wrapper.find('[role="dialog"]').isVisible()).toBe(false);
   wrapper.unmount();
 });
 
@@ -276,8 +276,36 @@ test('动态禁用 ColorPicker 清除草稿并结束展开状态', async () => {
   await wrapper.setProps({ disabled: true });
   expect(trigger.attributes('aria-expanded')).toBe('false');
   await wrapper.setProps({ disabled: false });
-  expect(picker.find('.i-color-picker__confirm').exists()).toBe(false);
+  expect(picker.find('.i-color-picker__confirm').isVisible()).toBe(false);
   await trigger.trigger('click');
   expect(picker.get('input[type="color"]').element.value).toBe('#409eff');
   wrapper.unmount();
+});
+
+test('keeps a real panel mounted and discards preview on close', async () => {
+  const wrapper = mount(ColorPicker, { props: { modelValue: '#ff0000', teleported: false, persistent: true, popperStyle: { width: '300px' } } });
+  await wrapper.get('.i-color-picker__trigger').trigger('click');
+  const panel = wrapper.getComponent(CoolDesign.ColorPickerPanel);
+  expect(wrapper.get('[role="dialog"]').attributes('style')).toContain('300px');
+  const native = wrapper.get('input[type="color"]');
+  await native.setValue('#00ff00');
+  await wrapper.vm.$nextTick();
+  expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  await wrapper.get('.i-color-picker__trigger').trigger('click');
+  expect(wrapper.getComponent(CoolDesign.ColorPickerPanel).vm).toBe(panel.vm);
+  await wrapper.get('.i-color-picker__trigger').trigger('click');
+  expect(native.element.value).toBe('#ff0000');
+});
+
+test('ignores invalid text and accepts repeated text after a native color edit', async () => {
+  const wrapper = mount(ColorPicker, { props: { teleported: false, modelValue: '#ff0000' } });
+  await wrapper.get('.i-color-picker__trigger').trigger('click');
+  const text = wrapper.get('input[aria-label="颜色文本"]');
+  await text.setValue('not-a-color');
+  expect(text.element.value).toBe('#ff0000');
+  await text.setValue('#00ff00');
+  await wrapper.get('input[type="color"]').setValue('#0000ff');
+  await text.setValue('#00ff00');
+  await wrapper.get('.i-color-picker__confirm').trigger('click');
+  expect(wrapper.emitted('update:modelValue')).toEqual([['#00ff00']]);
 });
