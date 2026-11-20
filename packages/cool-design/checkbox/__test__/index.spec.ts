@@ -202,3 +202,12 @@ test('uses legacy label only when group value is omitted', async () => {
   await inputs[1].setValue(true);
   expect(wrapper.emitted('update:modelValue')).toEqual([[[7, false]]]);
 });
+
+test('disables add and remove at the configured selection limits', () => {
+  const wrapper = mount(CheckboxGroup, {
+    props: { modelValue: ['a'], min: 1, max: 1 },
+    slots: { default: () => [h(Checkbox, { value: 'a' }), h(Checkbox, { value: 'b' })] }
+  });
+  expect(wrapper.findAll('input').map(({ element }) => [element.checked, element.disabled]))
+    .toEqual([[true, true], [false, true]]);
+});

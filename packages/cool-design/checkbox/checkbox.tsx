@@ -32,16 +32,17 @@ export default defineComponent({
       const falseValue = props.falseValue ?? props.falseLabel ?? false;
       const isModelChecked = props.modelValue === trueValue ||
         (props.trueLabel !== undefined && props.modelValue !== falseValue && props.modelValue === props.trueLabel);
+      const groupChecked = group?.modelValue.some((item) => checkboxValueEqual(item, optionValue as CheckboxValue));
       const disabled =
         props.disabled ||
         (field?.disabled?.() ?? form?.disabled?.()) ||
         group?.disabled ||
-        (group?.max !== undefined &&
-          !group.modelValue.some((item) => checkboxValueEqual(item, optionValue as CheckboxValue)) &&
-          group.modelValue.length >= group.max);
+        (group && (groupChecked
+          ? group.min !== undefined && group.modelValue.length <= group.min
+          : group.max !== undefined && group.modelValue.length >= group.max));
       const size = props.size ?? group?.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size;
       const checked = group
-        ? group.modelValue.some((item) => checkboxValueEqual(item, optionValue as CheckboxValue))
+        ? groupChecked
         : isModelChecked || (props.modelValue === undefined && props.checked);
       return (
         <label class={['i-checkbox', props.border && 'is-bordered', disabled && 'is-disabled', size !== 'default' && size ? `is-${size}` : undefined]}>
@@ -54,7 +55,7 @@ export default defineComponent({
             indeterminate={props.indeterminate}
             disabled={disabled}
             onChange={(event: Event) => {
-              if (disabled === true) return;
+              if (disabled) return;
               const isChecked = (event.target as HTMLInputElement).checked;
               if (group) {
                 group.update(optionValue as CheckboxValue, isChecked);

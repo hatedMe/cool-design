@@ -28,16 +28,17 @@ export default defineComponent({
       const falseValue = props.falseValue ?? props.falseLabel ?? false;
       const isModelChecked = props.modelValue === trueValue ||
         (props.trueLabel !== undefined && props.modelValue !== falseValue && props.modelValue === props.trueLabel);
+      const groupChecked = group?.modelValue.some((item) => checkboxValueEqual(item, optionValue as CheckboxValue));
       const checked = group
-        ? group.modelValue.some((item) => checkboxValueEqual(item, optionValue as CheckboxValue))
+        ? groupChecked
         : isModelChecked;
       const disabled =
         props.disabled ||
         (field?.disabled?.() ?? form?.disabled?.()) ||
         group?.disabled ||
-        (group?.max !== undefined &&
-          !group.modelValue.some((item) => checkboxValueEqual(item, optionValue as CheckboxValue)) &&
-          group.modelValue.length >= group.max);
+        (group && (groupChecked
+          ? group.min !== undefined && group.modelValue.length <= group.min
+          : group.max !== undefined && group.modelValue.length >= group.max));
       const size = props.size ?? group?.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size;
       return (
         <button
