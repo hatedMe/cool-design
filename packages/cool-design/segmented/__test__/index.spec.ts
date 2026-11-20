@@ -1,7 +1,10 @@
 import { mount } from '@vue/test-utils';
-import { defineComponent, h, ref } from 'vue';
+import { defineComponent, h, reactive, ref } from 'vue';
 import { describe, expect, test } from 'vitest';
 import Segmented from '..';
+import ConfigProvider from '../../config-provider';
+import Form from '../../form';
+import FormItem from '../../form-item';
 
 const options = [
   { label: '列表', value: 'list' },
@@ -94,4 +97,49 @@ describe('test `Segmented` component', () => {
     // 月被禁用，方向键跳回“日”。
     expect(segmented.emitted('update:modelValue')![1][0]).toBe(1);
   });
+});
+
+test('继承尺寸和禁用状态，并按 validateEvent 控制表单校验', async () => {
+  const state = reactive({ disabled: true, validateEvent: false, value: 'list' });
+  const checks: unknown[] = [];
+  const wrapper = mount({
+    render: () => h(ConfigProvider, { size: 'small' }, { default: () =>
+      h(Form, { model: state, size: 'large', disabled: state.disabled, onValidate: (...args: unknown[]) => checks.push(args) }, {
+        default: () => h(FormItem, { prop: 'value', size: 'small', rules: { required: true, trigger: 'change' } }, {
+          default: () => h(Segmented, { options, modelValue: state.value, direction: 'vertical',
+            ariaLabel: '视图', validateEvent: state.validateEvent,
+            'onUpdate:modelValue': (value: string | number) => { state.value = String(value); } })
+        })
+      })
+    })
+  });
+  const group = wrapper.get('[role="radiogroup"]');
+  expect(group.classes()).toContain('i-segmented--small');
+  expect(group.attributes('aria-orientation')).toBe('vertical');
+  expect(group.attributes('aria-label')).toBe('视图');
+  await group.trigger('keydown', { key: 'ArrowDown' });
+  await group.findAll('button')[1].trigger('click');
+  expect(state.value).toBe('list');
+  state.disabled = false;
+  await wrapper.vm.$nextTick();
+  await group.findAll('button')[1].trigger('click');
+  expect(state.value).toBe('card');
+  expect(checks).toHaveLength(0);
+  state.validateEvent = true;
+  await wrapper.vm.$nextTick();
+  await group.findAll('button')[0].trigger('click');
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(checks).toHaveLength(1);
+  wrapper.unmount();
+});
+
+test('未显式配置名称时关联 FormItem 标签', () => {
+  const wrapper = mount(Form, {
+    slots: { default: () => h(FormItem, { label: '展示方式' }, { default: () => h(Segmented, { options }) }) }
+  });
+  const group = wrapper.get('[role="radiogroup"]');
+  const label = wrapper.get('.i-form-item__label');
+  expect(group.attributes('aria-labelledby')).toBe(label.attributes('id'));
+  expect(group.attributes('aria-label')).toBeUndefined();
+  wrapper.unmount();
 });

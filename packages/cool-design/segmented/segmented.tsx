@@ -1,4 +1,6 @@
-import { Comment, Fragment, Text, computed, defineComponent, ref, type PropType, type VNode } from 'vue';
+import { Comment, Fragment, Text, computed, defineComponent, nextTick, ref, type PropType, type VNode } from 'vue';
+import { useConfig } from '../config-provider/context';
+import { useField } from '../form/context';
 
 export interface SegmentedOption {
   label?: string;
@@ -27,10 +29,18 @@ export default defineComponent({
     modelValue: [String, Number] as PropType<SegmentedValue>,
     disabled: Boolean,
     block: Boolean,
+    direction: { type: String as PropType<'horizontal' | 'vertical'>, default: 'horizontal' },
+    ariaLabel: String,
+    validateEvent: { type: Boolean, default: true },
     size: String as PropType<'large' | 'default' | 'small'>
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { emit, slots }) {
+    const field = useField();
+    const config = useConfig();
+    const disabled = computed(() => props.disabled || !!field?.disabled?.());
+    const size = computed(() => props.size ?? field?.size?.() ?? config.value.size);
+    const labelId = computed(() => props.ariaLabel ? undefined : field?.getLabelId?.());
     const focusedValue = ref<SegmentedValue>();
     const normalized = computed<SegmentedOption[]>(() =>
       props.options.map((option) =>
@@ -55,12 +65,13 @@ export default defineComponent({
       props.options.length ? normalized.value : slotOptions.value
     );
     const select = (option: SegmentedOption) => {
-      if (props.disabled || option.disabled || option.value === props.modelValue) return;
+      if (disabled.value || option.disabled || option.value === props.modelValue) return;
       emit('update:modelValue', option.value);
       emit('change', option.value);
+      if (props.validateEvent) nextTick(() => field?.validate('change'));
     };
     const onKeydown = (event: KeyboardEvent) => {
-      if (props.disabled) return;
+      if (disabled.value) return;
       const list = items.value;
       if (!list.length) return;
       const current = list.findIndex((item) => item.value === (focusedValue.value ?? props.modelValue));
@@ -91,11 +102,15 @@ export default defineComponent({
         class={[
           'i-segmented',
           props.block && 'i-segmented--block',
-          props.size && `i-segmented--${props.size}`,
-          props.disabled && 'is-disabled'
+          size.value && `i-segmented--${size.value}`,
+          props.direction === 'vertical' && 'i-segmented--vertical',
+          disabled.value && 'is-disabled'
         ]}
         role='radiogroup'
-        aria-disabled={props.disabled || undefined}
+        aria-disabled={disabled.value || undefined}
+        aria-orientation={props.direction}
+        aria-label={labelId.value ? undefined : (props.ariaLabel ?? 'segmented')}
+        aria-labelledby={labelId.value}
         onKeydown={onKeydown}>
         {items.value.map((option) => {
           const selected = option.value === props.modelValue;
@@ -107,7 +122,7 @@ export default defineComponent({
               aria-checked={selected}
               tabindex={selected || (props.modelValue === undefined && focusedValue.value === option.value) ? 0 : -1}
               class={['i-segmented__item', { 'is-selected': selected, 'is-disabled': option.disabled }]}
-              disabled={props.disabled || option.disabled}
+              disabled={disabled.value || option.disabled}
               onClick={() => {
                 focusedValue.value = option.value;
                 select(option);
