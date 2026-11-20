@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- TreeV2 增加 `setData(data)` 实例方法，默认插槽同时提供 `node` 和 `data`。替换 `data` 属性时，勾选状态按节点键保留。
+
 - Form 增加选择性重置与清除、字段查询、重置初值设置及校验状态。`validate` 和 `validateField` 的失败字段映射改为 `{ message, field, fieldValue }[]`。`validateField` 省略回调时，失败改为拒绝 Promise，依赖失败返回 `false` 的调用可传入回调或捕获拒绝。
 
 - 修复消息确认框根入口缺少静态服务方法及构建后子路径默认导出丢失；新增 `ElMessageBox` 可调用入口，保留 `MessageBox` 声明式组件用法。
@@ -22,7 +24,7 @@
 
 | 组件 | 变更 | 迁移说明 |
 | --- | --- | --- |
-| `Tree` / `TreeV2` | `check-on-click-leaf` 默认值 `true` → `false`：点击叶节点不再默认勾选复选框 | 依赖点击叶子即勾选的场景请显式传 `:check-on-click-leaf="true"` |
+| `Tree` / `TreeV2` | `check-on-click-leaf` 默认值由 `false` 改为 `true`，显示复选框时点击叶节点默认切换勾选 | 依赖原默认行为的页面请显式传 `:check-on-click-leaf="false"` |
 | `Table` | `maxHeight` 默认值 `440` → 不设默认：未显式传入时不再限制滚动区高度 | 依赖默认 4px 高度上限的页面请显式传 `:max-height="440"` |
 | `Rate` | `texts` 默认文案由英文改为中文：`['极差', '失望', '一般', '满意', '惊喜']` | 依赖英文文案的场景请显式传 `:texts` |
 | `Space` | `wrap` 默认值 `true` → `false`；内置尺寸 4/8/12px → 8/12/16px；数组 `size` 语义改为 `[列间距, 行间距]`；每个子项包装在 `.i-space__item` 中 | 依赖默认换行的布局请显式传 `wrap`；依赖旧间距像素的样式需复查；自定义子项选择器改用 `.i-space__item` |

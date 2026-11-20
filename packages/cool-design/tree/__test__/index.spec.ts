@@ -137,16 +137,12 @@ describe('Tree', () => {
     expect(exposedOf(wrapper).getCheckedKeys()).toEqual([1]);
   });
 
-  test('叶节点点击默认不勾选，开启 check-on-click-leaf 后点击勾选', async () => {
+  test.each([[undefined, [1]], [false, []]] as const)('叶节点点击按 checkOnClickLeaf=%s 切换勾选', async (value, keys) => {
     const wrapper = mount(Tree, {
-      props: { data: [{ id: 1, label: '叶节点' }], nodeKey: 'id', showCheckbox: true }
+      props: { data: [{ id: 1, label: '叶节点' }], nodeKey: 'id', showCheckbox: true, checkOnClickLeaf: value }
     });
     await contents(wrapper)[0].trigger('click');
-    expect(exposedOf(wrapper).getCheckedKeys()).toEqual([]);
-
-    await wrapper.setProps({ checkOnClickLeaf: true });
-    await contents(wrapper)[0].trigger('click');
-    expect(exposedOf(wrapper).getCheckedKeys()).toEqual([1]);
+    expect(exposedOf(wrapper).getCheckedKeys()).toEqual(keys);
     await contents(wrapper)[0].trigger('click');
     expect(exposedOf(wrapper).getCheckedKeys()).toEqual([]);
   });

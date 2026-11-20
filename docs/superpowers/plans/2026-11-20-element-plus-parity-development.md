@@ -59,7 +59,7 @@
 
 ### 04. Tree 与 TreeV2 默认值、插槽和实例方法
 
-- [ ] 文件：`tree/`、`tree-v2/`、相关旧计划与 CHANGELOG。
+- [x] 文件：`tree/`、`tree-v2/`、相关旧计划与 CHANGELOG。
 - 分别核实并修正 check-on-click-leaf 默认值；补 TreeV2 setData、默认插槽 data；不能根据 Tree 的契约推断 TreeV2。
 - 验收：默认点击叶节点与显式 false 两条路径；替换数据后 checked/current/expanded 状态符合基线；修正旧文档错误。
 - 验证：`pnpm exec vitest run packages/cool-design/tree/__test__ packages/cool-design/tree-v2/__test__ packages/cool-design/tree-select/__test__`。
@@ -295,6 +295,7 @@
 - 01：完成。旧实现回归测试2项失败，修复后定向136项、全量117文件1134项通过；build、typecheck、typecheck:docs、lint通过（4个既有警告）。独立审查通过，无未解决问题；审查者额外验证实际ESM/CJS服务调用、声明式挂载与安装。修复及本条记录属于同一提交，可用 `git log --grep="修复消息确认框公开入口"` 查询。
 - 02：完成。兼容三参数/异步校验、触发器数组和数组字段路径；独立审查提出的动态字段迁移、实例注销、规则短路、过期整表校验和错误合并问题均已增加红绿回归并修复。Form35项、关联165项、全量1149项测试及两项类型/lint通过（4个既有警告），独立复审通过，无未解决问题。提交可用 `git log --grep="修复表单规则与动态字段校验协议"` 查询。单参数 validator 沿用旧协议，默认/剩余参数隐藏签名的官方调用用 asyncValidator 显式选择，README已说明。
 - 03：完成。Form 42 项、关联组件共 104 个文件 1004 项测试通过，类型、文档类型与 lint 通过（4 条既有文档警告）。独立审查和两次复审通过，无未解决问题。修改覆盖校验回调与错误结构、指定字段重置与清除、路径滚动、`getField`、`setInitialValues` 和 FormItem 校验状态。验证包含重复路径迁移、过期校验、类型化数组和普通类实例重置。提交可用 `git log --grep="修复表单实例方法与校验状态"` 查询。
-- 04–38：待执行。
+- 04：完成。Tree、TreeV2 和 TreeSelect 共 4 个测试文件 71 项通过，类型、文档类型与 lint 通过（4 条既有文档警告）。三轮独立审查后无未解决问题。两个树组件默认点击叶节点切换勾选，TreeV2 支持 `setData` 与默认插槽 `data`，覆盖连续替换、禁用分支和虚拟滚动重置。旧计划原受 Git 忽略，默认值订正在本地文件。提交可用 `git log --grep="对齐树组件叶节点勾选和虚拟树替换数据"` 查询。
+- 05–38：待执行。
 
 ?????????

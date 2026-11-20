@@ -12,7 +12,9 @@
 <TreeV2 :data="data" :props="{ value: 'id', label: 'label', children: 'children' }" :height="200" />
 ```
 
-`show-checkbox` 显示复选框（勾选级联，`check-strictly` 解耦，`check-on-click-leaf` 叶子点选默认关）；`default-expanded-keys` / `default-checked-keys` / `current-node-key` 初始化状态；`filter-method` + 实例 `filter()` 过滤；`highlight-current` 高亮当前行；`icon` 自定义展开图标（或使用默认插槽 `{ node }` 自定义行内容）。
+`show-checkbox` 显示复选框，点击叶节点默认切换勾选，传入 `:check-on-click-leaf="false"` 可关闭叶节点点选。用 `check-strictly` 解耦父子勾选。`default-expanded-keys`、`default-checked-keys` 和 `current-node-key` 初始化状态。用 `filter-method` 配合实例 `filter()` 过滤，用 `highlight-current` 高亮当前行。`icon` 自定义展开图标，默认插槽 `{ node, data }` 自定义行内容。
+
+调用实例的 `setData(data)` 可替换整棵树，保留活动展开和当前节点键。替换 `data` 属性时按 `default-expanded-keys` 恢复展开状态。两种替换方式均按键保留勾选状态，并在下一次更新时应用 `default-checked-keys` 和重算半选状态。
 
 ## API
 
@@ -29,7 +31,7 @@
 | `highlightCurrent`    | 高亮当前节点                               | `boolean`                   | `false` |
 | `expandOnClickNode`   | 点击节点展开/收起                          | `boolean`                   | `true`  |
 | `checkOnClickNode`    | 点击节点切换勾选                           | `boolean`                   | `false` |
-| `checkOnClickLeaf`    | 点击叶子切换勾选                           | `boolean`                   | `false` |
+| `checkOnClickLeaf`    | 点击叶子切换勾选                           | `boolean`                   | `true`  |
 | `showCheckbox`        | 显示复选框                                 | `boolean`                   | `false` |
 | `checkStrictly`       | 勾选父子解耦                               | `boolean`                   | `false` |
 | `defaultExpandedKeys` | 初始展开的节点 key                         | `TreeV2Key[]`               | `[]`    |
@@ -56,7 +58,7 @@
 
 | 名称      | 说明                                     |
 | --------- | ---------------------------------------- |
-| `default` | 自定义行内容，作用域 `{ node }`          |
+| `default` | 自定义行内容，作用域 `{ node: TreeV2Node; data: TreeV2Data }` |
 | `empty`   | 自定义空状态                             |
 
 ### 实例方法
@@ -64,6 +66,7 @@
 | 方法                              | 说明                                   |
 | --------------------------------- | -------------------------------------- |
 | `filter(query)`                   | 过滤节点（需 `filter-method`）         |
+| `setData(data)`                   | 替换整棵树，参数为 `TreeV2Data[]`      |
 | `getExpandedKeys()`               | 获取展开节点的 key                     |
 | `isChecked(key)` / `isIndeterminate(key)` | 节点勾选/半选状态            |
 | `toggleCheckbox(key, checked?)`   | 切换节点勾选，不传目标值时取反         |

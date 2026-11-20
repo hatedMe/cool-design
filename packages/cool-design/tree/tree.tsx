@@ -54,7 +54,7 @@ export default defineComponent({
     icon: { type: [String, Object, Function] as PropType<string | Component>, default: '' },
     showCheckbox: Boolean,
     checkStrictly: Boolean,
-    checkOnClickLeaf: { type: Boolean, default: false },
+    checkOnClickLeaf: { type: Boolean, default: true },
     checkDescendants: Boolean,
     defaultCheckedKeys: { type: Array as PropType<TreeKey[]>, default: () => [] },
     defaultCurrentKey: { type: [String, Number] as PropType<TreeKey | undefined>, default: undefined },

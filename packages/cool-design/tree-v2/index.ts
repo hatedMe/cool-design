@@ -4,6 +4,7 @@ import './index.scss';
 export type {
   TreeV2CheckedInfo,
   TreeV2Data,
+  TreeV2Exposed,
   TreeV2FilterMethod,
   TreeV2Key,
   TreeV2Node,

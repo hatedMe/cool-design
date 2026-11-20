@@ -1,7 +1,8 @@
-import { computed, defineComponent, ref, watch, type Component, type PropType } from 'vue';
+import { computed, defineComponent, nextTick, ref, watch, type Component, type PropType, type SlotsType, type VNode } from 'vue';
 import type {
   TreeV2CheckedInfo,
   TreeV2Data,
+  TreeV2Exposed,
   TreeV2FilterMethod,
   TreeV2InnerNode,
   TreeV2Key,
@@ -31,7 +32,7 @@ export default defineComponent({
     highlightCurrent: Boolean,
     expandOnClickNode: { type: Boolean, default: true },
     checkOnClickNode: Boolean,
-    checkOnClickLeaf: { type: Boolean, default: false },
+    checkOnClickLeaf: { type: Boolean, default: true },
     defaultExpandedKeys: { type: Array as PropType<TreeV2Key[]>, default: () => [] },
     showCheckbox: Boolean,
     checkStrictly: Boolean,
@@ -45,10 +46,13 @@ export default defineComponent({
     height: { type: Number, default: 200 }
   },
   emits: ['node-click', 'node-contextmenu', 'check-change', 'check', 'current-change', 'node-expand', 'node-collapse'],
+  slots: Object as SlotsType<{ default: { node: TreeV2Node; data: TreeV2Data }; empty: () => VNode[] }>,
   setup(props, { emit, slots, expose }) {
     const version = ref(0);
     const nodes = ref<TreeV2InnerNode[]>([]);
     const keyMap = new Map<TreeV2Key, TreeV2InnerNode>();
+    const checkedKeys = new Set<TreeV2Key>();
+    const expandedKeys = new Set<TreeV2Key>();
     const scrollTop = ref(0);
     const listRef = ref<HTMLElement>();
     const currentKey = ref<TreeV2Key | undefined>(props.currentNodeKey);
@@ -60,10 +64,11 @@ export default defineComponent({
     const disabledKey = computed(() => props.props?.disabled || 'disabled');
 
     const createNode = (data: TreeV2Data, parent: TreeV2InnerNode | null, level: number): TreeV2InnerNode => {
+      const key = data[valueKey.value] as TreeV2Key;
       const rawChildren = data[childrenKey.value] as TreeV2Data[] | undefined;
       const childrenData = Array.isArray(rawChildren) ? rawChildren : [];
       const node: TreeV2InnerNode = {
-        key: data[valueKey.value] as TreeV2Key,
+        key,
         label: String(data[labelKey.value] ?? ''),
         disabled: Boolean(data[disabledKey.value]),
         isLeaf: childrenData.length === 0,
@@ -71,28 +76,13 @@ export default defineComponent({
         parent,
         children: [],
         data,
-        expanded: props.defaultExpandedKeys.includes(data[valueKey.value] as TreeV2Key),
-        checked: props.defaultCheckedKeys.includes(data[valueKey.value] as TreeV2Key),
+        expanded: expandedKeys.has(key),
+        checked: checkedKeys.has(key),
         indeterminate: false,
         visible: true
       };
       node.children = childrenData.map((child) => createNode(child, node, level + 1));
       return node;
-    };
-
-    const rebuild = () => {
-      keyMap.clear();
-      const register = (list: TreeV2InnerNode[]) =>
-        list.forEach((node) => {
-          keyMap.set(node.key, node);
-          register(node.children);
-        });
-      nodes.value = props.data.map((item) => createNode(item, null, 1));
-      register(nodes.value);
-      if (props.checkStrictly === false && props.defaultCheckedKeys.length) {
-        nodes.value.forEach((node) => recalcUp(node));
-      }
-      version.value++;
     };
 
     const isEffectivelyDisabled = (node: TreeV2InnerNode) => {
@@ -104,31 +94,107 @@ export default defineComponent({
       return false;
     };
 
+    const recalcChecked = (node: TreeV2InnerNode, includeDisabled = false) => {
+      if (!node.children.length) return;
+      const enabled = includeDisabled ? node.children : node.children.filter((child) => !child.disabled);
+      const list = enabled.length ? enabled : node.children;
+      const checkedCount = list.filter((child) => child.checked).length;
+      const hasIndeterminate = list.some((child) => child.indeterminate);
+      node.checked = checkedCount === list.length;
+      node.indeterminate = !node.checked && (checkedCount > 0 || hasIndeterminate);
+    };
+
     const recalcUp = (node: TreeV2InnerNode | null) => {
       let cursor = node;
       while (cursor) {
-        const enabled = cursor.children.filter((child) => !child.disabled);
-        const list = enabled.length ? enabled : cursor.children;
-        if (list.length) {
-          const checkedCount = list.filter((child) => child.checked).length;
-          const hasIndeterminate = list.some((child) => child.indeterminate);
-          cursor.checked = checkedCount === list.length;
-          cursor.indeterminate = !cursor.checked && (checkedCount > 0 || hasIndeterminate);
-        }
+        recalcChecked(cursor);
         cursor = cursor.parent;
       }
     };
 
-    const cascadeDown = (node: TreeV2InnerNode, checked: boolean) => {
+    const cascadeDown = (node: TreeV2InnerNode, checked: boolean, includeDisabledBranches = false) => {
       node.children.forEach((child) => {
-        if (child.disabled) return;
+        if (child.disabled && (!includeDisabledBranches || child.isLeaf)) return;
         child.checked = checked;
         child.indeterminate = false;
-        cascadeDown(child, checked);
+        cascadeDown(child, checked, includeDisabledBranches);
       });
     };
 
-    watch(() => props.data, rebuild, { immediate: true });
+    const scrollTo = (offset: number) => {
+      scrollTop.value = offset;
+      if (listRef.value) listRef.value.scrollTop = offset;
+    };
+
+    const rebuild = (data: TreeV2Data[]) => {
+      // 暂时缺失的节点仍保留勾选记录，重新出现时可恢复。
+      keyMap.forEach((node, key) => {
+        if (node.checked) checkedKeys.add(key);
+        else checkedKeys.delete(key);
+      });
+      keyMap.clear();
+      const register = (list: TreeV2InnerNode[]) =>
+        list.forEach((node) => {
+          keyMap.set(node.key, node);
+          register(node.children);
+        });
+      nodes.value = data.map((item) => createNode(item, null, 1));
+      register(nodes.value);
+      if (!data.length) scrollTo(0);
+    };
+
+    const applyDefaultCheckedKeys = (includeDisabled: boolean) => {
+      props.defaultCheckedKeys.forEach((key) => {
+        const node = keyMap.get(key);
+        if (!node || node.checked) return;
+        node.checked = true;
+        if (!props.checkStrictly) cascadeDown(node, true, includeDisabled);
+      });
+      if (!props.checkStrictly) {
+        const recalcTree = (node: TreeV2InnerNode) => {
+          node.children.forEach(recalcTree);
+          recalcChecked(node, includeDisabled);
+        };
+        nodes.value.forEach(recalcTree);
+      }
+      version.value++;
+    };
+
+    const setData = (data: TreeV2Data[]) => {
+      rebuild(data);
+      const replacement = nodes.value;
+      void nextTick(() => {
+        // 同一轮连续替换仅同步最后一次替换的默认勾选。
+        if (nodes.value === replacement) applyDefaultCheckedKeys(true);
+      });
+    };
+
+    const setExpandedKeys = (keys: TreeV2Key[], includeAncestors = false) => {
+      expandedKeys.clear();
+      keys.forEach((key) => {
+        let node = keyMap.get(key);
+        while (node && !expandedKeys.has(node.key)) {
+          expandedKeys.add(node.key);
+          node = includeAncestors ? node.parent ?? undefined : undefined;
+        }
+      });
+      keyMap.forEach((node, key) => {
+        node.expanded = expandedKeys.has(key);
+      });
+      version.value++;
+    };
+
+    rebuild(props.data);
+    applyDefaultCheckedKeys(false);
+    setExpandedKeys(props.defaultExpandedKeys, true);
+
+    watch(
+      () => props.data,
+      (data) => {
+        setData(data);
+        setExpandedKeys(props.defaultExpandedKeys, true);
+      }
+    );
 
     watch(
       () => props.currentNodeKey,
@@ -208,6 +274,8 @@ export default defineComponent({
     const setExpanded = (node: TreeV2InnerNode, expanded: boolean) => {
       if (node.isLeaf || node.expanded === expanded) return;
       node.expanded = expanded;
+      if (expanded) expandedKeys.add(node.key);
+      else expandedKeys.delete(node.key);
       version.value++;
       emit(expanded ? 'node-expand' : 'node-collapse', node.data, toPublicNode(node));
     };
@@ -235,6 +303,7 @@ export default defineComponent({
 
     expose({
       filter,
+      setData,
       getExpandedKeys: () => {
         const result: TreeV2Key[] = [];
         const walk = (list: TreeV2InnerNode[]) =>
@@ -272,6 +341,7 @@ export default defineComponent({
         return result;
       },
       setCheckedKeys: (keys: TreeV2Key[]) => {
+        checkedKeys.clear();
         nodes.value.forEach((node) => cascadeDown(node, false));
         keyMap.forEach((node) => {
           node.checked = false;
@@ -291,12 +361,7 @@ export default defineComponent({
         const node = keyMap.get(key);
         if (node) applyChecked(node, checked, deep);
       },
-      setExpandedKeys: (keys: TreeV2Key[]) => {
-        keyMap.forEach((node, nodeKey) => {
-          node.expanded = keys.includes(nodeKey);
-        });
-        version.value++;
-      },
+      setExpandedKeys: (keys) => setExpandedKeys(keys),
       getHalfCheckedNodes: () => {
         const result: TreeV2Data[] = [];
         const walk = (list: TreeV2InnerNode[]) =>
@@ -333,20 +398,15 @@ export default defineComponent({
         const target = keyMap.get(node.key);
         if (target) setExpanded(target, false);
       },
-      scrollTo: (offset: number) => {
-        scrollTop.value = offset;
-        // 同步滚动真实容器，保证视口与虚拟窗口一致
-        if (listRef.value) listRef.value.scrollTop = offset;
-      },
+      scrollTo,
       scrollToNode: (key: TreeV2Key) => {
         const index = rows.value.findIndex((node) => node.key === key);
         if (index >= 0) {
           const offset = index * props.itemSize;
-          scrollTop.value = offset;
-          if (listRef.value) listRef.value.scrollTop = offset;
+          scrollTo(offset);
         }
       }
-    });
+    } satisfies TreeV2Exposed);
 
     return () => (
       <div
@@ -418,7 +478,9 @@ export default defineComponent({
                           }
                         />
                       )}
-                      <span class='i-tree-v2__label'>{slots.default?.({ node: toPublicNode(node) }) ?? node.label}</span>
+                      <span class='i-tree-v2__label'>
+                        {slots.default?.({ node: toPublicNode(node), data: node.data }) ?? node.label}
+                      </span>
                     </div>
                   );
                 })}

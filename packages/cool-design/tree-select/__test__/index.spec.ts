@@ -35,6 +35,18 @@ const openDropdown = async (wrapper: ReturnType<typeof mount>) => {
 const dropdownVisible = () => doc().find('.i-tree-select__dropdown').exists();
 
 describe('test `TreeSelect` component', () => {
+  test('多选时点击叶节点文字切换模型值', async () => {
+    const wrapper = mount(TreeSelect, { props: { data, multiple: true, modelValue: [] } });
+    await openDropdown(wrapper);
+    const leaf = doc().findAll('.i-tree__label').find((label) => label.text() === '节点A1')!;
+    await leaf.trigger('click');
+    expect(wrapper.emitted('update:modelValue')).toEqual([[['a1']]]);
+    await wrapper.setProps({ modelValue: ['a1'] });
+    await leaf.trigger('click');
+    expect(wrapper.emitted('update:modelValue')).toEqual([[['a1']], [[]]]);
+    wrapper.unmount();
+  });
+
   test('非 checkStrictly 时勾选父节点级联子孙，取消同理', async () => {
     const wrapper = mount(TreeSelect, { props: { data, multiple: true, modelValue: [] } });
     await openDropdown(wrapper);

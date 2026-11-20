@@ -1,7 +1,8 @@
 import { mount } from '@vue/test-utils';
-import { nextTick } from 'vue';
+import { nextTick, toRaw } from 'vue';
 import { describe, expect, test } from 'vitest';
 import TreeV2 from '..';
+import type { TreeV2Data, TreeV2Exposed, TreeV2Node } from '..';
 
 const data = () => [
   {
@@ -86,22 +87,131 @@ describe('test `TreeV2` component', () => {
     expect(strictPayload.checkedKeys).toEqual(['a']);
   });
 
-  test('checkOnClickLeaf 点击叶子勾选', async () => {
+  test.each([[undefined, 'true'], [false, 'false']] as const)('叶节点点击按 checkOnClickLeaf=%s 切换勾选', async (value, checked) => {
     const wrapper = mount(TreeV2, {
-      props: { data: data(), showCheckbox: true, checkOnClickLeaf: true, expandOnClickNode: false, defaultExpandedKeys: ['a'] }
+      props: { data: [{ id: 1, label: '叶节点' }], showCheckbox: true, checkOnClickLeaf: value }
     });
-    // 行序：a, a1, a2, b —— 点击叶子 a2 行
-    await rows(wrapper)[2].trigger('click');
-    const payload = wrapper.emitted('check')!.at(-1)![1] as { checkedKeys: string[] };
-    expect(payload.checkedKeys).toEqual(['a2']);
+    await rows(wrapper)[0].trigger('click');
+    expect(rows(wrapper)[0].attributes('aria-checked')).toBe(checked);
+    await rows(wrapper)[0].trigger('click');
+    expect(rows(wrapper)[0].attributes('aria-checked')).toBe('false');
   });
 
-  test('叶节点点击默认不勾选', async () => {
+  test('默认插槽提供节点及对应的原始数据', () => {
+    const item = { id: 1, label: 'Label', detail: 'Detail' };
     const wrapper = mount(TreeV2, {
-      props: { data: data(), showCheckbox: true, expandOnClickNode: false, defaultExpandedKeys: ['a'] }
+      props: { data: [item] },
+      slots: {
+        default: ({ node, data }: { node: TreeV2Node; data?: TreeV2Data }) =>
+          `${node.key}: ${data?.detail} (${data === node.data})`
+      }
     });
+    expect(wrapper.get('.i-tree-v2__label').text()).toBe('1: Detail (true)');
+  });
+
+  test('setData 替换节点并按键保留当前、勾选和活动展开', async () => {
+    const wrapper = mount(TreeV2, {
+      props: { data: data(), showCheckbox: true, defaultCheckedKeys: ['a2'], defaultExpandedKeys: ['a'] }
+    });
+    await rows(wrapper)[1].trigger('click');
     await rows(wrapper)[2].trigger('click');
-    expect(wrapper.emitted('check')).toBeUndefined();
+    const api = wrapper.vm as unknown as TreeV2Exposed;
+    const current = { id: 'a1x', label: '新 A1x' };
+    const replacement = [
+      {
+        id: 'a',
+        label: '新 A',
+        children: [
+          { id: 'a1', label: '新 A1', children: [current] },
+          { id: 'a2', label: '新 A2' },
+          { id: 'a3', label: '新 A3' }
+        ]
+      }
+    ];
+    expect(api.setData).toBeTypeOf('function');
+    api.setData(replacement);
+    expect(api.getCurrentKey()).toBe('a1x');
+    expect(toRaw(api.getCurrentNode())).toBe(current);
+    await nextTick();
+    expect(api.getCheckedKeys()).toEqual(['a1', 'a1x', 'a2']);
+    expect(api.getHalfCheckedKeys()).toEqual(['a']);
+    expect(rows(wrapper).map((row) => row.text())).toContain('新 A1x');
+
+    api.setData([]);
+    expect(api.getCurrentKey()).toBe('a1x');
+    expect(api.getCurrentNode()).toBeNull();
+    expect(api.getCheckedKeys()).toEqual([]);
+    api.setData(replacement);
+    expect(api.getCheckedKeys()).toEqual(['a1', 'a1x', 'a2']);
+    await nextTick();
+    expect(rows(wrapper).map((row) => row.text())).toContain('新 A1x');
+  });
+
+  test('data 属性替换恢复默认展开，同时保留当前和勾选节点', async () => {
+    const wrapper = mount(TreeV2, {
+      props: { data: data(), showCheckbox: true, defaultExpandedKeys: ['a'] }
+    });
+    await rows(wrapper)[1].trigger('click');
+    await rows(wrapper)[2].trigger('click');
+    await wrapper.setProps({ data: data() });
+    const api = wrapper.vm as unknown as {
+      getCurrentKey: () => string;
+      getCheckedKeys: () => string[];
+      getExpandedKeys: () => string[];
+    };
+    expect(api.getExpandedKeys()).toEqual(['a']);
+    expect(api.getCurrentKey()).toBe('a1x');
+    expect(api.getCheckedKeys()).toEqual(['a1', 'a1x']);
+  });
+
+  test('连续 setData 只对最终数据应用默认勾选', async () => {
+    const wrapper = mount(TreeV2, { props: { showCheckbox: true, defaultCheckedKeys: ['p', 'y'] } });
+    const api = wrapper.vm as unknown as TreeV2Exposed;
+    api.setData([{ id: 'p', children: [{ id: 'x' }] }]);
+    api.setData([{ id: 'x' }, { id: 'y' }]);
+    await nextTick();
+    expect(api.getCheckedKeys()).toEqual(['y']);
+  });
+
+  test('setData 的默认勾选级联经过禁用分支并勾选启用后代', async () => {
+    const wrapper = mount(TreeV2, { props: { showCheckbox: true, defaultCheckedKeys: ['p'] } });
+    const api = wrapper.vm as unknown as TreeV2Exposed;
+    api.setData([{ id: 'p', children: [{ id: 'd', disabled: true, children: [{ id: 'x' }] }] }]);
+    await nextTick();
+    expect(api.getCheckedKeys()).toEqual(['p', 'd', 'x']);
+  });
+
+  test.each(['setData', 'data'] as const)('%s 替换新增禁用叶节点后父节点转为半选', async (entry) => {
+    const checkedChild = { id: 'x', label: 'X' };
+    const wrapper = mount(TreeV2, {
+      props: { data: [{ id: 'p', children: [checkedChild] }], showCheckbox: true, defaultExpandedKeys: ['p'] }
+    });
+    await rows(wrapper)[1].trigger('click');
+    const api = wrapper.vm as unknown as TreeV2Exposed;
+    expect(api.getCheckedKeys()).toEqual(['p', 'x']);
+    const replacement = [{ id: 'p', children: [checkedChild, { id: 'z', label: 'Z', disabled: true }] }];
+    if (entry === 'data') await wrapper.setProps({ data: replacement });
+    else api.setData(replacement);
+    await nextTick();
+    expect(api.getCheckedKeys()).toEqual(['x']);
+    expect(api.getHalfCheckedKeys()).toEqual(['p']);
+  });
+
+  test('滚动后清空树，再通过 setData 填充可看到新节点', async () => {
+    const wrapper = mount(TreeV2, {
+      props: { data: Array.from({ length: 80 }, (_, id) => ({ id, label: `N${id}` })) }
+    });
+    const api = wrapper.vm as unknown as TreeV2Exposed;
+    api.scrollTo(1000);
+    await nextTick();
+    expect(wrapper.get('.i-tree-v2__label').text()).toBe('N36');
+    api.setData([]);
+    await nextTick();
+    expect(wrapper.find('.i-tree-v2__empty').exists()).toBe(true);
+    api.setData([{ id: 'x', label: 'X' }]);
+    await nextTick();
+    expect(wrapper.find('.i-tree-v2__label').exists()).toBe(true);
+    expect(wrapper.get('.i-tree-v2__label').text()).toBe('X');
   });
 
   test('暴露 getExpandedKeys、isChecked、isIndeterminate 与 toggleCheckbox', () => {

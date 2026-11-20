@@ -90,7 +90,7 @@ const loadNode = (node: any, resolve: (children: any[]) => void) => {
 | auto-expand-parent | 展开子节点时是否自动展开父节点 | `boolean` | `true` |
 | expand-on-click-node | 点击节点是否展开收起 | `boolean` | `true` |
 | check-on-click-node | 点击节点是否勾选复选框 | `boolean` | `false` |
-| check-on-click-leaf | 点击叶节点是否勾选复选框 | `boolean` | `false` |
+| check-on-click-leaf | 点击叶节点是否勾选复选框 | `boolean` | `true` |
 | accordion | 手风琴模式，同级只展开一个 | `boolean` | `false` |
 | indent | 相邻层级缩进，单位 px | `number` | `18` |
 | icon | 自定义展开图标类名或组件 | `string` / `Component` | — |
