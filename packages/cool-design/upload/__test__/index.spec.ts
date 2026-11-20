@@ -3,6 +3,7 @@ import { h } from 'vue';
 import { expect, test, vi } from 'vitest';
 import Upload, { type UploadFile, type UploadFiles, type UploadRawFile, type UploadStatus, type UploadUserFile } from '..';
 import { UploadDragger } from '..';
+import Form from '../../form';
 
 const exportedTypes: [UploadStatus, UploadRawFile, UploadFile, UploadUserFile, UploadFiles] | undefined = undefined;
 void exportedTypes;
@@ -679,4 +680,24 @@ test('disabled 时不选择或删除文件，并透传原生属性', async () =>
   const enabled = mount(Upload, { props: { modelValue: [{ name: 'remove.txt', uid: 2, status: 'ready' }] } });
   await enabled.findAll('button').find((button) => button.text() === '删除')?.trigger('click');
   expect(enabled.emitted('update:modelValue')?.[0]?.[0]).toEqual([]);
+});
+
+test('禁用 Form 拦截 Upload 的键盘选择和文件变更', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, disabled: true },
+    slots: { default: () => h(Upload, { drag: true, autoUpload: false }) }
+  });
+  const upload = wrapper.getComponent(Upload);
+  const input = upload.get('input[type="file"]');
+  const click = vi.spyOn(input.element, 'click');
+  const dragger = upload.get('[role="button"]');
+  await dragger.trigger('keydown', { key: 'Enter' });
+  await dragger.trigger('dragenter');
+  expect(dragger.classes()).not.toContain('is-dragover');
+  Object.defineProperty(input.element, 'files', { value: [new File(['content'], 'sample.txt')] });
+  input.element.dispatchEvent(new Event('change'));
+  expect(click).not.toHaveBeenCalled();
+  expect(upload.emitted('update:modelValue')).toBeUndefined();
+  expect(input.attributes('disabled')).toBeDefined();
+  wrapper.unmount();
 });

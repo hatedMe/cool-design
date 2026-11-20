@@ -218,7 +218,7 @@ const beforeUpload = (file: UploadRawFile) => file.type.startsWith('image/') && 
 | list-type | 文件列表类型：`text` / `picture` / `picture-card` | `'text' \| 'picture' \| 'picture-card'` | `text` |
 | auto-upload | 是否在选择文件后自动上传 | `boolean` | `true` |
 | http-request | 覆盖默认上传请求 | `(options: UploadRequestOptions) => void \| Promise<unknown> \| { abort?: () => void; cancel?: () => void; promise?: Promise<unknown> }` | — |
-| disabled | 是否禁用选择和删除 | `boolean` | `false` |
+| disabled | 是否禁用选择和删除，继承 Form 禁用状态 | `boolean` | `false` |
 | limit | 最大文件数量 | `number` | — |
 | directory | 是否选择目录 | `boolean` | `false` |
 | before-upload | 上传前钩子，支持拒绝或返回新的 `File` / `Blob` | `(file: UploadRawFile) => void \| null \| boolean \| File \| Blob \| Promise<void \| null \| boolean \| File \| Blob>` | — |
