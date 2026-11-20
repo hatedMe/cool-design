@@ -353,3 +353,13 @@ test('Transfer 禁用 Form 后拒绝搬移已勾选项目', async () => {
   expect(transfer.emitted('update:modelValue')).toBeUndefined();
   wrapper.unmount();
 });
+
+test('exposes both mounted filter panels', async () => {
+  const wrapper = mount(Transfer, { props: { filterable: true } });
+  await wrapper.findAll('.i-transfer__filter')[0].setValue('left');
+  expect(wrapper.vm.leftPanel?.query).toBe('left');
+  expect(wrapper.vm.rightPanel?.query).toBe('');
+  wrapper.vm.clearQuery('left');
+  await wrapper.vm.$nextTick();
+  expect(wrapper.vm.leftPanel?.query).toBe('');
+});

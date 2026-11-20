@@ -12,6 +12,7 @@ export type {
   TransferFilterMethod,
   TransferFormat,
   TransferItem,
+  TransferPanelInstance,
   TransferKey,
   TransferProps,
   TransferPropsMap,

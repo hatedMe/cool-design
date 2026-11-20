@@ -1,3 +1,5 @@
+import Panel from './panel';
+import type { TransferPanelInstance } from './types';
 import { computed, defineComponent, nextTick, ref, watch, type PropType } from 'vue';
 import { inject } from 'vue';
 import { formKey, useField } from '../form/context';
@@ -56,7 +58,9 @@ export default defineComponent({
     const field = useField();
     const form = inject(formKey, undefined);
     const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
-    const query = ref<[string, string]>(['', '']);
+    const leftPanel = ref<TransferPanelInstance>();
+    const rightPanel = ref<TransferPanelInstance>();
+    const queryOf = (side: number) => (side ? rightPanel.value : leftPanel.value)?.query ?? '';
     const map = computed(() => props.props || {});
     const all = computed(() => props.data.filter((item) => keyOf(item, map.value) !== undefined));
     const keyItem = computed(() => {
@@ -98,7 +102,7 @@ export default defineComponent({
 
     const titleOf = (side: number) => props.titles[side] ?? DEFAULT_TITLES[side] ?? '';
     const visible = (items: TransferItem[], side: number) => {
-      const raw = query.value[side];
+      const raw = queryOf(side);
       if (!raw.trim()) return items;
       if (props.filterMethod) return items.filter((item) => props.filterMethod!(raw, item));
       const lower = raw.trim().toLowerCase();
@@ -170,11 +174,10 @@ export default defineComponent({
     };
 
     const clearQuery = (which?: 'left' | 'right' | 0 | 1) => {
-      if (which === undefined) query.value = ['', ''];
-      else if (which === 'left' || which === 0) query.value[0] = '';
-      else query.value[1] = '';
+      if (leftPanel.value && (which === undefined || which === 'left' || which === 0)) leftPanel.value.query = '';
+      if (rightPanel.value && (which === undefined || which === 'right' || which === 1)) rightPanel.value.query = '';
     };
-    expose({ clearQuery });
+    expose({ clearQuery, leftPanel, rightPanel });
 
     const formatCount = (count: number, total: number) => {
       const template = count > 0 ? props.format?.hasChecked ?? '${checked}/${total}' : props.format?.noChecked ?? '${total}';
@@ -195,7 +198,9 @@ export default defineComponent({
       const footerSlot = side ? slots['right-footer'] : slots['left-footer'];
       const emptySlot = side ? slots['right-empty'] : slots['left-empty'];
       return (
-        <section class="i-transfer__panel" aria-label={titleOf(side)}>
+        <Panel ref={side ? rightPanel : leftPanel} title={titleOf(side)} filterable={props.filterable}
+          placeholder={props.filterPlaceholder} disabled={isDisabled()}>
+          {{ header: () => (
           <header class="i-transfer__header">
             <input
               class="i-transfer__select-all"
@@ -208,23 +213,10 @@ export default defineComponent({
             />
             <span class="i-transfer__title">{titleOf(side)}</span>
             <span class="i-transfer__count">{formatCount(count, items.length)}</span>
-          </header>
-          {props.filterable && (
-            <input
-              class="i-transfer__filter"
-              type="text"
-              value={query.value[side]}
-              placeholder={props.filterPlaceholder}
-              aria-label={props.filterPlaceholder}
-              disabled={isDisabled()}
-              onInput={(e: Event) => {
-                if (!isDisabled()) query.value[side] = (e.target as HTMLInputElement).value;
-              }}
-            />
-          )}
+          </header>), default: () => <>
           <div class="i-transfer__items" role="listbox" aria-multiselectable="true" aria-label={titleOf(side)}>
             {shown.length === 0
-              ? emptySlot?.() ?? <span class="i-transfer__empty">{query.value[side] ? props.noMatchText : props.noDataText}</span>
+              ? emptySlot?.() ?? <span class="i-transfer__empty">{queryOf(side) ? props.noMatchText : props.noDataText}</span>
               : shown.map((item) => {
                   const key = keyOf(item, map.value);
                   const itemDisabled = isDisabled() || disabledOf(item, map.value);
@@ -244,7 +236,8 @@ export default defineComponent({
                 })}
           </div>
           {footerSlot ? <footer class="i-transfer__footer">{footerSlot()}</footer> : null}
-        </section>
+          </> }}
+        </Panel>
       );
     };
 

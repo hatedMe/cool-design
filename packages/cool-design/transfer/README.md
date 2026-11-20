@@ -97,3 +97,5 @@ Transfer 用于在两个列表之间移动和管理选项，支持搜索过滤�
 | 方法名 | 说明 | 参数 |
 | --- | --- | --- |
 | clearQuery | 清空搜索框 | `which?: 'left' \| 'right' \| 0 \| 1`，不传则清空两侧 |
+
+`leftPanel` 和 `rightPanel` 为实际面板实例，读取或写入各自的 `query: string` 会同步筛选框和结果。`clearQuery()` 清空两侧查询，也可添加 `'left'` 或 `'right'` 参数清空单侧。

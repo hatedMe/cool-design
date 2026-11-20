@@ -45,7 +45,13 @@ export interface TransferProps {
   renderContent?: TransferRenderContent;
 }
 
+export interface TransferPanelInstance {
+  query: string;
+}
+
 export interface TransferExposed {
+  readonly leftPanel: TransferPanelInstance | undefined;
+  readonly rightPanel: TransferPanelInstance | undefined;
   clearQuery: (which?: 'left' | 'right' | 0 | 1) => void;
 }
 
