@@ -63,3 +63,13 @@
   background: transparent;
   cursor: pointer;
 }
+
+.i-input-tag.i-control--small {
+  height: auto;
+  min-height: 28px;
+}
+
+.i-input-tag.i-control--large {
+  height: auto;
+  min-height: 40px;
+}

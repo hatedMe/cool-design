@@ -1,5 +1,5 @@
-import { computed, defineComponent, nextTick, ref, watch, type PropType } from 'vue';
-import { useField } from '../form/context';
+import { computed, defineComponent, inject, nextTick, ref, watch, type PropType } from 'vue';
+import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import Icon from '../icon';
 
@@ -38,6 +38,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'input', 'add-tag', 'remove-tag', 'drag-tag', 'focus', 'blur', 'clear'],
   setup(props, { emit, slots, expose }) {
     const field = useField();
+    const form = inject(formKey, undefined);
     const config = useConfig();
     const input = ref<HTMLInputElement>();
     const draft = ref('');
@@ -51,7 +52,7 @@ export default defineComponent({
       }
     );
     const tags = computed(() => innerValue.value);
-    const isDisabled = () => props.disabled || !!field?.disabled?.();
+    const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
     const isReadonly = () => props.readonly;
 
     const commit = (next: string[]) => {
@@ -61,6 +62,7 @@ export default defineComponent({
       if (props.validateEvent) nextTick(() => field?.validate('change'));
     };
     const addTag = (value: string) => {
+      if (isDisabled() || isReadonly()) return;
       const text = value.trim();
       if (!text) return false;
       if (props.max !== undefined && tags.value.length >= props.max) return false;
@@ -81,6 +83,7 @@ export default defineComponent({
     };
 
     const onInput = (event: Event) => {
+      if (isDisabled() || isReadonly()) return;
       const value = (event.target as HTMLInputElement).value;
       emit('input', value);
       if (props.delimiter) {
@@ -99,6 +102,7 @@ export default defineComponent({
       draft.value = value;
     };
     const onKeydown = (event: KeyboardEvent) => {
+      if (isDisabled() || isReadonly()) return;
       if (event.key === 'Backspace' && !draft.value && tags.value.length) {
         event.preventDefault();
         removeTag(tags.value.length - 1);
@@ -125,6 +129,7 @@ export default defineComponent({
     };
 
     const onDragStart = (index: number) => (event: DragEvent) => {
+      if (isDisabled() || isReadonly()) return;
       dragIndex.value = index;
       event.dataTransfer?.setData('text/plain', String(index));
     };
@@ -132,7 +137,7 @@ export default defineComponent({
       event.preventDefault();
       const from = dragIndex.value;
       dragIndex.value = undefined;
-      if (from === undefined || from === index) return;
+      if (isDisabled() || isReadonly() || from === undefined || from === index) return;
       const next = [...tags.value];
       const [moved] = next.splice(from, 1);
       next.splice(index, 0, moved);
@@ -152,7 +157,7 @@ export default defineComponent({
         <div
           class={[
             'i-input-tag',
-            `i-control--${props.size ?? field?.size?.() ?? config.value.size}`,
+            `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`,
             { 'is-disabled': isDisabled(), 'is-readonly': isReadonly() }
           ]}
           id={props.id ?? field?.id}

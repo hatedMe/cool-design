@@ -1,6 +1,8 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, test } from 'vitest';
 import InputTag from '..';
+import { h } from 'vue';
+import Form from '../../form';
 
 describe('test `InputTag` component', () => {
   test('trigger 按键把输入收为标签', async () => {
@@ -88,4 +90,35 @@ describe('test `InputTag` component', () => {
     });
     expect(wrapper.text()).toContain('自定义-a');
   });
+});
+
+test('InputTag 直挂禁用 Form 时忽略键盘删除', () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, disabled: true, size: 'small' },
+    slots: { default: () => h(InputTag, { modelValue: ['苹果'], clearable: true }) }
+  });
+  const input = wrapper.getComponent(InputTag);
+  input.get('input').element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true }));
+  expect(input.classes()).toContain('i-control--small');
+  expect(input.get('input').attributes('disabled')).toBeDefined();
+  expect(input.emitted('update:modelValue')).toBeUndefined();
+  wrapper.unmount();
+});
+
+test('InputTag 禁用后拦截正在进行的拖拽与键盘添加', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {} },
+    slots: { default: () => h(InputTag, { modelValue: ['a', 'b'], draggable: true }) }
+  });
+  const control = wrapper.getComponent(InputTag);
+  const tags = control.findAll('.i-input-tag__tag');
+  await tags[0].trigger('dragstart');
+  const input = control.get('input');
+  input.element.value = 'c';
+  input.element.dispatchEvent(new Event('input'));
+  await wrapper.setProps({ disabled: true });
+  await tags[1].trigger('drop');
+  input.element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+  expect(control.emitted('update:modelValue')).toBeUndefined();
+  wrapper.unmount();
 });

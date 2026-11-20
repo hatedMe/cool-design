@@ -27,7 +27,7 @@
 | `trigger`             | 收为标签的按键：`Enter` / `Space`          | `string`              | `Enter`  |
 | `delimiter`           | 分隔符（字符串或正则），匹配即收为标签     | `string` / `RegExp`   | —        |
 | `draggable`           | 标签可拖拽排序                             | `boolean`             | `false`  |
-| `size`                | 尺寸：`small` / `default` / `large`        | `string`              | 继承全局尺寸 |
+| `size`                | 尺寸：`small` / `default` / `large`        | `string`              | 继承 FormItem、Form 或 ConfigProvider |
 | `collapseTags`        | 折叠标签                                   | `boolean`             | `false`  |
 | `collapseTagsTooltip` | 折叠文本悬浮显示全部标签                   | `boolean`             | `false`  |
 | `maxCollapseTags`     | 折叠时展示的标签数                         | `number`              | `1`      |
