@@ -1,5 +1,6 @@
 import { computed, defineComponent, nextTick, ref, watch, type PropType } from 'vue';
-import { useField } from '../form/context';
+import { inject } from 'vue';
+import { formKey, useField } from '../form/context';
 import type {
   TransferDirection,
   TransferFilterMethod,
@@ -53,7 +54,8 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'left-check-change', 'right-check-change'],
   setup(props, { attrs, emit, slots, expose }) {
     const field = useField();
-    const isDisabled = () => props.disabled || !!field?.disabled?.();
+    const form = inject(formKey, undefined);
+    const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
     const query = ref<[string, string]>(['', '']);
     const map = computed(() => props.props || {});
     const all = computed(() => props.data.filter((item) => keyOf(item, map.value) !== undefined));
@@ -137,6 +139,7 @@ export default defineComponent({
     };
     const canMove = (side: number) => !isDisabled() && moveKeys(side).length > 0;
     const move = (toRight: boolean) => {
+      if (isDisabled()) return;
       const side = toRight ? 0 : 1;
       const moved = moveKeys(side);
       if (!moved.length) return;
@@ -214,7 +217,9 @@ export default defineComponent({
               placeholder={props.filterPlaceholder}
               aria-label={props.filterPlaceholder}
               disabled={isDisabled()}
-              onInput={(e: Event) => (query.value[side] = (e.target as HTMLInputElement).value)}
+              onInput={(e: Event) => {
+                if (!isDisabled()) query.value[side] = (e.target as HTMLInputElement).value;
+              }}
             />
           )}
           <div class="i-transfer__items" role="listbox" aria-multiselectable="true" aria-label={titleOf(side)}>

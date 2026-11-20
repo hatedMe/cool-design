@@ -324,3 +324,32 @@ describe('Transfer', () => {
     expect(toRight(disabledWrapper).attributes('disabled')).toBeDefined();
   });
 });
+
+test('Transfer 直挂禁用 Form 时不会选中项目', () => {
+  const wrapper = mount(CoolDesign.Form, {
+    props: { model: {}, disabled: true },
+    slots: { default: () => h(Transfer, { data: basicData(), modelValue: [] }) }
+  });
+  const transfer = wrapper.getComponent(Transfer);
+  expect(transfer.attributes('aria-disabled')).toBe('true');
+  for (const input of transfer.findAll('input[type="checkbox"]')) {
+    expect(input.attributes('disabled')).toBeDefined();
+    input.element.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  expect(transfer.emitted('left-check-change')).toBeUndefined();
+  expect(transfer.emitted('right-check-change')).toBeUndefined();
+  wrapper.unmount();
+});
+
+test('Transfer 禁用 Form 后拒绝搬移已勾选项目', async () => {
+  const wrapper = mount(CoolDesign.Form, {
+    props: { model: {} },
+    slots: { default: () => h(Transfer, { data: basicData(), modelValue: [], leftDefaultChecked: [1] }) }
+  });
+  const transfer = wrapper.getComponent(Transfer);
+  const move = transfer.get('.i-transfer__buttons button');
+  await wrapper.setProps({ disabled: true });
+  move.element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  expect(transfer.emitted('update:modelValue')).toBeUndefined();
+  wrapper.unmount();
+});

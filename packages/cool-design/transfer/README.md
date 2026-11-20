@@ -65,7 +65,7 @@ Transfer 用于在两个列表之间移动和管理选项，支持搜索过滤�
 | props | 字段映射 | `{ label?: string; key?: string; disabled?: string }` | `{}` |
 | leftDefaultChecked | 左侧初始选中 | `(string \| number)[]` | `[]` |
 | rightDefaultChecked | 右侧初始选中 | `(string \| number)[]` | `[]` |
-| disabled | 是否禁用；表单内继承 FormItem 的禁用状态 | `boolean` | `false` |
+| disabled | 是否禁用；表单内继承 Form 的禁用状态 | `boolean` | `false` |
 | noDataText | 无数据文案 | `string` | `无数据` |
 | noMatchText | 无匹配数据文案 | `string` | `无匹配数据` |
 | validateEvent | 移动选项后是否触发表单校验 | `boolean` | `true` |
