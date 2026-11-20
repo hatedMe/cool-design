@@ -32,3 +32,10 @@ test('组件默认清空值只在局部和全局均未配置时生效', () => {
   expect(useEmptyValues({ valueOnClear: false }).getValueOnClear('fallback')).toBe(false);
   expect(useEmptyValues({ valueOnClear: '' }).getValueOnClear('fallback')).toBe('');
 });
+
+test('空值数组按内容匹配并区分不同的标量', () => {
+  const { isEmptyValue } = useEmptyValues({ emptyValues: [[0, [false, '', undefined]]] });
+  expect(isEmptyValue([0, [false, '', undefined]])).toBe(true);
+  expect(isEmptyValue([0, [false, '', null]])).toBe(false);
+  expect(isEmptyValue([false, [false, '', undefined]])).toBe(false);
+});

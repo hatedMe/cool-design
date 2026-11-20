@@ -25,6 +25,8 @@
 | collapseTags | 多选是否折叠标签 | `boolean` | `false` |
 | collapseTagsTooltip | 折叠标签是否显示原生悬浮提示 | `boolean` | `false` |
 | maxCollapseTags | 折叠标签时最多显示的标签数量 | `number` | `1` |
+| empty-values | 视为空的模型值 | `unknown[]` | 继承 ConfigProvider |
+| value-on-clear | 单选清空值或工厂，多选清空为 `[]` | `unknown` | 继承 ConfigProvider |
 | clearable | 是否可清空 | `boolean` | `false` |
 | disabled | 是否禁用 | `boolean` | `false` |
 | placeholder | 占位文本 | `string` | `请选择` |
@@ -59,3 +61,5 @@
 | --- | --- | --- |
 | default | 自定义选中项文本 | `{ data, node }` |
 | empty | 无匹配数据 | — |
+
+单选默认清空为 `undefined`，依赖原清空值 `null` 的代码可设置 `:value-on-clear="null"`。

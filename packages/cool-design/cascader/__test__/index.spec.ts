@@ -7,6 +7,7 @@ import type { CascaderModelValue, CascaderNode, CascaderOption } from '../types'
 import Form from '../../form';
 import type { FormInstance, FormRule } from '../../form';
 import FormItem from '../../form-item';
+import ConfigProvider from '../../config-provider';
 
 const options: CascaderOption[] = [
   {
@@ -146,13 +147,13 @@ describe('test `Cascader` component', () => {
     expect(wrapper.find('.i-cascader__dropdown').exists()).toBe(false);
   });
 
-  test('clearable 清空并触发 change(null) / change([])', async () => {
+  test('clearable 清空并触发 change(undefined) / change([])', async () => {
     const single = mount(Cascader, {
       props: { options, modelValue: ['zhinan', 'sheji', 'yizhi'], clearable: true, teleported: false }
     });
     await single.find('.i-cascader__clear').trigger('click');
-    expect(single.emitted('update:modelValue')![0][0]).toBeNull();
-    expect(single.emitted('change')![0][0]).toBeNull();
+    expect(single.emitted('update:modelValue')![0][0]).toBeUndefined();
+    expect(single.emitted('change')![0][0]).toBeUndefined();
 
     const multiple = mount(Cascader, {
       props: { options, multiple: true, modelValue: [['zhinan', 'kaifa']], clearable: true, teleported: false }
@@ -460,4 +461,35 @@ describe('test `Cascader` component', () => {
     expect(wrapper.findAll('.i-cascader__suggestion')).toHaveLength(1);
     expect(beforeFilter).toHaveBeenCalledTimes(2);
   });
+});
+
+test('Cascader 单选继承工厂，多选清空保持数组', async () => {
+  let calls = 0;
+  const value = ref<CascaderModelValue | boolean>(['zhinan', 'sheji', 'yizhi']);
+  const wrapper = mount(ConfigProvider, {
+    props: { emptyValues: [false], valueOnClear: () => { calls++; return false; } },
+    slots: { default: () => [
+      h(Cascader, { options, clearable: true, modelValue: value.value,
+        'onUpdate:modelValue': (next: unknown) => { if (typeof next === 'boolean') value.value = next; } }),
+      h(Cascader, { options, clearable: true, multiple: true, modelValue: [['zhinan', 'kaifa']] })
+    ] }
+  });
+  const [single, multiple] = wrapper.findAllComponents(Cascader);
+  expect(calls).toBe(0);
+  await single.get('.i-cascader__clear').trigger('click');
+  expect(single.emitted('update:modelValue')).toEqual([[false]]);
+  expect(single.emitted('change')).toEqual([[false]]);
+  expect(single.find('.i-cascader__clear').exists()).toBe(false);
+  await multiple.get('.i-cascader__clear').trigger('click');
+  expect(multiple.emitted('update:modelValue')).toEqual([[[]]]);
+  expect(calls).toBe(1);
+  wrapper.unmount();
+});
+
+test('Cascader 按路径内容识别空值', () => {
+  const wrapper = mount(Cascader, {
+    props: { options, modelValue: ['zhinan', 'sheji', 'yizhi'], emptyValues: [['zhinan', 'sheji', 'yizhi']], clearable: true }
+  });
+  expect(wrapper.find('.i-cascader__clear').exists()).toBe(false);
+  wrapper.unmount();
 });

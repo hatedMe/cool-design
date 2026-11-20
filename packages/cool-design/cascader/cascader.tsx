@@ -7,6 +7,7 @@ import {
   ref,
   type PropType
 } from 'vue';
+import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useFloating } from '../../../src/utils/use-floating';
@@ -29,7 +30,7 @@ export default defineComponent({
   name,
   inheritAttrs: false,
   props: {
-    modelValue: { type: [String, Number, Array] as PropType<CascaderModelValue>, default: null },
+    modelValue: { type: [String, Number, Boolean, Array] as PropType<CascaderModelValue | boolean>, default: null },
     options: { type: Array as PropType<CascaderOption[]>, default: () => [] },
     props: {
       type: Object as PropType<CascaderPropsMapping>,
@@ -44,6 +45,8 @@ export default defineComponent({
     collapseTagsTooltip: Boolean,
     maxCollapseTags: { type: Number, default: 1 },
     clearable: Boolean,
+    emptyValues: Array as PropType<unknown[]>,
+    valueOnClear: { type: [String, Number, Boolean, Array, Function], default: undefined },
     disabled: Boolean,
     placeholder: { type: String, default: '请选择' },
     size: String as PropType<Size>,
@@ -62,6 +65,10 @@ export default defineComponent({
   setup(props, { attrs, emit, expose, slots }) {
     const field = useField();
     const config = useConfig();
+    const { getValueOnClear, isEmptyValue } = useEmptyValues({
+      emptyValues: computed(() => props.emptyValues),
+      valueOnClear: computed(() => props.valueOnClear)
+    });
     const root = ref<HTMLElement>();
     const reference = ref<HTMLElement>();
     const floating = ref<HTMLElement>();
@@ -77,7 +84,10 @@ export default defineComponent({
     const nodes = useCascaderNodes({
       options: () => props.options,
       mapping: () => props.props,
-      model: () => props.modelValue,
+      model: () => {
+        const value = props.modelValue;
+        return typeof value === 'boolean' || isEmptyValue(value) ? null : value;
+      },
       multiple: () => props.multiple,
       checkStrictly: () => props.checkStrictly,
       disabled: () => isDisabled() === true,
@@ -185,7 +195,7 @@ export default defineComponent({
       emit('visible-change', value);
     };
 
-    const update = (value: CascaderModelValue) => {
+    const update = (value: unknown) => {
       emit('update:modelValue', value);
       emit('change', value);
       if (props.validateEvent) nextTick(() => field?.validate('change'));
@@ -229,7 +239,7 @@ export default defineComponent({
 
     const clear = () => {
       if (isDisabled()) return;
-      update(props.multiple ? [] : null);
+      update(props.multiple ? [] : getValueOnClear());
       emit('clear');
       query.value = '';
     };
