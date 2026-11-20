@@ -1,5 +1,6 @@
 import { Teleport, computed, defineComponent, h, markRaw, nextTick, onBeforeUnmount, onMounted, ref, toRaw, type Component, type ComponentPublicInstance, type PropType } from 'vue';
 import { useConfig, type Size } from '../config-provider/context';
+import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useField } from '../form/context';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 import { emitValue, formatTimeParts, parseTimeParts, timeInputValue, type DateModelValue, type DateValue, type TimeParts } from './date';
@@ -9,7 +10,7 @@ export default defineComponent({
   name: 'i-time-picker',
   inheritAttrs: false,
   props: {
-    modelValue: { type: [String, Number, Date, Array] as PropType<DateModelValue>, default: null },
+    modelValue: { type: [String, Number, Boolean, Date, Array] as PropType<DateModelValue | boolean>, default: null },
     format: { type: String, default: 'HH:mm:ss' },
     valueFormat: String,
     placeholder: String,
@@ -29,7 +30,7 @@ export default defineComponent({
     showConfirm: { type: Boolean, default: false },
     defaultValue: { type: [String, Number, Date, Array] as PropType<DateModelValue>, default: null },
     saveOnBlur: { type: Boolean, default: true },
-    emptyValues: Array as PropType<DateValue[]>,
+    emptyValues: Array as PropType<unknown[]>,
     name: String,
     tabindex: [String, Number],
     ariaLabel: String,
@@ -37,7 +38,7 @@ export default defineComponent({
     clearIcon: [String, Object],
     popperStyle: [String, Object, Array],
     popperOptions: Object as PropType<FloatingOptions>,
-    valueOnClear: { type: [String, Number, Date, Array] as PropType<DateModelValue>, default: null },
+    valueOnClear: { type: [String, Number, Boolean, Date, Array, Function] as PropType<DateModelValue | boolean | (() => unknown)>, default: undefined },
     teleported: { type: Boolean, default: true },
     placement: { type: String as PropType<Placement>, default: 'bottom' },
     popperClass: { type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>, default: undefined },
@@ -63,8 +64,16 @@ export default defineComponent({
     const draftValue = ref<DateValue | Array<DateValue | null> | null>(null);
     const lastInputValues: Array<string | undefined> = [];
     const pendingInputs: Array<string | undefined> = [];
-    const range = computed(() => props.isRange || Array.isArray(props.modelValue));
-    const values = computed(() => (Array.isArray(props.modelValue) ? props.modelValue : [props.modelValue]));
+    const { emptyValues, getValueOnClear, isEmptyValue } = useEmptyValues({
+      emptyValues: computed(() => props.emptyValues),
+      valueOnClear: computed(() => props.valueOnClear)
+    });
+    const model = computed<DateModelValue>(() => {
+      const value = props.modelValue;
+      return typeof value === 'boolean' || isEmptyValue(value) ? null : value;
+    });
+    const range = computed(() => props.isRange || Array.isArray(model.value));
+    const values = computed(() => (Array.isArray(model.value) ? model.value : [model.value]));
     const position = useFloating({
       open,
       reference,
@@ -159,7 +168,8 @@ export default defineComponent({
     };
     const commitInput = (index: number | undefined) => {
       const value = pendingInputs[index ?? 0];
-      if (!value || props.emptyValues?.some((emptyValue) => String(emptyValue) === value)) {
+      if (value === undefined) return;
+      if (value === '' || emptyValues.value.some((empty) => String(empty) === value)) {
         clear(index);
         return;
       }
@@ -214,9 +224,12 @@ export default defineComponent({
       if (disabledOf() || props.readonly) return;
       lastInputValues.length = 0;
       pendingInputs.length = 0;
-      const currentRange = rangeDraft.value.some(Boolean) ? rangeDraft.value : values.value;
-      const next = props.valueOnClear !== null ? props.valueOnClear : range.value ? index == null ? [null, null] : currentRange.map((item, itemIndex) => itemIndex === index ? null : item) : null;
-      rangeDraft.value = range.value && Array.isArray(next) ? next : [null, null];
+      const currentRange = rangeDraft.value.some((item) => item != null) ? rangeDraft.value : values.value;
+      const fallback = range.value && index != null
+        ? currentRange.map((item, itemIndex) => itemIndex === index ? null : item)
+        : null;
+      const next = getValueOnClear(fallback);
+      rangeDraft.value = range.value && Array.isArray(next) ? next as Array<DateValue | null> : [null, null];
       emit('update:modelValue', next);
       emit('change', next); validate('change');
       emit('clear');
@@ -238,11 +251,11 @@ export default defineComponent({
         </div>
       ) : null;
       const content = props.teleported && panel ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
-      const value = props.modelValue;
+      const value = model.value;
       return (
         <span ref={root} class={['i-time-picker', `i-control--${props.size ?? field?.size?.() ?? config.value.size}`, range.value && 'is-range']}>
           {range.value ? <><div ref={reference}>{props.prefixIcon && <span class='i-time-picker__prefix-icon'>{renderIcon(props.prefixIcon as string | Component, 'i-time-picker__icon')}</span>}{renderInput(Array.isArray(value) ? value[0] : null, 0)}</div><span class='i-time-picker__separator'>{props.rangeSeparator}</span><div>{renderInput(Array.isArray(value) ? value[1] : null, 1)}</div></> : <div ref={reference}>{props.prefixIcon && <span class='i-time-picker__prefix-icon'>{renderIcon(props.prefixIcon as string | Component, 'i-time-picker__icon')}</span>}{renderInput(value as DateValue | null)}</div>}
-          {props.clearable && (range.value ? Array.isArray(value) && value.some(Boolean) : value) && <button type='button' class='i-time-picker__clear' disabled={disabledOf() || props.readonly} aria-label='清空' onClick={() => clear()}>{props.clearIcon ? <span class='i-time-picker__clear-icon'>{renderIcon(props.clearIcon as string | Component, 'i-time-picker__icon')}</span> : '×'}</button>}
+          {props.clearable && (range.value ? Array.isArray(value) && value.some((item) => item != null && !isEmptyValue(item)) : value != null) && <button type='button' class='i-time-picker__clear' disabled={disabledOf() || props.readonly} aria-label='清空' onClick={() => clear()}>{props.clearIcon ? <span class='i-time-picker__clear-icon'>{renderIcon(props.clearIcon as string | Component, 'i-time-picker__icon')}</span> : '×'}</button>}
           {content}
         </span>
       );

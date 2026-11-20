@@ -86,3 +86,5 @@ const time = ref(null);
 | `handleClose()`    | 手动关闭面板 |
 
 本组件不包含 TimeSelect 的 `start` / `end` / `step` API，也不支持 `selectableRange`。
+
+`empty-values` 和 `value-on-clear` 继承 ConfigProvider。单值和范围默认清空为 `null`，工厂每次清空调用一次。需要保留旧的范围清空值时，显式传入 `:value-on-clear="[null, null]"`。设置 `is-range` 后，清空仍保留两个输入框。

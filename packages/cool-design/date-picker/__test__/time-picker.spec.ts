@@ -1,3 +1,5 @@
+import { h, ref } from 'vue';
+import ConfigProvider from '../../config-provider';
 import { mount } from '@vue/test-utils';
 import { expect, test } from 'vitest';
 import TimePicker from '../time-picker';
@@ -13,13 +15,13 @@ test('TimePicker 使用 HH:mm 显示并按 value-format 输出', async () => {
   expect(wrapper.emitted('change')?.length).toBe(1);
 });
 
-test('TimePicker 范围模式使用自定义分隔符并清空为两个空值', async () => {
+test('TimePicker 范围模式使用自定义分隔符并默认清空为 null', async () => {
   const wrapper = mount(TimePicker, {
     props: { modelValue: ['09:00:00', '18:00:00'], isRange: true, rangeSeparator: '-', clearable: true }
   });
   expect(wrapper.get('.i-time-picker__separator').text()).toBe('-');
   await wrapper.get('button[aria-label="清空"]').trigger('click');
-  expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([[null, null]]);
+  expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([null]);
 });
 
 test('TimePicker showConfirm 选择后仅确认时提交，取消回滚草稿', async () => {
@@ -269,4 +271,25 @@ test('TimePicker 相同时间可在两个范围输入框和清空后重复提交
   await wrapper.get('button[aria-label="清空"]').trigger('click');
   await wrapper.findAll('input')[0].setValue('10:20:30');
   expect(wrapper.emitted('update:modelValue')?.length).toBe(4);
+});
+
+test('TimePicker 范围使用 Provider 清空工厂并接受布尔回写', async () => {
+  let calls = 0;
+  const value = ref<string[] | boolean>(['09:00:00', '18:00:00']);
+  const warnings: string[] = [];
+  const wrapper = mount(ConfigProvider, {
+    global: { config: { warnHandler: (warning) => warnings.push(warning) } },
+    props: { valueOnClear: () => { calls++; return false; } },
+    slots: { default: () => h(TimePicker, { isRange: true, modelValue: value.value,
+      'onUpdate:modelValue': (next: unknown) => { if (typeof next === 'boolean') value.value = next; } }) }
+  });
+  const picker = wrapper.getComponent(TimePicker);
+  expect(calls).toBe(0);
+  await picker.get('button[aria-label="清空"]').trigger('click');
+  expect(picker.emitted('update:modelValue')).toEqual([[false]]);
+  expect(picker.emitted('change')).toEqual([[false]]);
+  expect(calls).toBe(1);
+  expect(picker.findAll('input').map((input) => input.element.value)).toEqual(['', '']);
+  expect(warnings).toEqual([]);
+  wrapper.unmount();
 });
