@@ -817,6 +817,9 @@ export const pages: Page[] = [
     ['basic', '分页与每页条数', '页码从 1 开始；改变条数时，由页面把页码重置为 1。'],
     ['layout', '布局与总数', '使用 layout 组合模块，使用 page-count 直接指定总页数。']
   ]),
+  component('check-tag', 'CheckTag 可选标签', '数据展示', [
+    ['basic', '选中状态', '点击或使用键盘切换标签。']
+  ]),
   component('tag', 'Tag 标签', '数据展示', [
     ['basic', '状态与可关闭标签', 'close 事件仅通知页面，由页面移除对应标签。'],
     ['styles', '圆角与边框标签', '展示 round、hit、尺寸和自定义颜色。']
@@ -879,7 +882,7 @@ const componentNavigation: { title: string; ids: string[] }[] = [
     title: '数据展示',
     ids: [
       'avatar', 'badge', 'calendar', 'card', 'carousel', 'collapse', 'descriptions', 'empty', 'image',
-      'pagination', 'progress', 'result', 'skeleton', 'table', 'table-v2', 'tag', 'timeline', 'tour',
+      'pagination', 'progress', 'result', 'skeleton', 'table', 'table-v2', 'tag', 'check-tag', 'timeline', 'tour',
       'tree', 'tree-v2', 'statistic', 'segmented'
     ]
   },

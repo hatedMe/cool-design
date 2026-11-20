@@ -88,7 +88,7 @@ describe('PC 组件文档站', () => {
     expect(links('配置组件')).toEqual(['#/components/config-provider']);
     expect(links('数据展示')).toEqual([
       'avatar', 'badge', 'calendar', 'card', 'carousel', 'collapse', 'descriptions', 'empty', 'image',
-      'pagination', 'progress', 'result', 'skeleton', 'table', 'table-v2', 'tag', 'timeline', 'tour',
+      'pagination', 'progress', 'result', 'skeleton', 'table', 'table-v2', 'tag', 'check-tag', 'timeline', 'tour',
       'tree', 'tree-v2', 'statistic', 'segmented'
     ].map((id) => `#/components/${id}`));
     expect(links('其他组件')).toEqual(['#/components/divider', '#/components/watermark']);

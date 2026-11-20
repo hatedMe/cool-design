@@ -12,6 +12,7 @@ import Divider from './divider';
 import Empty from './empty';
 import Loading from './loading';
 import Tag from './tag';
+import CheckTag from './check-tag';
 import Tooltip from './tooltip';
 import Popconfirm from './popconfirm';
 import type { App } from 'vue';
@@ -131,6 +132,7 @@ export {
   Empty,
   Loading,
   Tag,
+  CheckTag,
   Tooltip,
   Popconfirm,
   MessageBox,
@@ -243,6 +245,7 @@ const components = [
   Empty,
   Loading,
   Tag,
+  CheckTag,
   Tooltip,
   Popconfirm,
   MessageBoxComponent,
@@ -429,6 +432,7 @@ export {
   Divider as ElDivider,
   Empty as ElEmpty,
   Tag as ElTag,
+  CheckTag as ElCheckTag,
   Tooltip as ElTooltip,
   Popconfirm as ElPopconfirm,
   Button as ElButton,
@@ -546,6 +550,7 @@ declare module 'vue' {
     ElDivider: typeof import('./index')['ElDivider'];
     ElEmpty: typeof import('./index')['ElEmpty'];
     ElTag: typeof import('./index')['ElTag'];
+    ElCheckTag: typeof import('./index')['ElCheckTag'];
     ElTooltip: typeof import('./index')['ElTooltip'];
     ElPopconfirm: typeof import('./index')['ElPopconfirm'];
     ElButton: typeof import('./index')['ElButton'];
@@ -649,6 +654,7 @@ declare module 'vue' {
     IDivider: typeof Divider;
     IEmpty: typeof Empty;
     ITag: typeof Tag;
+    ICheckTag: typeof CheckTag;
     ITooltip: typeof Tooltip;
     IPopconfirm: typeof Popconfirm;
     IButton: typeof Button;
