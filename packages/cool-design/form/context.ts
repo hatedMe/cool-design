@@ -1,5 +1,15 @@
 import { inject, type InjectionKey } from 'vue';
-import type { FormRule } from './types';
+import type { FormItemProp, FormRule } from './types';
+
+export const getFieldPathParts = (path?: FormItemProp) =>
+  Array.isArray(path)
+    ? path
+    : (path ?? '')
+        .replace(/\[(\w+)\]/g, '.$1')
+        .split('.')
+        .filter(Boolean);
+
+export const normalizeFieldPath = (path: FormItemProp) => getFieldPathParts(path).join('.');
 export interface Field {
   validate: (trigger?: 'blur' | 'change') => Promise<boolean>;
   reset: () => void;
@@ -12,14 +22,14 @@ export interface FormContext {
   model: () => Record<string, unknown>;
   rules: () => Record<string, FormRule[]>;
   register: (key: string, field: Field) => void;
-  unregister: (key: string) => void;
+  unregister: (field: Field) => void;
   disabled?: () => boolean;
   size?: () => 'small' | 'default' | 'large' | undefined;
   resetFields?: () => void;
   labelSuffix?: () => string | undefined;
   labelPosition?: () => 'left' | 'right' | 'top' | undefined;
   labelWidth?: () => string | number | undefined;
-  emitValidate?: (prop: string, isValid: boolean, message?: string) => void;
+  emitValidate?: (prop: FormItemProp, isValid: boolean, message?: string) => void;
   hideRequiredAsterisk?: () => boolean;
   requireAsteriskPosition?: () => 'left' | 'right';
   inlineMessage?: () => boolean;

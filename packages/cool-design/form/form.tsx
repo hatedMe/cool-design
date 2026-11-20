@@ -1,6 +1,6 @@
 import { defineComponent, nextTick, provide, watch, type PropType } from 'vue';
 import type { Size } from '../config-provider/context';
-import { formKey, type Field } from './context';
+import { formKey, normalizeFieldPath, type Field } from './context';
 import type { FormRule } from './types';
 export default defineComponent({
   name: 'i-form',
@@ -32,22 +32,29 @@ export default defineComponent({
       },
       { flush: 'sync', deep: true }
     );
-    const fields = new Map<string, Field>();
+    const fields = new Map<Field, string>();
+    let registrationVersion = 0;
     const resetFields = () => {
-      fields.forEach((field) => field.reset());
+      for (const field of fields.keys()) field.reset();
     };
     watch(
       () => props.rules,
       () => {
-        if (props.validateOnRuleChange) fields.forEach((field) => field.validate());
+        if (props.validateOnRuleChange) for (const field of fields.keys()) field.validate();
       },
       { deep: true }
     );
     provide(formKey, {
       model: () => props.model!,
       rules: () => props.rules,
-      register: (key, field) => fields.set(key, field),
-      unregister: (key) => fields.delete(key),
+      register: (key, field) => {
+        if (fields.get(field) === key) return;
+        fields.set(field, key);
+        registrationVersion++;
+      },
+      unregister: (field) => {
+        if (fields.delete(field)) registrationVersion++;
+      },
       disabled: () => props.disabled,
       size: () => props.size,
       resetFields,
@@ -62,45 +69,53 @@ export default defineComponent({
     });
     expose({
       async validate(): Promise<boolean> {
-        const version = modelVersion;
-        const registered = [...fields.values()];
-        const results = await Promise.all(registered.map((field) => field.validate()));
-        const invalidFields: Record<string, string[]> = {};
-        const propList = [...fields.keys()];
+        const currentModel = modelVersion;
+        const currentRegistration = registrationVersion;
+        const registered = [...fields];
+        const results = await Promise.all(registered.map(([field]) => field.validate()));
+        await nextTick();
+        if (currentModel !== modelVersion || currentRegistration !== registrationVersion) {
+          return Promise.reject({});
+        }
+        const invalidFields = new Map<string, string[]>();
         results.forEach((result, index) => {
           if (result === false) {
-            invalidFields[propList[index]] = [registered[index].error?.() ?? '校验失败'];
+            const [field, key] = registered[index];
+            const messages = invalidFields.get(key) ?? [];
+            messages.push(field.error?.() ?? '校验失败');
+            invalidFields.set(key, messages);
           }
         });
         const invalid = results.indexOf(false);
         if (invalid >= 0) {
-          await nextTick();
-          if (props.scrollToError) registered[invalid].scrollTo?.(props.scrollToErrorOffset);
-          registered[invalid].focus();
+          const [field] = registered[invalid];
+          if (props.scrollToError) field.scrollTo?.(props.scrollToErrorOffset);
+          field.focus();
+          return Promise.reject(Object.fromEntries(invalidFields));
         }
-        if (invalid >= 0 || version !== modelVersion) return Promise.reject(invalidFields);
         return true;
       },
       async validateField(props?: string | string[]) {
-        const keys = props ? (Array.isArray(props) ? props : [props]) : [...fields.keys()];
-        const results = await Promise.all(keys.map((key) => fields.get(key)?.validate()));
+        const keys = props ? (Array.isArray(props) ? props : [props]).map(normalizeFieldPath) : undefined;
+        const results = await Promise.all(
+          [...fields].filter(([, key]) => !keys || keys.includes(key)).map(([field]) => field.validate())
+        );
         return results.every((result) => result !== false);
       },
       resetFields() {
         resetFields();
       },
       clearValidate() {
-        fields.forEach((field) => field.clear());
+        for (const field of fields.keys()) field.clear();
       },
       scrollToField(props?: string | string[]) {
-        const keys = props ? (Array.isArray(props) ? props : [props]) : [...fields.keys()];
-        keys
-          .map((key) => fields.get(key))
-          .find((field) => field)
-          ?.scrollTo?.();
+        const keys = props ? (Array.isArray(props) ? props : [props]).map(normalizeFieldPath) : undefined;
+        const registered = [...fields];
+        const match = keys ? keys.map((key) => registered.find(([, path]) => path === key)).find(Boolean) : registered[0];
+        match?.[0].scrollTo?.();
       },
       get fields() {
-        return [...fields.entries()].map(([prop, field]) => ({
+        return [...fields].map(([field, prop]) => ({
           prop,
           validate: field.validate,
           resetField: field.reset,

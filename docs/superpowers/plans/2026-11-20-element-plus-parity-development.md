@@ -45,7 +45,7 @@
 
 ### 02. Form 校验规则协议
 
-- [ ] 文件：`form/types.ts`、`form/context.ts`、`form-item/form-item.tsx`、相应 README 与测试。
+- [x] 文件：`form/types.ts`、`form/context.ts`、`form-item/form-item.tsx`、相应 README 与测试。
 - 接入官方 validator(rule,value,callback)、asyncValidator、trigger 数组；兼容既有单参数 Promise 校验器；支持 prop 路径数组，注册字段使用统一路径键。
 - 验收：同步 callback、异步 callback、Promise、抛错、多个触发器、嵌套/数组字段均正确；过期校验不覆盖新状态；回调不能重复结束。
 - 验证：`pnpm exec vitest run packages/cool-design/form/__test__`，关联输入控件测试及类型检查。
@@ -293,6 +293,7 @@
 
 - 计划：独立审查发现3处缺漏，已修订并复审通过；计划提交 `6e121cd`。
 - 01：完成。旧实现回归测试2项失败，修复后定向136项、全量117文件1134项通过；build、typecheck、typecheck:docs、lint通过（4个既有警告）。独立审查通过，无未解决问题；审查者额外验证实际ESM/CJS服务调用、声明式挂载与安装。修复及本条记录属于同一提交，可用 `git log --grep="修复消息确认框公开入口"` 查询。
-- 02–38：待执行。
+- 02：完成。兼容三参数/异步校验、触发器数组和数组字段路径；独立审查提出的动态字段迁移、实例注销、规则短路、过期整表校验和错误合并问题均已增加红绿回归并修复。Form35项、关联165项、全量1149项测试及两项类型/lint通过（4个既有警告），独立复审通过，无未解决问题。提交可用 `git log --grep="修复表单规则与动态字段校验协议"` 查询。单参数 validator 沿用旧协议，默认/剩余参数隐藏签名的官方调用用 asyncValidator 显式选择，README已说明。
+- 03–38：待执行。
 
 ?????????

@@ -1,7 +1,11 @@
+import type { RuleItem, ValidateOption, ValidateResult, Value, Values } from 'async-validator';
+
+export type FormItemProp = string | string[];
+
 export interface FormRule {
   required?: boolean;
   message?: string;
-  trigger?: 'blur' | 'change';
+  trigger?: string | string[];
   type?: string;
   min?: number;
   max?: number;
@@ -9,7 +13,15 @@ export interface FormRule {
   pattern?: RegExp;
   whitespace?: boolean;
   transform?: (value: unknown) => unknown;
-  validator?: (value: unknown) => void | Promise<void>;
+  // The first argument is the field value for legacy one-argument validators.
+  validator?: (
+    ruleOrValue: Value,
+    value: Value,
+    callback: (error?: string | Error) => void,
+    source: Values,
+    options: ValidateOption
+  ) => ValidateResult;
+  asyncValidator?: RuleItem['asyncValidator'];
 }
 export interface FormFieldContext {
   prop: string;

@@ -14,7 +14,7 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 
 ## 表单校验
 
-规则由 `async-validator` 执行，支持必填、类型、长度、正则、blur/change 触发和同步/异步 validator；校验失败时自动聚焦第一个错误字段。
+规则由 `async-validator` 执行，支持必填、类型、长度、正则、自定义校验，以及 `blur` 和 `change` 触发。校验失败时自动聚焦第一个错误字段。
 
 ## API
 
@@ -44,7 +44,7 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 | 事件名     | 说明                         | 回调参数                              |
 | ---------- | ---------------------------- | ------------------------------------- |
 | `submit`   | 已阻止原生提交，页面负责调用 validate | `event: Event`                  |
-| `validate` | 任一字段校验完成后触发       | `prop: string, isValid: boolean, message?: string` |
+| `validate` | 任一字段校验完成后触发，`prop` 为 FormItem 传入的路径 | `prop: string \| string[], isValid: boolean, message?: string` |
 
 ### 插槽
 
@@ -56,7 +56,7 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 
 | 方法                    | 说明                                 | 返回值             |
 | ----------------------- | ------------------------------------ | ------------------ |
-| `validate()`            | 校验全部字段；全部通过时 resolve `true`，失败或校验期间模型发生变化时 reject 并携带 `invalidFields`（`prop → 错误消息数组` 映射），失败时聚焦首个无效字段 | `Promise<boolean>` |
+| `validate()`            | 校验全部字段，通过时 resolve `true`。失败时 reject 并携带 `invalidFields`（`prop → 错误消息数组`），同路径错误按字段登记顺序合并，并聚焦首个无效字段。校验期间模型或字段登记变化时，以空映射拒绝 | `Promise<boolean>` |
 | `resetFields()`         | 恢复字段注册时初值                   | `void`             |
 | `clearValidate()`       | 清除错误并使旧异步结果失效           | `void`             |
 | `validateField(props?)` | 校验指定字段                         | `Promise<boolean>` |
@@ -74,34 +74,35 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 | ----------------- | ------------------------------------------- | ------------------------------------------ |
 | `required`        | 必填，空白字符串也视为空；0、false 有效     | `boolean`                                  |
 | `message`         | 必填失败提示                                | `string`                                   |
-| `trigger`         | `blur` / `change`；省略时两者均可触发       | `string`                                   |
-| `validator`       | 自定义校验，失败时抛出 Error 或拒绝 Promise | `(value: unknown) => void \| Promise<void>` |
+| `trigger`         | 支持 `blur`、`change` 或同时监听两者，省略时响应所有校验 | `string \| string[]`                    |
+| `validator`       | 自定义校验，接收 `rule`、`value`、`callback`，兼容旧版 `validator(value)` | `FormRule['validator']`   |
+| `asyncValidator`  | 异步校验，接收 `rule`、`value`、`callback` | `FormRule['asyncValidator']`              |
 | `type`            | async-validator 类型                        | `string`                                   |
 | `min` / `max` / `len` | 长度或数值范围                          | `number`                                   |
 | `pattern`         | 正则校验                                    | `RegExp`                                   |
 | `whitespace`      | 必填字符串是否拒绝空白                      | `boolean`                                  |
 | `transform`       | 校验前转换值                                | `(value: unknown) => unknown`              |
 
-`FormRule`、`FormInstance` 可从 `cool-design` 导入。自定义 validator 抛出 Error 或返回 rejected Promise 表示失败；异步期间模型发生变化，整体 validate 以空 `invalidFields` 拒绝。
+`FormRule`、`FormInstance` 可从 `cool-design` 导入。自定义校验可以调用 `callback()` 或兑现 `Promise` 来标记成功，调用 `callback(new Error('错误信息'))`、抛出 `Error` 或拒绝 `Promise` 来标记失败。每条规则以最先完成的结果为准，同一字段按规则顺序校验并在首次失败时结束。单参数 `validator(value)` 直接接收字段值，可同步返回或返回 `Promise`。
 
 ## 使用说明
 
-属性 model: Record<string, unknown>（必填，响应式对象）、rules: Record<string, FormRule[]>（默认空对象）。`prop` 支持 `user.name` 和 `items[0].name` 点路径，校验由 async-validator 执行。
+`model` 为必填的响应式对象，`rules` 以字段路径作为键。`prop` 支持 `user.name`、`items[0].name` 和 `['items', '0', 'name']`。括号路径与数组路径在 `fields` 和错误映射中使用点分隔键，例如 `items.0.name`。
 
 ```ts
-interface FormRule {
-  required?: boolean;
-  type?: string;
-  min?: number;
-  max?: number;
-  len?: number;
-  pattern?: RegExp;
-  whitespace?: boolean;
-  transform?: (value: unknown) => unknown;
-  message?: string;
-  trigger?: 'blur' | 'change';
-  validator?: (value: unknown) => void | Promise<void>;
-}
+import type { FormRule } from 'cool-design';
+
+const rules: Record<string, FormRule[]> = {
+  'items.0.name': [
+    { required: true, message: '请输入姓名', trigger: ['blur', 'change'] },
+    {
+      validator(_rule, value, callback) {
+        callback(value === '管理员' ? new Error('请使用个人姓名') : undefined);
+      },
+      trigger: 'blur'
+    }
+  ]
+};
 ```
 
 必填检查 null、undefined、空白字符串和空数组；false、0 有效。校验错误消息取规则或 async-validator 返回的 message。
