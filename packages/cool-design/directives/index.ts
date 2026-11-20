@@ -485,12 +485,23 @@ export const VPopover: Directive<PopoverElement, PopoverDirectiveValue> = {
   }
 };
 
+function withDirectiveInstall<T extends Directive>(name: string, directive: T) {
+  return Object.assign(directive, {
+    install(app: App) {
+      if (!app.directive(name)) app.directive(name, directive);
+    }
+  });
+}
+
+export const ElInfiniteScroll = withDirectiveInstall('infinite-scroll', InfiniteScroll);
+export const ElPopoverDirective = withDirectiveInstall('popover', VPopover);
+
 export const installDirectives = (app: App) => {
   if (typeof app.directive !== 'function') return;
-  app.directive('loading', LoadingDirective);
+  if (!app.directive('loading')) app.directive('loading', LoadingDirective);
   app.directive('click-outside', ClickOutside);
-  app.directive('infinite-scroll', InfiniteScroll);
-  app.directive('popover', VPopover);
+  app.use(ElInfiniteScroll);
+  app.use(ElPopoverDirective);
 };
 
 export default directives;

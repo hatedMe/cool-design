@@ -94,13 +94,9 @@ import {
   MessageBox,
   ElMessageBox,
   MessageBoxComponent,
-  alert as alertBox,
-  confirm as confirmBox,
-  msgbox,
-  prompt as promptBox
+  installMessageBoxServices
 } from './message-box';
-import type { MessageBoxOptions } from './message-box';
-export { ClickOutside, InfiniteScroll, LoadingDirective, VPopover, directives, installDirectives } from './directives';
+export { ClickOutside, InfiniteScroll, ElInfiniteScroll, LoadingDirective, VPopover, ElPopoverDirective, directives, installDirectives } from './directives';
 export type { PopoverDirectiveValue } from './popover';
 import './style/index.scss';
 export type { FormRule, FormInstance, FormFieldContext, FormItemInstance, FormValidateCallback, FormValidateState, FormItemProp, FormFieldPaths } from './form';
@@ -345,20 +341,10 @@ const components = [
 export const install = (app: App) => {
   components.forEach((component) => app.use(component));
   installDirectives(app);
-  // 函数型服务不可走 app.use（Vue 会把函数本体当安装器调用），显式挂到全局属性并携带应用上下文。
   app.use(ElMessage);
   app.use(Notify);
   app.use(ElLoading);
-  // $msgbox 家族绑定为当前应用上下文，全局配置随之生效。
-  const context = app._context;
-  const properties = app.config.globalProperties;
-  properties.$msgbox = (options: Parameters<typeof msgbox>[0]) => msgbox(options, context);
-  properties.$alert = (message: string, title?: string, options?: MessageBoxOptions) =>
-    alertBox(message, title ?? '', options ?? {}, context);
-  properties.$confirm = (message: string, title?: string, options?: MessageBoxOptions) =>
-    confirmBox(message, title ?? '', options ?? {}, context);
-  properties.$prompt = (message: string, title?: string, options?: MessageBoxOptions) =>
-    promptBox(message, title ?? '', options ?? {}, context);
+  installMessageBoxServices(app);
 };
 export default { version, install };
 
@@ -402,7 +388,7 @@ export type {
   RateThresholdMap,
   RateThresholdValue
 } from './rate';
-export { Notify } from './notification';
+export { ElNotification, Notify } from './notification';
 export type {
   NotificationHandle,
   NotificationOptions,
@@ -411,7 +397,7 @@ export type {
 } from './notification';
 export { ElMessage } from './message';
 export type { MessageHandle, MessageOptions, MessagePlacement, MessageType } from './message';
-export { ElLoading } from './loading';
+export { ElLoading, ElLoadingDirective, ElLoadingService, vLoading } from './loading';
 export type { LoadingInstance, LoadingServiceOptions } from './loading';
 export type { AlertEffect, AlertType } from './alert';
 export type { TimelineMode, TimelineItem as TimelineItemData } from './timeline';
@@ -427,3 +413,109 @@ export type {
   CalendarFormatter,
   CalendarSelectDateType
 } from './date-picker/calendar';
+
+export {
+  TableColumn as ElTableColumn,
+  Container as ElContainer,
+  Header as ElHeader,
+  Aside as ElAside,
+  Main as ElMain,
+  Footer as ElFooter,
+  Link as ElLink,
+  Text as ElText,
+  Scrollbar as ElScrollbar,
+  Icon as ElIcon,
+  Space as ElSpace,
+  Divider as ElDivider,
+  Empty as ElEmpty,
+  Tag as ElTag,
+  Tooltip as ElTooltip,
+  Popconfirm as ElPopconfirm,
+  Button as ElButton,
+  ButtonGroup as ElButtonGroup,
+  Row as ElRow,
+  Col as ElCol,
+  ConfigProvider as ElConfigProvider,
+  Input as ElInput,
+  InputNumber as ElInputNumber,
+  Select as ElSelect,
+  Checkbox as ElCheckbox,
+  CheckboxButton as ElCheckboxButton,
+  CheckboxGroup as ElCheckboxGroup,
+  Switch as ElSwitch,
+  Form as ElForm,
+  FormItem as ElFormItem,
+  Table as ElTable,
+  TableV2 as ElTableV2,
+  Pagination as ElPagination,
+  Dialog as ElDialog,
+  Affix as ElAffix,
+  Anchor as ElAnchor,
+  AnchorLink as ElAnchorLink,
+  InputTag as ElInputTag,
+  CascaderPanel as ElCascaderPanel,
+  Mention as ElMention,
+  InputOtp as ElInputOtp,
+  SelectV2 as ElSelectV2,
+  TreeV2 as ElTreeV2,
+  Avatar as ElAvatar,
+  Badge as ElBadge,
+  Radio as ElRadio,
+  RadioGroup as ElRadioGroup,
+  RadioButton as ElRadioButton,
+  Rate as ElRate,
+  DatePicker as ElDatePicker,
+  TimePicker as ElTimePicker,
+  TimeSelect as ElTimeSelect,
+  Calendar as ElCalendar,
+  Autocomplete as ElAutocomplete,
+  ColorPicker as ElColorPicker,
+  Slider as ElSlider,
+  Transfer as ElTransfer,
+  TreeSelect as ElTreeSelect,
+  Cascader as ElCascader,
+  Upload as ElUpload,
+  Card as ElCard,
+  Descriptions as ElDescriptions,
+  DescriptionsItem as ElDescriptionsItem,
+  Image as ElImage,
+  ImageViewer as ElImageViewer,
+  Result as ElResult,
+  Skeleton as ElSkeleton,
+  SkeletonItem as ElSkeletonItem,
+  Tree as ElTree,
+  Timeline as ElTimeline,
+  TimelineItem as ElTimelineItem,
+  Backtop as ElBacktop,
+  Countdown as ElCountdown,
+  Segmented as ElSegmented,
+  Tour as ElTour,
+  Splitter as ElSplitter,
+  SplitterPanel as ElSplitterPanel,
+  Statistic as ElStatistic,
+  Menu as ElMenu,
+  MenuItem as ElMenuItem,
+  SubMenu as ElSubMenu,
+  MenuItemGroup as ElMenuItemGroup,
+  Breadcrumb as ElBreadcrumb,
+  BreadcrumbItem as ElBreadcrumbItem,
+  Tabs as ElTabs,
+  TabPane as ElTabPane,
+  Dropdown as ElDropdown,
+  DropdownMenu as ElDropdownMenu,
+  DropdownItem as ElDropdownItem,
+  Steps as ElSteps,
+  Step as ElStep,
+  PageHeader as ElPageHeader,
+  Alert as ElAlert,
+  Drawer as ElDrawer,
+  Popover as ElPopover,
+  Watermark as ElWatermark,
+  Progress as ElProgress,
+  Carousel as ElCarousel,
+  CarouselItem as ElCarouselItem,
+  Collapse as ElCollapse,
+  CollapseItem as ElCollapseItem,
+  SelectOption as ElOption,
+  SelectOptionGroup as ElOptionGroup
+};

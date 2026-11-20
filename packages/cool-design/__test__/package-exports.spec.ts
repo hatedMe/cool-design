@@ -23,6 +23,13 @@ describe('发布入口', () => {
       import { createRequire } from 'node:module';
       const esm = await import('./es/packages/cool-design/index.js');
       const cjs = createRequire(import.meta.url)('./lib/packages/cool-design/index.cjs');
+      const esmPublic = await import('cool-design');
+      const cjsPublic = createRequire(import.meta.url)('cool-design');
+      for (const item of [esmPublic, cjsPublic]) {
+        if (item.ElButton !== item.Button || item.ElNotification !== item.Notify) throw new Error('兼容入口丢失');
+        if (typeof item.ElInfiniteScroll.install !== 'function') throw new Error('指令不可安装');
+      }
+      if (Object.keys(esmPublic).sort().join() !== Object.keys(cjsPublic).sort().join()) throw new Error('发布格式导出不一致');
       if (!esm.Button || !cjs.Button) throw new Error('主入口缺少 Button');
       const subpath = await import('./es/packages/cool-design/message-box/index.js');
       const cjsSubpath = createRequire(import.meta.url)('./lib/packages/cool-design/message-box/index.cjs');

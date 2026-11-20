@@ -42,3 +42,9 @@ An enterprise-class UI components based on Cool Design and Vue.
 ### Browsers
 
 Modern browsers, no IE support (Vue 3 requirement).
+
+## 兼容导入
+
+根入口支持 `ElButton`、`ElInput`、`ElSelect`、`ElOption` 等 Element Plus 组件名称。全量或单独安装组件后，模板可以使用对应的 `el-*` 标签，原来的 `i-*`、`I*` 和具名导入仍可使用。
+
+`ElMessage`、`ElNotification`、`ElMessageBox` 和 `ElLoading` 提供函数式服务。声明式通知使用 `Notification` 或 `<i-notification>`，声明式消息框使用 `MessageBox` 或 `<i-message-box>`。安装 `ElMessageBox` 后可使用 `$messageBox`、`$msgbox`、`$alert`、`$confirm`、`$prompt`。Loading 支持 `ElLoading.service`、`ElLoadingService` 与 `v-loading`。

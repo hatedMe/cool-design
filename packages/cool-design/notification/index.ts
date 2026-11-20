@@ -6,6 +6,7 @@ import NotificationComponent from './notification';
 import { withInstall } from '../../../src/utils/with-install';
 
 export const Notify = withFunctionInstall(notify, '$notify', createNotifyService);
+export const ElNotification = Notify;
 export const Notification = withInstall(NotificationComponent);
 export default Notify;
 
