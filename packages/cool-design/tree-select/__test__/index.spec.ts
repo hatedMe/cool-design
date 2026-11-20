@@ -336,3 +336,21 @@ test('TreeSelect 严格单选可从子节点切换到父节点', async () => {
   expect(wrapper.emitted('update:modelValue')).toEqual([['a']]);
   wrapper.unmount();
 });
+
+test('uses Select control options through the public TreeSelect interface', async () => {
+  const wrapper = mount(TreeSelect, {
+    props: { data: [{ value: 'one', label: 'One' }], modelValue: ['one'], multiple: true,
+      teleported: false, clearable: true, filterable: true, remote: true, remoteShowSuffix: true,
+      suffixIcon: 'icon-clock', clearIcon: 'icon-close', autocomplete: 'name', tagEffect: 'dark' },
+    slots: { label: ({ label }) => h('span', { class: 'selected-label' }, label) }
+  });
+  expect(wrapper.get('.selected-label').text()).toBe('One');
+  expect(wrapper.get('.i-tree-select__tag').classes()).toContain('i-select__tag--dark');
+  expect(wrapper.get('.i-tree-select__control .icon-clock').exists()).toBe(true);
+  expect(wrapper.get('.i-tree-select__clear .icon-close').exists()).toBe(true);
+  expect(wrapper.vm.selectRef?.selectedLabel).toEqual(['One']);
+  await wrapper.get('.i-tree-select__control').trigger('click');
+  expect(wrapper.get('.i-tree-select__filter').attributes('autocomplete')).toBe('name');
+  await wrapper.get('.i-select__dropdown').trigger('scroll');
+  expect(wrapper.emitted('popup-scroll')).toEqual([[{ scrollTop: 0, scrollLeft: 0 }]]);
+});

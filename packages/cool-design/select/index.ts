@@ -1,6 +1,7 @@
 import { withInstall } from '../../../src/utils/with-install';
 import Component from './select';
 export interface SelectInstance {
+  readonly selectedLabel: string | string[];
   focus(): HTMLElement | undefined;
   blur(): HTMLElement | undefined;
   togglePopperVisible(visible?: boolean): void;

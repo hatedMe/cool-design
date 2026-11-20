@@ -3,13 +3,17 @@ import {
   defineComponent,
   inject,
   nextTick,
+  onBeforeUnmount,
   normalizeClass,
   ref,
   watch,
   type CSSProperties,
+  type Component,
   type PropType
 } from 'vue';
 import Select from '../select';
+import Icon from '../icon';
+import type { SelectTagType } from '../select';
 import type { SelectInstance } from '../select';
 import Tree from '../tree';
 import type { TreeAllowDrag, TreeAllowDrop, TreeRenderContent, TreeData, TreeExposed, TreeKey, TreeLoadFunction, TreePropsMapping, TreeNode, TreeFilterMethod } from '../tree/types';
@@ -62,6 +66,13 @@ export default defineComponent({
     filterable: Boolean,
     filterMethod: Function as PropType<(query: string) => void>,
     remote: Boolean,
+    debounce: { type: Number, default: 300 },
+    remoteShowSuffix: Boolean,
+    autocomplete: { type: String, default: 'off' },
+    suffixIcon: [String, Object, Function] as PropType<string | Component>,
+    clearIcon: { type: [String, Object, Function] as PropType<string | Component>, default: 'icon-close' },
+    tagType: String as PropType<SelectTagType>,
+    tagEffect: { type: String as PropType<'light' | 'dark' | 'plain'>, default: 'light' },
     remoteMethod: Function as PropType<(query: string) => void>,
     fitInputWidth: Boolean,
     loading: Boolean,
@@ -88,7 +99,7 @@ export default defineComponent({
     effect: { type: String as PropType<'light' | 'dark'>, default: 'light' }
   },
   emits: ['update:modelValue', 'change', 'clear', 'visible-change', 'remove-tag', 'focus', 'blur', 'node-click', 'check',
-    'node-contextmenu', 'current-change', 'check-change', 'node-expand', 'node-collapse', 'node-drag-start', 'node-drag-enter', 'node-drag-leave', 'node-drag-over', 'node-drag-end', 'node-drop'],
+    'popup-scroll', 'end-reached', 'node-contextmenu', 'current-change', 'check-change', 'node-expand', 'node-collapse', 'node-drag-start', 'node-drag-enter', 'node-drag-leave', 'node-drag-over', 'node-drag-end', 'node-drop'],
   setup(props, { emit, expose, slots }) {
     const field = useField();
     const form = inject(formKey, undefined);
@@ -230,10 +241,25 @@ export default defineComponent({
     };
 
     watch(isDisabled, (disabled) => { if (disabled) close(); });
+    let remoteTimer: ReturnType<typeof setTimeout> | undefined;
+    const cancelRemote = () => {
+      if (remoteTimer !== undefined) clearTimeout(remoteTimer);
+      remoteTimer = undefined;
+    };
+    onBeforeUnmount(cancelRemote);
+    watch(open, (visible) => {
+      if (visible) return;
+      cancelRemote();
+      if (props.remote && !props.filterMethod) query.value = '';
+    });
     watch(query, (value) => {
+      cancelRemote();
       if (props.filterMethod) props.filterMethod(value);
-      else if (props.remote && props.remoteMethod) props.remoteMethod(value);
-      else treeRef.value?.filter(value);
+      else if (props.remote && props.remoteMethod) {
+        if (!open.value) return;
+        if (props.debounce > 0) remoteTimer = setTimeout(() => props.remoteMethod?.(value), props.debounce);
+        else props.remoteMethod(value);
+      } else treeRef.value?.filter(value);
     });
 
     const focusTreeNode = (step: number) => {
@@ -319,6 +345,8 @@ export default defineComponent({
             popperClass={normalizeClass(['i-tree-select__dropdown', `i-tree-select__dropdown--${props.effect}`, props.popperClass])}
             popperStyle={props.popperStyle}
             effect={props.effect}
+            onPopup-scroll={(position: { scrollTop: number; scrollLeft: number }) => emit('popup-scroll', position)}
+            onEnd-reached={(direction: string) => emit('end-reached', direction)}
             onVisible-change={handleVisible}>
             {{
               control: ({ toggle }: { toggle: () => void }) => <>
@@ -347,8 +375,8 @@ export default defineComponent({
             {props.multiple ? (
               shownTags.length ? (
                 shownTags.map((value) => (
-                  <span class='i-tree-select__tag' key={String(value)}>
-                    {labelOf(value)}
+                  <span class={['i-tree-select__tag', 'i-select__tag', props.tagType && `i-select__tag--${props.tagType}`, `i-select__tag--${props.tagEffect}`]} key={String(value)}>
+                    {slots.label?.({ value, label: labelOf(value) }) ?? labelOf(value)}
                     {!isDisabled() && (
                       <span
                         class='i-tree-select__tag-close'
@@ -368,11 +396,12 @@ export default defineComponent({
                 <span class='i-tree-select__placeholder'>{props.placeholder}</span>
               )
             ) : selectedValues.value.length ? (
-              <span class='i-tree-select__label'>{labelOf(selectedValues.value[0])}</span>
+              <span class='i-tree-select__label'>{slots.label?.({ value: selectedValues.value[0], label: labelOf(selectedValues.value[0]) }) ?? labelOf(selectedValues.value[0])}</span>
             ) : (
               <span class='i-tree-select__placeholder'>{props.placeholder}</span>
             )}
-            {props.multiple && restCount > 0 && <span class='i-tree-select__more'>+{restCount}</span>}
+            {props.multiple && restCount > 0 && <span class={['i-tree-select__more', 'i-select__tag', props.tagType && `i-select__tag--${props.tagType}`, `i-select__tag--${props.tagEffect}`]}>+{restCount}</span>}
+            {slots.suffix?.() ?? ((!props.remote || !props.filterable || props.remoteShowSuffix) && (props.suffixIcon ? <Icon icon={props.suffixIcon} aria-hidden='true' /> : <span class='i-select__suffix-caret' aria-hidden='true' />))}
           </button>
           {props.name && (props.multiple ? selectedValues.value : [selectedValues.value[0] ?? '']).map((value, index) =>
             <input key={index} type='hidden' name={props.name} value={value} disabled={isDisabled()} />
@@ -386,7 +415,7 @@ export default defineComponent({
                 event.stopPropagation();
                 onClear();
               }}>
-              ×
+              <Icon icon={props.clearIcon} aria-hidden='true' />
             </button>
           )}
               </>,
@@ -396,9 +425,13 @@ export default defineComponent({
                 {props.filterable && (
                   <input
                     class='i-tree-select__filter'
+                    autocomplete={props.autocomplete}
                     value={query.value}
                     placeholder='筛选'
-                    onInput={(e: Event) => (query.value = (e.target as HTMLInputElement).value)}
+                    onInput={(event: Event) => {
+                      if (!(event as InputEvent).isComposing) query.value = (event.target as HTMLInputElement).value;
+                    }}
+                    onCompositionend={(event: CompositionEvent) => (query.value = (event.target as HTMLInputElement).value)}
                   />
                 )}
                 {props.loading && <div role='status'>{slots.loading?.() ?? props.loadingText ?? '加载中…'}</div>}

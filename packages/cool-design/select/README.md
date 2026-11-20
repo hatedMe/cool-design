@@ -59,7 +59,8 @@
 | tag-type | 多选标签类型：`primary` / `success` / `warning` / `danger` / `info` | `string` | — |
 | name | 原生隐藏 input 的名称 | `string` | — |
 | filterable | 是否启用筛选输入 | `boolean` | `false` |
-| filter-method | 自定义筛选方法（项目扩展签名） | `(query, option: { value, label, disabled }) => boolean` | — |
+| filter-method | 查询变化回调，自行更新选项。原双参数逐项过滤写法仍可用 | `(query: string) => void` | — |
+| option-filter | 自定义逐项过滤 | `(query: string, option: SelectOptionRecord) => boolean` | — |
 | allow-create | 允许 Enter 创建新选项 | `boolean` | `false` |
 | default-first-option | Enter 时选择第一个匹配项 | `boolean` | `false` |
 | reserve-keyword | 多选筛选选择后保留筛选词；单选选择后始终清空 | `boolean` | `true` |
@@ -71,6 +72,12 @@
 | empty-values | 视为清空的值，命中后输出 `value-on-clear` | `Array` | — |
 | value-on-clear | 清空时输出的值 | `any` | — |
 | validate-event | 选中变化时触发表单校验 | `boolean` | `true` |
+| debounce | 远程查询防抖，单位毫秒 | `number` | `300` |
+| autocomplete | 传给原生搜索输入框 | `string` | `'off'` |
+| remote-show-suffix | 远程过滤时显示后缀图标 | `boolean` | `false` |
+| suffix-icon | 后缀图标 | `string \| Component` | 下箭头 |
+| clear-icon | 清空图标 | `string \| Component` | `'icon-close'` |
+| tag-effect | 多选标签主题 | `'light' \| 'dark' \| 'plain'` | `'light'` |
 | remote | 是否启用远程搜索 | `boolean` | `false` |
 | remote-method | 查询变化时调用，可更新外部选项；返回选项为扩展用法 | `(query: string) => void / SelectRemoteOption[] / Promise<void / SelectRemoteOption[]>` | — |
 | loading | 是否显示加载状态 | `boolean` | `false` |
@@ -95,6 +102,8 @@
 | change | 选中或清空 | `value` |
 | focus | 获得焦点 | `FocusEvent` |
 | blur | 失去焦点 | `FocusEvent` |
+| popup-scroll | 选项面板滚动 | `{ scrollTop: number; scrollLeft: number }` |
+| end-reached | 面板滚动到边缘 | `'top' \| 'bottom' \| 'left' \| 'right'` |
 | clear | 点击清空 | — |
 | visible-change | 面板打开或关闭 | `visible: boolean` |
 | remove-tag | 多选移除标签 | `value` |
@@ -138,3 +147,5 @@
 ```
 
 `options` 属性也可直接提供数组；分组数组默认使用 `options` 字段，可通过 `props` 映射。
+
+实例的 `selectedLabel` 返回当前单选标签（`string`）或按模型顺序排列的多选标签（`string[]`）。远程返回值扩展会忽略过期结果。回调直接更新外部选项时，由外部请求管理更新顺序。需要立即搜索时设置 `:debounce="0"`。

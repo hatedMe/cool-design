@@ -11,7 +11,7 @@ const doc = () => new DOMWrapper(document.body);
 test('原版远程回调返回 void 时使用外部响应式插槽选项', async () => {
   const options = ref<string[]>([]);
   const wrapper = mount(Select, {
-    props: { remote: true, filterable: true, remoteMethod: (query: string) => { options.value = [query]; } },
+    props: { remote: true, filterable: true, debounce: 0, remoteMethod: (query: string) => { options.value = [query]; } },
     slots: { default: () => h(Fragment, options.value.map((value) => h(SelectOption, { value, label: `结果${value}` }))) }
   });
   await wrapper.get('input').setValue('hello');

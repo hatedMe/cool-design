@@ -239,7 +239,7 @@ test('Select 自定义面板支持远程 loading 和乱序保护', async () => {
   const remoteMethod = vi.fn((query: string) => query === 'a'
     ? new Promise<{ value: string; label: string }[]>((resolve) => (resolveFirst = resolve))
     : new Promise<{ value: string; label: string }[]>((resolve) => (resolveSecond = resolve)));
-  const wrapper = mount(Select, { props: { remote: true, filterable: true, remoteMethod } });
+  const wrapper = mount(Select, { props: { remote: true, filterable: true, debounce: 0, remoteMethod } });
   const input = wrapper.get('input[aria-label="筛选选项"]');
   await input.setValue('a');
   await input.setValue('ab');
@@ -264,7 +264,7 @@ test('Select allow-create 遵守 multiple-limit', async () => {
 
 test('Select 远程刷新后保留已选项标签', async () => {
   const remoteMethod = vi.fn().mockResolvedValue([{ value: 1, label: '一' }]);
-  const wrapper = mount(Select, { props: { remote: true, filterable: true, modelValue: 1, remoteMethod } });
+  const wrapper = mount(Select, { props: { remote: true, filterable: true, debounce: 0, modelValue: 1, remoteMethod } });
   await wrapper.get('input[aria-label="筛选选项"]').setValue('新查询');
   await flushPromises();
   expect(wrapper.text()).toContain('一');
@@ -297,7 +297,7 @@ test('Select 支持远程选项和数字值', async () => {
     { value: 1, label: '远程一' },
     { value: 2, label: '远程二' }
   ]);
-  const wrapper = mount(Select, { props: { remote: true, filterable: true, remoteMethod } });
+  const wrapper = mount(Select, { props: { remote: true, filterable: true, debounce: 0, remoteMethod } });
   await wrapper.get('input[aria-label="筛选选项"]').setValue('远程');
   await flushPromises();
   expect(remoteMethod).toHaveBeenCalledWith('远程');
@@ -381,7 +381,7 @@ test('Select focus 事件携带 FocusEvent', async () => {
 
 test('Select 远程 allow-create 创建的选项可见', async () => {
   const wrapper = mount(Select, {
-    props: { remote: true, filterable: true, allowCreate: true, remoteMethod: () => [] }
+    props: { remote: true, filterable: true, debounce: 0, allowCreate: true, remoteMethod: () => [] }
   });
   const input = wrapper.get('input[aria-label="筛选选项"]');
   await input.setValue('新选项');
@@ -397,7 +397,7 @@ test('Select 远程搜索只采用最后一次请求结果', async () => {
       ? new Promise<{ value: string; label: string }[]>((resolve) => (resolveFirst = resolve))
       : new Promise<{ value: string; label: string }[]>((resolve) => (resolveSecond = resolve))
   );
-  const wrapper = mount(Select, { props: { remote: true, filterable: true, remoteMethod } });
+  const wrapper = mount(Select, { props: { remote: true, filterable: true, debounce: 0, remoteMethod } });
   const input = wrapper.get('input[aria-label="筛选选项"]');
   await input.setValue('a');
   await input.setValue('ab');
@@ -443,4 +443,66 @@ test('禁用 Select 忽略筛选创建与原生 change', () => {
   expect(wrapper.emitted('update:modelValue')).toBeUndefined();
   expect(input.attributes('disabled')).toBeDefined();
   wrapper.unmount();
+});
+
+test('exposes the selected label and reports scroll coordinates and direction', async () => {
+  const wrapper = mount(Select, {
+    props: { modelValue: true, teleported: false, options: [{ value: true, label: 'True label' }], suffixIcon: 'icon-clock' }
+  });
+  expect(wrapper.vm.selectedLabel).toBe('True label');
+  expect(wrapper.find('.icon-clock').exists()).toBe(true);
+  await wrapper.get('[role="combobox"]').trigger('click');
+  const panel = wrapper.get('.i-select__dropdown');
+  panel.element.scrollTop = 20;
+  panel.element.scrollLeft = 5;
+  await panel.trigger('scroll');
+  expect(wrapper.emitted('popup-scroll')).toEqual([[{ scrollTop: 20, scrollLeft: 5 }]]);
+  expect(wrapper.emitted('end-reached')).toContainEqual(['bottom']);
+});
+
+test('debounces remote requests and invalidates results during the next delay', async () => {
+  vi.useFakeTimers();
+  const callbacks: Array<(options: Array<{ value: string; label: string }>) => void> = [];
+  const remoteMethod = vi.fn(() => new Promise<Array<{ value: string; label: string }>>((resolve) => callbacks.push(resolve)));
+  const wrapper = mount(Select, { props: { filterable: true, remote: true, remoteMethod, teleported: false } });
+  try {
+    const input = wrapper.get('input');
+    await input.setValue('first');
+    vi.advanceTimersByTime(299);
+    expect(remoteMethod).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+    await input.setValue('second');
+    callbacks[0]([{ value: 'old', label: 'Old label' }]);
+    await Promise.resolve();
+    expect(wrapper.text()).not.toContain('Old label');
+    vi.advanceTimersByTime(300);
+    expect(remoteMethod).toHaveBeenNthCalledWith(2, 'second');
+  } finally {
+    wrapper.unmount();
+    vi.useRealTimers();
+  }
+});
+
+test('preserves selected labels across external options updates', async () => {
+  const wrapper = mount(Select, {
+    props: { modelValue: true, remote: true, options: [{ value: true, label: 'Remember me' }] }
+  });
+  await wrapper.setProps({ options: [{ value: false, label: 'Replacement' }] });
+  expect(wrapper.vm.selectedLabel).toBe('Remember me');
+  expect(wrapper.find('select option[value="true"]').text()).toBe('Remember me');
+});
+
+test('uses query callbacks before remote methods without filtering external results', async () => {
+  const filterMethod = vi.fn((query: string) => { void query; });
+  const remoteMethod = vi.fn();
+  const wrapper = mount(Select, {
+    props: { filterable: true, remote: true, filterMethod, remoteMethod, teleported: false,
+      modelValue: 1, options: [{ value: 1, label: 'Selected' }] }
+  });
+  await wrapper.get('input').setValue('query');
+  expect(filterMethod).toHaveBeenCalledWith('query');
+  expect(remoteMethod).not.toHaveBeenCalled();
+  await wrapper.setProps({ options: [{ value: 2, label: 'Unrelated label' }] });
+  expect(wrapper.get('[role="option"]').text()).toBe('Unrelated label');
+  expect(wrapper.vm.selectedLabel).toBe('Selected');
 });

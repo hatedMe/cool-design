@@ -4,6 +4,8 @@ import {
   Fragment,
   h,
   nextTick,
+  onBeforeUnmount,
+  type Component,
   ref,
   computed,
   watch,
@@ -11,6 +13,7 @@ import {
   type PropType,
   type VNode
 } from 'vue';
+import Icon from '../icon';
 import { Teleport } from 'vue';
 import { inject } from 'vue';
 import { formKey, useField } from '../form/context';
@@ -38,7 +41,7 @@ type OptionRecord = {
   group?: string;
   vnode?: VNode;
 };
-type FilterMethod = (query: string, option: Pick<OptionRecord, 'value' | 'label' | 'disabled'>) => boolean;
+type OptionFilter = (query: string, option: Pick<OptionRecord, 'value' | 'label' | 'disabled'>) => boolean;
 type SlotContent = { default?: () => unknown };
 export type SelectTagType = 'primary' | 'success' | 'warning' | 'danger' | 'info';
 
@@ -72,10 +75,17 @@ export default defineComponent({
     collapseTags: Boolean,
     collapseTagsTooltip: Boolean,
     maxCollapseTags: { type: Number, default: 1 },
+    tagEffect: { type: String as PropType<'light' | 'dark' | 'plain'>, default: 'light' },
+    suffixIcon: [String, Object, Function] as PropType<string | Component>,
+    clearIcon: { type: [String, Object, Function] as PropType<string | Component>, default: 'icon-close' },
+    autocomplete: { type: String, default: 'off' },
+    debounce: { type: Number, default: 300 },
+    remoteShowSuffix: Boolean,
     tagType: String as PropType<SelectTagType>,
     name: String,
     filterable: Boolean,
-    filterMethod: Function as PropType<FilterMethod>,
+    filterMethod: Function as PropType<(query: string, option: Pick<OptionRecord, 'value' | 'label' | 'disabled'>) => void | boolean>,
+    optionFilter: Function as PropType<OptionFilter>,
     allowCreate: Boolean,
     defaultFirstOption: Boolean,
     reserveKeyword: { type: Boolean, default: true },
@@ -104,7 +114,7 @@ export default defineComponent({
     popperStyle: { type: [String, Array, Object] as PropType<string | CSSProperties | CSSProperties[]>, default: undefined },
     effect: { type: String as PropType<'light' | 'dark'>, default: 'light' }
   },
-  emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear', 'visible-change', 'remove-tag'],
+  emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear', 'visible-change', 'remove-tag', 'popup-scroll', 'end-reached'],
   setup(props, { slots, attrs, emit, expose }) {
     const field = useField();
     const form = inject(formKey, undefined);
@@ -125,13 +135,32 @@ export default defineComponent({
     const open = ref(false);
     const highlightedIndex = ref(-1);
     const remoteOptions = ref<SelectRemoteOption[]>([]);
-    const remoteOptionCache = ref<SelectRemoteOption[]>([]);
     const createdOptions = ref<SelectRemoteOption[]>([]);
     const virtualOffset = ref(0);
     const dropdown = ref<HTMLElement>();
     const dropdownMinWidth = ref<string>();
     const shown = ref(false);
     let remoteRequestId = 0;
+    let remoteTimer: ReturnType<typeof setTimeout> | undefined;
+    const cancelRemote = () => {
+      remoteRequestId++;
+      if (remoteTimer !== undefined) clearTimeout(remoteTimer);
+      remoteTimer = undefined;
+    };
+    onBeforeUnmount(cancelRemote);
+    const scrollPosition = { top: 0, left: 0 };
+    const onPopupScroll = (event: Event) => {
+      const element = event.currentTarget as HTMLElement;
+      const { scrollTop, scrollLeft } = element;
+      emit('popup-scroll', { scrollTop, scrollLeft });
+      if (scrollTop > scrollPosition.top && scrollTop + element.clientHeight >= element.scrollHeight - 1) emit('end-reached', 'bottom');
+      if (scrollTop < scrollPosition.top && scrollTop <= 0) emit('end-reached', 'top');
+      if (scrollLeft > scrollPosition.left && scrollLeft + element.clientWidth >= element.scrollWidth - 1) emit('end-reached', 'right');
+      if (scrollLeft < scrollPosition.left && scrollLeft <= 0) emit('end-reached', 'left');
+      scrollPosition.top = scrollTop;
+      scrollPosition.left = scrollLeft;
+      if (props.virtualized) virtualOffset.value = Math.floor(scrollTop / props.itemHeight);
+    };
     const position = useFloating({
       open,
       reference: root,
@@ -178,15 +207,16 @@ export default defineComponent({
         return [{ value: item[mapping.value], label: String(item[mapping.label] ?? item[mapping.value] ?? ''), disabled, group }];
       });
     };
-    const optionRecords = computed<OptionRecord[]>(() => {
-      const local: OptionRecord[] = props.options ? dataOptions(props.options) : slotOptions().map(({ vnode: item, group, groupDisabled }) => ({
+    const localRecords = computed<OptionRecord[]>(() => props.options ? dataOptions(props.options) : slotOptions().map(({ vnode: item, group, groupDisabled }) => ({
         value: item.props?.value,
         label: String(item.props?.label ?? (getVNodeText(item.children) || String(keyOf(item.props?.value) ?? ''))),
         disabled: Boolean(item.props?.disabled) || Boolean(groupDisabled),
         group,
         vnode: item
-      }));
-      const remoteItems = [...remoteOptions.value, ...remoteOptionCache.value.filter((item) => selectedValues.value.some((value) => sameValue(value, item.value))), ...createdOptions.value];
+      })));
+    const optionRecords = computed<OptionRecord[]>(() => {
+      const local = localRecords.value;
+      const remoteItems = [...remoteOptions.value, ...createdOptions.value];
       const remote: OptionRecord[] = remoteItems.filter((item, index, items) => items.findIndex((candidate) => sameValue(candidate.value, item.value)) === index).map((item) => ({
         value: item.value,
         label: item.label ?? String(item.value),
@@ -199,7 +229,14 @@ export default defineComponent({
       if (props.multiple) return Array.isArray(props.modelValue) ? props.modelValue.flat() : [];
       return props.modelValue === undefined || Array.isArray(props.modelValue) ? [] : [props.modelValue];
     });
-    const selectedRecords = computed(() => optionRecords.value.filter((item) => selectedValues.value.some((value) => sameValue(value, item.value))));
+    let selectedCache: OptionRecord[] = [];
+    const selectedRecords = computed(() => selectedValues.value.flatMap((value) => {
+      const item = optionRecords.value.find((record) => sameValue(record.value, value))
+        ?? selectedCache.find((record) => sameValue(record.value, value));
+      return item ? [item] : [];
+    }));
+    const formRecords = computed(() => [...optionRecords.value, ...selectedRecords.value.filter((item) =>
+      !optionRecords.value.some((record) => sameValue(record.value, item.value)))]);
     const groupBy = (records: OptionRecord[]) => {
       const groups: Array<{ label?: string; items: OptionRecord[] }> = [];
       records.forEach((item) => {
@@ -210,10 +247,12 @@ export default defineComponent({
       });
       return groups;
     };
+    const filterOption = computed(() => props.optionFilter ?? (props.filterMethod && props.filterMethod.length > 1 ? props.filterMethod : undefined));
+    const filterQuery = computed(() => props.filterMethod && props.filterMethod.length <= 1 ? props.filterMethod as (query: string) => void : undefined);
     const filteredRecords = computed(() => {
-      if (props.remote || !props.filterable || !query.value) return optionRecords.value;
+      if (filterQuery.value || (props.remote && !filterOption.value) || !props.filterable || !query.value) return optionRecords.value;
       return optionRecords.value.filter((item) =>
-        props.filterMethod ? props.filterMethod(query.value, { value: item.value, label: item.label, disabled: item.disabled }) : item.label.includes(query.value)
+        filterOption.value ? filterOption.value(query.value, { value: item.value, label: item.label, disabled: item.disabled }) : item.label.includes(query.value)
       );
     });
     const loading = computed(() => props.loading || props.remoteLoading);
@@ -222,6 +261,11 @@ export default defineComponent({
       if (open.value === value || (value && isDisabled())) return;
       open.value = value;
       if (value) shown.value = true;
+      else {
+        cancelRemote();
+        if (props.remote) query.value = '';
+        if (!props.persistent) Object.assign(scrollPosition, { top: 0, left: 0 });
+      }
       emit('visible-change', value);
       if (value) {
         // 打开时优先高亮选中项，未选中时高亮首个可用项
@@ -279,25 +323,33 @@ export default defineComponent({
       update(selectedValues.value.filter((item) => !sameValue(item, value)));
       emit('remove-tag', value);
     };
-    const loadRemote = async (value: string) => {
+    const loadRemote = (value: string) => {
+      if (query.value === value && open.value) return;
       query.value = value;
       virtualOffset.value = 0;
       setOpen(true);
-      if (props.remote && props.remoteMethod) {
-        const requestId = ++remoteRequestId;
+      cancelRemote();
+      if (props.filterable && filterQuery.value) { filterQuery.value(value); return; }
+      const fetch = props.remoteMethod;
+      if (!props.filterable || !props.remote || filterOption.value || !fetch) return;
+      const requestId = remoteRequestId;
+      const run = async () => {
+        remoteTimer = undefined;
         try {
-          const options = await props.remoteMethod(value);
+          const options = await fetch(value);
           if (requestId === remoteRequestId && Array.isArray(options)) {
             remoteOptions.value = options;
-            remoteOptionCache.value = [...remoteOptionCache.value, ...options];
+
           }
         } catch {
           if (requestId === remoteRequestId) remoteOptions.value = [];
         }
-      }
+      };
+      if (props.debounce > 0) remoteTimer = setTimeout(run, props.debounce);
+      else void run();
     };
     const onKeydown = (event: KeyboardEvent) => {
-      if (isDisabled()) return;
+      if (isDisabled() || event.isComposing) return;
       if (event.key === 'Escape') return setOpen(false);
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
@@ -335,12 +387,12 @@ export default defineComponent({
     };
     const nativeValueOf = (value: unknown) => {
       const key = keyOf(value);
-      const collisions = optionRecords.value.filter((item) => String(keyOf(item.value)) === String(key));
+      const collisions = formRecords.value.filter((item) => String(keyOf(item.value)) === String(key));
       return collisions.length > 1 ? `${typeof key === 'number' ? 'n' : typeof key === 'boolean' ? 'b' : 's'}:${String(key)}` : String(key);
     };
     const nativeValue = (record: OptionRecord) => nativeValueOf(record.value);
     const resolveNativeValue = (value: string) => {
-      const record = optionRecords.value.find((item) => nativeValue(item) === value);
+      const record = formRecords.value.find((item) => nativeValue(item) === value);
       return record?.value ?? value;
     };
     watch(query, () => {
@@ -351,7 +403,12 @@ export default defineComponent({
         dropdown.value?.querySelector('.i-select__option.is-highlighted')?.scrollIntoView?.({ block: 'nearest' });
       });
     });
+    const selectedLabel = computed(() => {
+      const labels = selectedValues.value.map((value) => selectedRecords.value.find((item) => sameValue(item.value, value))?.label ?? String(keyOf(value) ?? ''));
+      return props.multiple ? labels : labels[0] ?? '';
+    });
     expose({
+      selectedLabel,
       focus: () => {
         const target = input.value ?? root.value?.querySelector<HTMLElement>('[role="combobox"]');
         target?.focus();
@@ -366,6 +423,7 @@ export default defineComponent({
     });
 
     return () => {
+      selectedCache = selectedRecords.value;
       const visibleRecords = props.virtualized
         ? filteredRecords.value.slice(virtualOffset.value, virtualOffset.value + Math.ceil(props.height / props.itemHeight) + 4)
         : filteredRecords.value;
@@ -373,7 +431,7 @@ export default defineComponent({
       const comboboxValue = props.filterable || props.remote ? query.value : selectedRecords.value[0]?.label ?? placeholder.value;
       const nativeOptionOf = (item: OptionRecord) =>
         h('option', { value: nativeValue(item), disabled: item.disabled, key: `opt-${String(keyOf(item.value))}` }, item.label);
-      const nativeOptions = groupBy(optionRecords.value).map((group) =>
+      const nativeOptions = groupBy(formRecords.value).map((group) =>
         group.label === undefined
           ? group.items.map(nativeOptionOf)
           : h('optgroup', { label: group.label, key: `group-${group.label}` }, group.items.map(nativeOptionOf))
@@ -421,21 +479,21 @@ export default defineComponent({
             {slots.prefix?.()}
             {loading.value && <span class='i-select__loading'>{loadingText.value}</span>}
             {props.multiple ? displayRecords.map((item) => (
-              <span class={['i-select__tag', props.tagType && `i-select__tag--${props.tagType}`]} key={String(keyOf(item.value))}>
+              <span class={['i-select__tag', props.tagType && `i-select__tag--${props.tagType}`, `i-select__tag--${props.tagEffect}`]} key={String(keyOf(item.value))}>
                 {slots.tag ? slots.tag({ data: item }) : item.label}
                 <button type='button' aria-label={`移除 ${item.label}`} onClick={(event) => { event.stopPropagation(); removeTag(item.value); }}>×</button>
               </span>
             )) : !props.filterable && !props.remote && comboboxValue}
             {props.multiple && props.collapseTags && selectedRecords.value.length > displayRecords.length && <span
-              class='i-select__more'
+              class={['i-select__more', 'i-select__tag', props.tagType && `i-select__tag--${props.tagType}`, `i-select__tag--${props.tagEffect}`]}
               title={props.collapseTagsTooltip ? selectedRecords.value.map((item) => item.label).join('、') : undefined}>
               +{selectedRecords.value.length - displayRecords.length}
             </span>}
-            {(props.filterable || props.remote) && <input ref={input} value={query.value} aria-label='筛选选项' disabled={isDisabled()} placeholder={selectedRecords.value.length ? '' : placeholder.value} onInput={(event: Event) => {
-              if (!isDisabled()) loadRemote((event.target as HTMLInputElement).value);
-            }} onFocus={() => setOpen(true)} />}
-            {props.clearable && selectedValues.value.length > 0 && <button type='button' aria-label='清空' onClick={(event) => { event.stopPropagation(); clear(); }}>×</button>}
-            {slots.suffix?.()}
+            {(props.filterable || props.remote) && <input ref={input} value={query.value} autocomplete={props.autocomplete} aria-label='筛选选项' disabled={isDisabled()} placeholder={!props.multiple && selectedRecords.value[0] ? selectedRecords.value[0].label : selectedRecords.value.length ? '' : placeholder.value} onClick={(event: MouseEvent) => { event.stopPropagation(); setOpen(true); }} onInput={(event: Event) => {
+              if (!isDisabled() && !(event as InputEvent).isComposing) loadRemote((event.target as HTMLInputElement).value);
+            }} onCompositionend={(event: CompositionEvent) => { if (!isDisabled()) loadRemote((event.target as HTMLInputElement).value); }} onFocus={() => setOpen(true)} />}
+            {props.clearable && selectedValues.value.length > 0 && <button type='button' aria-label='清空' onClick={(event) => { event.stopPropagation(); clear(); }}><Icon icon={props.clearIcon} aria-hidden='true' /></button>}
+            {slots.suffix?.() ?? ((!props.remote || !props.filterable || props.remoteShowSuffix) && (props.suffixIcon ? <Icon icon={props.suffixIcon} aria-hidden='true' /> : <span class='i-select__suffix-caret' aria-hidden='true' />))}
           </div>}
           <select
             ref={select}
@@ -472,9 +530,7 @@ export default defineComponent({
                 aria-hidden={kept ? 'true' : undefined}
                 data-placement={position.placement.value}
                 style={[position.style.value, dropdownMinWidth.value ? { minWidth: dropdownMinWidth.value } : undefined, props.popperStyle, kept ? { display: 'none' } : undefined]}
-                onScroll={(event: Event) => {
-                  if (props.virtualized) virtualOffset.value = Math.floor((event.target as HTMLElement).scrollTop / props.itemHeight);
-                }}
+                onScroll={onPopupScroll}
                 onMousedown={(event) => event.stopPropagation()}>
                 {slots.header?.()}
                 {slots.dropdown ? slots.dropdown() : <>

@@ -39,22 +39,20 @@
   gap: 4px;
   padding: 2px 6px;
   border-radius: 3px;
-  background: #f0f2f5;
+  --i-select-tag-color: var(--i-info, #909399);
+  background: color-mix(in srgb, var(--i-select-tag-color) 15%, transparent);
 }
-.i-select__tag--primary {
-  background: color-mix(in srgb, var(--i-primary, #409eff) 15%, transparent);
+.i-select__tag--primary { --i-select-tag-color: var(--i-primary, #409eff); }
+.i-select__tag--success { --i-select-tag-color: var(--i-success, #67c23a); }
+.i-select__tag--warning { --i-select-tag-color: var(--i-warning, #e6a23c); }
+.i-select__tag--danger { --i-select-tag-color: var(--i-danger, #f56c6c); }
+.i-select__tag--dark {
+  background: var(--i-select-tag-color);
+  color: #fff;
 }
-.i-select__tag--success {
-  background: color-mix(in srgb, var(--i-success, #67c23a) 15%, transparent);
-}
-.i-select__tag--warning {
-  background: color-mix(in srgb, var(--i-warning, #e6a23c) 15%, transparent);
-}
-.i-select__tag--danger {
-  background: color-mix(in srgb, var(--i-danger, #f56c6c) 15%, transparent);
-}
-.i-select__tag--info {
-  background: color-mix(in srgb, var(--i-info, #909399) 15%, transparent);
+.i-select__tag--plain {
+  border: 1px solid var(--i-select-tag-color);
+  background: transparent;
 }
 .i-select__group {
   padding: 6px 12px 2px;
@@ -131,3 +129,5 @@
   opacity: 0.6;
   pointer-events: none;
 }
+
+.i-select__suffix-caret::before { content: '⌄'; }

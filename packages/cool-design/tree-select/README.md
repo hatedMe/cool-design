@@ -95,3 +95,5 @@
 单选清空默认提交 `undefined`。依赖原默认值 `null` 的页面可以显式设置 `:value-on-clear="null"`。布尔清空值可用于双向绑定，树节点的键继续使用字符串或数字。
 
 `valueKey` 在缺少 `nodeKey` 时提供节点键。设置 `name` 后，表单会按名称提交所选节点键。可用 `appendTo` 指定浮层容器。
+
+`clear-icon` 与 `suffix-icon` 接受 `string | Component`。`tag-effect` 接受 `'light' | 'dark' | 'plain'`。`label({ value, label })` 可自定义已选标签。搜索输入接受 `autocomplete`，远程过滤支持 `debounce`（默认 `300` 毫秒）和 `remote-show-suffix`。下拉滚动触发 `popup-scroll({ scrollTop, scrollLeft })`，抵达边缘触发 `end-reached(direction)`。通过真实 Select 实例的 `selectRef.selectedLabel` 读取当前标签。
