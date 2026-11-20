@@ -10,6 +10,7 @@ import {
 import { Teleport } from 'vue';
 import Tree from '../tree';
 import type { TreeData, TreeExposed, TreeKey, TreeLoadFunction, TreePropsMapping, TreeNode, TreeFilterMethod } from '../tree/types';
+import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useField } from '../form/context';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 export interface TreeSelectNode extends TreeData {
@@ -22,7 +23,7 @@ export default defineComponent({
   name: 'i-tree-select',
   props: {
     modelValue: {
-      type: [String, Number, Array] as PropType<string | number | (string | number)[] | null>,
+      type: [String, Number, Boolean, Array] as PropType<string | number | boolean | (string | number)[] | null>,
       default: null
     },
     data: { type: Array as PropType<TreeSelectNode[]>, default: () => [] },
@@ -46,6 +47,8 @@ export default defineComponent({
     placeholder: { type: String, default: '请选择' },
     disabled: Boolean,
     clearable: Boolean,
+    emptyValues: Array as PropType<unknown[]>,
+    valueOnClear: { type: [String, Number, Boolean, Function], default: undefined },
     validateEvent: { type: Boolean, default: true },
     teleported: { type: Boolean, default: true },
     persistent: Boolean,
@@ -89,8 +92,12 @@ export default defineComponent({
       close: () => close()
     });
 
+    const { getValueOnClear, isEmptyValue } = useEmptyValues({
+      emptyValues: computed(() => props.emptyValues),
+      valueOnClear: computed(() => props.valueOnClear)
+    });
     const selectedValues = computed<(string | number)[]>(() =>
-      Array.isArray(props.modelValue) ? props.modelValue : props.modelValue == null ? [] : [props.modelValue]
+      Array.isArray(props.modelValue) ? props.modelValue : (typeof props.modelValue === 'boolean' || props.modelValue == null || isEmptyValue(props.modelValue)) ? [] : [props.modelValue]
     );
     const labelMap = computed(() => {
       const map = new Map<string | number, string>();
@@ -129,7 +136,7 @@ export default defineComponent({
         if (query.value) treeRef.value?.filter(query.value);
       });
     };
-    const commit = (result: string | number | (string | number)[] | null) => {
+    const commit = (result: unknown) => {
       emit('update:modelValue', result);
       emit('change', result);
       if (props.validateEvent) field?.validate?.('change');
@@ -171,7 +178,7 @@ export default defineComponent({
       commit(selectedValues.value.filter((item) => item !== value));
     };
     const onClear = () => {
-      commit(props.multiple ? [] : null);
+      commit(props.multiple ? [] : getValueOnClear());
       emit('clear');
     };
 

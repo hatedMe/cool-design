@@ -1,8 +1,9 @@
 import { DOMWrapper, flushPromises, mount } from '@vue/test-utils';
-import { nextTick } from 'vue';
+import { h, nextTick } from 'vue';
 import { beforeEach, describe, expect, test } from 'vitest';
 
 import TreeSelect from '..';
+import ConfigProvider from '../../config-provider';
 import type { TreeSelectNode } from '../tree-select';
 
 // 下拉面板默认传送到 document.body，测试中用文档级查询访问传送内容。
@@ -224,4 +225,59 @@ test('函数标签在树挂载前回退到数据标签，挂载后使用节点�
   await nextTick();
   expect(wrapper.text()).toContain('层级1');
   wrapper.unmount();
+});
+
+test('TreeSelect 遵循 Provider 空值及单选清空工厂', async () => {
+  let calls = 0;
+  const valueOnClear = () => { calls++; return undefined; };
+  const wrapper = mount(ConfigProvider, {
+    props: { emptyValues: ['none'], valueOnClear: 0 },
+    slots: { default: () => [
+      h(TreeSelect, { modelValue: 'none', clearable: true }),
+      h(TreeSelect, { modelValue: 1, clearable: true }),
+      h(TreeSelect, { modelValue: 'a', clearable: true, valueOnClear }),
+      h(TreeSelect, { modelValue: ['a'], multiple: true, clearable: true, valueOnClear })
+    ] }
+  });
+  const [empty, inherited, local, multiple] = wrapper.findAllComponents(TreeSelect);
+  const clear = 'button[aria-label="清空"]';
+  expect(empty.find(clear).exists()).toBe(false);
+  expect(calls).toBe(0);
+  await inherited.get(clear).trigger('click');
+  await local.get(clear).trigger('click');
+  await multiple.get(clear).trigger('click');
+  expect(inherited.emitted('update:modelValue')).toEqual([[0]]);
+  expect(inherited.emitted('change')).toEqual([[0]]);
+  expect(local.emitted('update:modelValue')).toEqual([[undefined]]);
+  expect(local.emitted('change')).toEqual([[undefined]]);
+  expect(local.emitted('clear')).toEqual([[]]);
+  expect(multiple.emitted('update:modelValue')).toEqual([[[]]]);
+  expect(calls).toBe(1);
+  wrapper.unmount();
+});
+
+test('TreeSelect 的双向绑定接受布尔清空结果', async () => {
+  const warnings: string[] = [];
+  let value: string | boolean = 'a';
+  const wrapper = mount(TreeSelect, {
+    props: { modelValue: 'a', clearable: true, emptyValues: [false], valueOnClear: false,
+      'onUpdate:modelValue': (next: unknown) => { if (typeof next === 'boolean') value = next; } },
+    global: { config: { warnHandler: (warning) => warnings.push(warning) } }
+  });
+  await wrapper.get('button[aria-label="清空"]').trigger('click');
+  expect(value).toBe(false);
+  await wrapper.setProps({ modelValue: value });
+  expect(wrapper.find('button[aria-label="清空"]').exists()).toBe(false);
+  expect(warnings).toEqual([]);
+  wrapper.unmount();
+});
+
+test('TreeSelect 单选清空默认返回 undefined，可显式保留 null', async () => {
+  for (const props of [{}, { valueOnClear: null }]) {
+    const wrapper = mount(TreeSelect, { props: { ...props, modelValue: 'a', clearable: true } });
+    await wrapper.get('button[aria-label="清空"]').trigger('click');
+    expect(wrapper.emitted('update:modelValue')).toEqual([[props.valueOnClear]]);
+    expect(wrapper.emitted('change')).toEqual([[props.valueOnClear]]);
+    wrapper.unmount();
+  }
 });

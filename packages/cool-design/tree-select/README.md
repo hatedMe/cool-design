@@ -29,7 +29,7 @@
 
 | 参数            | 说明                                       | 类型                                       | 默认值   |
 | --------------- | ------------------------------------------ | ------------------------------------------ | -------- |
-| `modelValue`    | 选中值，多选时为数组                       | `string \| number \| (string \| number)[] \| null` | `null`   |
+| `modelValue`    | 选中值，多选时为数组                       | `string \| number \| boolean \| (string \| number)[] \| null` | `null`   |
 | `data`          | 树形节点数据                               | `TreeSelectNode[]`                         | `[]`     |
 | `props` | 字段映射：`label` / `children` / `disabled` / `isLeaf` / `class`，与 Tree 一致 | `TreePropsMapping` | `{}` |
 | `node-key` | 节点唯一标识字段及选中值字段 | `string` | `value` |
@@ -50,6 +50,8 @@
 | `maxCollapseTags` | 折叠时显示的标签数                       | `number`                                   | `1`      |
 | `placeholder`   | 占位文本                                   | `string`                                   | `请选择` |
 | `clearable`     | 是否可清空                                 | `boolean`                                  | `false`  |
+| `emptyValues` | 单选中视作未选中的值 | `unknown[]` | 继承 ConfigProvider |
+| `valueOnClear` | 单选清空值或工厂，多选清空为 `[]` | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider |
 | `disabled`      | 是否禁用                                   | `boolean`                                  | `false`  |
 | `validateEvent` | 选中变化时触发表单校验                     | `boolean`                                  | `true`   |
 | `teleported`    | 下拉面板是否传送到 body                    | `boolean`                                  | `true`   |
@@ -86,3 +88,5 @@
 当前版本不提供自定义节点插槽。
 
 > 以上为当前支持的 Tree 参数；未完整透传 Tree / Select 的全部属性、事件、插槽和实例方法。多选仍沿用父子联动结果包含父子键值的现有行为。
+
+单选清空默认提交 `undefined`。依赖原默认值 `null` 的页面可以显式设置 `:value-on-clear="null"`。布尔清空值可用于双向绑定，树节点的键继续使用字符串或数字。
