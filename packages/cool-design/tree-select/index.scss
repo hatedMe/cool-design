@@ -80,3 +80,10 @@
   border: 1px solid var(--i-border-color, #dcdfe6);
   border-radius: 4px;
 }
+
+.i-tree-select--small .i-tree-select__control {
+  min-height: 28px;
+}
+.i-tree-select--large .i-tree-select__control {
+  min-height: 40px;
+}

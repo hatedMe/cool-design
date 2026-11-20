@@ -49,6 +49,7 @@
 | `collapseTags`  | 多选时折叠标签                             | `boolean`                                  | `false`  |
 | `maxCollapseTags` | 折叠时显示的标签数                       | `number`                                   | `1`      |
 | `placeholder`   | 占位文本                                   | `string`                                   | `请选择` |
+| `size` | 触发器尺寸 | `small\|default\|large` | 继承 FormItem、Form 或 ConfigProvider |
 | `clearable`     | 是否可清空                                 | `boolean`                                  | `false`  |
 | `emptyValues` | 单选中视作未选中的值 | `unknown[]` | 继承 ConfigProvider |
 | `valueOnClear` | 单选清空值或工厂，多选清空为 `[]` | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider |

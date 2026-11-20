@@ -1,6 +1,7 @@
 import {
   computed,
   defineComponent,
+  inject,
   nextTick,
   ref,
   watch,
@@ -11,7 +12,8 @@ import { Teleport } from 'vue';
 import Tree from '../tree';
 import type { TreeData, TreeExposed, TreeKey, TreeLoadFunction, TreePropsMapping, TreeNode, TreeFilterMethod } from '../tree/types';
 import { useEmptyValues } from '../../hooks/use-empty-values';
-import { useField } from '../form/context';
+import { useConfig, type Size } from '../config-provider/context';
+import { formKey, useField } from '../form/context';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 export interface TreeSelectNode extends TreeData {
   value?: string | number;
@@ -46,6 +48,7 @@ export default defineComponent({
     maxCollapseTags: { type: Number, default: 1 },
     placeholder: { type: String, default: '请选择' },
     disabled: Boolean,
+    size: String as PropType<Size>,
     clearable: Boolean,
     emptyValues: Array as PropType<unknown[]>,
     valueOnClear: { type: [String, Number, Boolean, Function], default: undefined },
@@ -62,6 +65,9 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'clear', 'visible-change', 'remove-tag'],
   setup(props, { emit, expose }) {
     const field = useField();
+    const form = inject(formKey, undefined);
+    const config = useConfig();
+    const size = computed(() => props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size);
     const root = ref<HTMLElement>();
     const treeRef = ref<TreeExposed>();
     const dropdown = ref<HTMLElement>();
@@ -119,7 +125,7 @@ export default defineComponent({
       return map;
     });
     const labelOf = (value: string | number) => labelMap.value.get(value) ?? String(value);
-    const isDisabled = () => props.disabled || !!field?.disabled?.();
+    const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
 
     const close = () => {
       if (!open.value) return;
@@ -169,7 +175,7 @@ export default defineComponent({
       close();
     };
     const onCheck = (_data: TreeData, info: { checkedKeys: TreeKey[] }) => {
-      if (syncing.value || !props.multiple) return;
+      if (syncing.value || !props.multiple || isDisabled()) return;
       commit([...info.checkedKeys] as (string | number)[]);
     };
     const removeTag = (value: string | number) => {
@@ -178,10 +184,12 @@ export default defineComponent({
       commit(selectedValues.value.filter((item) => item !== value));
     };
     const onClear = () => {
+      if (isDisabled()) return;
       commit(props.multiple ? [] : getValueOnClear());
       emit('clear');
     };
 
+    watch(isDisabled, (disabled) => { if (disabled) close(); });
     watch(query, (value) => {
       treeRef.value?.filter(value);
     });
@@ -199,7 +207,7 @@ export default defineComponent({
       return (
         <span
           ref={root}
-          class={['i-tree-select', open.value && 'is-open', isDisabled() && 'is-disabled']}
+          class={['i-tree-select', `i-tree-select--${size.value}`, open.value && 'is-open', isDisabled() && 'is-disabled']}
           id={field?.id}
           aria-invalid={field?.invalid() ? 'true' : undefined}
           aria-describedby={field?.invalid() ? field.errorId : undefined}>

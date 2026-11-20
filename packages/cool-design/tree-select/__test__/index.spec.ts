@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, test } from 'vitest';
 
 import TreeSelect from '..';
 import ConfigProvider from '../../config-provider';
+import Form from '../../form';
 import type { TreeSelectNode } from '../tree-select';
 
 // 下拉面板默认传送到 document.body，测试中用文档级查询访问传送内容。
@@ -280,4 +281,19 @@ test('TreeSelect 单选清空默认返回 undefined，可显式保留 null', asy
     expect(wrapper.emitted('change')).toEqual([[props.valueOnClear]]);
     wrapper.unmount();
   }
+});
+
+test('TreeSelect 继承直挂 Form 尺寸与动态禁用', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, size: 'large' },
+    slots: { default: () => h(TreeSelect, { data, modelValue: 'a', teleported: false }) }
+  });
+  const select = wrapper.getComponent(TreeSelect);
+  expect(select.classes()).toContain('i-tree-select--large');
+  await select.get('.i-tree-select__control').trigger('click');
+  expect(select.emitted('visible-change')).toEqual([[true]]);
+  await wrapper.setProps({ disabled: true });
+  expect(select.emitted('visible-change')).toEqual([[true], [false]]);
+  expect(select.get('.i-tree-select__control').attributes('disabled')).toBeDefined();
+  wrapper.unmount();
 });
