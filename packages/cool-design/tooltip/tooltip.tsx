@@ -27,6 +27,10 @@ export default defineComponent({
     canOpen: Function as PropType<(reference: FloatingReference) => boolean>,
     trigger: { type: [String, Array] as PropType<Trigger | Trigger[]>, default: 'hover' },
     persistent: Boolean,
+    eager: Boolean,
+    contentRole: { type: String, default: 'tooltip' },
+    closeOnOutside: { type: Boolean, default: undefined },
+    arrowClass: String,
     showAfter: { type: Number, default: 0 },
     hideAfter: { type: Number, default: 200 },
     autoClose: { type: Number, default: 0 },
@@ -83,7 +87,7 @@ export default defineComponent({
       offset: () => props.offset,
       appendTo: () => props.appendTo,
       zIndex: () => props.zIndex,
-      closeOnOutside: () => !props.virtualTriggering && props.visible === null,
+      closeOnOutside: () => props.closeOnOutside ?? (!props.virtualTriggering && props.visible === null),
       close: () => closeTooltip()
     });
 
@@ -236,13 +240,13 @@ export default defineComponent({
     });
 
     return () => {
-      const kept = props.persistent && shown.value && !open.value;
+      const kept = props.persistent && (shown.value || props.eager) && !open.value;
       const panel = open.value || kept ? (
         <div
           id={tooltipId}
           ref={floating}
           class={['i-tooltip', `i-tooltip--${props.effect}`, props.popperClass]}
-          role='tooltip'
+          role={props.contentRole}
           aria-hidden={kept ? 'true' : undefined}
           style={[position.style.value, props.popperStyle, kept ? { display: 'none' } : undefined]}
           data-placement={position.placement.value}
@@ -250,7 +254,7 @@ export default defineComponent({
           onMouseleave={onPanelLeave}>
           {props.showArrow && (
             <span
-              class='i-tooltip__arrow'
+              class={['i-tooltip__arrow', props.arrowClass]}
               style={position.arrowStyle.value}
               data-horizontal={position.placement.value.split('-')[0] === 'top' || position.placement.value.split('-')[0] === 'bottom' ? 'center' : position.placement.value.split('-')[0]}
               data-vertical={position.placement.value.split('-')[0] === 'top' || position.placement.value.split('-')[0] === 'bottom' ? position.placement.value.split('-')[0] : position.placement.value.split('-')[1] || 'center'}

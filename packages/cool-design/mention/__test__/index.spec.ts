@@ -162,9 +162,14 @@ test('Mention 禁用 Form 后拒绝选择已打开的建议', async () => {
   option.element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
   expect(mention.emitted('update:modelValue')).toEqual(updates);
   expect(mention.emitted('select')).toBeUndefined();
-  expect(mention.get('[role="listbox"]').attributes('aria-hidden')).toBe('true');
-  expect(mention.get('[role="listbox"]').attributes('style')).toContain('display: none');
+  expect(mention.get('.i-mention__dropdown').attributes('aria-hidden')).toBe('true');
+  expect(mention.get('.i-mention__dropdown').attributes('style')).toContain('display: none');
   expect(input.attributes('disabled')).toBeDefined();
   expect(mention.classes()).toContain('i-control--large');
   wrapper.unmount();
+});
+
+test('exposes the Tooltip instance that renders suggestions', () => {
+  const wrapper = mount(Mention);
+  expect(typeof wrapper.vm.tooltip?.updatePopper).toBe('function');
 });

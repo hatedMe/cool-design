@@ -9,8 +9,9 @@ import {
   type CSSProperties,
   type PropType
 } from 'vue';
-import { Teleport } from 'vue';
-import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
+import { normalizeClass } from 'vue';
+import Tooltip, { type TooltipInstance } from '../tooltip';
+import type { FloatingOptions, Placement } from '../../../src/utils/use-floating';
 import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useComposition } from '../../hooks/index.ts';
@@ -65,7 +66,7 @@ export default defineComponent({
     const config = useConfig();
     const { isComposing, handleCompositionStart, handleCompositionEnd } = useComposition();
     const inputRef = ref<HTMLInputElement | HTMLTextAreaElement>();
-    const floating = ref<HTMLElement>();
+    const tooltip = ref<TooltipInstance>();
     const open = ref(false);
     const pattern = ref('');
     const activePrefix = ref('@');
@@ -85,17 +86,6 @@ export default defineComponent({
         const label = String(option[labelKey.value] ?? option[valueKey.value] ?? '');
         return filter ? filter(pattern.value, option) : label.toLowerCase().includes(pattern.value.toLowerCase());
       });
-    });
-
-    const position = useFloating({
-      open,
-      reference: inputRef,
-      floating,
-      placement: () => props.popperOptions?.placement ?? props.placement,
-      fallbackPlacements: () => props.fallbackPlacements,
-      close: () => setOpen(false),
-      closeOnOutside: () => true,
-      options: () => ({ offset: props.offset, ...props.popperOptions })
     });
 
     const setOpen = (value: boolean) => {
@@ -169,7 +159,7 @@ export default defineComponent({
           commitValue(text);
         }
       }
-      emit('select', option);
+      emit('select', option, activePrefix.value);
       setOpen(false);
     };
     const onChange = (event: Event) => {
@@ -179,6 +169,7 @@ export default defineComponent({
 
     const onKeydown = (event: KeyboardEvent) => {
       if (isDisabled()) return;
+      if (isComposing.value || event.isComposing) return;
       const element = inputRef.value;
       if (event.key === 'Escape') {
         setOpen(false);
@@ -228,6 +219,7 @@ export default defineComponent({
 
     expose({
       input: inputRef,
+      tooltip,
       dropdownVisible: computed(() => open.value)
     });
 
@@ -243,7 +235,7 @@ export default defineComponent({
         rows: props.type === 'textarea' ? props.rows : undefined,
         onInput: (event: Event) => {
           // IME 组合期间跳过触发符探测，组合结束后再统一处理。
-          if (!isComposing.value) handleInput(event);
+          if (!isComposing.value && !(event as InputEvent).isComposing) handleInput(event);
         },
         onCompositionstart: handleCompositionStart,
         onCompositionend: (event: CompositionEvent) => {
@@ -273,18 +265,16 @@ export default defineComponent({
               ×
             </button>
           )}
-          {(() => {
-            if (!open.value && !props.persistent) return null;
-            const panel = (
-              <div
-                ref={floating}
-                class={['i-mention__dropdown', `i-mention__dropdown--${props.effect}`, props.popperClass]}
-                style={[position.style.value, props.popperStyle, !open.value && { display: 'none' }]}
-                aria-hidden={!open.value || undefined}
-                data-placement={position.placement.value}
-                role='listbox'>
+          <Tooltip ref={tooltip} virtualTriggering virtualRef={inputRef.value} visible={open.value}
+            trigger={[]} hideAfter={0} closeOnOutside persistent={props.persistent} eager contentRole='listbox' teleported={props.teleported}
+            placement={props.popperOptions?.placement ?? props.placement} fallbackPlacements={props.fallbackPlacements}
+            effect={props.effect} offset={props.popperOptions?.offset ?? props.offset}
+            popperClass={normalizeClass(['i-mention__dropdown', `i-mention__dropdown--${props.effect}`, props.popperClass])}
+            popperStyle={props.popperStyle} showArrow={props.showArrow} arrowClass='i-mention__arrow'
+            onUpdate:visible={(value: boolean) => { if (!value) setOpen(false); }}>
+            {{ content: () => (
+              <div class='i-mention__list'>
                 {slots.header?.()}
-                {props.showArrow && <div class='i-mention__arrow' style={position.arrowStyle.value} aria-hidden='true' />}
                 {props.loading && (
                   <div class='i-mention__loading'>{slots.loading?.() ?? '加载中…'}</div>
                 )}
@@ -312,9 +302,8 @@ export default defineComponent({
                   ))}
                 {slots.footer?.()}
               </div>
-            );
-            return props.teleported ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
-          })()}
+            ) }}
+          </Tooltip>
         </div>
       );
     };

@@ -75,3 +75,5 @@
 | `dropdownVisible` | 下拉是否展开             |
 
 Mention 的尺寸依次取组件、FormItem、Form 和 ConfigProvider。Form 禁用时，已打开的建议面板会关闭，输入和选项提交也会禁用。
+
+实例的 `tooltip` 为实际 `TooltipInstance`，可调用 `updatePopper()`。`input` 仍提供原生 `HTMLInputElement | HTMLTextAreaElement`，可用于读取和设置光标。`select` 的第二个参数为当前匹配的前缀。

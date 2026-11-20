@@ -3,6 +3,7 @@ import Component from './mention';
 import './index.scss';
 export type { MentionFilterOption, MentionOption, MentionOptionProps } from './mention';
 export interface MentionInstance {
+  readonly tooltip: import('../tooltip').TooltipInstance | undefined;
   readonly input: HTMLInputElement | HTMLTextAreaElement | null | undefined;
   readonly dropdownVisible: boolean;
 }
