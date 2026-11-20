@@ -149,3 +149,35 @@ test('表单内继承 size 与禁用，无表单时回退全局尺寸', async ()
   expect(fallback.find('.i-checkbox').classes()).not.toContain('is-small');
   expect(fallback.find('.i-checkbox').classes()).not.toContain('is-large');
 });
+
+test('Checkbox 和 CheckboxButton 继承直挂 Form 的禁用和尺寸', () => {
+  const wrapper = mount(CoolDesign.Form, {
+    props: { model: {}, disabled: true, size: 'small' },
+    slots: { default: () => [
+      h(Checkbox, { modelValue: false }),
+      h(CoolDesign.CheckboxButton, { modelValue: false }),
+      h(CheckboxGroup, { modelValue: [], options: [{ value: 'a', label: 'A' }] })
+    ] }
+  });
+  const button = wrapper.getComponent(CoolDesign.CheckboxButton);
+  expect(button.classes()).toContain('is-small');
+  expect(button.attributes('disabled')).toBeDefined();
+  expect(wrapper.getComponent(Checkbox).classes()).toContain('is-small');
+  const native = wrapper.findAll('input[type="checkbox"]');
+  expect(native.length).toBeGreaterThan(0);
+  for (const input of native) expect(input.attributes('disabled')).toBeDefined();
+  wrapper.unmount();
+});
+
+test('CheckboxGroup 未设置尺寸时保留更近的 FormItem 尺寸', () => {
+  const wrapper = mount(CoolDesign.Form, {
+    props: { model: {}, size: 'small' },
+    slots: { default: () => h(CheckboxGroup, {}, {
+      default: () => h(CoolDesign.FormItem, { size: 'large' }, {
+        default: () => h(Checkbox, { value: 'a' })
+      })
+    }) }
+  });
+  expect(wrapper.getComponent(Checkbox).classes()).toContain('is-large');
+  wrapper.unmount();
+});

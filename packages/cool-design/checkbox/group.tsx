@@ -1,7 +1,8 @@
-import { defineComponent, h, nextTick, provide, type InjectionKey, type PropType } from 'vue';
+import { defineComponent, h, inject, nextTick, provide, type InjectionKey, type PropType } from 'vue';
 import Button from './button';
 import Checkbox from './checkbox';
-import { useField } from '../form/context';
+import { useConfig } from '../config-provider/context';
+import { formKey, useField } from '../form/context';
 export type CheckboxValue = string | number | boolean | Record<string, unknown>;
 export type CheckboxOptionProps = {
   value?: string | ((option: Record<string, unknown>) => CheckboxValue);
@@ -41,12 +42,16 @@ export default defineComponent({
   emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, slots }) {
     const field = useField();
+    const form = inject(formKey, undefined);
+    const config = useConfig();
+    const disabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
+    const size = () => props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size;
     provide(checkboxGroupKey, {
       get modelValue() {
         return props.modelValue;
       },
       get disabled() {
-        return props.disabled;
+        return disabled();
       },
       get size() {
         return props.size;
@@ -58,6 +63,7 @@ export default defineComponent({
         return props.max;
       },
       update(value, checked) {
+        if (disabled()) return;
         const next = props.modelValue.filter((item) => !checkboxValueEqual(item, value));
         if (checked) next.push(value);
         if (props.min !== undefined && next.length < props.min) return;
@@ -87,7 +93,7 @@ export default defineComponent({
         });
       return h(
         props.tag,
-        { ...attrs, class: ['i-checkbox-group', props.size && `is-${props.size}`], role: 'group' },
+        { ...attrs, class: ['i-checkbox-group', `is-${size()}`], role: 'group' },
         children
       );
     };
