@@ -1,6 +1,9 @@
-import type { RuleItem, ValidateOption, ValidateResult, Value, Values } from 'async-validator';
+import type { RuleItem, ValidateOption, ValidateResult, Value, Values, ValidateFieldsError } from 'async-validator';
 
 export type FormItemProp = string | string[];
+export type FormFieldPaths = FormItemProp | FormItemProp[];
+export type FormValidateCallback = (isValid: boolean, invalidFields?: ValidateFieldsError) => void | Promise<void>;
+export type FormValidateState = '' | 'error' | 'validating' | 'success';
 
 export interface FormRule {
   required?: boolean;
@@ -23,24 +26,26 @@ export interface FormRule {
   ) => ValidateResult;
   asyncValidator?: RuleItem['asyncValidator'];
 }
-export interface FormFieldContext {
-  prop: string;
-  validate: (trigger?: 'blur' | 'change') => Promise<boolean>;
-  resetField: () => void;
-  clearValidate: () => void;
+export interface FormFieldContext extends FormItemInstance {
+  readonly prop: string;
   scrollTo?: (offset?: number) => void;
   focus: () => void;
   error?: () => string;
 }
 export interface FormInstance {
-  validate(): Promise<boolean>;
-  validateField(props?: string | string[]): Promise<boolean>;
-  resetFields(): void;
-  clearValidate(): void;
-  scrollToField(props?: string | string[]): void;
+  validate(callback?: FormValidateCallback): Promise<boolean>;
+  validateField(props?: FormFieldPaths, callback?: FormValidateCallback): Promise<boolean>;
+  resetFields(props?: FormFieldPaths): void;
+  clearValidate(props?: FormFieldPaths): void;
+  scrollToField(props?: FormFieldPaths): void;
+  getField(prop: FormItemProp): FormFieldContext | undefined;
+  setInitialValues(model: Record<string, unknown>): void;
   fields: FormFieldContext[];
 }
 export interface FormItemInstance {
+  readonly validateState: FormValidateState;
+  readonly validateMessage: string;
+  setInitialValue: (value: unknown) => void;
   validate: (trigger?: 'blur' | 'change') => Promise<boolean>;
   resetField: () => void;
   clearValidate: () => void;

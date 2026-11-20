@@ -13,6 +13,7 @@
 | `prop`          | 字段路径，支持 `a.b[0].c` 或 `['a', 'b', '0', 'c']`，省略时仅用于布局 | `string \| string[]`            | —      |
 | `label`         | 字段标签，显示 Form 的 `labelSuffix` 后缀                  | `string`                        | —      |
 | `rules`         | 单项校验规则，优先于 Form 的同名字段规则                   | `FormRule \| FormRule[]`        | —      |
+| `validateStatus` | 校验状态，可选 `''` / `validating` / `success` / `error` | `FormValidateState` | `''` |
 | `error`         | 手动指定错误信息，优先于校验结果                           | `string`                        | —      |
 | `required`      | 是否显示必填星号（不自动添加校验规则）                     | `boolean`                       | `false` |
 | `labelPosition` | 覆盖 Form 的标签位置：`left` / `right` / `top`             | `string`                        | —      |
@@ -27,6 +28,7 @@
 | --------- | ------------------------------------------ |
 | `default` | 一个表单输入控件                           |
 | `label`   | 自定义标签内容                             |
+| `validateStatus` | 校验状态，可选 `''` / `validating` / `success` / `error` | `FormValidateState` | `''` |
 | `error`   | 自定义错误内容，作用域参数 `{ error }`     |
 
 ### 实例方法
@@ -36,6 +38,9 @@
 | `validate(trigger?)`          | 校验本字段，`trigger` 可选 `blur` / `change` |
 | `resetField()`                | 恢复字段初值并清除错误                     |
 | `clearValidate()`             | 清除错误并使旧异步结果失效                 |
+| `setInitialValue(value)` | 更新字段的重置初值 |
+
+实例属性 `validateState` 和 `validateMessage` 分别提供当前校验状态和消息，类型为 `FormValidateState` 和 `string`。
 
 ## 使用说明
 

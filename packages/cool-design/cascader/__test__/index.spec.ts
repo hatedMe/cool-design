@@ -356,7 +356,7 @@ describe('test `Cascader` component', () => {
     const { wrapper, model, form } = createForm([
       { required: true, type: 'array', message: '请选择地区', trigger: 'change' }
     ]);
-    await expect(form.validate()).rejects.toEqual({ region: ['请选择地区'] });
+    await expect(form.validate()).rejects.toMatchObject({ region: [{ message: '请选择地区', field: 'region' }] });
     await flushPromises();
     expect(wrapper.text()).toContain('请选择地区');
     await open(wrapper);

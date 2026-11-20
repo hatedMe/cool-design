@@ -15,7 +15,7 @@ const rules: Record<string, FormRule[]> = {
     }
   ]
 };
-const submit = () => form.value?.validate();
+const submit = () => form.value?.validate().catch(() => undefined);
 </script>
 <template>
   <Form ref="form" :model="model" :rules="rules">

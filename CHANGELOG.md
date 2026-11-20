@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Form 增加选择性重置与清除、字段查询、重置初值设置及校验状态。`validate` 和 `validateField` 的失败字段映射改为 `{ message, field, fieldValue }[]`。`validateField` 省略回调时，失败改为拒绝 Promise，依赖失败返回 `false` 的调用可传入回调或捕获拒绝。
+
 - 修复消息确认框根入口缺少静态服务方法及构建后子路径默认导出丢失；新增 `ElMessageBox` 可调用入口，保留 `MessageBox` 声明式组件用法。
 - Form 支持 `validator(rule, value, callback)`、`asyncValidator` 和多触发器。FormItem 接受数组路径，`fields` 和表单校验错误映射中的 `items[0].name` 统一为 `items.0.name`。
 

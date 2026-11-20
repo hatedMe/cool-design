@@ -20,7 +20,9 @@ const rules: Record<string, FormRule[]> = {
 async function submit() {
   // 等待本次失焦触发的字段校验启动，再执行提交校验。
   await nextTick();
-  result.value = (await form.value!.validate()) ? `已保存：${model.name}` : '请检查表单内容';
+  await form.value?.validate((valid) => {
+    result.value = valid ? `已保存：${model.name}` : '请检查表单内容';
+  });
 }
 function reset() {
   form.value?.resetFields();

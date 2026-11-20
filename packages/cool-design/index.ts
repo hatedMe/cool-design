@@ -104,7 +104,7 @@ import type { AppContext } from 'vue';
 export { ClickOutside, InfiniteScroll, LoadingDirective, VPopover, directives, installDirectives } from './directives';
 export type { PopoverDirectiveValue } from './popover';
 import './style/index.scss';
-export type { FormRule, FormInstance, FormFieldContext, FormItemInstance } from './form';
+export type { FormRule, FormInstance, FormFieldContext, FormItemInstance, FormValidateCallback, FormValidateState, FormItemProp, FormFieldPaths } from './form';
 export type { SortChange } from './table';
 export const TableColumn = TableColumnComponent;
 export type TableColumn<T extends object = Record<string, unknown>> = import('./table/types').TableColumn<T>;

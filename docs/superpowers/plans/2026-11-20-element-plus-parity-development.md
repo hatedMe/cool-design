@@ -52,7 +52,7 @@
 
 ### 03. Form 实例与状态协议
 
-- [ ] 文件：`form/form.tsx`、`form-item/form-item.tsx`、`form/types.ts`、测试和 README。
+- [x] 文件：`form/form.tsx`、`form-item/form-item.tsx`、`form/types.ts`、测试和 README。
 - 补 validate/validateField callback 与 Promise 契约、官方错误字段结构、指定字段 resetFields/clearValidate、getField、scroll-into-view-options、validate-status 和校验状态暴露；根据基线复核初始值设置 API。
 - 验收：仅指定字段被重置/清除；失败 reject、callback 参数、错误对象正确；既有无参数调用保持可用。
 - 依赖：02。验证：Form 全部测试及全部表单组件回归。
@@ -294,6 +294,7 @@
 - 计划：独立审查发现3处缺漏，已修订并复审通过；计划提交 `6e121cd`。
 - 01：完成。旧实现回归测试2项失败，修复后定向136项、全量117文件1134项通过；build、typecheck、typecheck:docs、lint通过（4个既有警告）。独立审查通过，无未解决问题；审查者额外验证实际ESM/CJS服务调用、声明式挂载与安装。修复及本条记录属于同一提交，可用 `git log --grep="修复消息确认框公开入口"` 查询。
 - 02：完成。兼容三参数/异步校验、触发器数组和数组字段路径；独立审查提出的动态字段迁移、实例注销、规则短路、过期整表校验和错误合并问题均已增加红绿回归并修复。Form35项、关联165项、全量1149项测试及两项类型/lint通过（4个既有警告），独立复审通过，无未解决问题。提交可用 `git log --grep="修复表单规则与动态字段校验协议"` 查询。单参数 validator 沿用旧协议，默认/剩余参数隐藏签名的官方调用用 asyncValidator 显式选择，README已说明。
-- 03–38：待执行。
+- 03：完成。Form 42 项、关联组件共 104 个文件 1004 项测试通过，类型、文档类型与 lint 通过（4 条既有文档警告）。独立审查和两次复审通过，无未解决问题。修改覆盖校验回调与错误结构、指定字段重置与清除、路径滚动、`getField`、`setInitialValues` 和 FormItem 校验状态。验证包含重复路径迁移、过期校验、类型化数组和普通类实例重置。提交可用 `git log --grep="修复表单实例方法与校验状态"` 查询。
+- 04–38：待执行。
 
 ?????????

@@ -1,7 +1,8 @@
 import { defineComponent, nextTick, provide, watch, type PropType } from 'vue';
 import type { Size } from '../config-provider/context';
-import { formKey, normalizeFieldPath, type Field } from './context';
-import type { FormRule } from './types';
+import { cloneFormValue, formKey, getFieldPathParts, getFieldValue, normalizeFieldPath, setFieldValue, type Field } from './context';
+import type { ValidateError, ValidateFieldsError } from 'async-validator';
+import type { FormFieldPaths, FormInstance, FormItemProp, FormRule, FormValidateCallback } from './types';
 export default defineComponent({
   name: 'i-form',
   props: {
@@ -20,6 +21,7 @@ export default defineComponent({
     statusIcon: Boolean,
     scrollToError: Boolean,
     scrollToErrorOffset: { type: Number, default: undefined },
+    scrollIntoViewOptions: { type: [Boolean, Object] as PropType<boolean | ScrollIntoViewOptions>, default: true },
     validateOnRuleChange: { type: Boolean, default: true }
   },
   emits: ['submit', 'validate'],
@@ -34,8 +36,26 @@ export default defineComponent({
     );
     const fields = new Map<Field, string>();
     let registrationVersion = 0;
-    const resetFields = () => {
-      for (const field of fields.keys()) field.reset();
+    const initialValues = new Map<string, unknown>();
+    const getKeys = (paths?: FormFieldPaths) =>
+      (Array.isArray(paths) ? paths : paths ? [paths] : []).map(normalizeFieldPath);
+    const selectFields = (paths?: FormFieldPaths) => {
+      const keys = getKeys(paths);
+      return [...fields].filter(([, key]) => !keys.length || keys.includes(key));
+    };
+    const getField = (path: FormItemProp) => {
+      const key = normalizeFieldPath(path);
+      return [...fields].find(([, registeredPath]) => registeredPath === key)?.[0];
+    };
+    const resetFields = (paths?: FormFieldPaths) => {
+      const keys = getKeys(paths);
+      for (const [field] of selectFields(paths)) field.resetField();
+      const active = new Set(fields.values());
+      for (const [key, value] of initialValues) {
+        if (!active.has(key) && (!keys.length || keys.includes(key))) {
+          setFieldValue(props.model, getFieldPathParts(key), cloneFormValue(value));
+        }
+      }
     };
     watch(
       () => props.rules,
@@ -48,12 +68,23 @@ export default defineComponent({
       model: () => props.model!,
       rules: () => props.rules,
       register: (key, field) => {
-        if (fields.get(field) === key) return;
+        const previous = fields.get(field);
+        if (previous === key) return;
+        if (previous !== undefined) {
+          initialValues.delete(previous);
+          initialValues.delete(key);
+        }
+        if (initialValues.has(key)) field.setInitialValue(initialValues.get(key));
+        else initialValues.set(key, cloneFormValue(field.getInitialValue()));
         fields.set(field, key);
         registrationVersion++;
       },
       unregister: (field) => {
-        if (fields.delete(field)) registrationVersion++;
+        const key = fields.get(field);
+        if (key === undefined) return;
+        initialValues.set(key, cloneFormValue(field.getInitialValue()));
+        fields.delete(field);
+        registrationVersion++;
       },
       disabled: () => props.disabled,
       size: () => props.size,
@@ -65,67 +96,77 @@ export default defineComponent({
       hideRequiredAsterisk: () => props.hideRequiredAsterisk,
       requireAsteriskPosition: () => props.requireAsteriskPosition,
       inlineMessage: () => props.inlineMessage,
-      statusIcon: () => props.statusIcon
+      statusIcon: () => props.statusIcon,
+      scrollIntoViewOptions: () => props.scrollIntoViewOptions
     });
-    expose({
-      async validate(): Promise<boolean> {
-        const currentModel = modelVersion;
-        const currentRegistration = registrationVersion;
-        const registered = [...fields];
-        const results = await Promise.all(registered.map(([field]) => field.validate()));
-        await nextTick();
-        if (currentModel !== modelVersion || currentRegistration !== registrationVersion) {
-          return Promise.reject({});
-        }
-        const invalidFields = new Map<string, string[]>();
+    const validateField = async (paths?: FormFieldPaths, callback?: FormValidateCallback) => {
+      const currentModel = modelVersion;
+      const currentRegistration = registrationVersion;
+      const registered = selectFields(paths);
+      const results = await Promise.all(registered.map(([field]) => field.check()));
+      await nextTick();
+      const stale = currentModel !== modelVersion || currentRegistration !== registrationVersion;
+      const invalid = results.findIndex((result) => result !== true);
+      if (!stale && invalid === -1) {
+        await callback?.(true);
+        return true;
+      }
+      let invalidFields: ValidateFieldsError = {};
+      if (!stale) {
+        const errors = new Map<string, ValidateError[]>();
         results.forEach((result, index) => {
-          if (result === false) {
-            const [field, key] = registered[index];
-            const messages = invalidFields.get(key) ?? [];
-            messages.push(field.error?.() ?? '校验失败');
-            invalidFields.set(key, messages);
-          }
+          if (!Array.isArray(result)) return;
+          const key = registered[index][1];
+          errors.set(key, [...(errors.get(key) ?? []), ...result]);
         });
-        const invalid = results.indexOf(false);
-        if (invalid >= 0) {
-          const [field] = registered[invalid];
+        invalidFields = Object.fromEntries(errors);
+        if (errors.size) {
+          const [field] = registered[results.findIndex(Array.isArray)];
           if (props.scrollToError) field.scrollTo?.(props.scrollToErrorOffset);
           field.focus();
-          return Promise.reject(Object.fromEntries(invalidFields));
         }
-        return true;
+      }
+      if (callback) {
+        await callback(false, invalidFields);
+        return false;
+      }
+      return Promise.reject(invalidFields);
+    };
+    const instance: FormInstance = {
+      validate: (callback) => validateField(undefined, callback),
+      validateField,
+      resetFields,
+      clearValidate(paths) {
+        for (const [field] of selectFields(paths)) field.clearValidate();
       },
-      async validateField(props?: string | string[]) {
-        const keys = props ? (Array.isArray(props) ? props : [props]).map(normalizeFieldPath) : undefined;
-        const results = await Promise.all(
-          [...fields].filter(([, key]) => !keys || keys.includes(key)).map(([field]) => field.validate())
-        );
-        return results.every((result) => result !== false);
+      scrollToField(paths) {
+        if (paths === undefined) {
+          fields.keys().next().value?.scrollTo?.();
+          return;
+        }
+        const directPath = Array.isArray(paths) && paths.length && paths.every((part) => typeof part === 'string')
+          ? getField(paths.join('.'))
+          : undefined;
+        const field = directPath ?? getKeys(paths).map(getField).find(Boolean);
+        field?.scrollTo?.();
       },
-      resetFields() {
-        resetFields();
-      },
-      clearValidate() {
-        for (const field of fields.keys()) field.clear();
-      },
-      scrollToField(props?: string | string[]) {
-        const keys = props ? (Array.isArray(props) ? props : [props]).map(normalizeFieldPath) : undefined;
-        const registered = [...fields];
-        const match = keys ? keys.map((key) => registered.find(([, path]) => path === key)).find(Boolean) : registered[0];
-        match?.[0].scrollTo?.();
+      getField,
+      setInitialValues(model) {
+        for (const key of initialValues.keys()) {
+          initialValues.set(key, cloneFormValue(getFieldValue(model, getFieldPathParts(key))));
+        }
+        for (const [field, key] of fields) {
+          const value = getFieldValue(model, getFieldPathParts(key));
+          initialValues.set(key, cloneFormValue(value));
+          field.setInitialValue(value);
+        }
       },
       get fields() {
-        return [...fields].map(([field, prop]) => ({
-          prop,
-          validate: field.validate,
-          resetField: field.reset,
-          clearValidate: field.clear,
-          scrollTo: field.scrollTo,
-          focus: field.focus,
-          error: field.error
-        }));
+        return [...fields.keys()];
       }
-    });
+    };
+    expose(instance);
+
     return () => (
       <form
         class={['i-form', props.inline && 'is-inline', `i-form--label-${props.labelPosition}`]}

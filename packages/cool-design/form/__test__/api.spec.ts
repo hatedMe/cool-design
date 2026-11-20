@@ -23,7 +23,7 @@ test('Form validate 事件逐字段上报校验结果', async () => {
     attachTo: document.body
   });
   const form = wrapper.vm as unknown as FormInstance;
-  await expect(form.validate()).rejects.toEqual({ name: ['姓名必填'] });
+  await expect(form.validate()).rejects.toMatchObject({ name: [{ message: '姓名必填' }] });
   expect(onValidate).toHaveBeenCalledWith('name', false, '姓名必填');
   expect(onValidate).toHaveBeenCalledWith('age', true, undefined);
   wrapper.unmount();
@@ -146,7 +146,7 @@ test('validate 失败拒绝并携带无效字段映射，通过时 resolve true'
     slots: { default: () => h(FormItem, { prop: 'name', label: '姓名' }, () => h('input')) }
   });
   const form = wrapper.vm as unknown as FormInstance;
-  await expect(form.validate()).rejects.toEqual({ name: ['姓名必填'] });
+  await expect(form.validate()).rejects.toMatchObject({ name: [{ message: '姓名必填' }] });
   model.name = '有效值';
   await expect(form.validate()).resolves.toBe(true);
 });
@@ -190,8 +190,177 @@ test('scroll-to-error 与 scrollToErrorOffset 滚动定位无效字段', async (
     attachTo: document.body
   });
   const form = wrapper.vm as unknown as FormInstance;
-  await expect(form.validate()).rejects.toEqual({ name: ['必填'] });
+  await expect(form.validate()).rejects.toMatchObject({ name: [{ message: '必填' }] });
   expect(scrollTo).toHaveBeenCalled();
   scrollTo.mockRestore();
   wrapper.unmount();
+});
+test('Form 支持校验回调、字段状态、选择性操作和初始值更新', async () => {
+  const model = reactive({ user: { name: '' }, age: '' });
+  const name = ref<FormItemInstance>();
+  const callback = vi.fn();
+  const wrapper = mount(Form, {
+    props: { model, scrollIntoViewOptions: { block: 'end' } },
+    slots: {
+      default: () => [
+        h(FormItem, { ref: name, prop: ['user', 'name'], rules: { required: true, message: '必填' } }),
+        h(FormItem, { prop: 'age', rules: { required: true, message: '年龄必填' }, validateStatus: 'success' })
+      ]
+    }
+  });
+  const form = wrapper.vm as unknown as FormInstance;
+  await expect(form.validateField([['user', 'name']], callback)).resolves.toBe(false);
+  expect(callback).toHaveBeenCalledWith(false, {
+    'user.name': [{ message: '必填', field: 'user.name', fieldValue: '' }]
+  });
+  expect(name.value!.validateState).toBe('error');
+  expect(form.getField(['user', 'name'])).toBe(form.fields[0]);
+  expect(form.getField('age')?.validateState).toBe('success');
+  const scrollIntoView = vi.fn();
+  Object.defineProperty(wrapper.find('.i-form-item').element, 'scrollIntoView', { value: scrollIntoView });
+  form.scrollToField('user.name');
+  expect(scrollIntoView).toHaveBeenCalledWith({ block: 'end' });
+  await expect(form.validate()).rejects.toHaveProperty('age');
+  form.clearValidate('user.name');
+  expect(name.value!.validateState).toBe('');
+  expect(form.getField('age')?.validateState).toBe('error');
+  const initial = { user: { name: '初始值' }, age: '18' };
+  form.setInitialValues(initial);
+  expect(model.user.name).toBe('');
+  initial.user.name = '外部修改';
+  form.resetFields([['user', 'name']]);
+  expect(model).toEqual({ user: { name: '初始值' }, age: '' });
+  await expect(form.validateField('user.name', callback)).resolves.toBe(true);
+  expect(callback).toHaveBeenLastCalledWith(true);
+});
+
+test('复审：同路径字段迁移后保留字段可更新初值', async () => {
+  const path = ref('name');
+  const model = reactive({ name: '当前值', other: '' });
+  const wrapper = mount(Form, {
+    props: { model },
+    slots: { default: () => [h(FormItem, { prop: path.value }), h(FormItem, { prop: 'name' })] }
+  });
+  const form = wrapper.vm as unknown as FormInstance;
+  path.value = 'other';
+  await flushPromises();
+  form.setInitialValues({ name: '新初值', other: '其他' });
+  form.resetFields('name');
+  expect(model.name).toBe('新初值');
+});
+
+test('复审：值变更取消旧校验状态并保留更新一轮的状态', async () => {
+  const pending: Array<(error?: Error) => void> = [];
+  const model = reactive({ name: '旧值' });
+  const wrapper = mount(Form, {
+    props: { model, rules: { name: [{ validator: (_rule, _value, done) => { pending.push(done); } }] } },
+    slots: { default: () => h(FormItem, { prop: 'name' }) }
+  });
+  const form = wrapper.vm as unknown as FormInstance;
+  const field = form.getField('name')!;
+  const old = field.validate();
+  expect(field.validateState).toBe('validating');
+  model.name = '新值';
+  pending[0]();
+  await expect(old).resolves.toBe(false);
+  expect(field.validateState).toBe('');
+  const abandoned = field.validate();
+  model.name = '最新值';
+  const current = field.validate();
+  pending[1]();
+  await expect(abandoned).resolves.toBe(false);
+  expect(field.validateState).toBe('validating');
+  pending[2](new Error('最新错误'));
+  await expect(current).resolves.toBe(false);
+  expect(field.validateState).toBe('error');
+});
+
+test('复审：滚动支持直接数组路径、旧字段列表和空列表', () => {
+  const wrapper = mount(Form, {
+    props: { model: { items: [{ name: '' }], other: '' } },
+    slots: { default: () => [h(FormItem, { prop: 'items.0.name' }), h(FormItem, { prop: 'other' })] }
+  });
+  const form = wrapper.vm as unknown as FormInstance;
+  const scrolls = wrapper.findAll('.i-form-item').map(({ element }) => {
+    const scroll = vi.fn();
+    Object.defineProperty(element, 'scrollIntoView', { value: scroll });
+    return scroll;
+  });
+  form.scrollToField(['items', '0', 'name']);
+  expect(scrolls[0]).toHaveBeenCalledTimes(1);
+  form.scrollToField(['other', 'items.0.name']);
+  expect(scrolls[1]).toHaveBeenCalledTimes(1);
+  form.scrollToField([]);
+  expect(scrolls[0]).toHaveBeenCalledTimes(1);
+  form.scrollToField();
+  expect(scrolls[0]).toHaveBeenCalledTimes(2);
+});
+
+test('复审：重置复制类型化数组及其缓冲区', () => {
+  const model = reactive({ value: new Uint8Array([0]) });
+  const wrapper = mount(Form, {
+    props: { model },
+    slots: { default: () => h(FormItem, { prop: 'value' }) }
+  });
+  const form = wrapper.vm as unknown as FormInstance;
+  const value = new Uint8Array([1]);
+  form.setInitialValues({ value });
+  value[0] = 2;
+  form.resetFields();
+  expect(model.value.length).toBe(1);
+  expect(model.value[0]).toBe(1);
+  model.value[0] = 3;
+  form.resetFields();
+  expect(model.value[0]).toBe(1);
+});
+
+test('二轮：外部进行状态在模型变更和旧内部校验完成后保持', async () => {
+  let finish: (() => void) | undefined;
+  const model = reactive({ name: '初值' });
+  const status = ref<FormItemInstance['validateState']>('validating');
+  const wrapper = mount(Form, {
+    props: { model, rules: { name: [{ validator: (_rule, _value, done) => { finish = done; } }] } },
+    slots: { default: () => h(FormItem, { prop: 'name', validateStatus: status.value }) }
+  });
+  const form = wrapper.vm as unknown as FormInstance;
+  const field = form.getField('name')!;
+  model.name = '编辑';
+  expect(field.validateState).toBe('validating');
+  const pending = field.validate();
+  status.value = 'success';
+  await flushPromises();
+  status.value = 'validating';
+  await flushPromises();
+  model.name = '再次编辑';
+  finish?.();
+  await expect(pending).resolves.toBe(false);
+  expect(field.validateState).toBe('validating');
+});
+
+test('二轮：重置保留类方法并隔离有自有函数的实例初值', () => {
+  class Value {
+    constructor(public data: { count: number }) {}
+    read() { return this.data.count; }
+  }
+  class WithFunction extends Value {
+    format = function (this: Value) { return String(this.read()); };
+  }
+  const model = reactive({ plain: new Value({ count: 0 }), withFunction: new WithFunction({ count: 0 }) });
+  const wrapper = mount(Form, {
+    props: { model },
+    slots: { default: () => [h(FormItem, { prop: 'plain' }), h(FormItem, { prop: 'withFunction' })] }
+  });
+  const form = wrapper.vm as unknown as FormInstance;
+  const plain = new Value({ count: 1 });
+  const withFunction = new WithFunction({ count: 2 });
+  form.setInitialValues({ plain, withFunction });
+  plain.data.count = 3;
+  withFunction.data.count = 4;
+  form.resetFields();
+  expect(model.plain.read()).toBe(1);
+  expect(model.withFunction).toBeInstanceOf(WithFunction);
+  expect(model.withFunction.format()).toBe('2');
+  model.withFunction.data.count = 5;
+  form.resetFields();
+  expect(model.withFunction.format()).toBe('2');
 });

@@ -9,9 +9,9 @@ import {
   watch,
   type PropType
 } from 'vue';
-import Schema, { type RuleItem, type ValidateResult } from 'async-validator';
-import { formKey, fieldKey, getFieldPathParts, nextFieldId, normalizeFieldPath, type Field } from '../form/context';
-import type { FormItemProp, FormRule } from '../form/types';
+import Schema, { type RuleItem, type ValidateError, type ValidateResult } from 'async-validator';
+import { formKey, fieldKey, getFieldPathParts, getFieldValue, nextFieldId, normalizeFieldPath, cloneFormValue, setFieldValue, type Field } from '../form/context';
+import type { FormItemProp, FormRule, FormValidateState } from '../form/types';
 
 function normalizeRule(rule: FormRule): RuleItem {
   const { validator, asyncValidator } = rule;
@@ -66,6 +66,7 @@ export default defineComponent({
     showMessage: { type: Boolean, default: true },
     rules: [Object, Array] as PropType<FormRule | FormRule[]>,
     error: String,
+    validateStatus: String as PropType<FormValidateState>,
     inlineMessage: Boolean,
     size: String as PropType<'small' | 'default' | 'large'>
   },
@@ -75,41 +76,39 @@ export default defineComponent({
     const labelId = computed(() => (props.label || slots.label ? `${id}-label` : undefined));
     const errorId = `${id}-error`;
     const error = ref('');
-    const passed = ref(false);
+    const validateState = ref<FormValidateState>(props.validateStatus ?? '');
+    let internalValidationPending = false;
+    watch(() => props.validateStatus, (status) => {
+      internalValidationPending = false;
+      validateState.value = status ?? '';
+    });
+    watch(() => props.error, (message) => {
+      internalValidationPending = false;
+      validateState.value = message ? 'error' : '';
+    }, { immediate: !!props.error });
     const root = ref<HTMLElement>();
     let revision = 0;
     const displayError = computed(() => props.error ?? error.value);
     const pathParts = computed(() => getFieldPathParts(props.prop));
     const propKey = computed(() => pathParts.value.join('.'));
-    const getValue = () =>
-      propKey.value
-        ? pathParts.value.reduce<unknown>(
-            (value, part) => (value as Record<string, unknown> | undefined)?.[part],
-            form?.model()
-          )
-        : undefined;
-    const setValue = (value: unknown) => {
-      if (!propKey.value || !form) return;
-      const parts = pathParts.value;
-      let target = form.model() as Record<string, unknown>;
-      parts.slice(0, -1).forEach((part) => {
-        if (!target[part] || typeof target[part] !== 'object') target[part] = {};
-        target = target[part] as Record<string, unknown>;
-      });
-      target[parts[parts.length - 1]] = value;
-    };
+    const getValue = () => propKey.value ? getFieldValue(form?.model(), pathParts.value) : undefined;
     watch(
       getValue,
       () => {
         revision++;
+        if (internalValidationPending) {
+          internalValidationPending = false;
+          validateState.value = displayError.value ? 'error' : props.validateStatus ?? '';
+        }
       },
       { flush: 'sync', deep: true }
     );
     let initial: unknown;
     const clear = () => {
       revision++;
+      internalValidationPending = false;
       error.value = '';
-      passed.value = false;
+      validateState.value = '';
     };
     const rulesOf = (key: string): FormRule[] => {
       if (props.rules) return Array.isArray(props.rules) ? props.rules : [props.rules];
@@ -121,7 +120,7 @@ export default defineComponent({
         Object.keys(formRules).find((candidate) => normalizeFieldPath(candidate) === key);
       return (ruleKey && formRules[ruleKey]) || [];
     };
-    const validate = async (trigger?: 'blur' | 'change') => {
+    const check: Field['check'] = async (trigger) => {
       const prop = props.prop;
       const key = propKey.value;
       if (!prop || !key) return true;
@@ -134,6 +133,8 @@ export default defineComponent({
       );
       if (trigger && !rules.length) return !error.value;
       const current = ++revision;
+      internalValidationPending = rules.length > 0;
+      if (internalValidationPending) validateState.value = 'validating';
       try {
         const schemaKey = key in Object.prototype ? 'value' : key;
         await new Schema({ [schemaKey]: rules.map(normalizeRule) }).validate(
@@ -141,25 +142,30 @@ export default defineComponent({
           { suppressWarning: true, firstFields: true }
         );
         if (current !== revision) return false;
+        internalValidationPending = false;
         error.value = '';
-        passed.value = rules.length > 0;
+        validateState.value = rules.length ? 'success' : '';
         form?.emitValidate?.(prop, true);
         return true;
       } catch (reason) {
         if (current !== revision) return false;
-        const first = (reason as { errors?: Array<{ message?: string }> })?.errors?.[0];
-        error.value = first?.message || (reason instanceof Error ? reason.message : '校验失败');
-        passed.value = false;
+        internalValidationPending = false;
+        const errors = (reason as { errors?: ValidateError[] })?.errors;
+        error.value = errors?.[0]?.message || (reason instanceof Error ? reason.message : '校验失败');
+        validateState.value = 'error';
         form?.emitValidate?.(prop, false, error.value);
-        return false;
+        return errors?.length
+          ? errors.map((entry) => ({ message: entry.message, field: key, fieldValue: entry.fieldValue }))
+          : [{ message: error.value, field: key, fieldValue: value }];
       }
     };
+    const validate: Field['validate'] = async (trigger) => (await check(trigger)) === true;
     provide(fieldKey, {
       id,
       labelId: undefined,
       getLabelId: () => labelId.value,
       errorId,
-      invalid: () => !!displayError.value,
+      invalid: () => !!displayError.value || validateState.value === 'error',
       disabled: () => !!form?.disabled?.(),
       size: () => props.size ?? form?.size?.(),
       validate: (trigger) => {
@@ -172,13 +178,19 @@ export default defineComponent({
         window.scrollTo?.({ top: root.value.getBoundingClientRect().top + window.scrollY - offset });
         return;
       }
-      root.value.scrollIntoView?.({ block: 'center' });
+      root.value.scrollIntoView?.(form?.scrollIntoViewOptions() ?? { block: 'center' });
     };
     const field: Field = {
+      get prop() { return propKey.value; },
+      get validateState() { return validateState.value; },
+      get validateMessage() { return displayError.value; },
       validate,
-      clear,
-      reset: () => {
-        setValue(initial);
+      check,
+      clearValidate: clear,
+      getInitialValue: () => initial,
+      setInitialValue: (value) => { initial = cloneFormValue(value); },
+      resetField: () => {
+        if (form && propKey.value) setFieldValue(form.model(), pathParts.value, cloneFormValue(initial));
         clear();
       },
       focus: () =>
@@ -195,8 +207,7 @@ export default defineComponent({
       (key, previousKey) => {
         if (previousKey) clear();
         if (key) {
-          const value = getValue();
-          initial = value && typeof value === 'object' ? JSON.parse(JSON.stringify(value)) : value;
+          field.setInitialValue(getValue());
           form?.register(key, field);
         } else {
           form?.unregister(field);
@@ -209,9 +220,12 @@ export default defineComponent({
       form?.unregister(field);
     });
     expose({
+      get validateState() { return field.validateState; },
+      get validateMessage() { return field.validateMessage; },
       validate,
-      resetField: field.reset,
-      clearValidate: clear
+      resetField: field.resetField,
+      clearValidate: clear,
+      setInitialValue: field.setInitialValue
     });
     return () => {
       const labelPosition = props.labelPosition ?? form?.labelPosition?.() ?? 'right';
@@ -231,7 +245,8 @@ export default defineComponent({
           class={[
             'i-form-item',
             `i-form-item--label-${labelPosition}`,
-            { 'i-form-item--error': !!displayError.value }
+            { 'i-form-item--error': !!displayError.value || validateState.value === 'error' },
+            validateState.value && `is-${validateState.value}`
           ]}
           style={{
             '--i-form-item-label-width': typeof labelWidth === 'number' ? `${labelWidth}px` : labelWidth
@@ -246,11 +261,11 @@ export default defineComponent({
           )}
           <div class='i-form-item__content'>
             {slots.default?.()}
-            {statusIcon && (displayError.value || passed.value) && (
+            {statusIcon && (displayError.value || validateState.value === 'error' || validateState.value === 'success') && (
               <span
                 aria-hidden='true'
-                class={['i-form-item__status-icon', displayError.value ? 'is-error' : 'is-success']}>
-                {displayError.value ? '✗' : '✓'}
+                class={['i-form-item__status-icon', displayError.value || validateState.value === 'error' ? 'is-error' : 'is-success']}>
+                {displayError.value || validateState.value === 'error' ? '✗' : '✓'}
               </span>
             )}
             {displayError.value && props.showMessage && (

@@ -37,6 +37,7 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 | `statusIcon`    | 是否在字段后显示校验状态图标                               | `boolean`                       | `false` |
 | `scrollToError` | 校验失败时滚动到第一个错误字段                             | `boolean`                       | `false` |
 | `scrollToErrorOffset` | 滚动到错误字段时的顶部偏移量                         | `number`                        | —      |
+| `scrollIntoViewOptions` | 滚动参数 | `boolean \| ScrollIntoViewOptions` | `true` |
 | `validateOnRuleChange` | `rules` 变化后是否立即触发一次校验                 | `boolean`                       | `true`  |
 
 ### 事件
@@ -56,17 +57,19 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 
 | 方法                    | 说明                                 | 返回值             |
 | ----------------------- | ------------------------------------ | ------------------ |
-| `validate()`            | 校验全部字段，通过时 resolve `true`。失败时 reject 并携带 `invalidFields`（`prop → 错误消息数组`），同路径错误按字段登记顺序合并，并聚焦首个无效字段。校验期间模型或字段登记变化时，以空映射拒绝 | `Promise<boolean>` |
-| `resetFields()`         | 恢复字段注册时初值                   | `void`             |
-| `clearValidate()`       | 清除错误并使旧异步结果失效           | `void`             |
-| `validateField(props?)` | 校验指定字段                         | `Promise<boolean>` |
-| `scrollToField(props?)` | 滚动到指定字段（省略时第一个字段）   | `void`             |
+| `validate(callback?)`   | 校验全部字段，通过时 resolve `true`。失败时 reject 并携带 `invalidFields`（`prop → 错误对象数组`），同路径错误按字段登记顺序合并，并聚焦首个无效字段。校验期间模型或字段登记变化时，以空映射拒绝 | `Promise<boolean>` |
+| `resetFields(props?)`   | 恢复指定字段的初值                   | `void`             |
+| `clearValidate(props?)` | 清除指定字段的错误并使旧异步结果失效           | `void`             |
+| `validateField(props?, callback?)` | 校验指定字段                         | `Promise<boolean>` |
+| `scrollToField(props?)` | 滚动到指定字段。省略参数时滚动到第一个字段，传入空数组时不滚动   | `void`             |
+| `getField(prop)` | 获取路径匹配的首个字段 | `FormFieldContext \| undefined` |
+| `setInitialValues(model)` | 更新已有字段的重置初值 | `void` |
 
 ### 实例属性
 
 | 名称    | 说明                                             | 类型                  |
 | ------- | ------------------------------------------------ | --------------------- |
-| `fields` | 已注册字段上下文（`prop` / `validate` / `resetField` / `clearValidate` / `scrollTo` / `focus` / `error`） | `FormFieldContext[]` |
+| `fields` | 已注册字段上下文（`prop` / `validate` / `resetField` / `clearValidate` / `scrollTo` / `focus` / `error` / `validateState` / `validateMessage` / `setInitialValue`） | `FormFieldContext[]` |
 
 ### FormRule 校验规则
 
@@ -107,6 +110,8 @@ const rules: Record<string, FormRule[]> = {
 
 必填检查 null、undefined、空白字符串和空数组；false、0 有效。校验错误消息取规则或 async-validator 返回的 message。
 
-模板 ref 可标注 FormInstance：validate(): Promise<boolean> 校验全部字段，全部通过 resolve true，失败时拒绝并携带无效字段映射，同时聚焦首个无效字段；resetFields() 恢复注册时初值；clearValidate() 清除错误并使旧异步校验失效。校验期间模型变化使整体校验拒绝，需要重新提交。
+模板 ref 可标注 `FormInstance`。`validate` 和 `validateField` 成功时回调接收 `true`，Promise 兑现为 `true`。失败时，有回调则按 `(false, invalidFields)` 调用并兑现为 `false`，省略回调时 Promise 拒绝并传出错误映射。每个错误包含 `message`、`field` 和 `fieldValue`。`validateField`、`resetFields` 和 `clearValidate` 的字段列表支持 `["user.name", "age"]`，单个数组路径写作 `[["user", "name"]]`。省略字段参数时处理全部字段。`getField` 接收一个路径，可直接传入 `["user", "name"]`。
 
-submit(event) 已阻止原生提交；页面在 validate=true 后调用接口。默认插槽放 FormItem。每次编辑重挂载表单，以本次记录为初值。首版草稿为平面标量字段，复杂对象的独立草稿和初始快照由页面管理。
+`submit` 事件已阻止原生提交。校验通过后页面可调用提交接口。`setInitialValues` 更新重置快照，表单当前值由页面管理。快照会复制普通对象和数组、类实例的可枚举自有属性，以及日期、正则、集合和类型化数组等常见内建值。函数保留原引用。其他特殊内建对象由运行环境的结构化克隆处理，无法克隆时保留原引用。类的私有字段不属于可复制的自有属性。
+
+`scrollToField(["items", "0", "name"])` 优先查找完整路径 `items.0.name`。如果没有匹配项，则按原字段列表的顺序查找并滚动到首个匹配字段。

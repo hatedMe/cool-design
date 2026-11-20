@@ -44,7 +44,7 @@ test('自定义校验收到规则和字段值，并可通过同步回调返回�
       }
     }
   ]);
-  await expect(form.validate()).rejects.toEqual({ name: ['请修改 name'] });
+  await expect(form.validate()).rejects.toMatchObject({ name: [{ message: '请修改 name' }] });
   expect(w.get('[role="alert"]').text()).toBe('请修改 name');
   w.unmount();
 });
@@ -62,7 +62,7 @@ test('校验器只完成一次，重复回调和随后拒绝的 Promise 不会�
       asyncValidator: () => Promise.reject(new Error('第二条规则失败'))
     }
   ]);
-  await expect(form.validate()).rejects.toEqual({ name: ['第二条规则失败'] });
+  await expect(form.validate()).rejects.toMatchObject({ name: [{ message: '第二条规则失败' }] });
   expect(w.get('[role="alert"]').text()).toBe('第二条规则失败');
   w.unmount();
 });
@@ -80,9 +80,9 @@ test('较早的异步回调不覆盖同一字段较新的校验状态', async ()
   const old = form.validateField('name');
   expect(finishOld).toBeTypeOf('function');
   model.name = '新值';
-  await expect(form.validateField('name')).resolves.toBe(false);
+  await expect(form.validateField('name')).rejects.toHaveProperty('name');
   finishOld?.();
-  await expect(old).resolves.toBe(false);
+  await expect(old).rejects.toEqual({});
   expect(w.get('[role="alert"]').text()).toBe('最新错误');
   w.unmount();
 });
@@ -96,7 +96,7 @@ test('自定义校验器可以通过 Promise 成功并将抛错转换为校验�
       }
     }
   ]);
-  await expect(form.validate()).rejects.toEqual({ name: ['name 不可保留初值'] });
+  await expect(form.validate()).rejects.toMatchObject({ name: [{ message: 'name 不可保留初值' }] });
   model.name = '新值';
   await expect(form.validate()).resolves.toBe(true);
   w.unmount();
@@ -117,7 +117,9 @@ test('必填规则失败后立即结束当前字段的校验', async () => {
   const validation = form.validate().catch((errors: unknown) => errors);
   await flushPromises();
   expect(laterRuleCalled).toBe(false);
-  await expect(validation).resolves.toEqual({ name: ['姓名必填'] });
+  await expect(validation).resolves.toEqual({
+    name: [{ message: '姓名必填', field: 'name', fieldValue: '' }]
+  });
   w.unmount();
 });
 
@@ -147,8 +149,8 @@ test.each([{ prop: 'items[0].name' }, { prop: 'items.0.name' }, { prop: ['items'
     const form = wrapper.vm as unknown as FormInstance;
     expect(form.fields.map((field) => field.prop)).toEqual(['items.0.name']);
     model.items[0].name = '';
-    await expect(form.validateField('items[0].name')).resolves.toBe(false);
-    await expect(form.validate()).rejects.toEqual({ 'items.0.name': ['名称必填'] });
+    await expect(form.validateField('items[0].name')).rejects.toMatchObject({ 'items.0.name': [expect.any(Object)] });
+    await expect(form.validate()).rejects.toMatchObject({ 'items.0.name': [{ message: '名称必填' }] });
     expect(wrapper.emitted('validate')).toEqual([
       [prop, false, '名称必填'],
       [prop, false, '名称必填']
@@ -189,10 +191,10 @@ test('删除数组行后随存活实例迁移注册路径和重置初值', async
   await nextTick();
   expect(form.fields.map((field) => field.prop)).toEqual(['items.0.name']);
   model.items[0].name = '';
-  await expect(form.validateField('items.0.name')).resolves.toBe(false);
-  await expect(form.validate()).rejects.toEqual({ 'items.0.name': ['当前行必填'] });
+  await expect(form.validateField('items.0.name')).rejects.toMatchObject({ 'items.0.name': [expect.any(Object)] });
+  await expect(form.validate()).rejects.toMatchObject({ 'items.0.name': [{ message: '当前行必填' }] });
   finishOld?.(new Error('旧路径错误'));
-  await expect(old).resolves.toBe(false);
+  await expect(old).rejects.toEqual({});
   expect(wrapper.get('[role="alert"]').text()).toBe('当前行必填');
   form.resetFields();
   expect(model.items[0].name).toBe('第二行');
@@ -228,8 +230,8 @@ test.each([0, 1])('卸载同路径的第 %i 个实例后仍能校验另一个字
   visible.value = visible.value.filter((index) => index !== removed);
   await nextTick();
   expect(form.fields.map((field) => field.prop)).toEqual(['items.0.name']);
-  await expect(form.validateField(paths[removed])).resolves.toBe(false);
-  await expect(form.validate()).rejects.toEqual({ 'items.0.name': [`字段 ${1 - removed} 必填`] });
+  await expect(form.validateField(paths[removed])).rejects.toMatchObject({ 'items.0.name': [expect.any(Object)] });
+  await expect(form.validate()).rejects.toMatchObject({ 'items.0.name': [{ message: `字段 ${1 - removed} 必填` }] });
   wrapper.unmount();
 });
 
@@ -262,7 +264,7 @@ test.each([false, true])('字段迁移后旧整表校验不读取当前错误或
     prop.value = ['first'];
     await nextTick();
   }
-  await expect(form.validateField(prop.value[0])).resolves.toBe(false);
+  await expect(form.validateField(prop.value[0])).rejects.toEqual(expect.any(Object));
   const button = wrapper.get('button').element;
   button.focus();
   finishOld?.(new Error('旧路径错误'));
@@ -285,14 +287,14 @@ test('整表校验按实例登记顺序合并同路径的错误', async () => {
     }
   });
   const form = wrapper.vm as unknown as FormInstance;
-  await expect(form.validate()).rejects.toEqual({ 'items.0.name': ['首个字段必填', '第二个字段必填'] });
+  await expect(form.validate()).rejects.toMatchObject({ 'items.0.name': [{ message: '首个字段必填' }, { message: '第二个字段必填' }] });
   wrapper.unmount();
 });
 
 test('必填错误关联字段，校验聚焦，重置恢复初值', async () => {
   const { w, model, form } = createForm();
   model.name = '   ';
-  await expect(form.validate()).rejects.toEqual({ name: ['姓名必填'] });
+  await expect(form.validate()).rejects.toMatchObject({ name: [{ message: '姓名必填' }] });
   await flushPromises();
   expect(w.text()).toContain('姓名必填');
   expect(w.find('input').attributes('aria-invalid')).toBe('true');
@@ -336,7 +338,7 @@ test('仅 blur 触发的规则不会被无对应规则的 change 清空错误', 
   const input = w.find('input').element;
   input.value = '';
   input.dispatchEvent(new Event('input', { bubbles: true }));
-  await expect(form.validate()).rejects.toEqual({ name: ['姓名必填'] });
+  await expect(form.validate()).rejects.toMatchObject({ name: [{ message: '姓名必填' }] });
   await flushPromises();
   expect(w.text()).toContain('姓名必填');
   w.unmount();
@@ -392,7 +394,7 @@ test('使用 async-validator 校验嵌套路径', async () => {
         )
     })
   );
-  await expect(form.value!.validate()).rejects.toEqual({ 'user.name': ['请输入姓名'] });
+  await expect(form.value!.validate()).rejects.toMatchObject({ 'user.name': [{ message: '请输入姓名' }] });
   expect(w.text()).toContain('请输入姓名');
   model.user.name = '小明';
   expect(await form.value!.validateField('user.name')).toBe(true);
