@@ -166,9 +166,13 @@ export default defineComponent({
       else treeRef.value.setCurrentKey((selectedValues.value[0] ?? null) as TreeKey | null);
       syncing.value = false;
     };
-    watch(selectedValues, () => nextTick(syncTree), { deep: true });
-    watch(() => props.data, () => nextTick(syncTree), { deep: true });
-    watch(treeRef, () => nextTick(syncTree), { immediate: true });
+    const syncTreeAfterRender = async () => {
+      await nextTick();
+      syncTree();
+    };
+    watch(selectedValues, syncTreeAfterRender, { deep: true });
+    watch(() => props.data, syncTreeAfterRender, { deep: true });
+    watch(treeRef, syncTreeAfterRender, { immediate: true });
 
     const onNodeClick = (data: TreeData, node: TreeNode, instance: unknown) => {
       emit('node-click', data, node, instance);
