@@ -32,8 +32,8 @@ describe('test `TimeSelect` component', () => {
     const options = doc().findAll('[role="option"]');
     expect(options.map((item) => item.classes().includes('is-disabled'))).toEqual([
       true,
-      false,
-      false,
+      true,
+      true,
       true
     ]);
     await options[0].trigger('click');
@@ -141,4 +141,27 @@ test('TimeSelect 打开后禁用 Form 会关闭菜单', async () => {
   await wrapper.setProps({ disabled: true });
   expect(select.emitted('visible-change')).toEqual([[true], [false]]);
   wrapper.unmount();
+});
+
+test('formats options and submits keyboard selection from the raw grid', async () => {
+  const model = reactive({ time: '' });
+  const wrapper = mount({
+    render: () => h('form', [h(TimeSelect, {
+      modelValue: model.time, name: 'time', teleported: false,
+      start: '12:00', end: '13:10', step: '00:30', minTime: '12:00',
+      format: 'hh:mm A', includeEndTime: true,
+      'onUpdate:modelValue': (value: string) => (model.time = value)
+    })])
+  });
+  const control = wrapper.get('.i-time-select__control');
+  await control.trigger('click');
+  const options = wrapper.findAll('[role="option"]');
+  expect(options.map((item) => item.text())).toEqual(['12:00 中午', '12:30 中午', '01:00 下午', '01:10 下午']);
+  expect(options[0].attributes('aria-disabled')).toBe('true');
+  await control.setValue('01:10');
+  expect(wrapper.findAll('[role="option"]').map((item) => item.text())).toEqual(['01:10 下午']);
+  await control.trigger('keydown', { key: 'ArrowDown' });
+  await control.trigger('keydown', { key: 'Enter' });
+  expect(model.time).toBe('01:10 下午');
+  expect(new FormData(wrapper.get('form').element).getAll('time')).toEqual(['01:10 下午']);
 });
