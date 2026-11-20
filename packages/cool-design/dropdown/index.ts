@@ -4,7 +4,11 @@ import Component from './dropdown';
 import Menu from './dropdown-menu';
 import Item from './dropdown-item';
 
-export const Dropdown = withInstall(Component);
+export interface DropdownInstance {
+  handleOpen(): void;
+  handleClose(): void;
+}
+export const Dropdown = withInstall<typeof Component, DropdownInstance>(Component);
 export const DropdownMenu = withInstall(Menu);
 export const DropdownItem = withInstall(Item);
 export default Dropdown;
