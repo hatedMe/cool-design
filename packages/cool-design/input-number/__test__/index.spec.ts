@@ -135,3 +135,28 @@ test('InputNumber 禁用后不提交失焦草稿', async () => {
   expect(control.emitted('change')).toBeUndefined();
   wrapper.unmount();
 });
+
+test('rejects scientific text through keyboard and native input while preserving decimals', async () => {
+  const wrapper = mount(InputNumber, { props: { modelValue: 3, disabledScientific: true, precision: 1 } });
+  const input = wrapper.get('input');
+  const key = new KeyboardEvent('keydown', { key: 'e', bubbles: true, cancelable: true });
+  input.element.dispatchEvent(key);
+  expect(key.defaultPrevented).toBe(true);
+  await input.setValue('2e3');
+  expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  await input.setValue('-2.5');
+  expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([-2.5]);
+});
+
+test('retains the previous display when scientific text reaches native input', async () => {
+  const wrapper = mount(InputNumber, {
+    props: { modelValue: 3, disabledScientific: true, parser: (text: string) => Number.parseFloat(text) }
+  });
+  const input = wrapper.get('input');
+  await input.trigger('focus');
+  await input.setValue('2E+3');
+  expect(input.element.value).toBe('3');
+  expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  await input.setValue('20EUR');
+  expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([20]);
+});

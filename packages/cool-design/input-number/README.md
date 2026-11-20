@@ -77,3 +77,5 @@ const value = ref(1);
 
 - `focus()`：聚焦输入框
 - `blur()`：让输入框失去焦点
+
+`disabled-scientific`（`boolean`，默认 `false`）限制指数格式输入，覆盖键盘和粘贴。

@@ -44,6 +44,7 @@ export default defineComponent({
     tabindex: [String, Number],
     ariaLabel: String,
     formatter: Function as PropType<(value: number | null) => string>,
+    disabledScientific: Boolean,
     parser: Function as PropType<(value: string) => number | null>,
     valueOnClear: [Number, String, null] as PropType<number | null | 'min' | 'max'>,
     validateEvent: { type: Boolean, default: true }
@@ -83,7 +84,14 @@ export default defineComponent({
         if (props.validateEvent) nextTick(() => field?.validate('change'));
       }
     };
+    const isScientific = (text: string) => {
+      if (!props.disabledScientific) return false;
+      return props.parser
+        ? /^\s*[+-]?(?:\d+\.?\d*|\.\d+)[eE][+-]?\d+\s*$/.test(text)
+        : /^\s*[+-]?(?:\d+\.?\d*|\.\d+)[eE]/.test(text);
+    };
     const parse = (text: string): number | null => {
+      if (isScientific(text)) return null;
       if (props.parser) return props.parser(text);
       if (text.trim() === '') return null;
       const value = Number(text);
@@ -101,7 +109,12 @@ export default defineComponent({
     };
     const handleInput = (event: Event) => {
       if (isDisabled() || props.readonly) return;
-      const text = (event.target as HTMLInputElement).value;
+      const target = event.target as HTMLInputElement;
+      const text = target.value;
+      if (isScientific(text)) {
+        target.value = displayValue.value;
+        return;
+      }
       draft.value = text;
       const value = parse(text);
       if (value !== null) emit('update:modelValue', normalize(value));
@@ -151,7 +164,9 @@ export default defineComponent({
           onInput={handleInput}
           onBlur={handleBlur}
           onKeydown={(event: KeyboardEvent) => {
-            if (event.key === 'ArrowUp') {
+            if (props.disabledScientific && !props.parser && /^[eE]$/.test(event.key) && !event.ctrlKey && !event.metaKey && !event.altKey && !event.isComposing) {
+              event.preventDefault();
+            } else if (event.key === 'ArrowUp') {
               event.preventDefault();
               updateBy(props.step);
             } else if (event.key === 'ArrowDown') {
