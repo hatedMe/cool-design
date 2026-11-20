@@ -59,6 +59,8 @@
 // 数据展示
 @use '../table/index.scss' as *;
 @use '../table-v2/index.scss' as *;
+@use '../auto-resizer/index.scss' as *;
+@use '../check-tag/index.scss' as *;
 @use '../pagination/index.scss' as *;
 @use '../card/index.scss' as *;
 @use '../descriptions/index.scss' as *;

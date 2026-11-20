@@ -36,6 +36,7 @@ import FormItem from './form-item';
 import Table from './table';
 import TableColumnComponent from './table-column';
 import TableV2 from './table-v2';
+import AutoResizer from './auto-resizer';
 import Pagination from './pagination';
 import Dialog from './dialog';
 import Message, { ElMessage } from './message';
@@ -155,6 +156,7 @@ export {
   FormItem,
   Table,
   TableV2,
+  AutoResizer,
   Pagination,
   Dialog,
   Message,
@@ -267,6 +269,7 @@ const components = [
   FormItem,
   Table,
   TableV2,
+  AutoResizer,
   Pagination,
   Dialog,
   Message,
@@ -451,6 +454,7 @@ export {
   FormItem as ElFormItem,
   Table as ElTable,
   TableV2 as ElTableV2,
+  AutoResizer as ElAutoResizer,
   Pagination as ElPagination,
   Dialog as ElDialog,
   Affix as ElAffix,
@@ -569,6 +573,7 @@ declare module 'vue' {
     ElFormItem: typeof import('./index')['ElFormItem'];
     ElTable: typeof import('./index')['ElTable'];
     ElTableV2: typeof import('./index')['ElTableV2'];
+    ElAutoResizer: typeof import('./index')['ElAutoResizer'];
     ElPagination: typeof import('./index')['ElPagination'];
     ElDialog: typeof import('./index')['ElDialog'];
     ElAffix: typeof import('./index')['ElAffix'];
@@ -673,6 +678,7 @@ declare module 'vue' {
     IFormItem: typeof FormItem;
     ITable: typeof Table;
     ITableV2: typeof TableV2;
+    IAutoResizer: typeof AutoResizer;
     IPagination: typeof Pagination;
     IDialog: typeof Dialog;
     IAffix: typeof Affix;
@@ -801,3 +807,5 @@ export type { TransferInstance } from './transfer';
 export type { TreeV2Instance } from './tree-v2';
 export type { UploadInstance } from './upload';
 export type { TableInstance } from './table';
+
+export type { AutoResizerSize } from './auto-resizer';

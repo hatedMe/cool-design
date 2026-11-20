@@ -807,6 +807,9 @@ export const pages: Page[] = [
     ['states', '空态与加载', '无数据时显示空态，loading 遮罩阻止数据区域交互。'],
     ['advanced', '拖拽列宽、编辑与列显隐', '拖拽表头边缘调整列宽，双击编辑单元格，编程式控制列显示与顺序。']
   ]),
+  component('auto-resizer', 'AutoResizer 自动尺寸', '数据展示', [
+    ['basic', '自动测量虚拟表格', '由外部容器约束尺寸。']
+  ]),
   component('table-v2', 'TableV2 虚拟表格', '数据展示', [
     ['basic', '万行数据流畅滚动', '虚拟滚动只渲染可视行；列级 fixed 或 fixedColumns 可固定首尾列。']
   ]),
@@ -882,7 +885,7 @@ const componentNavigation: { title: string; ids: string[] }[] = [
     title: '数据展示',
     ids: [
       'avatar', 'badge', 'calendar', 'card', 'carousel', 'collapse', 'descriptions', 'empty', 'image',
-      'pagination', 'progress', 'result', 'skeleton', 'table', 'table-v2', 'tag', 'check-tag', 'timeline', 'tour',
+      'pagination', 'progress', 'result', 'skeleton', 'table', 'table-v2', 'auto-resizer', 'tag', 'check-tag', 'timeline', 'tour',
       'tree', 'tree-v2', 'statistic', 'segmented'
     ]
   },
