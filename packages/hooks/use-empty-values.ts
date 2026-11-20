@@ -6,9 +6,13 @@ export function useEmptyValues(options: { emptyValues?: MaybeRef<unknown[]>; val
   const emptyValues = computed(() => unref(options.emptyValues) ?? config.value.emptyValues ?? DEFAULT_EMPTY_VALUES);
   const valueOnClear = computed(() => {
     const local = unref(options.valueOnClear);
-    const value = local !== undefined ? local : config.value.valueOnClear;
-    return typeof value === 'function' ? value() : value;
+    return local !== undefined ? local : config.value.valueOnClear;
   });
+  const getValueOnClear = (defaultValue?: unknown) => {
+    const value = valueOnClear.value;
+    if (typeof value === 'function') return value();
+    return value === undefined ? defaultValue : value;
+  };
   const isEmptyValue = (value: unknown) => emptyValues.value.some((empty) => Object.is(empty, value));
-  return { emptyValues, valueOnClear, isEmptyValue };
+  return { emptyValues, valueOnClear, getValueOnClear, isEmptyValue };
 }
