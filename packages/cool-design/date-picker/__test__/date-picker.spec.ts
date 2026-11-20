@@ -1,6 +1,9 @@
+import { h } from 'vue';
 import { mount } from '@vue/test-utils';
 import { expect, test } from 'vitest';
 import DatePicker from '../date-picker';
+import DateTimePicker from '../date-time-picker';
+import ConfigProvider from '../../config-provider';
 
 test('DatePicker showConfirm 默认关闭并立即提交', async () => {
   const wrapper = mount(DatePicker, { props: { teleported: false } });
@@ -402,17 +405,17 @@ test('DatePicker 默认可清空且默认范围分隔符为横线', () => {
   expect(wrapper.find('button[aria-label="清空"]').exists()).toBe(true);
 });
 
-test('DatePicker dates 类型清空后保持空数组', async () => {
+test('DatePicker dates 类型默认清空为 null', async () => {
   const wrapper = mount(DatePicker, { props: { showConfirm: false,modelValue: ['2026-11-01'], type: 'dates', clearable: true } });
   await wrapper.get('button[aria-label="清空"]').trigger('click');
-  expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([[]]);
+  expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([null]);
 });
 
-test('DatePicker 范围使用自定义分隔符并清空为两个空值', async () => {
+test('DatePicker 范围使用自定义分隔符并默认清空为 null', async () => {
   const wrapper = mount(DatePicker, { props: { showConfirm: false,modelValue: ['2026-11-01', '2026-11-03'], range: true, rangeSeparator: '-', clearable: true } });
   expect(wrapper.get('.i-date-picker__separator').text()).toBe('-');
   await wrapper.get('button[aria-label="清空"]').trigger('click');
-  expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([[null, null]]);
+  expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([null]);
 });
 
 test('DatePicker 手动输入在确认前不触发 change', async () => {
@@ -481,4 +484,63 @@ test('DatePicker change 后紧接 blur 只提交一次', async () => {
   await input.trigger('change');
   await input.trigger('blur');
   expect(wrapper.emitted('change')?.length).toBe(1);
+});
+
+test('日期组件继承清空工厂，且显式 null 覆盖 Provider', async () => {
+  let calls = 0;
+  const valueOnClear = () => { calls++; return undefined; };
+  const wrapper = mount(ConfigProvider, {
+    props: { emptyValues: ['N/A'], valueOnClear },
+    slots: { default: () => [
+      h(DatePicker, { modelValue: '2026-11-04' }),
+      h(DateTimePicker, { modelValue: '2026-11-04 08:00:00', valueOnClear: null })
+    ] }
+  });
+  const [inherited, explicit] = wrapper.findAllComponents(DatePicker);
+  expect(calls).toBe(0);
+  const input = inherited.get('input');
+  (input.element as HTMLInputElement).value = 'N/A';
+  await input.trigger('input');
+  await input.trigger('change');
+  expect(inherited.emitted('update:modelValue')).toEqual([[undefined]]);
+  expect(inherited.emitted('change')).toEqual([[undefined]]);
+  expect(inherited.emitted('clear')).toEqual([[]]);
+  await explicit.get('button[aria-label="清空"]').trigger('click');
+  expect(explicit.emitted('update:modelValue')).toEqual([[null]]);
+  expect(calls).toBe(1);
+  wrapper.unmount();
+});
+
+test('日期输入框接受字符串化的数字空值，失焦不会重复清空', async () => {
+  let calls = 0;
+  const wrapper = mount(DatePicker, {
+    props: { modelValue: '2026-11-04', emptyValues: [0], valueOnClear: () => { calls++; return false; } }
+  });
+  await wrapper.get('input').setValue('0');
+  await wrapper.get('input').trigger('blur');
+  expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
+  expect(calls).toBe(1);
+  wrapper.unmount();
+});
+
+test('日期时间组件接受布尔清空结果写回', async () => {
+  const warnings: string[] = [];
+  const wrapper = mount(DateTimePicker, {
+    props: { modelValue: '2026-11-04 08:00:00', valueOnClear: false },
+    global: { config: { warnHandler: (warning) => warnings.push(warning) } }
+  });
+  await wrapper.get('button[aria-label="清空"]').trigger('click');
+  expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
+  await wrapper.setProps({ modelValue: false });
+  expect(wrapper.get('input').element.value).toBe('');
+  expect(warnings).toEqual([]);
+  wrapper.unmount();
+});
+
+test('日期时间戳 0 可以通过按钮清空', async () => {
+  const wrapper = mount(DatePicker, { props: { modelValue: 0 } });
+  expect(wrapper.get('input').element.value).not.toBe('');
+  await wrapper.get('button[aria-label="清空"]').trigger('click');
+  expect(wrapper.emitted('update:modelValue')).toEqual([[null]]);
+  wrapper.unmount();
 });

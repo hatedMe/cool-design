@@ -1,4 +1,5 @@
 import { Teleport, computed, defineComponent, h, markRaw, nextTick, onBeforeUnmount, onMounted, ref, toRaw, type Component, type PropType } from 'vue';
+import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useConfig, type Size } from '../config-provider/context';
 import { useField } from '../form/context';
 import { emitValue, formatDate, getWeekStart, parseFormattedDate, toDate, type DateModelValue, type DateValue, type TimeParts } from './date';
@@ -13,7 +14,7 @@ export default defineComponent({
   name: 'i-date-picker',
   inheritAttrs: false,
   props: {
-    modelValue: { type: [String, Number, Date, Array] as PropType<Model>, default: null },
+    modelValue: { type: [String, Number, Boolean, Date, Array] as PropType<Model | boolean>, default: null },
     type: { type: String as PropType<DatePickerType>, default: 'date' },
     format: String,
     valueFormat: String,
@@ -35,8 +36,8 @@ export default defineComponent({
     cellClassName: [String, Function] as PropType<string | ((date: Date) => string)>,
     showWeekNumber: Boolean,
     showFooter: { type: Boolean, default: true },
-    emptyValues: Array as PropType<DateValue[]>,
-    valueOnClear: { type: [String, Number, Date, Array] as PropType<DateModelValue>, default: null },
+    emptyValues: Array as PropType<unknown[]>,
+    valueOnClear: { type: [String, Number, Boolean, Date, Array, Function] as PropType<DateModelValue | boolean | (() => unknown)>, default: undefined },
     id: [String, Array] as PropType<string | string[]>,
     name: String,
     prefixIcon: [String, Object],
@@ -82,9 +83,17 @@ export default defineComponent({
     const timeDraft = ref<TimeParts>({ hour: 0, minute: 0, second: 0 });
     const lastInputValues: Array<string | undefined> = [];
     const pendingInputs: Array<string | undefined> = [];
+    const { emptyValues, getValueOnClear, isEmptyValue } = useEmptyValues({
+      emptyValues: computed(() => props.emptyValues),
+      valueOnClear: computed(() => props.valueOnClear)
+    });
+    const model = computed<Model>(() => {
+      const value = props.modelValue;
+      return typeof value === 'boolean' || isEmptyValue(value) ? null : value;
+    });
     const isRange = computed(() => {
       if (isMultiple.value) return false;
-      return props.range || props.type === 'daterange' || props.type === 'datetimerange' || props.type === 'monthrange' || props.type === 'yearrange' || props.type === 'quarterrange' || Array.isArray(props.modelValue);
+      return props.range || props.type === 'daterange' || props.type === 'datetimerange' || props.type === 'monthrange' || props.type === 'yearrange' || props.type === 'quarterrange' || Array.isArray(model.value);
     });
     const isMultiple = computed(() => props.type === 'dates' || props.type === 'months' || props.type === 'years' || props.type === 'quarters');
     const panelType = computed<DatePanelType>(() => props.type === 'datetime' || props.type === 'datetimerange' || props.type === 'daterange' ? 'date' : props.type === 'monthrange' || props.type === 'months' ? 'month' : props.type === 'quarter' || props.type === 'quarters' || props.type === 'quarterrange' ? 'quarter' : props.type === 'yearrange' || props.type === 'years' ? 'year' : props.type as DatePanelType);
@@ -99,7 +108,7 @@ export default defineComponent({
       return `${hour}${minute}${second}` || 'HH:mm:ss';
     });
     const position = useFloating({ open, reference, floating, placement: () => props.placement, fallbackPlacements: () => props.fallbackPlacements, options: () => props.popperOptions, close: () => close(), closeOnOutside: () => true });
-    const currentValues = (): Array<DateValue | null> => Array.isArray(props.modelValue) ? props.modelValue : [props.modelValue];
+    const currentValues = (): Array<DateValue | null> => Array.isArray(model.value) ? model.value : [model.value];
     const output = (date: Date): DateValue => emitValue(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`, props.valueFormat, props.type === 'datetime' || props.type === 'datetimerange') as DateValue;
     const isDisabled = (date: Date) => Boolean(props.disabledDate?.(date));
     const mergeDateTime = (date: Date, time: TimeParts) => new Date(date.getFullYear(), date.getMonth(), date.getDate(), time.hour, time.minute, time.second);
@@ -120,7 +129,7 @@ export default defineComponent({
         (unit === 'minute' && !formatValue.value.includes('ss')) ||
         (unit === 'hour' && !formatValue.value.includes('mm'));
       if (!complete) return;
-      const date = toDate(rangeDraft.value[activeIndex.value] || (Array.isArray(props.modelValue) ? props.modelValue[activeIndex.value] : props.modelValue));
+      const date = toDate(rangeDraft.value[activeIndex.value] || (Array.isArray(model.value) ? model.value[activeIndex.value] : model.value));
       if (!date) return;
       const next = output(mergeDateTime(date, timeDraft.value));
       if (isRange.value) {
@@ -221,26 +230,21 @@ export default defineComponent({
     };
     const close = () => { manualOpen.value = false; draftValue.value = null; hoverPreview.value = null; setOpen(false); };
     const updateInput = (index: number | undefined, value: string) => {
-      if (!value || props.emptyValues?.some((emptyValue) => String(emptyValue) === value)) {
-        pendingInputs[index ?? 0] = undefined;
-        return;
-      }
-      if (value === pendingInputs[index ?? 0]) return;
       pendingInputs[index ?? 0] = value;
-      return;
     };
     const clearValue = () => {
       if (disabledOf() || props.readonly) return;
       lastInputValues.length = 0;
       pendingInputs.length = 0;
-      const value = props.valueOnClear !== null ? props.valueOnClear : isMultiple.value ? [] : isRange.value ? [null, null] : null;
+      const value = getValueOnClear(null);
       emit('update:modelValue', value);
       emit('change', value); validate('change');
       emit('clear');
     };
     const commitInput = (index: number | undefined) => {
       const value = pendingInputs[index ?? 0];
-      if (!value || props.emptyValues?.some((emptyValue) => String(emptyValue) === value)) {
+      if (value === undefined) return;
+      if (value === '' || emptyValues.value.some((empty) => String(empty) === value)) {
         clearValue();
         return;
       }
@@ -253,7 +257,7 @@ export default defineComponent({
       const next = output(date);
       if (index == null) commit(next);
       else {
-        const values = Array.isArray(props.modelValue) ? [...props.modelValue] : [null, null];
+        const values = Array.isArray(model.value) ? [...model.value] : [null, null];
         values[index] = next;
         commit(values);
       }
@@ -261,7 +265,7 @@ export default defineComponent({
     const renderInput = (value: DateValue | null | undefined, index?: number) => (
       <>
         {index === 0 && props.prefixIcon && <span class='i-date-picker__prefix-icon'>{renderIcon(props.prefixIcon as string | Component, 'i-date-picker__icon')}</span>}
-        <input {...attrs} ref={index === 0 || index == null ? inputRef : undefined} class='i-date-picker__input' type='text' value={value ? formatDate(value, formatValue.value) : ''} placeholder={index === 0 ? props.startPlaceholder || props.placeholder : props.endPlaceholder || props.placeholder} disabled={disabledOf()} id={Array.isArray(props.id) ? props.id[index ?? 0] : props.id ?? (index == null ? field?.id : undefined)} name={props.name} readonly={props.readonly || !props.editable} role='combobox' aria-haspopup='dialog' aria-expanded={open.value} aria-controls={panelId} aria-disabled={disabledOf() || undefined} onClick={() => { if (index != null) activeIndex.value = index; setOpen(true); }} onInput={(event: Event) => updateInput(index, (event.target as HTMLInputElement).value)} onChange={() => commitInput(index)} onFocus={(event: FocusEvent) => emit('focus', event)} onBlur={(event: FocusEvent) => { commitInput(index); emit('blur', event); validate('blur'); }} onKeydown={(event: KeyboardEvent) => { if (event.key === 'Escape') close(); if (event.key === 'Enter') setOpen(!open.value); }} />
+        <input {...attrs} ref={index === 0 || index == null ? inputRef : undefined} class='i-date-picker__input' type='text' value={value != null ? formatDate(value, formatValue.value) : ''} placeholder={index === 0 ? props.startPlaceholder || props.placeholder : props.endPlaceholder || props.placeholder} disabled={disabledOf()} id={Array.isArray(props.id) ? props.id[index ?? 0] : props.id ?? (index == null ? field?.id : undefined)} name={props.name} readonly={props.readonly || !props.editable} role='combobox' aria-haspopup='dialog' aria-expanded={open.value} aria-controls={panelId} aria-disabled={disabledOf() || undefined} onClick={() => { if (index != null) activeIndex.value = index; setOpen(true); }} onInput={(event: Event) => updateInput(index, (event.target as HTMLInputElement).value)} onChange={() => commitInput(index)} onFocus={(event: FocusEvent) => emit('focus', event)} onBlur={(event: FocusEvent) => { commitInput(index); emit('blur', event); validate('blur'); }} onKeydown={(event: KeyboardEvent) => { if (event.key === 'Escape') close(); if (event.key === 'Enter') setOpen(!open.value); }} />
       </>
     );
     const clear = clearValue;
@@ -270,10 +274,10 @@ export default defineComponent({
     onBeforeUnmount(() => document.removeEventListener('mousedown', onOutside));
     expose({ focus: () => inputRef.value?.focus(), blur: () => inputRef.value?.blur(), handleOpen: () => { manualOpen.value = true; setOpen(true); }, handleClose: close });
     return () => {
-      const value = props.modelValue;
+      const value = model.value;
       const panel = open.value ? <div id={panelId} ref={floating} class={['i-date-picker__dropdown', props.popperClass]} style={[position.style.value, props.popperStyle]}><div class='i-date-picker__datetime-panel'>{isRange.value && !props.singlePanel ? <div class='i-date-picker__range-panels'><DatePickerPanel showWeekNumber={props.showWeekNumber} cursorValue={rangePanelCursors.value[0]} firstDayOfWeek={props.firstDayOfWeek} cellClassName={props.cellClassName} defaultValue={props.defaultValue} modelValue={(props.showConfirm && draftValue.value !== null ? draftValue.value : isMultiple.value ? dateDraft.value : rangeDraft.value) as DateModelValue} type={panelType.value} disabledDate={props.disabledDate} onSelect={choose} hoverValue={hoverPreview.value} onHover={(date: Date | null) => (hoverPreview.value = date)} onPanel-change={(date: Date) => { rangePanelCursors.value[0] = date; if (!props.unlinkPanels) rangePanelCursors.value[1] = new Date(date.getFullYear(), date.getMonth() + (panelType.value === 'quarter' ? 3 : panelType.value === 'year' ? 12 : 1), 1); emit('panel-change', date, panelType.value); }}>{ { date: slots.default } }</DatePickerPanel><DatePickerPanel showWeekNumber={props.showWeekNumber} cursorValue={rangePanelCursors.value[1]} firstDayOfWeek={props.firstDayOfWeek} cellClassName={props.cellClassName} defaultValue={props.defaultValue} modelValue={(props.showConfirm && draftValue.value !== null ? draftValue.value : isMultiple.value ? dateDraft.value : rangeDraft.value) as DateModelValue} type={panelType.value} disabledDate={props.disabledDate} onSelect={choose} hoverValue={hoverPreview.value} onHover={(date: Date | null) => (hoverPreview.value = date)} onPanel-change={(date: Date) => { rangePanelCursors.value[1] = date; if (!props.unlinkPanels) rangePanelCursors.value[0] = new Date(date.getFullYear(), date.getMonth() - (panelType.value === 'quarter' ? 3 : panelType.value === 'year' ? 12 : 1), 1); emit('panel-change', date, panelType.value); }}>{ { date: slots.default } }</DatePickerPanel></div> : <DatePickerPanel showWeekNumber={props.showWeekNumber} cursorValue={rangePanelCursors.value[0]} firstDayOfWeek={props.firstDayOfWeek} cellClassName={props.cellClassName} defaultValue={props.defaultValue} modelValue={(props.showConfirm && draftValue.value !== null ? draftValue.value : isMultiple.value ? dateDraft.value : isRange.value ? rangeDraft.value : value) as DateModelValue} type={panelType.value} disabledDate={props.disabledDate} onSelect={choose} hoverValue={hoverPreview.value} onHover={(date: Date | null) => (hoverPreview.value = date)} onPanel-change={(date: Date) => { rangePanelCursors.value[0] = date; if (!props.unlinkPanels) rangePanelCursors.value[1] = new Date(date.getFullYear(), date.getMonth() + (panelType.value === 'quarter' ? 3 : panelType.value === 'year' ? 12 : 1), 1); emit('panel-change', date, panelType.value); }}>{ { date: slots.default } }</DatePickerPanel>}{(props.type === 'datetime' || props.type === 'datetimerange') && <TimePickerPanel value={timeDraft.value} format={timePanelFormat.value} disabledHours={props.disabledHours} disabledMinutes={props.disabledMinutes} disabledSeconds={props.disabledSeconds} onSelect={chooseTime} />}</div>{props.showFooter && <div class='i-date-picker__footer'>{props.showNow && !isRange.value && !isMultiple.value && (props.type === 'date' || props.type === 'datetime') && <button type='button' aria-label='现在' onClick={chooseNow}>现在</button>}{props.shortcuts?.map((shortcut) => <button type='button' data-shortcut={shortcut.text} onClick={() => chooseShortcut(shortcut)}>{shortcut.text}</button>)}{props.showConfirm && <button type='button' aria-label='确认' onClick={confirm}>确认</button>}</div>}</div> : null;
       const content = props.teleported && panel ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
-      return <span ref={root} class={['i-date-picker', `i-control--${props.size ?? field?.size?.() ?? config.value.size}`, isRange.value && 'is-range']}><div ref={reference}>{isRange.value ? <>{renderInput(Array.isArray(value) ? value[0] : null, 0)}<span class='i-date-picker__separator'>{props.rangeSeparator}</span>{renderInput(Array.isArray(value) ? value[1] : null, 1)}</> : renderInput(value as DateValue | null)}</div>{props.clearable && (Array.isArray(value) ? value.some(Boolean) : value) && <button type='button' class='i-date-picker__clear' aria-label='清空' disabled={disabledOf() || props.readonly} onClick={clear}>{props.clearIcon ? <span class='i-date-picker__clear-icon'>{renderIcon(props.clearIcon as string | Component, 'i-date-picker__icon')}</span> : '×'}</button>}{content}</span>;
+      return <span ref={root} class={['i-date-picker', `i-control--${props.size ?? field?.size?.() ?? config.value.size}`, isRange.value && 'is-range']}><div ref={reference}>{isRange.value ? <>{renderInput(Array.isArray(value) ? value[0] : null, 0)}<span class='i-date-picker__separator'>{props.rangeSeparator}</span>{renderInput(Array.isArray(value) ? value[1] : null, 1)}</> : renderInput(value as DateValue | null)}</div>{props.clearable && (Array.isArray(value) ? value.some((item) => item != null && !isEmptyValue(item)) : value != null) && <button type='button' class='i-date-picker__clear' aria-label='清空' disabled={disabledOf() || props.readonly} onClick={clear}>{props.clearIcon ? <span class='i-date-picker__clear-icon'>{renderIcon(props.clearIcon as string | Component, 'i-date-picker__icon')}</span> : '×'}</button>}{content}</span>;
     };
   }
 });

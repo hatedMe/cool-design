@@ -23,3 +23,5 @@ DateTimePicker 用于选择日期和时间，支持单值和日期时间范围�
 事件：`update:modelValue`、`change`、`focus`、`blur`、`clear`、`visible-change`、`calendar-change`、`panel-change`。
 
 方法：`focus()`、`blur()`、`handleOpen()`、`handleClose()`。
+
+`empty-values` 和 `value-on-clear` 继承 ConfigProvider。单值和范围默认清空为 `null`。旧代码可通过 `value-on-clear` 显式保留 `[null, null]`。清空工厂每次执行清空时调用一次。

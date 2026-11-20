@@ -6,7 +6,7 @@ import type { FloatingOptions, Placement } from '../../../src/utils/use-floating
 export default defineComponent({
   name: 'i-date-time-picker',
   props: {
-    modelValue: { type: [String, Number, Date, Array] as PropType<DateModelValue>, default: null },
+    modelValue: { type: [String, Number, Boolean, Date, Array] as PropType<DateModelValue | boolean>, default: null },
     type: { type: String as PropType<'datetime' | 'datetimerange'>, default: 'datetime' },
     format: { type: String, default: 'YYYY-MM-DD HH:mm:ss' },
     valueFormat: String,
@@ -29,8 +29,8 @@ export default defineComponent({
     popperStyle: [String, Object, Array] as PropType<string | Record<string, string> | Array<Record<string, string>>>,
     fallbackPlacements: Array as PropType<Placement[]>,
     popperOptions: Object as PropType<FloatingOptions>,
-    emptyValues: Array as PropType<DateValue[]>,
-    valueOnClear: { type: [String, Number, Date, Array] as PropType<DateModelValue>, default: null },
+    emptyValues: Array as PropType<unknown[]>,
+    valueOnClear: { type: [String, Number, Boolean, Date, Array, Function] as PropType<DateModelValue | boolean | (() => unknown)>, default: undefined },
     defaultTime: { type: [Object, Array] as PropType<DateModelValue>, default: null },
     showConfirm: Boolean,
     automaticDropdown: { type: Boolean, default: true },

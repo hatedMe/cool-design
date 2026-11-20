@@ -57,8 +57,8 @@ DatePicker 用于选择日期、月份、年份、周、多个日期和日期范
 | unlink-panels       | 范围双面板取消联动                                             | `boolean`                              | `false`        |
 | first-day-of-week   | 周起始日，`0` 为周日                                           | `number`                               | `0`            |
 | cell-class-name     | 日期单元格自定义类名                                           | `string` / `(date: Date) => string`    | —              |
-| empty-values        | 视为空的输入值                                                 | `Array<string \| number>`             | —              |
-| value-on-clear      | 清空时的回退值                                                 | `string` / `number` / `null`           | —              |
+| empty-values        | 视为空的输入值                                                 | `unknown[]`             | —              |
+| value-on-clear      | 清空时的回退值                                                 | `DateModelValue` / `boolean` / `() => unknown` | 继承 ConfigProvider              |
 | validate-event      | 值变化时触发表单校验                                           | `boolean`                              | `true`         |
 | automatic-dropdown  | 聚焦即展开                                                     | `boolean`                              | `false`        |
 | prefix-icon         | 前置图标                                                       | `string` / `Component`                 | —              |
@@ -107,3 +107,6 @@ DatePicker 用于选择日期、月份、年份、周、多个日期和日期范
 已支持全部列出的类型、`format`、`value-format`、`disabled-date`、`shortcuts`、`default-time`、`show-confirm`（项目扩展）、`empty-values`、`value-on-clear`、`validate-event` 与基础浮层配置。部分支持完整 Day.js token、高级键盘导航与 ARIA。
 
 `TimeSelect` 和 `selectableRange` 不属于本组件范围。
+
+清空值默认是 `null`，适用于单值、范围和多选。旧代码若依赖 `[]` 或 `[null, null]`，可用 `value-on-clear` 显式配置。清空工厂只在执行清空时调用一次，可以返回 `undefined`。
+依赖数组模型自动识别范围的页面，可显式设置 `range` 或范围 `type`，使清空后继续显示两个输入框。
