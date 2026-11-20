@@ -73,6 +73,8 @@ import Timeline, { TimelineItem } from './timeline';
 import Countdown from './countdown';
 import Segmented from './segmented';
 import Tour from './tour';
+import TourStep from './tour-step';
+export type TourStep = import('./tour/types').TourStep;
 import { Splitter, SplitterPanel } from './splitter';
 import Statistic from './statistic';
 import Backtop from './backtop';
@@ -203,6 +205,7 @@ export {
   Countdown,
   Segmented,
   Tour,
+  TourStep,
   Splitter,
   SplitterPanel,
   Statistic,
@@ -316,6 +319,7 @@ const components = [
   Countdown,
   Segmented,
   Tour,
+  TourStep,
   Splitter,
   SplitterPanel,
   Statistic,
@@ -498,6 +502,7 @@ export {
   Countdown as ElCountdown,
   Segmented as ElSegmented,
   Tour as ElTour,
+  TourStep as ElTourStep,
   Splitter as ElSplitter,
   SplitterPanel as ElSplitterPanel,
   Statistic as ElStatistic,
@@ -617,6 +622,7 @@ declare module 'vue' {
     ElCountdown: typeof import('./index')['ElCountdown'];
     ElSegmented: typeof import('./index')['ElSegmented'];
     ElTour: typeof import('./index')['ElTour'];
+    ElTourStep: typeof import('./index')['ElTourStep'];
     ElSplitter: typeof import('./index')['ElSplitter'];
     ElSplitterPanel: typeof import('./index')['ElSplitterPanel'];
     ElStatistic: typeof import('./index')['ElStatistic'];
@@ -722,6 +728,7 @@ declare module 'vue' {
     ICountdown: typeof Countdown;
     ISegmented: typeof Segmented;
     ITour: typeof Tour;
+    ITourStep: typeof TourStep;
     ISplitter: typeof Splitter;
     ISplitterPanel: typeof SplitterPanel;
     IStatistic: typeof Statistic;

@@ -76,3 +76,5 @@
 | `close`     | 自定义关闭按钮内容                         | `{ current: number }`           |
 | `prev-btn`  | 自定义上一步按钮内容（首步不渲染该按钮）   | `{ current: number }`           |
 | `next-btn`  | 自定义下一步按钮内容                       | `{ current: number }`           |
+
+在默认插槽放置 `TourStep` 可声明步骤，存在声明式步骤时以这些步骤为准。`gap` 支持数字或 `{ offset?: number | [number, number]; radius?: number }`。`append-to` 指定浮层挂载容器，`close-on-press-escape` 控制 Escape，`target-area-clickable` 控制聚光区域能否接收指针事件。`indicators({ current, total })` 自定义步骤指示。

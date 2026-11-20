@@ -68,3 +68,17 @@
   background: var(--i-text, #303133);
   color: var(--i-bg, #fff);
 }
+
+.i-tour__indicators {
+  display: inline-flex;
+  gap: 5px;
+}
+.i-tour__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--i-border, #dcdfe6);
+}
+.i-tour__dot.is-active {
+  background: var(--i-primary, #409eff);
+}

@@ -1,14 +1,21 @@
 import {
   Teleport,
+  Fragment,
+  camelize,
+  getCurrentInstance,
+  isVNode,
+  onUpdated,
+  type VNode,
   computed,
   defineComponent,
   nextTick,
-  onBeforeUnmount,
   ref,
   watch,
   type PropType
 } from 'vue';
 import { useFloating, type Placement } from '../../../src/utils/use-floating';
+import TourStepComponent from '../tour-step';
+import Button from '../button';
 import Icon from '../icon';
 import type { TourPlacement, TourStep, TourTarget, TourType } from './types';
 
@@ -23,6 +30,7 @@ export default defineComponent({
       default: true
     },
     type: { type: String as PropType<TourType>, default: 'default' },
+    showArrow: { type: Boolean, default: undefined },
     arrow: { type: Boolean, default: true },
     placement: { type: String as PropType<TourPlacement>, default: 'bottom' },
     showClose: { type: Boolean, default: true },
@@ -30,7 +38,10 @@ export default defineComponent({
     nextButtonText: String,
     prevButtonText: String,
     zIndex: { type: Number, default: 2000 },
-    gap: { type: Number, default: 10 },
+    gap: { type: [Number, Object] as PropType<number | { offset?: number | [number, number]; radius?: number }>, default: 10 },
+    appendTo: [String, Object] as PropType<string | HTMLElement>,
+    closeOnPressEscape: { type: Boolean, default: true },
+    targetAreaClickable: { type: Boolean, default: true },
     scrollIntoViewOptions: [Boolean, Object] as PropType<boolean | ScrollIntoViewOptions>,
     target: [String, Object, Function] as PropType<TourTarget>
   },
@@ -40,20 +51,38 @@ export default defineComponent({
     const reference = ref<HTMLElement>();
     const spotlight = ref<{ top: number; left: number; width: number; height: number }>();
 
+    const instance = getCurrentInstance();
     const innerCurrent = ref(props.current);
     watch(
       () => props.current,
       (value) => {
+        if (innerCurrent.value === value) return;
         innerCurrent.value = value;
+        if (props.modelValue) emit('change', value);
       }
     );
-    const step = computed<TourStep>(() => props.steps[innerCurrent.value] ?? {});
-    const isLast = computed(() => innerCurrent.value >= props.steps.length - 1);
-    const resolvedPlacement = computed(() => step.value.placement ?? props.placement);
-    const isCenter = computed(() => resolvedPlacement.value === 'center');
+    let declared: VNode[] = [];
+    const findSteps = (nodes: unknown[]): VNode[] => nodes.flatMap((node) => {
+      if (!isVNode(node)) return [];
+      if (node.type === TourStepComponent) return [node];
+      return node.type === Fragment && Array.isArray(node.children) ? findSteps(node.children) : [];
+    });
+    const stepCount = () => declared.length || props.steps.length;
+    const activeIndex = () => Math.max(0, Math.min(innerCurrent.value, stepCount() - 1));
+    const currentNode = () => declared[activeIndex()];
+    const step = (): TourStep => {
+      const node = currentNode();
+      if (!node) return props.steps[activeIndex()] ?? {};
+      return Object.fromEntries(Object.entries(node.props ?? {}).map(([key, value]) => [
+        camelize(key), value === '' && ['mask', 'show-arrow', 'show-close'].includes(key) ? true : value
+      ])) as TourStep;
+    };
+    const isLast = () => activeIndex() >= stepCount() - 1;
+    const resolvedPlacement = () => step().placement ?? props.placement;
+    const isCenter = () => resolvedPlacement() === 'center' || !reference.value;
 
     const resolveTarget = (): HTMLElement | null => {
-      const value = step.value.target ?? props.target ?? null;
+      const value = step().target ?? props.target ?? null;
       if (!value) return null;
       if (typeof value === 'string') return document.querySelector<HTMLElement>(value);
       if (typeof value === 'function') return value();
@@ -61,29 +90,34 @@ export default defineComponent({
     };
 
     const position = useFloating({
-      open: computed(() => props.modelValue && !isCenter.value),
+      open: computed(() => props.modelValue),
+      appendTo: () => props.appendTo,
+      trapFocus: true,
+      closeOnEscape: () => props.closeOnPressEscape,
       reference,
       floating,
-      placement: () => resolvedPlacement.value as Placement,
+      placement: () => resolvedPlacement() as Placement,
       close: () => close(),
       closeOnOutside: () => false,
       options: () => ({ offset: 12 })
     });
 
-    const syncTarget = () => {
+    const syncTarget = (scroll = true) => {
+      if (typeof document === 'undefined') return;
       const target = resolveTarget();
       reference.value = target ?? undefined;
       if (target) {
-        const scrollOptions = step.value.scrollIntoViewOptions ?? props.scrollIntoViewOptions;
-        target.scrollIntoView?.(scrollOptions === true ? undefined : scrollOptions ?? undefined);
+        const scrollOptions = step().scrollIntoViewOptions ?? props.scrollIntoViewOptions;
+        if (scroll && scrollOptions !== false) target.scrollIntoView?.(scrollOptions === true ? undefined : scrollOptions);
         const rect = target.getBoundingClientRect();
         // 聚光框向四周扩张 gap，让遮罩与目标之间留出呼吸空间。
-        const gap = Math.max(0, props.gap);
+        const gap = typeof props.gap === 'number' ? props.gap : props.gap.offset ?? 10;
+        const [horizontal, vertical] = Array.isArray(gap) ? gap : [gap, gap];
         spotlight.value = {
-          top: rect.top - gap,
-          left: rect.left - gap,
-          width: rect.width + gap * 2,
-          height: rect.height + gap * 2
+          top: rect.top - vertical,
+          left: rect.left - horizontal,
+          width: rect.width + horizontal * 2,
+          height: rect.height + vertical * 2
         };
       } else {
         spotlight.value = undefined;
@@ -95,59 +129,98 @@ export default defineComponent({
     };
 
     watch(
-      () => [props.modelValue, props.current, props.steps, props.gap],
+      () => [props.modelValue, innerCurrent.value, props.steps, props.gap, step().target, props.target],
       () => {
         if (props.modelValue) nextTick(() => refresh());
       },
       { deep: true, immediate: true }
     );
-    const onScroll = () => refresh();
-    const onResize = () => refresh();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize);
-    onBeforeUnmount(() => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
+    onUpdated(() => {
+      if (props.modelValue && (resolveTarget() ?? undefined) !== reference.value) refresh();
     });
-
-    const close = () => {
-      emit('close', innerCurrent.value);
-      emit('update:modelValue', false);
-    };
-    const go = (index: number) => {
-      const next = Math.min(props.steps.length - 1, Math.max(0, index));
-      if (next === innerCurrent.value) return;
-      innerCurrent.value = next;
-      emit('update:current', next);
-      emit('change', next);
-    };
-    const prev = () => {
-      emit('prev', innerCurrent.value - 1);
-      go(innerCurrent.value - 1);
-    };
-    const next = () => {
-      if (isLast.value) {
-        emit('finish');
-        close();
+    const onScroll = () => { syncTarget(false); position.update(); };
+    const onResize = () => refresh();
+    watch(() => props.modelValue, (visible, previouslyVisible, cleanup) => {
+      if (!visible) {
+        if (previouslyVisible && innerCurrent.value !== 0) {
+          emit('update:current', 0);
+          if (!instance?.vnode.props?.['onUpdate:current']) innerCurrent.value = 0;
+        }
         return;
       }
-      emit('next', innerCurrent.value + 1);
-      go(innerCurrent.value + 1);
+      if (typeof window === 'undefined') return;
+      const previousFocus = document.activeElement;
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onResize);
+      const observer = typeof MutationObserver === 'undefined' ? undefined : new MutationObserver(() => {
+        if ((resolveTarget() ?? undefined) !== reference.value) refresh();
+      });
+      observer?.observe(document.body, { childList: true, subtree: true });
+      cleanup(() => {
+        observer?.disconnect();
+        if (previousFocus instanceof HTMLElement) nextTick(() => previousFocus.focus());
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('resize', onResize);
+      });
+    }, { immediate: true });
+
+    const close = (notifyStep = false) => {
+      emit('update:modelValue', false);
+      emit('close', activeIndex());
+      if (notifyStep) (currentNode()?.props?.onClose as (() => void) | undefined)?.();
+    };
+    const go = (index: number) => {
+      const next = Math.min(Math.max(0, stepCount() - 1), Math.max(0, index));
+      if (next === innerCurrent.value) return;
+      emit('update:current', next);
+      if (!instance?.vnode.props?.['onUpdate:current']) {
+        innerCurrent.value = next;
+        emit('change', next);
+      }
+    };
+    const prev = () => {
+      emit('prev', activeIndex() - 1);
+      const callback = step().prevButtonProps?.onClick;
+      go(activeIndex() - 1);
+      callback?.();
+    };
+    const next = () => {
+      if (isLast()) {
+        close(true);
+        emit('finish');
+        step().nextButtonProps?.onClick?.();
+        return;
+      }
+      emit('next', activeIndex() + 1);
+      const callback = step().nextButtonProps?.onClick;
+      go(activeIndex() + 1);
+      callback?.();
+    };
+    const buttonAttributes = (settings: TourStep['nextButtonProps']) => {
+      if (!settings) return undefined;
+      const { onClick, children, ...attributes } = settings;
+      void onClick;
+      void children;
+      return attributes;
     };
     expose({ go, prev, next });
 
     return () => {
+      const provided = slots.default?.({ current: activeIndex() }) ?? [];
+      const nodes = findSteps(provided);
+      declared = nodes;
       if (!props.modelValue) return null;
-      const currentStep = step.value;
+      const stepSlots = currentNode()?.children as Record<string, (() => VNode[]) | undefined> | null;
+      const currentStep = step();
       const maskValue = currentStep.mask ?? props.mask;
       const maskConfig = typeof maskValue === 'object' ? maskValue : undefined;
       const showMask = maskValue !== false;
       const maskColor = maskConfig?.color ?? 'rgba(0, 0, 0, 0.5)';
       const maskStyle = maskConfig?.style;
       const showClose = currentStep.showClose ?? props.showClose;
-      const showArrow = (currentStep.arrow ?? props.arrow) && !isCenter.value && !!spotlight.value;
+      const showArrow = (currentStep.showArrow ?? currentStep.arrow ?? props.showArrow ?? props.arrow) && !isCenter() && !!spotlight.value;
       return (
-        <Teleport to='body'>
+        <Teleport to={position.target.value}>
           {showMask &&
             (spotlight.value ? (
               <div
@@ -159,6 +232,8 @@ export default defineComponent({
                   height: `${spotlight.value.height}px`,
                   boxShadow: `0 0 0 9999px ${maskColor}`,
                   zIndex: props.zIndex,
+                  pointerEvents: props.targetAreaClickable ? 'none' : 'auto',
+                  borderRadius: typeof props.gap === 'object' ? `${props.gap.radius ?? 2}px` : undefined,
                   ...maskStyle
                 }}
               />
@@ -167,9 +242,9 @@ export default defineComponent({
             ))}
           <div
             ref={floating}
-            class={['i-tour', `i-tour--${props.type}`]}
+            class={['i-tour', `i-tour--${currentStep.type ?? props.type}`]}
             style={[
-              isCenter.value
+              isCenter()
                 ? {
                     position: 'fixed',
                     top: '50%',
@@ -180,35 +255,41 @@ export default defineComponent({
                 : [position.style.value, { zIndex: props.zIndex + 1 }],
               maskStyle
             ]}
+            tabindex={-1}
             role='dialog'
             aria-modal='true'>
             {showArrow && <div class='i-tour__arrow' style={position.arrowStyle.value} />}
             {showClose && (
-              <button type='button' class='i-tour__close' aria-label='关闭引导' onClick={close}>
-                {slots.close?.({ current: innerCurrent.value }) ??
-                  (props.closeIcon ? <Icon icon={props.closeIcon} aria-hidden='true' /> : '×')}
+              <button type='button' class='i-tour__close' aria-label='关闭引导' onClick={() => close(true)}>
+                {slots.close?.({ current: activeIndex() }) ??
+                  ((currentStep.closeIcon ?? props.closeIcon) ? <Icon icon={currentStep.closeIcon ?? props.closeIcon} aria-hidden='true' /> : '×')}
               </button>
             )}
-            {slots.default ? (
-              slots.default({ current: innerCurrent.value })
+            {slots.default && !nodes.length ? (
+              provided
             ) : (
               <>
-                {currentStep.title && <div class='i-tour__title'>{currentStep.title}</div>}
-                {currentStep.description && <div class='i-tour__description'>{currentStep.description}</div>}
+                {(stepSlots?.header || currentStep.title) && <div class='i-tour__title'>{stepSlots?.header?.() ?? currentStep.title}</div>}
+                {(stepSlots?.default || currentStep.description) && <div class='i-tour__description'>{stepSlots?.default?.() ?? currentStep.description}</div>}
               </>
             )}
             <div class='i-tour__footer'>
-              {slots.indicator?.({ current: innerCurrent.value, total: props.steps.length })}
-              {innerCurrent.value > 0 && (
-                <button type='button' class='i-tour__prev' onClick={prev}>
-                  {slots['prev-btn']?.({ current: innerCurrent.value }) ??
-                    (currentStep.prevButtonText ?? props.prevButtonText ?? '上一步')}
-                </button>
+              {(slots.indicators ?? slots.indicator)?.({ current: activeIndex(), total: stepCount() }) ?? (
+                <span class='i-tour__indicators' aria-hidden='true'>
+                  {Array.from({ length: stepCount() }, (_, index) =>
+                    <span key={index} class={['i-tour__dot', index === activeIndex() && 'is-active']} />)}
+                </span>
               )}
-              <button type='button' class='i-tour__next' onClick={next}>
-                {slots['next-btn']?.({ current: innerCurrent.value }) ??
-                  (currentStep.nextButtonText ?? props.nextButtonText ?? (isLast.value ? '完成' : '下一步'))}
-              </button>
+              {activeIndex() > 0 && (
+                <Button {...buttonAttributes(currentStep.prevButtonProps)} class='i-tour__prev' onClick={prev}>
+                  {slots['prev-btn']?.({ current: activeIndex() }) ??
+                    (currentStep.prevButtonProps?.children ?? currentStep.prevButtonText ?? props.prevButtonText ?? '上一步')}
+                </Button>
+              )}
+              <Button {...buttonAttributes(currentStep.nextButtonProps)} class='i-tour__next' onClick={next}>
+                {slots['next-btn']?.({ current: activeIndex() }) ??
+                  (currentStep.nextButtonProps?.children ?? currentStep.nextButtonText ?? props.nextButtonText ?? (isLast() ? '完成' : '下一步'))}
+              </Button>
             </div>
           </div>
         </Teleport>

@@ -18,6 +18,11 @@ export type TourTarget = string | HTMLElement | (() => HTMLElement | null) | nul
 export interface TourStep {
   target?: TourTarget;
   title?: string;
+  type?: TourType;
+  showArrow?: boolean;
+  closeIcon?: string | import('vue').Component;
+  nextButtonProps?: import('../button').IButtonProps & { children?: string; onClick?: () => void };
+  prevButtonProps?: import('../button').IButtonProps & { children?: string; onClick?: () => void };
   description?: string;
   placement?: TourPlacement;
   nextButtonText?: string;
