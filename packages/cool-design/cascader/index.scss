@@ -207,7 +207,8 @@
   text-overflow: ellipsis;
 }
 
-.i-cascader__suggestion:hover {
+.i-cascader__suggestion:hover,
+.i-cascader__suggestion.is-highlighted {
   color: var(--i-color-primary, #409eff);
   background: var(--i-color-primary-light-9, #ecf5ff);
 }

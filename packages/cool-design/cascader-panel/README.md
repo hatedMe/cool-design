@@ -33,6 +33,11 @@
 
 `CascaderOption`：`{ value?, label?, children?, disabled?, leaf?, ... }`；`CascaderModelValue`：`value | value[] | (value | value[])[] | null`。
 
+`virtual-scroll`（`boolean`，默认 `false`）按窗口渲染选项。`item-size`（`number`，默认 `34`）指定行高，`height`（`number`，默认 `204`）指定滚动区域高度。两者均使用像素。
+
+`props` 支持 `multiple`、`checkStrictly`、`emitPath`、`checkOnClickNode`（默认 `false`）、`checkOnClickLeaf`（默认 `true`）、`showPrefix`（默认 `true`）和 `hoverThreshold`（默认 `500` 毫秒）。单选非严格模式可直接点击叶节点。顶层 `multiple`、`checkStrictly` 和 `emitPath` 继续可用，显式设置时优先。懒加载回调第三个参数 `reject()` 结束本次加载并允许再次展开重试。
+
+
 ### 事件
 
 | 事件名              | 说明                     | 回调参数             |
@@ -52,3 +57,5 @@
 | 方法                      | 说明                             |
 | ------------------------- | -------------------------------- |
 | `getCheckedNodes(leafOnly?)` | 获取选中节点数据（多选勾选态） |
+
+实例还公开 `clearCheckedNodes()`、`getFlattedNodes(leafOnly?)`、`scrollToExpandingNode()` 和 `handleKeyDown(event)`。

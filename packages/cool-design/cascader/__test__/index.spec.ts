@@ -3,6 +3,7 @@ import { defineComponent, h, nextTick, reactive, ref } from 'vue';
 import { describe, expect, test } from 'vitest';
 
 import Cascader from '..';
+import CascaderPanel from '../../cascader-panel';
 import type { CascaderModelValue, CascaderNode, CascaderOption } from '../types';
 import Form from '../../form';
 import type { FormInstance, FormRule } from '../../form';
@@ -567,4 +568,29 @@ test('provides complete slot data and deletes a tag with one argument', async ()
   expect(wrapper.get('.i-cascader__suggestion [data-checked]').attributes('data-checked')).toBe('true');
   await wrapper.get('.custom-tag').trigger('click');
   expect(wrapper.emitted('update:modelValue')).toEqual([[[]]]);
+});
+
+test('uses the live panel instance and windows its visible nodes', async () => {
+  const wrapper = mount(Cascader, {
+    props: { options: Array.from({ length: 100 }, (_, value) => ({ value, label: String(value) })),
+      modelValue: [77], teleported: false, virtualScroll: true, itemSize: 30, height: 120 }
+  });
+  await wrapper.get('[role="combobox"]').trigger('click');
+  const panel = wrapper.vm.cascaderPanelRef;
+  expect(panel).toBeTruthy();
+  expect(panel?.getCheckedNodes()).toEqual([{ value: 77, label: '77' }]);
+  expect(wrapper.findAll('.i-cascader__node').length).toBeLessThan(20);
+  expect(wrapper.findAll('.i-cascader__node').some((node) => node.text() === '77')).toBe(true);
+});
+
+test('selects the same paths from standalone and dropdown panels', async () => {
+  const data = [{ value: 'p', label: 'Parent', children: [{ value: 'c', label: 'Child' }] }];
+  const props = { options: data, props: { multiple: true, checkOnClickNode: true } };
+  const standalone = mount(CascaderPanel, { props });
+  const dropdown = mount(Cascader, { props: { ...props, teleported: false } });
+  await dropdown.get('[role="combobox"]').trigger('click');
+  await standalone.get('.i-cascader-panel__node').trigger('click');
+  await dropdown.findAll('.i-cascader__node')[0].trigger('click');
+  expect(standalone.emitted('update:modelValue')).toEqual([[[['p', 'c']]]]);
+  expect(dropdown.emitted('update:modelValue')).toEqual(standalone.emitted('update:modelValue'));
 });

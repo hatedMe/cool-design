@@ -1,3 +1,4 @@
+import type { CascaderPanelInstance } from '../cascader-panel';
 import type { CascaderNode } from './types';
 import { withInstall } from '../../../src/utils/with-install';
 import './index.scss';
@@ -6,6 +7,7 @@ import _Cascader from './cascader';
 export interface CascaderInstance {
   focus(): void;
   blur(): void;
+  readonly cascaderPanelRef: CascaderPanelInstance | undefined;
   readonly contentRef: HTMLElement | undefined;
   readonly presentText: string;
   togglePopperVisible(visible?: boolean): void;

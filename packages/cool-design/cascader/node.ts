@@ -1,4 +1,4 @@
-import { computed, reactive } from 'vue';
+import { computed, reactive, watch } from 'vue';
 import type {
   CascaderItemValue,
   CascaderLazyLoad,
@@ -32,6 +32,8 @@ export interface CascaderNodeSource {
 export function useCascaderNodes(source: CascaderNodeSource) {
   // 懒加载完成的子级按源数据对象缓存；loading 防止重复发起。
   const lazyChildren = reactive(new Map<CascaderOption, CascaderOption[]>());
+  const rootData: CascaderOption = {};
+  let rootRequest = 0;
   const loadingData = reactive(new Set<CascaderOption>());
 
   const labelKey = computed(() => source.mapping()?.label || 'label');
@@ -69,7 +71,7 @@ export function useCascaderNodes(source: CascaderNodeSource) {
     return node;
   };
 
-  const trees = computed(() => source.options().map((option) => createNode(option, null)));
+  const trees = computed(() => (source.options().length ? source.options() : lazyChildren.get(rootData) ?? []).map((option) => createNode(option, null)));
   const nodeByValue = computed(() => {
     const map = new Map<CascaderNodeValue, CascaderNode>();
     const walk = (list: CascaderNode[]) =>
@@ -121,13 +123,13 @@ export function useCascaderNodes(source: CascaderNodeSource) {
     const checked = new Set<CascaderNode>();
     const indeterminate = new Set<CascaderNode>();
     if (!source.multiple()) return { checked, indeterminate };
+    if (source.checkStrictly()) return { checked: new Set(selectedNodes.value), indeterminate };
     const add = (node: CascaderNode, isRoot: boolean) => {
       if (node.disabled && !isRoot) return;
       checked.add(node);
       node.children.forEach((child) => add(child, false));
     };
     selectedNodes.value.forEach((node) => add(node, true));
-    if (source.checkStrictly()) return { checked, indeterminate };
     const recalc = (node: CascaderNode) => {
       node.children.forEach(recalc);
       if (node.children.length === 0) return;
@@ -235,19 +237,34 @@ export function useCascaderNodes(source: CascaderNodeSource) {
 
   /** 展开前确保子级就绪；发起懒加载时返回 true。 */
   const ensureChildren = (node: CascaderNode): boolean => {
-    if (!source.lazy() || node.leaf || lazyChildren.has(node.data) || loadingData.has(node.data)) return false;
+    if (!source.lazy() || node.leaf || node.children.length || lazyChildren.has(node.data) || loadingData.has(node.data)) return false;
     const lazyLoad = source.lazyLoad();
     if (!lazyLoad) return false;
     loadingData.add(node.data);
+    const generation = rootRequest;
     let settled = false;
-    lazyLoad({ level: node.level, value: node.value, data: node.data }, (children) => {
-      if (settled) return;
+    const settle = () => {
+      if (settled || (node.data === rootData && generation !== rootRequest)) return false;
       settled = true;
       loadingData.delete(node.data);
-      lazyChildren.set(node.data, Array.isArray(children) ? children : []);
-    });
+      return true;
+    };
+    lazyLoad({ level: node.level, value: node.value, data: node.data }, (children) => {
+      if (settle()) lazyChildren.set(node.data, Array.isArray(children) ? children : []);
+    }, () => { settle(); });
     return true;
   };
+
+  const loadLazyRootNodes = () => {
+    if (source.options().length) return;
+    ensureChildren({ ...createNode(rootData, null), level: 0 });
+  };
+  watch([source.options, source.lazy, source.lazyLoad], () => {
+    rootRequest++;
+    lazyChildren.delete(rootData);
+    loadingData.delete(rootData);
+    loadLazyRootNodes();
+  }, { immediate: true });
 
   return {
     labelKey,
@@ -268,8 +285,21 @@ export function useCascaderNodes(source: CascaderNodeSource) {
     activePathValues,
     cascadeCheckedSet,
     pruneCheckedSet,
-    ensureChildren
+    ensureChildren,
+    loadLazyRootNodes
   };
 }
 
 export type CascaderNodesApi = ReturnType<typeof useCascaderNodes>;
+
+export interface EmbeddedCascaderPanel {
+  nodes: CascaderNodesApi;
+  columns: () => CascaderNode[][];
+  active: () => CascaderNodeValue[];
+  select: (node: CascaderNode) => void;
+  expand: (node: CascaderNode) => void;
+  toggle: (node: CascaderNode) => void;
+  clear: () => void;
+}
+
+export const embeddedCascaderPanelKey: import('vue').InjectionKey<EmbeddedCascaderPanel> = Symbol('cascader-panel');

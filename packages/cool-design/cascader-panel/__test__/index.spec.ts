@@ -82,7 +82,7 @@ describe('test `CascaderPanel` component', () => {
     });
     await nodes(wrapper)[0].trigger('click');
     expect(lazyLoad).toHaveBeenCalledTimes(1);
-    expect(lazyLoad).toHaveBeenCalledWith(expect.objectContaining({ value: 'a' }), expect.any(Function));
+    expect(lazyLoad).toHaveBeenCalledWith(expect.objectContaining({ value: 'a' }), expect.any(Function), expect.any(Function));
     await flushPromises();
     expect(wrapper.findAll('.i-cascader-panel__column')).toHaveLength(2);
     expect(wrapper.text()).toContain('懒子级');
@@ -109,4 +109,49 @@ describe('test `CascaderPanel` component', () => {
     await nodes(wrapper)[1].trigger('mouseenter');
     expect(wrapper.emitted('expand-change')).toHaveLength(1);
   });
+});
+
+test('uses configured click selection and retries rejected lazy loading', async () => {
+  let loads = 0;
+  const wrapper = mount(CascaderPanel, {
+    props: {
+      options: [{ value: 'root', label: 'Root' }],
+      lazy: true,
+      props: { multiple: true, checkOnClickNode: false, showPrefix: false },
+      lazyLoad: (_node, resolve, reject) => {
+        if (++loads === 1) reject();
+        else resolve([{ value: 'child', label: 'Child', leaf: true }]);
+      }
+    }
+  });
+  expect(wrapper.find('input').exists()).toBe(false);
+  await wrapper.get('.i-cascader-panel__node').trigger('click');
+  await wrapper.get('.i-cascader-panel__node').trigger('click');
+  await wrapper.findAll('.i-cascader-panel__node')[1].trigger('click');
+  expect(loads).toBe(2);
+  expect(wrapper.emitted('update:modelValue')).toEqual([[[['root', 'child']]]]);
+});
+
+test('keeps checked descendants independent in controlled strict mode', async () => {
+  const wrapper = mount(CascaderPanel, {
+    props: {
+      options: [{ value: 'parent', label: 'Parent', children: [{ value: 'child', label: 'Child' }] }],
+      modelValue: [['parent']],
+      props: { multiple: true, checkStrictly: true }
+    }
+  });
+  expect(wrapper.vm.getCheckedNodes().map((node) => node.value)).toEqual(['parent']);
+  await wrapper.get('.i-cascader-panel__arrow').trigger('click');
+  expect(wrapper.findAll('input').map((input) => input.element.checked)).toEqual([true, false]);
+});
+
+test('initializes expanded columns from the selected path', () => {
+  const wrapper = mount(CascaderPanel, {
+    props: {
+      options: [{ value: 'root', label: 'Root', children: [{ value: 'child', label: 'Child' }] }],
+      modelValue: ['root', 'child']
+    }
+  });
+  expect(wrapper.findAll('.i-cascader-panel__column')).toHaveLength(2);
+  expect(wrapper.vm.getCheckedNodes().map((node) => node.value)).toEqual(['child']);
 });

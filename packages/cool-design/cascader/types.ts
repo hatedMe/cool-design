@@ -21,6 +21,16 @@ export interface CascaderPropsMapping {
   children?: string;
   disabled?: string;
   leaf?: string;
+  multiple?: boolean;
+  checkStrictly?: boolean;
+  emitPath?: boolean;
+  checkOnClickNode?: boolean;
+  checkOnClickLeaf?: boolean;
+  showPrefix?: boolean;
+  hoverThreshold?: number;
+  expandTrigger?: 'click' | 'hover';
+  lazy?: boolean;
+  lazyLoad?: CascaderLazyLoad;
 }
 
 export interface CascaderNode {
@@ -46,7 +56,7 @@ export interface CascaderLazyNode {
   data: CascaderOption;
 }
 
-export type CascaderLazyLoad = (node: CascaderLazyNode, resolve: (children: CascaderOption[]) => void) => void;
+export type CascaderLazyLoad = (node: CascaderLazyNode, resolve: (children: CascaderOption[]) => void, reject: () => void) => void;
 
 export type CascaderFilterMethod = (
   query: string,
