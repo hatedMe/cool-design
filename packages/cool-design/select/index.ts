@@ -3,6 +3,7 @@ import Component from './select';
 export interface SelectInstance {
   focus(): HTMLElement | undefined;
   blur(): HTMLElement | undefined;
+  togglePopperVisible(visible?: boolean): void;
 }
 export const Select = withInstall<typeof Component, SelectInstance>(Component);
 export default Select;

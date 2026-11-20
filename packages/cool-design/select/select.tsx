@@ -219,7 +219,7 @@ export default defineComponent({
     const loading = computed(() => props.loading || props.remoteLoading);
 
     const setOpen = (value: boolean) => {
-      if (isDisabled() || open.value === value) return;
+      if (open.value === value || (value && isDisabled())) return;
       open.value = value;
       if (value) shown.value = true;
       emit('visible-change', value);
@@ -357,6 +357,7 @@ export default defineComponent({
         target?.focus();
         return target;
       },
+      togglePopperVisible: (visible?: boolean) => setOpen(visible ?? !open.value),
       blur: () => {
         const target = input.value ?? root.value?.querySelector<HTMLElement>('[role="combobox"]');
         target?.blur();
@@ -401,7 +402,7 @@ export default defineComponent({
       };
       return (
         <span ref={root} class={['i-select', `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`, { 'is-disabled': isDisabled(), 'is-open': open.value }]}>
-          <div
+          {slots.control ? slots.control({ open: open.value, toggle: () => setOpen(!open.value) }) : <div
             {...attrs}
             id={(attrs.id as string) || field?.id}
             role='combobox'
@@ -435,7 +436,7 @@ export default defineComponent({
             }} onFocus={() => setOpen(true)} />}
             {props.clearable && selectedValues.value.length > 0 && <button type='button' aria-label='清空' onClick={(event) => { event.stopPropagation(); clear(); }}>×</button>}
             {slots.suffix?.()}
-          </div>
+          </div>}
           <select
             ref={select}
             class='i-select__native'
@@ -461,7 +462,7 @@ export default defineComponent({
               clearQuery();
             }}>{nativeOptions}</select>
           {(() => {
-            const kept = props.persistent && shown.value && !open.value;
+            const kept = props.persistent && (shown.value || slots.dropdown) && !open.value;
             if (!open.value && !kept) return null;
             const panel = (
               <div
@@ -476,6 +477,7 @@ export default defineComponent({
                 }}
                 onMousedown={(event) => event.stopPropagation()}>
                 {slots.header?.()}
+                {slots.dropdown ? slots.dropdown() : <>
                 {loading.value && <div class='i-select__empty'>{slots.empty ? slots.empty() : loadingText.value}</div>}
                 {!loading.value && !visibleRecords.length && <div class='i-select__empty'>{slots.empty ? slots.empty() : (query.value ? noMatchText.value : noDataText.value)}</div>}
                 {!loading.value && props.virtualized && visibleRecords.map((item, index) => renderOption(item, index))}
@@ -483,6 +485,7 @@ export default defineComponent({
                   group.label !== undefined && <div class='i-select__group' role='presentation'>{group.label}</div>,
                   group.items.map((item) => renderOption(item, filteredRecords.value.indexOf(item)))
                 ])}
+                </>}
                 {slots.footer?.()}
               </div>
             );

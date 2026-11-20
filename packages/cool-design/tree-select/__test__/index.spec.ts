@@ -34,7 +34,7 @@ const openDropdown = async (wrapper: ReturnType<typeof mount>) => {
   await nextTick();
 };
 
-const dropdownVisible = () => doc().find('.i-tree-select__dropdown').exists();
+const dropdownVisible = () => doc().find('.i-tree-select__dropdown:not([aria-hidden=true])').exists();
 
 describe('test `TreeSelect` component', () => {
   test('多选时点击叶节点文字切换模型值', async () => {
@@ -54,7 +54,7 @@ describe('test `TreeSelect` component', () => {
     await openDropdown(wrapper);
     await toggleCheck(0);
     await nextTick();
-    expect(wrapper.emitted('update:modelValue')![0][0]).toEqual(['a', 'a1', 'a2']);
+    expect(wrapper.emitted('update:modelValue')![0][0]).toEqual(['a1', 'a2']);
 
     await wrapper.setProps({ modelValue: ['a', 'a1', 'a2'] });
     await nextTick();
@@ -70,8 +70,8 @@ describe('test `TreeSelect` component', () => {
     await toggleCheck(2);
     await nextTick();
     const result = wrapper.emitted('update:modelValue')![0][0] as (string | number)[];
-    expect(result).toHaveLength(3);
-    expect(result).toEqual(expect.arrayContaining(['a', 'a1', 'a2']));
+    expect(result).toHaveLength(2);
+    expect(result).toEqual(expect.arrayContaining(['a1', 'a2']));
     wrapper.unmount();
   });
 
@@ -146,12 +146,12 @@ describe('test `TreeSelect` component', () => {
       new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
     );
     await nextTick();
-    expect(mine().exists()).toBe(false);
+    expect(mine().attributes('aria-hidden')).toBe('true');
 
     await openDropdown(wrapper);
     document.body.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
     await nextTick();
-    expect(mine().exists()).toBe(false);
+    expect(mine().attributes('aria-hidden')).toBe('true');
     wrapper.unmount();
   });
 });
@@ -295,5 +295,44 @@ test('TreeSelect 继承直挂 Form 尺寸与动态禁用', async () => {
   await wrapper.setProps({ disabled: true });
   expect(select.emitted('visible-change')).toEqual([[true], [false]]);
   expect(select.get('.i-tree-select__control').attributes('disabled')).toBeDefined();
+  wrapper.unmount();
+});
+
+test('TreeSelect 保留可调用树实例、选中标签和节点插槽', async () => {
+  const wrapper = mount(TreeSelect, {
+    props: { data, modelValue: 'a1', defaultExpandAll: true, teleported: false },
+    slots: { default: ({ data }) => h('span', `自定义 ${data.label}`) }
+  });
+  await wrapper.get('.i-tree-select__control').trigger('click');
+  const instance = wrapper.vm as unknown as { treeRef?: { getNode(key: string): unknown }; getNode(key: string): unknown; selectedLabel: string };
+  expect(instance.selectedLabel).toBe('节点A1');
+  expect(instance.getNode('a1')).toBe(instance.treeRef?.getNode('a1'));
+  expect(wrapper.text()).toContain('自定义 节点A1');
+  wrapper.unmount();
+});
+
+test('TreeSelect 关闭时可读取真实树状态并提交一次原生表单值', async () => {
+  let instance: import('..').TreeSelectInstance | undefined;
+  const wrapper = mount({ render: () => h('form', null, h(TreeSelect, {
+    ref: (value: unknown) => { instance = value as typeof instance; },
+    data, multiple: true, modelValue: ['a1'], name: 'tree', teleported: false
+  })) });
+  await nextTick();
+  await nextTick();
+  const control = wrapper.getComponent(TreeSelect);
+  expect(instance?.getCheckedKeys(true)).toEqual(['a1']);
+  expect(new FormData(wrapper.get('form').element).getAll('tree')).toEqual(['a1']);
+  instance?.selectRef?.togglePopperVisible(true);
+  await nextTick();
+  expect(control.get('[role="combobox"]').attributes('aria-expanded')).toBe('true');
+  wrapper.unmount();
+});
+
+test('TreeSelect 严格单选可从子节点切换到父节点', async () => {
+  const wrapper = mount(TreeSelect, { props: { data, modelValue: 'a1', showCheckbox: true, checkStrictly: true,
+    defaultExpandAll: true, teleported: false } });
+  await wrapper.get('.i-tree-select__control').trigger('click');
+  await wrapper.get('.i-tree-select__dropdown input[type="checkbox"]').setValue(true);
+  expect(wrapper.emitted('update:modelValue')).toEqual([['a']]);
   wrapper.unmount();
 });

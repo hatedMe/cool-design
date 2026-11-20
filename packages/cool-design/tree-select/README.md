@@ -56,7 +56,7 @@
 | `disabled`      | 是否禁用                                   | `boolean`                                  | `false`  |
 | `validateEvent` | 选中变化时触发表单校验                     | `boolean`                                  | `true`   |
 | `teleported`    | 下拉面板是否传送到 body                    | `boolean`                                  | `true`   |
-| `persistent`    | 关闭后是否保留面板节点（树实例状态保留）   | `boolean`                                  | `false`  |
+| `persistent`    | 关闭后是否保留面板节点（树实例状态保留）   | `boolean`                                  | `true`  |
 | `placement`     | 面板位置及 `-start` / `-end` 变体         | `string`                                   | `bottom-start` |
 | `fallbackPlacements` | 主位置放不下时的候选位置              | `Placement[]`                              | `['top-start', 'bottom', 'top']` |
 | `popperOptions` | 浮层参数覆盖（`offset` / `placement`）     | `{ offset?: number; placement?: Placement }` | — |
@@ -86,8 +86,12 @@
 
 ### 插槽
 
-当前版本不提供自定义节点插槽。
+默认插槽接收 `{ node, data }`，适合自定义树节点。控件还提供 `prefix`、`header`、`footer`、`loading` 和 `empty` 插槽。
 
-> 以上为当前支持的 Tree 参数；未完整透传 Tree / Select 的全部属性、事件、插槽和实例方法。多选仍沿用父子联动结果包含父子键值的现有行为。
+级联多选提交叶节点键，并保留尚未加载的已选键。若原代码从模型读取父节点键，可改用 `getCheckedKeys()` 查询树的完整勾选状态。通过 `selectRef` 和 `treeRef` 可访问内部实例。
+
+实例还提供 `selectedLabel`、`filter()`、`getNode()`、勾选和半选的查询及设置方法、当前项的查询及设置方法，以及 `updateKeyChildren()`、`append()`、`remove()`、`insertBefore()`、`insertAfter()`。
 
 单选清空默认提交 `undefined`。依赖原默认值 `null` 的页面可以显式设置 `:value-on-clear="null"`。布尔清空值可用于双向绑定，树节点的键继续使用字符串或数字。
+
+`valueKey` 在缺少 `nodeKey` 时提供节点键。设置 `name` 后，表单会按名称提交所选节点键。可用 `appendTo` 指定浮层容器。
