@@ -32,3 +32,5 @@ RadioButton 是 Radio 的按钮样式变体，支持独立受控使用，也可�
 
 - `update:modelValue`：独立使用时选项变化。
 - `change`：独立使用时触发；在 RadioGroup 中由 RadioGroup 统一触发 `change`。
+
+尺寸优先使用组件及分组的显式设置，再读取最近的 FormItem、Form 或 ConfigProvider。Form 禁用时，选项也会禁用。

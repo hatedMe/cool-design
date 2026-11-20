@@ -1,7 +1,6 @@
-import { defineComponent, nextTick, provide, type InjectionKey, type PropType } from 'vue';
+import { defineComponent, inject, nextTick, provide, type InjectionKey, type PropType } from 'vue';
 import type { RadioValue } from './radio';
-import { useField } from '../form/context';
-import { useConfig } from '../config-provider/context';
+import { formKey, useField } from '../form/context';
 
 export interface RadioItem {
   uid: number;
@@ -36,7 +35,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change'],
   setup(props, { emit, slots }) {
     const field = useField();
-    const config = useConfig();
+    const form = inject(formKey, undefined);
     const items: RadioItem[] = [];
     const register: RadioGroupContext['register'] = (item) => {
       if (!items.some((existing) => existing.uid === item.uid)) items.push(item);
@@ -69,7 +68,7 @@ export default defineComponent({
       }
     };
     const onKeydown = (event: KeyboardEvent) => {
-      if (props.disabled || field?.disabled?.()) return;
+      if (props.disabled || (field?.disabled?.() ?? form?.disabled?.())) return;
       if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
         event.preventDefault();
         move(1);
@@ -86,10 +85,10 @@ export default defineComponent({
         return props.name;
       },
       get disabled() {
-        return props.disabled || !!field?.disabled?.();
+        return props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
       },
       get size() {
-        return props.size ?? field?.size?.() ?? config.value.size;
+        return props.size;
       },
       update,
       register,

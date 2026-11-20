@@ -25,6 +25,7 @@ export default defineComponent({
     const form = inject(formKey, undefined);
     const group = inject(radioGroupKey, undefined);
     const input = ref<HTMLInputElement>();
+    const isDisabled = () => props.disabled || group?.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
     const uid = getCurrentInstance()?.uid ?? 0;
     if (group) {
       // 登记到组以支持 roving tabindex 与方向键导航。
@@ -34,7 +35,7 @@ export default defineComponent({
           return props.value !== undefined ? props.value : props.label;
         },
         get disabled() {
-          return props.disabled;
+          return isDisabled();
         },
         focus: () => input.value?.focus()
       });
@@ -42,8 +43,8 @@ export default defineComponent({
     onBeforeUnmount(() => group?.unregister(uid));
     return () => {
       const value = props.value !== undefined ? props.value : props.label;
-      const disabled = props.disabled || field?.disabled?.() || form?.disabled?.() || group?.disabled || false;
-      const size = props.size ?? group?.size ?? field?.size?.() ?? config.value.size;
+      const disabled = isDisabled();
+      const size = props.size ?? group?.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size;
       return (
       <label class={[bem({ 'is-disabled': disabled, 'is-bordered': props.border }), size && size !== 'default' ? `i-radio--${size}` : undefined]}>
         <input

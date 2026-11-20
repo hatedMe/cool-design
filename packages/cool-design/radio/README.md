@@ -57,3 +57,5 @@ Radio 用于在互斥选项中选择一个值；RadioGroup 用于管理同一组
 ### RadioGroup 键盘交互
 
 选中项（未选中时第一个可用项）是 Tab 停靠点；方向键在可用选项间移动选中并聚焦，自动跳过禁用项。
+
+尺寸优先使用组件及分组的显式设置，再读取最近的 FormItem、Form 或 ConfigProvider。Form 禁用时，选项也会禁用。

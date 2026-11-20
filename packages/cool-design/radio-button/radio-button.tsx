@@ -1,4 +1,6 @@
 import { defineComponent, getCurrentInstance, inject, onBeforeUnmount, ref, type PropType } from 'vue';
+import { useConfig } from '../config-provider/context';
+import { formKey, useField } from '../form/context';
 import { radioGroupKey } from '../radio/group';
 import type { RadioValue } from '../radio/radio';
 import { createNamespace } from '../../../src/utils/create';
@@ -17,8 +19,12 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { emit, slots }) {
+    const field = useField();
+    const form = inject(formKey, undefined);
+    const config = useConfig();
     const group = inject(radioGroupKey, undefined);
     const input = ref<HTMLInputElement>();
+    const isDisabled = () => props.disabled || group?.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
     const uid = getCurrentInstance()?.uid ?? 0;
     if (group) {
       group.register({
@@ -27,7 +33,7 @@ export default defineComponent({
           return props.value !== undefined ? props.value : props.label;
         },
         get disabled() {
-          return props.disabled;
+          return isDisabled();
         },
         focus: () => input.value?.focus()
       });
@@ -36,9 +42,10 @@ export default defineComponent({
     return () => {
       const value = props.value !== undefined ? props.value : props.label;
       const checked = (group?.modelValue ?? props.modelValue) === value;
-      const disabled = props.disabled || group?.disabled || false;
+      const disabled = isDisabled();
+      const size = props.size ?? group?.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size;
       return (
-        <label class={[bem({ 'is-checked': checked, 'is-disabled': disabled }), props.size || group?.size ? `i-radio-button--${props.size || group?.size}` : undefined]}>
+        <label class={[bem({ 'is-checked': checked, 'is-disabled': disabled }), size ? `i-radio-button--${size}` : undefined]}>
           <input
             ref={input}
             type='radio'

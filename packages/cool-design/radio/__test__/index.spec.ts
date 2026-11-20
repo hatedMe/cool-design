@@ -178,3 +178,37 @@ describe('test `Radio` component', () => {
     wrapper.unmount();
   });
 });
+
+test('Radio 族直挂禁用 Form 时继承尺寸并拦截选择', async () => {
+  const wrapper = mount(CoolDesign.Form, {
+    props: { model: {}, size: 'large', disabled: true },
+    slots: { default: () => [
+      h(Radio, { value: 'a' }),
+      h(RadioButton, { value: 'a' }),
+      h(CoolDesign.RadioGroup, {}, { default: () => [h(RadioButton, { value: 'a' }), h(Radio, { value: 'b' })] })
+    ] }
+  });
+  const standalone = wrapper.findAllComponents(RadioButton)[0];
+  expect(standalone.classes()).toContain('i-radio-button--large');
+  for (const input of wrapper.findAll('input[type="radio"]')) {
+    expect(input.attributes('disabled')).toBeDefined();
+    input.element.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  expect(wrapper.getComponent(CoolDesign.RadioGroup).emitted('update:modelValue')).toBeUndefined();
+  wrapper.unmount();
+});
+
+test('RadioGroup 方向键跳过位于禁用 Form 内的子项', async () => {
+  const wrapper = mount(CoolDesign.RadioGroup, {
+    props: { modelValue: 'a' },
+    slots: { default: () => [
+      h(Radio, { value: 'a' }),
+      h(CoolDesign.Form, { model: {}, disabled: true }, {
+        default: () => [h(RadioButton, { value: 'b' }), h(Radio, { value: 'c' })]
+      })
+    ] }
+  });
+  await wrapper.get('[role="radiogroup"]').trigger('keydown', { key: 'ArrowRight' });
+  expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  wrapper.unmount();
+});
