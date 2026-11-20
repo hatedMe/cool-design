@@ -38,7 +38,7 @@
 
 ### 01. MessageBox 发布入口
 
-- [ ] 文件：`packages/cool-design/index.ts`、`message-box/index.ts`、`message-box/__test__/`、`__test__/package-exports.spec.ts`、`vite.config.ts`、README 与文档示例。
+- [x] 文件：`packages/cool-design/index.ts`、`message-box/index.ts`、`__test__/index.spec.ts`、`__test__/package-exports.spec.ts`、README 与 CHANGELOG；通过根入口保留服务引用即可保全默认导出，无需增加构建配置或改动既有示例。
 - 保留根入口 MessageBox / MessageBoxComponent 声明式组件，在 MessageBox 上附加 confirm/alert/prompt/msgbox/close；根入口 ElMessageBox 和子路径默认导出提供可调用服务，不破坏旧模板消费方式。
 - 验收：源码与构建后的 ESM/CJS 根入口和子路径导出一致；执行服务、确认/取消及关闭；全量/单组件安装仍注册声明式组件。
 - 验证：先 `pnpm build`，再 `pnpm exec vitest run packages/cool-design/__test__ packages/cool-design/message-box/__test__`，并检查示例类型。
@@ -291,7 +291,8 @@
 
 状态只在验证和审查完成后更新。格式：编号 / 测试与结果 / 审查结论 / 提交 SHA。分组件子项分别记录，不提前勾选整个阶段。
 
-- 计划：已编写，待独立审查。
-- 01–38：待执行。
+- 计划：独立审查发现3处缺漏，已修订并复审通过；计划提交 `6e121cd`。
+- 01：完成。旧实现回归测试2项失败，修复后定向136项、全量117文件1134项通过；build、typecheck、typecheck:docs、lint通过（4个既有警告）。独立审查通过，无未解决问题；审查者额外验证实际ESM/CJS服务调用、声明式挂载与安装。修复及本条记录属于同一提交，可用 `git log --grep="修复消息确认框公开入口"` 查询。
+- 02–38：待执行。
 
 ?????????

@@ -22,7 +22,7 @@ const MessageBoxComponent = withInstall(Component);
  * MessageBox 可直接调用（等价于 msgbox），同时保留
  * msgbox / alert / confirm / prompt 便捷方法、close 静态方法与组件注册能力。
  */
-const MessageBox = Object.assign(
+const ElMessageBox = Object.assign(
   (options: MessageBoxCallOptions, appContext: AppContext | null = null) => msgbox(options, appContext),
   {
     msgbox,
@@ -34,5 +34,8 @@ const MessageBox = Object.assign(
   }
 );
 
-export { MessageBoxComponent, closeAll as closeAllMessageBoxes };
-export default MessageBox;
+export const MessageBox = Object.assign(MessageBoxComponent, {
+  msgbox, alert, confirm, prompt, close: closeAll
+});
+export { ElMessageBox, MessageBoxComponent, closeAll as closeAllMessageBoxes };
+export default ElMessageBox;

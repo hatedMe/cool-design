@@ -24,6 +24,16 @@ describe('发布入口', () => {
       const esm = await import('./es/packages/cool-design/index.js');
       const cjs = createRequire(import.meta.url)('./lib/packages/cool-design/index.cjs');
       if (!esm.Button || !cjs.Button) throw new Error('主入口缺少 Button');
+      const subpath = await import('./es/packages/cool-design/message-box/index.js');
+      const cjsSubpath = createRequire(import.meta.url)('./lib/packages/cool-design/message-box/index.cjs');
+      for (const service of [esm.MessageBox, cjs.MessageBox, subpath.default, cjsSubpath.default]) {
+        for (const method of ['confirm', 'alert', 'prompt', 'msgbox', 'close']) {
+          if (typeof service?.[method] !== 'function') throw new Error('消息确认框缺少方法 ' + method);
+        }
+      }
+      for (const service of [esm.ElMessageBox, cjs.ElMessageBox, subpath.default, cjsSubpath.default]) {
+        if (typeof service !== 'function') throw new Error('消息确认框服务导出丢失');
+      }
     `;
     expect(() => execFileSync(process.execPath, ['--input-type=module', '-e', script], { cwd: root, stdio: 'pipe' })).not.toThrow();
   });

@@ -4,6 +4,8 @@
 
 MessageBox 对需要明确决策的操作进行模态确认，支持声明式组件、命令式 `msgbox` / `alert` / `confirm` / `prompt` 与组合式 `useMessageBox`。命令式语义：确认 resolve，取消或关闭 reject。
 
+根入口的 `MessageBox` 保留声明式组件用法，并提供下述静态服务方法。需要直接函数调用时，使用 `import { ElMessageBox } from 'cool-design'` 或 `import MessageBox from 'cool-design/message-box'`。`MessageBoxComponent` 是显式声明式组件入口。
+
 ## 声明式用法
 
 ```vue
@@ -154,7 +156,7 @@ MessageBox.confirm('确定吗？', '确认', {}, getCurrentInstance()?.appContex
 
 | 方法 | 说明 | 类型 |
 | ---- | ---- | ---- |
-| `MessageBox(options, appContext?)` | 直接调用，等价于 `msgbox` | `(options: MessageBoxOptions & { message: string; title?: string }, appContext?: AppContext \| null) => Promise<'confirm' \| MessageBoxPromptResult>` |
+| `ElMessageBox(options, appContext?)` | 直接调用，等价于 `msgbox`；子路径默认导出亦支持 | `(options: MessageBoxOptions & { message: string; title?: string }, appContext?: AppContext \| null) => Promise<'confirm' \| MessageBoxPromptResult>` |
 | `MessageBox.msgbox(options, appContext?)` | 通用弹窗，含输入时 resolve `{ value, action }`，否则 resolve `'confirm'`，取消/关闭 reject | `(options: MessageBoxOptions & { message: string; title?: string }, appContext?: AppContext \| null) => Promise<'confirm' \| MessageBoxPromptResult>` |
 | `MessageBox.alert(message, title?, options?, appContext?)` | 提示框 | `(message: string, title?: string, options?: MessageBoxOptions, appContext?: AppContext \| null) => Promise<'confirm'>` |
 | `MessageBox.confirm(message, title?, options?, appContext?)` | 确认框 | 同上 |

@@ -91,6 +91,8 @@ import Collapse, { CollapseItem } from './collapse';
 import { installDirectives } from './directives';
 import { ElLoading } from './loading';
 import {
+  MessageBox,
+  ElMessageBox,
   MessageBoxComponent,
   alert as alertBox,
   confirm as confirmBox,
@@ -136,7 +138,8 @@ export {
   Tag,
   Tooltip,
   Popconfirm,
-  MessageBoxComponent as MessageBox,
+  MessageBox,
+  ElMessageBox,
   Button,
   ButtonGroup,
   Row,
