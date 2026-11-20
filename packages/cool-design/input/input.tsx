@@ -1,5 +1,5 @@
-import { computed, defineComponent, h, markRaw, nextTick, onMounted, ref, toRaw, watch, type Component, type PropType } from 'vue';
-import { useField } from '../form/context';
+import { computed, defineComponent, h, inject, markRaw, nextTick, onMounted, ref, toRaw, watch, type Component, type PropType } from 'vue';
+import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useComposition } from '../../hooks/index.ts';
 export default defineComponent({
@@ -48,6 +48,8 @@ export default defineComponent({
   ],
   setup(props, { attrs, emit, expose, slots }) {
     const field = useField();
+    const form = inject(formKey, undefined);
+    const disabled = computed(() => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.()));
     const config = useConfig();
     const input = ref<HTMLInputElement | HTMLTextAreaElement>();
     const passwordVisible = ref(false);
@@ -95,7 +97,7 @@ export default defineComponent({
       }
     );
     const clear = () => {
-      if (props.disabled || props.readonly || !hasValue()) return;
+      if (disabled.value || props.readonly || !hasValue()) return;
       update('');
       emit('change', '');
       emit('clear');
@@ -115,6 +117,7 @@ export default defineComponent({
       if (props.validateEvent) nextTick(() => field?.validate('change'));
     };
     const handleChange = (value: string) => {
+      if (disabled.value || props.readonly) return;
       if (value !== lastChangedValue.value) {
         lastChangedValue.value = value;
         emit('change', value);
@@ -134,7 +137,7 @@ export default defineComponent({
           rows={props.rows}
           maxlength={props.maxlength}
           minlength={props.minlength}
-          disabled={props.disabled || field?.disabled?.()}
+          disabled={disabled.value}
           readonly={props.readonly}
           placeholder={props.placeholder}
           aria-invalid={field?.invalid() || undefined}
@@ -147,17 +150,17 @@ export default defineComponent({
           onCompositionend={(e: CompositionEvent) => {
             handleCompositionEnd();
             emit('compositionend', e);
-            if (!props.disabled && !props.readonly) update(parseValue((e.target as HTMLTextAreaElement).value));
+            if (!disabled.value && !props.readonly) update(parseValue((e.target as HTMLTextAreaElement).value));
           }}
           onFocus={(e: FocusEvent) => emit('focus', e)}
           onInput={(e: Event) => {
-            if (!isComposing.value && !props.disabled && !props.readonly) {
+            if (!isComposing.value && !disabled.value && !props.readonly) {
               update(parseValue((e.target as HTMLTextAreaElement).value));
               nextTick(() => resizeTextarea());
             }
           }}
           onChange={(e: Event) => {
-            if (!props.disabled && !props.readonly) handleChange((e.target as HTMLInputElement).value);
+            if (!disabled.value && !props.readonly) handleChange((e.target as HTMLInputElement).value);
           }}
           onBlur={(e: FocusEvent) => {
             if (props.validateEvent) field?.validate('blur');
@@ -174,7 +177,7 @@ export default defineComponent({
           style={props.inputStyle}
           maxlength={props.maxlength}
           minlength={props.minlength}
-          disabled={props.disabled || field?.disabled?.()}
+          disabled={disabled.value}
           readonly={props.readonly}
           placeholder={props.placeholder}
           aria-invalid={field?.invalid() || undefined}
@@ -187,13 +190,13 @@ export default defineComponent({
           onCompositionend={(e: CompositionEvent) => {
             handleCompositionEnd();
             emit('compositionend', e);
-            if (!props.disabled && !props.readonly) update(parseValue((e.target as HTMLInputElement).value));
+            if (!disabled.value && !props.readonly) update(parseValue((e.target as HTMLInputElement).value));
           }}
           onInput={(e: Event) => {
-            if (!isComposing.value && !props.disabled && !props.readonly) update(parseValue((e.target as HTMLInputElement).value));
+            if (!isComposing.value && !disabled.value && !props.readonly) update(parseValue((e.target as HTMLInputElement).value));
           }}
           onChange={(e: Event) => {
-            if (!props.disabled && !props.readonly) handleChange((e.target as HTMLInputElement).value);
+            if (!disabled.value && !props.readonly) handleChange((e.target as HTMLInputElement).value);
           }}
           onFocus={(e: FocusEvent) => emit('focus', e)}
           onKeydown={(e: KeyboardEvent) => {
@@ -214,7 +217,10 @@ export default defineComponent({
         <button
           type='button'
           aria-label={passwordVisible.value ? '隐藏密码' : '显示密码'}
-          onClick={() => (passwordVisible.value = !passwordVisible.value)}>
+          disabled={disabled.value}
+          onClick={() => {
+            if (!disabled.value) passwordVisible.value = !passwordVisible.value;
+          }}>
           {slots['password-icon']?.({ visible: passwordVisible.value }) ?? (passwordVisible.value ? '隐藏' : '显示')}
         </button>
       );
@@ -226,7 +232,7 @@ export default defineComponent({
         </span>
       );
       const wrapper = (
-        <span class={['i-input', `i-control--${props.size || config.value.size}`, isTextarea && 'is-textarea']}>
+        <span class={['i-input', `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`, isTextarea && 'is-textarea']}>
           {slots.prefix?.() ?? renderIcon(props.prefixIcon)}
           {control}
           {props.wordLimitPosition === 'inside' && countNode}
@@ -237,7 +243,7 @@ export default defineComponent({
             <button
               type='button'
               aria-label='清空'
-              disabled={props.disabled || props.readonly}
+              disabled={disabled.value || props.readonly}
               onClick={clear}>
               {renderIcon(props.clearIcon, '×')}
             </button>

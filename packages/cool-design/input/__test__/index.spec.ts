@@ -6,6 +6,8 @@ import SelectOption from '../../select-option/index';
 import Checkbox from '../../checkbox/index';
 import Switch from '../../switch/index';
 import { h } from 'vue';
+import Form from '../../form';
+import FormItem from '../../form-item';
 
 test('输入框支持受控值、清空和禁用', async () => {
   const w = mount(Input, { props: { modelValue: '原值', clearable: true } });
@@ -195,4 +197,44 @@ test('change 仅在值变化后由 Enter 或失焦触发一次', async () => {
   expect(w.emitted('change')).toHaveLength(1);
   await w.get('input').trigger('blur');
   expect(w.emitted('change')).toHaveLength(1);
+});
+
+test('Input 与文本域继承表单尺寸和禁用，禁用时不能清空或编辑', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, size: 'large', disabled: true },
+    slots: { default: () => [
+      h(Input, { modelValue: '已填', clearable: true }),
+      h(FormItem, { size: 'small' }, { default: () => h(Input, { type: 'textarea', clearable: true, modelValue: '已填' }) })
+    ] }
+  });
+  const [input, textarea] = wrapper.findAllComponents(Input);
+  expect(input.get('.i-input').classes()).toContain('i-control--large');
+  expect(textarea.get('.i-input').classes()).toContain('i-control--small');
+  for (const control of [input, textarea]) {
+    expect(control.get('input,textarea').attributes('disabled')).toBeDefined();
+    const clear = control.find('[aria-label="清空"]');
+    if (clear.exists()) await clear.trigger('click');
+    await control.get('input,textarea').trigger('input');
+    expect(control.emitted('update:modelValue')).toBeUndefined();
+  }
+  wrapper.unmount();
+});
+
+test('禁用密码输入框不改变模型也不切换显示', async () => {
+  let inputRef: { clear(): void } | undefined;
+  const wrapper = mount(Form, {
+    props: { model: {}, disabled: true },
+    slots: { default: () => h(Input, { type: 'password', showPassword: true, modelValue: '原值', clearable: true,
+      ref: (value: unknown) => { inputRef = value as typeof inputRef; } }) }
+  });
+  const control = wrapper.getComponent(Input);
+  control.get('input').element.value = '新值';
+  control.get('input').element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+  control.get('button[aria-label="显示密码"]').element.dispatchEvent(new MouseEvent('click'));
+  inputRef!.clear();
+  await wrapper.vm.$nextTick();
+  expect(control.get('input').attributes('type')).toBe('password');
+  expect(control.emitted('change')).toBeUndefined();
+  expect(control.emitted('update:modelValue')).toBeUndefined();
+  wrapper.unmount();
 });

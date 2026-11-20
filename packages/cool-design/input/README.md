@@ -49,7 +49,7 @@
 | clearable               | 允许清空                                 | `boolean`                 | `false`      |
 | disabled                | 禁止输入和清空                           | `boolean`                 | `false`      |
 | readonly                | 只读，禁止清空                           | `boolean`                 | `false`      |
-| size                    | 尺寸：`small` / `default` / `large`      | `string`                  | 继承全局尺寸 |
+| size                    | 尺寸：`small` / `default` / `large`      | `string`                  | 继承 FormItem、Form 或 ConfigProvider |
 | type                    | `text` / `password` / `textarea` / `search` | `string`               | `text`       |
 | rows                    | 文本域行数                               | `number`                  | `2`          |
 | maxlength / minlength   | 原生长度限制                             | `string` / `number`       | —            |
