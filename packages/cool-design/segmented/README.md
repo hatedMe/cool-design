@@ -22,7 +22,7 @@
 | `modelValue` | 选中值（`v-model`）                                     | `string` / `number`                      | —      |
 | `disabled`  | 是否禁用整个组件                                         | `boolean`                                | `false` |
 | `block`     | 是否撑满容器宽度，选项均分                               | `boolean`                                | `false` |
-| `size`      | 尺寸：`small` / `default` / `large`                      | `string`                                 | —      |
+| `size`      | 尺寸：`small` / `default` / `large`                      | `string`                                 | 继承 FormItem、Form 或 ConfigProvider |
 | direction | 排列方向 | `horizontal` / `vertical` | `horizontal` |
 | aria-label | 分段选择组的无障碍名称 | `string` | `segmented` |
 | validate-event | 切换时触发表单校验 | `boolean` | `true` |

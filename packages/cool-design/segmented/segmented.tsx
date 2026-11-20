@@ -1,6 +1,6 @@
-import { Comment, Fragment, Text, computed, defineComponent, nextTick, ref, type PropType, type VNode } from 'vue';
+import { Comment, Fragment, Text, computed, defineComponent, inject, nextTick, ref, type PropType, type VNode } from 'vue';
 import { useConfig } from '../config-provider/context';
-import { useField } from '../form/context';
+import { formKey, useField } from '../form/context';
 
 export interface SegmentedOption {
   label?: string;
@@ -37,9 +37,10 @@ export default defineComponent({
   emits: ['update:modelValue', 'change'],
   setup(props, { emit, slots }) {
     const field = useField();
+    const form = inject(formKey, undefined);
     const config = useConfig();
-    const disabled = computed(() => props.disabled || !!field?.disabled?.());
-    const size = computed(() => props.size ?? field?.size?.() ?? config.value.size);
+    const disabled = computed(() => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.()));
+    const size = computed(() => props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size);
     const labelId = computed(() => props.ariaLabel ? undefined : field?.getLabelId?.());
     const focusedValue = ref<SegmentedValue>();
     const normalized = computed<SegmentedOption[]>(() =>

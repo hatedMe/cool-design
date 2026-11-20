@@ -143,3 +143,15 @@ test('未显式配置名称时关联 FormItem 标签', () => {
   expect(group.attributes('aria-label')).toBeUndefined();
   wrapper.unmount();
 });
+
+test('Segmented 直挂禁用 Form 时继承尺寸并拦截键盘', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, size: 'large', disabled: true },
+    slots: { default: () => h(Segmented, { options, modelValue: 'list' }) }
+  });
+  const segmented = wrapper.getComponent(Segmented);
+  await segmented.get('[role="radiogroup"]').trigger('keydown', { key: 'ArrowRight' });
+  expect(segmented.emitted('update:modelValue')).toBeUndefined();
+  expect(segmented.classes()).toContain('i-segmented--large');
+  wrapper.unmount();
+});
