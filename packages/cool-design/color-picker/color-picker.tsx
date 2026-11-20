@@ -151,7 +151,7 @@ export default defineComponent({
     const form = inject(formKey, undefined);
     const config = useConfig();
     const size = computed(() => props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size);
-    const isDisabled = () => props.disabled || !!field?.disabled?.();
+    const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
     const { getValueOnClear, isEmptyValue } = useEmptyValues({
       emptyValues: computed(() => props.emptyValues),
       valueOnClear: computed(() => props.valueOnClear)
@@ -205,6 +205,7 @@ export default defineComponent({
       reset();
       trigger.value?.focus();
     };
+    watch(isDisabled, (disabled) => { if (disabled && open.value) close(); });
     const show = () => {
       if (isDisabled() || open.value) return;
       reset();

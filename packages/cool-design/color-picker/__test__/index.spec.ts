@@ -247,3 +247,37 @@ test('ColorPicker 尺寸按组件、FormItem、Form、Provider 顺序继承', as
   expect(pickers[3].classes()).toContain('i-color-picker--large');
   wrapper.unmount();
 });
+
+test('ColorPicker 直挂禁用 Form 时无法打开或提交', async () => {
+  const wrapper = mount(CoolDesign.Form, {
+    props: { model: {}, disabled: true },
+    slots: { default: () => h(ColorPicker, { modelValue: '#409eff', teleported: false }) }
+  });
+  const picker = wrapper.getComponent(ColorPicker);
+  const trigger = picker.get('.i-color-picker__trigger');
+  trigger.element.dispatchEvent(new MouseEvent('click'));
+  await wrapper.vm.$nextTick();
+  expect(trigger.attributes('disabled')).toBeDefined();
+  expect(picker.find('.i-color-picker__confirm').exists()).toBe(false);
+  expect(picker.emitted('update:modelValue')).toBeUndefined();
+  wrapper.unmount();
+});
+
+test('动态禁用 ColorPicker 清除草稿并结束展开状态', async () => {
+  const wrapper = mount(CoolDesign.Form, {
+    props: { model: {} },
+    slots: { default: () => h(ColorPicker, { modelValue: '#409eff', teleported: false }) }
+  });
+  const picker = wrapper.getComponent(ColorPicker);
+  const trigger = picker.get('.i-color-picker__trigger');
+  await trigger.trigger('click');
+  const input = picker.get('input[type="color"]');
+  await input.setValue('#ff0000');
+  await wrapper.setProps({ disabled: true });
+  expect(trigger.attributes('aria-expanded')).toBe('false');
+  await wrapper.setProps({ disabled: false });
+  expect(picker.find('.i-color-picker__confirm').exists()).toBe(false);
+  await trigger.trigger('click');
+  expect(picker.get('input[type="color"]').element.value).toBe('#409eff');
+  wrapper.unmount();
+});
