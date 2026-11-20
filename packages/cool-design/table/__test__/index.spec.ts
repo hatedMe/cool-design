@@ -526,6 +526,7 @@ test('溢出提示、列类名与表头插槽、附加插槽', async () => {
   const overflow = w.find('tbody td .i-table__cell-text');
   expect(overflow.exists()).toBe(true);
   const tipTrigger = w.find('tbody td .i-tooltip__trigger');
+  Object.defineProperty(tipTrigger.element, 'scrollWidth', { value: 100 });
   await tipTrigger.trigger('mouseenter');
   const tip = document.body.querySelector('.i-tooltip');
   expect(tip?.textContent).toBe('很长很长的名字');
@@ -837,7 +838,9 @@ test('溢出提示支持 tooltip-formatter 自定义内容', async () => {
       ]
     }
   });
-  await w.find('tbody td .i-tooltip__trigger').trigger('mouseenter');
+  const tipTrigger = w.get('tbody td .i-tooltip__trigger');
+  Object.defineProperty(tipTrigger.element, 'scrollWidth', { value: 100 });
+  await tipTrigger.trigger('mouseenter');
   expect(document.body.querySelector('.i-tooltip')?.textContent).toBe('姓名：甲');
   document.body.querySelectorAll('.i-tooltip').forEach((el) => el.remove());
 });
@@ -1025,7 +1028,9 @@ test('溢出提示支持对象配置并透传 Tooltip 选项', async () => {
       showOverflowTooltip: { placement: 'bottom', popperClass: 'tip-x' }
     }
   });
-  await w.find('tbody td .i-tooltip__trigger').trigger('mouseenter');
+  const tipTrigger = w.get('tbody td .i-tooltip__trigger');
+  Object.defineProperty(tipTrigger.element, 'scrollWidth', { value: 100 });
+  await tipTrigger.trigger('mouseenter');
   const tip = document.body.querySelector('.i-tooltip');
   expect(tip?.textContent).toBe('甲');
   expect(tip?.classList.contains('tip-x')).toBe(true);
@@ -1261,7 +1266,9 @@ test('tooltipEffect 切换悬浮层主题', async () => {
       tooltipEffect: 'light'
     }
   });
-  await w.find('tbody td .i-tooltip__trigger').trigger('mouseenter');
+  const tipTrigger = w.get('tbody td .i-tooltip__trigger');
+  Object.defineProperty(tipTrigger.element, 'scrollWidth', { value: 100 });
+  await tipTrigger.trigger('mouseenter');
   expect(document.body.querySelector('.i-tooltip--light')).not.toBeNull();
   document.body.querySelectorAll('.i-tooltip').forEach((el) => el.remove());
 });

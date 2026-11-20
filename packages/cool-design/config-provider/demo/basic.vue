@@ -8,9 +8,10 @@ const name = ref('');
 <template>
   <Space direction="vertical" align="stretch" :size="16">
     <Switch v-model="dark">局部深色主题</Switch>
-    <ConfigProvider :theme="dark ? 'dark' : 'light'" size="large" class="theme-preview">
+    <ConfigProvider :theme="dark ? 'dark' : 'light'" size="large" :button="{ type: 'primary', round: true }" class="theme-preview">
       <Space>
-        <Button type="primary">大尺寸按钮</Button>
+        <Button>大尺寸按钮</Button>
+        <Button :round="false">直角按钮</Button>
         <Tag type="success">已启用</Tag>
       </Space>
       <Input v-model="name" placeholder="体验主题和大尺寸控件" aria-label="主题示例输入框" />

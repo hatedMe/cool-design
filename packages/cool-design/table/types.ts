@@ -1,3 +1,6 @@
+import type { VNode } from 'vue';
+import type Tooltip from '../tooltip/tooltip';
+
 export type TableSize = 'large' | 'default' | 'small';
 export type TableColumnType = 'default' | 'selection' | 'index' | 'expand';
 export type TableSortOrder = 'ascending' | 'descending' | null;
@@ -92,7 +95,7 @@ export interface TableTooltipParams {
   cellValue: unknown;
   index: number;
 }
-export type TableTooltipFormatter = (params: TableTooltipParams) => string;
+export type TableTooltipFormatter = (params: TableTooltipParams) => string | VNode;
 
 export interface TableCellEditParams {
   row: object;
@@ -102,12 +105,10 @@ export interface TableCellEditParams {
   oldValue: unknown;
 }
 
-export interface TableOverflowTooltipOptions {
-  placement?: 'top' | 'bottom' | 'left' | 'right';
-  offset?: number;
-  popperClass?: string;
-  effect?: 'light' | 'dark';
-}
+export type TableOverflowTooltipOptions = Partial<Pick<InstanceType<typeof Tooltip>['$props'],
+  'placement' | 'offset' | 'popperClass' | 'effect' | 'disabled' | 'trigger' | 'showAfter' |
+  'hideAfter' | 'enterable' | 'showArrow' | 'fallbackPlacements' | 'teleported' | 'appendTo' | 'popperStyle' | 'zIndex'
+>>;
 
 export interface TableEditorParams {
   row: object;

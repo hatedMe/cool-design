@@ -119,7 +119,7 @@ export type {
 } from './table-v2';
 export type { SelectRemoteOption, SelectTagType, SelectPropsMapping } from './select/select';
 export type { CascaderFilterMethod, CascaderModelValue, CascaderNode, CascaderOption, CascaderPropsMapping } from './cascader';
-export type { Size, Config } from './config-provider/context';
+export type { Size, Config, ButtonConfigContext, DialogConfigContext, LinkConfigContext, MessageConfigContext, TableConfigContext } from './config-provider/context';
 
 export {
   Container,

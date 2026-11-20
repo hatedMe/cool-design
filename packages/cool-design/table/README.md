@@ -236,7 +236,7 @@ const columns = [
 | highlightCurrentRow     | 是否高亮当前行                                                                | `boolean`                                                              | `false`              |
 | currentRowKey           | 当前行键值，受控                                                              | `string \| number`                                                     | —                    |
 | tableLayout             | 表格布局算法                                                                  | `fixed` / `auto`                                                       | `fixed`              |
-| showOverflowTooltip     | 内容溢出时显示 Tooltip 悬浮层，对象可配 `placement/offset/popperClass/effect` | `boolean \| { placement?; offset?; popperClass?; effect? }`            | `false`              |
+| showOverflowTooltip     | 内容溢出时显示 Tooltip，可传选项对象 | `boolean \| TableOverflowTooltipOptions`            | `false`              |
 | showSummary             | 是否显示合计行                                                                | `boolean`                                                              | `false`              |
 | sumText                 | 合计行首列文字                                                                | `string`                                                               | `合计`               |
 | summaryMethod           | 自定义合计行，返回每列文本                                                    | `({ columns, data }) => (string \| number)[]`                          | —                    |
@@ -249,7 +249,7 @@ const columns = [
 | load                    | 懒加载方法，首次展开时调用                                                    | `(row, treeNode: { level: number }, resolve) => void`                  | —                    |
 | resizable               | 是否可拖拽调整列宽，列 `resizable` 可覆盖                                     | `boolean`                                                              | `true`               |
 | allowDragLastColumn     | 是否允许拖拽末列                                                              | `boolean`                                                              | `false`              |
-| tooltipFormatter        | 溢出提示内容格式化，列 `tooltipFormatter` 优先                                | `({ row, column, cellValue, index }) => string`                        | —                    |
+| tooltipFormatter        | 溢出提示内容格式化，列 `tooltipFormatter` 优先                                | `({ row, column, cellValue, index }) => string \| VNode`                        | —                    |
 | rowStyle                | 行内联样式，对象或函数                                                        | `object \| (({ row, rowIndex }) => object)`                            | —                    |
 | cellClassName           | 单元格类名                                                                    | `string \| (({ row, column, rowIndex, columnIndex }) => string)`       | —                    |
 | cellStyle               | 单元格内联样式                                                                | `object \| (({ row, column, rowIndex, columnIndex }) => object)`       | —                    |
@@ -266,7 +266,8 @@ const columns = [
 | flexible                | 表格宽度按内容收缩而非撑满                                                    | `boolean`                                                              | `false`              |
 | nativeScrollbar         | 使用原生滚动条，关闭则用细滚动条样式                                          | `boolean`                                                              | `true`               |
 | preserveExpandedContent | 收起时保留展开行内容（隐藏不断载）                                            | `boolean`                                                              | `false`              |
-| tooltipEffect           | 溢出提示默认主题，列选项可覆盖                                                | `light` / `dark`                                                       | `dark`               |
+| tooltipEffect | 溢出提示默认主题，内置 `light` 和 `dark` | `string` | `dark` |
+| tooltipOptions | 表格的溢出提示选项 | `TableOverflowTooltipOptions` | — |
 
 ### 事件
 
@@ -358,7 +359,7 @@ const columns = [
 | filterPlacement     | 筛选弹层位置                                                                        | `top` / `bottom` / `left` / `right`                         |
 | filterClassName     | 筛选弹层类名                                                                        | `string`                                                    |
 | filterIcon          | 自定义筛选图标，可用 `{字段名}-filter-icon` 插槽代替                                | `(params: { column }) => VNode`                             |
-| showOverflowTooltip | 本列溢出提示，布尔或 Tooltip 选项对象，优先于表格级                                 | `boolean \| { placement?; offset?; popperClass?; effect? }` |
+| showOverflowTooltip | 本列溢出提示，布尔或 Tooltip 选项对象，优先于表格级                                 | `boolean \| TableOverflowTooltipOptions` |
 | className           | 单元格类名                                                                          | `string`                                                    |
 | labelClassName      | 表头单元格类名                                                                      | `string`                                                    |
 | selectable          | 行是否可勾选，不可选行禁用并跳过级联                                                | `(row, index) => boolean`                                   |
@@ -367,7 +368,7 @@ const columns = [
 | headerAlign         | 表头对齐方式，省略时使用 `align`                                                    | `left` / `center` / `right`                                 |
 | children            | 多级表头子列，递归分组，排序筛选作用于叶子列                                        | `TableColumn[]`                                             |
 | resizable           | 本列是否可拖拽调整宽度，优先于表格级                                                | `boolean`                                                   |
-| tooltipFormatter    | 本列溢出提示内容格式化，优先于表格级                                                | `({ row, column, cellValue, index }) => string`             |
+| tooltipFormatter    | 本列溢出提示内容格式化，优先于表格级                                                | `({ row, column, cellValue, index }) => string \| VNode`             |
 | editable            | 双击进入单元格编辑，回车/失焦确认、`Escape` 取消                                    | `boolean`                                                   |
 | editor              | 自定义编辑器渲染函数，参数 `{ row, column, value, index, confirm, cancel, update }` | `(params) => VNode`                                         |
 | visible             | 列是否显示，可用 `setColumnVisibility` 运行时切换                                   | `boolean`                                                   |
@@ -383,7 +384,8 @@ const columns = [
 - `width` / `minWidth` 支持数字或 CSS 宽度字符串；固定列请显式指定 `width`，非 px 字符串的固定偏移按 `minWidth` 数字或 `140` 估算。
 - `height` 与 `maxHeight` 同时设置时 `height` 优先。
 - 筛选面板为简化实现：多选经确认/重置生效，单选点击即生效；无 `filterMethod` 的列确认后仅发出事件不过滤。
-- 溢出提示使用 Tooltip 组件悬浮层，自定义插槽单元格不加提示，可用 `tooltipFormatter` 自定义内容。
+- 默认文本单元格实际溢出时显示 Tooltip。`tooltipFormatter` 可返回字符串或 Vue VNode。
+- `tooltipOptions` 和对象形式的 `showOverflowTooltip` 支持 `placement`、`offset`、`popperClass`、`effect`、`disabled`、`trigger`、`showAfter`、`hideAfter`、`enterable`、`showArrow`、`fallbackPlacements`、`teleported`、`appendTo`、`popperStyle`、`zIndex`。选项按 Provider、表格、列分层合并，靠近单元格的同名字段优先。设置 `showOverflowTooltip: false` 可关闭对应级别的提示。
 - `select` / `select-all` 仅用户点击触发；编程式选择方法只触发 `selection-change`。
 - 排序与筛选仅作用于根行；`rowKey` 在树形中必须全局唯一；树形展开与行展开共用 `expandRowKeys`。
 - 拖拽列宽最小 `40px`，手柄支持鼠标拖拽与方向键调整，拖拽中禁选文本；隐藏列不参与筛选/排序/合计；`moveColumn` 移动顶层列或分组。

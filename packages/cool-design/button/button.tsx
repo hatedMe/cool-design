@@ -15,19 +15,19 @@ export default defineComponent({
     loading: Boolean,
     autofocus: Boolean,
     nativeType: { type: String as PropType<ButtonNativeType>, default: 'button' },
-    plain: Boolean,
-    text: Boolean,
+    plain: { type: Boolean, default: undefined },
+    text: { type: Boolean, default: undefined },
     bg: Boolean,
     link: Boolean,
-    round: Boolean,
+    round: { type: Boolean, default: undefined },
     circle: Boolean,
-    dashed: Boolean,
+    dashed: { type: Boolean, default: undefined },
     icon: [String, Object, Function] as PropType<IconProp>,
     loadingIcon: [String, Object, Function] as PropType<IconProp>,
     color: String,
     dark: Boolean,
     tag: { type: [String, Object, Function] as PropType<string | Component>, default: 'button' },
-    autoInsertSpace: Boolean
+    autoInsertSpace: { type: Boolean, default: undefined }
   },
   emits: ['click'],
   setup(props, { slots, emit, attrs }) {
@@ -35,12 +35,18 @@ export default defineComponent({
     const group = inject(buttonGroupKey, undefined);
     const form = inject(formKey, undefined);
     return () => {
-      const resolvedType = props.type ?? group?.type ?? 'default';
+      const defaults = config.value.button;
+      const resolvedType = props.type ?? group?.type ?? defaults?.type ?? 'default';
+      const plain = props.plain ?? defaults?.plain;
+      const text = props.text ?? defaults?.text;
+      const round = props.round ?? defaults?.round;
+      const dashed = props.dashed ?? defaults?.dashed;
+      const autoInsertSpace = props.autoInsertSpace ?? defaults?.autoInsertSpace;
       const resolvedSize = props.size === 'normal' ? 'default' : props.size ?? group?.size ?? config.value.size;
       const resolvedDisabled = !!(props.disabled || props.loading || form?.disabled?.());
-      const isText = props.text || resolvedType === 'text';
+      const isText = text || resolvedType === 'text';
       const customStyle = props.color
-        ? buttonCustomStyle(props.color, { dark: props.dark, plain: props.plain, text: isText, link: props.link })
+        ? buttonCustomStyle(props.color, { dark: props.dark, plain, text: isText, link: props.link })
         : undefined;
       const classes = [
         'i-button',
@@ -48,16 +54,16 @@ export default defineComponent({
         `i-button--${resolvedType}`,
         resolvedDisabled && 'is-disabled',
         props.loading && 'is-loading',
-        props.plain && 'is-plain',
+        plain && 'is-plain',
         isText && 'is-text',
         isText && props.bg && 'is-has-bg',
         props.link && 'is-link',
-        props.round && 'is-round',
+        round && 'is-round',
         props.circle && 'is-circle',
-        props.dashed && 'is-dashed'
+        dashed && 'is-dashed'
       ];
       const content =
-        props.autoInsertSpace &&
+        autoInsertSpace &&
         !props.icon &&
         !props.loading &&
         slots.default?.()?.length === 1 &&

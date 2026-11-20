@@ -24,6 +24,7 @@ export default defineComponent({
     rawContent: Boolean,
     placement: { type: String as PropType<Placement>, default: 'bottom' },
     disabled: Boolean,
+    canOpen: Function as PropType<(reference: FloatingReference) => boolean>,
     trigger: { type: [String, Array] as PropType<Trigger | Trigger[]>, default: 'hover' },
     persistent: Boolean,
     showAfter: { type: Number, default: 0 },
@@ -31,7 +32,7 @@ export default defineComponent({
     autoClose: { type: Number, default: 0 },
     enterable: { type: Boolean, default: true },
     showArrow: { type: Boolean, default: true },
-    effect: { type: String as PropType<'light' | 'dark'>, default: 'dark' },
+    effect: { type: String, default: 'dark' },
     offset: { type: Number, default: 12 },
     fallbackPlacements: { type: Array as PropType<Placement[]>, default: undefined },
     visible: { type: Boolean as PropType<boolean | null>, default: null },
@@ -98,7 +99,8 @@ export default defineComponent({
       clearTimer();
       if (props.disabled || !triggered.value) return;
       const show = () => {
-        if (open.value) return;
+        if (open.value || props.disabled || !triggered.value) return;
+        if (props.canOpen && (!reference.value || !props.canOpen(reference.value))) return;
         emit('before-show');
         setVisible(true);
         emit('show');

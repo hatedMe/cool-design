@@ -113,6 +113,9 @@
   background: var(--i-bg-subtle);
   box-shadow: inset 2px 0 0 var(--i-primary);
 }
+.i-table td .i-tooltip__trigger:has(> .i-table__cell-text) {
+  max-width: 100%;
+}
 .i-table__cell-text {
   display: block;
   overflow: hidden;

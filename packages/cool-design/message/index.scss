@@ -15,6 +15,19 @@
 .i-message-container--bottom {
   bottom: 20px;
 }
+.i-message-container--top-left,
+.i-message-container--bottom-left {
+  left: 16px;
+  transform: none;
+  align-items: flex-start;
+}
+.i-message-container--top-right,
+.i-message-container--bottom-right {
+  left: auto;
+  right: 16px;
+  transform: none;
+  align-items: flex-end;
+}
 .i-message-container .i-message {
   position: static;
   transform: none;

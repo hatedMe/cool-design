@@ -44,7 +44,9 @@
 | `destroy-on-close` | 关闭后是否销毁内容 | `boolean` | `false` |
 | `before-close` | 关闭前拦截，调用 `done()` 继续关闭 | `(done: () => void) => void` | — |
 | `align-center` | 是否垂直水平居中 | `boolean` | `false` |
-| `draggable` | 是否可通过拖拽头部移动 | `boolean` | `false` |
+| `draggable` | 是否可通过拖拽头部移动 | `boolean` | Provider 默认值或 `false` |
+| `overflow` | 拖动时是否允许超出视口 | `boolean` | Provider 默认值或 `true` |
+| `transition` | 过渡名称或 Vue Transition 属性 | `string \| TransitionProps` | Provider 默认值或 `undefined` |
 | `close-icon` | 自定义关闭图标 | `string` / `Component` | `×` |
 | `z-index` | 自定义层级 | `number` | — |
 
@@ -54,9 +56,9 @@
 | --- | --- | --- |
 | `update:modelValue` | 请求关闭，父级更新模型 | `value: false` |
 | `open` | 打开开始 | — |
-| `opened` | 打开完成（已聚焦） | — |
+| `opened` | 打开过渡完成。未设置过渡时，在聚焦后触发 | — |
 | `close` | 关闭请求（含 `before-close` 拦截前） | — |
-| `closed` | 关闭完成 | — |
+| `closed` | 关闭完成。设置过渡时，在离场过渡后触发 | — |
 | `open-auto-focus` | 自动聚焦到窗口内时 | — |
 | `close-auto-focus` | 恢复触发元素焦点时 | — |
 

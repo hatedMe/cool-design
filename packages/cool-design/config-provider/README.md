@@ -34,6 +34,33 @@ import { ConfigProvider, en } from 'cool-design/config-provider';
 | emptyValues | `useEmptyValues` 使用的空值集合 | `unknown[]` | 继承父级，未配置时 `['', undefined, null]` |
 | valueOnClear | 清空后的值，函数形式可返回 `undefined` | `string / number / boolean / null / (() => unknown)` | 继承父级，根级 `undefined` |
 | namespace | 命名空间，供 `useNamespace` 使用 | `string` | 继承父级，根级 `i` |
+| button | Button 的默认配置 | `ButtonConfigContext` | 继承父级 |
+| link | Link 的默认配置 | `LinkConfigContext` | 继承父级 |
+| dialog | Dialog 的默认配置 | `DialogConfigContext` | 继承父级 |
+| message | Message 的默认配置 | `MessageConfigContext` | 继承父级 |
+| table | Table 的默认配置 | `TableConfigContext` | 继承父级 |
+
+### 组件配置字段
+
+字段基于 Element Plus `2.14.8`。嵌套 Provider 逐字段继承，更新配置会重算后代组件的默认值。组件自身的属性优先，包括显式的 `false` 和 `0`。
+
+| 配置 | 可选字段 |
+| --- | --- |
+| `button` | `type`、`plain`、`text`、`round`、`dashed`、`autoInsertSpace` |
+| `link` | `type`、`underline` |
+| `dialog` | `alignCenter`、`draggable`、`overflow`、`transition` |
+| `message` | `max`、`grouping`、`duration`、`offset`、`showClose`、`plain`、`placement` |
+| `table` | `showOverflowTooltip`、`tooltipEffect`、`tooltipOptions`、`tooltipFormatter` |
+
+```vue
+<ConfigProvider :button="{ type: 'primary', round: true }">
+  <ConfigProvider :button="{ dashed: true }">
+    <Button :round="false">直角虚线按钮</Button>
+  </ConfigProvider>
+</ConfigProvider>
+```
+
+声明式 Message 读取最近 Provider 的 `duration`、`showClose` 和 `plain`。Message 服务在创建消息时读取应用的顶层 Provider，调用选项优先。同一应用存在多个顶层 Provider 时，最近创建的生效，卸载后恢复上一个。`max` 按应用和位置限制消息数，已分组的重复消息计为同一条。
 
 ### 事件
 

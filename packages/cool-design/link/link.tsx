@@ -7,19 +7,21 @@ export default defineComponent({
   name: 'i-link',
   inheritAttrs: false,
   props: {
-    type: { type: String as PropType<LinkType>, default: 'default' },
+    type: String as PropType<LinkType>,
     size: String as PropType<Size>,
     href: String,
     target: { type: String, default: '_self' },
     disabled: Boolean,
-    underline: { type: [String, Boolean] as PropType<LinkUnderline | boolean>, default: 'hover' },
+    underline: { type: [String, Boolean] as PropType<LinkUnderline | boolean>, default: undefined },
     icon: [String, Object, Function] as PropType<string | import('vue').Component>
   },
   emits: ['click'],
   setup(props, { slots, attrs, emit }) {
     const config = useConfig();
     return () => {
-      const underline = typeof props.underline === 'boolean' ? (props.underline ? 'hover' : 'never') : props.underline;
+      const type = props.type ?? config.value.link?.type ?? 'default';
+      const value = props.underline ?? config.value.link?.underline ?? 'hover';
+      const underline = typeof value === 'boolean' ? (value ? 'hover' : 'never') : value;
       const rel =
         props.target === '_blank'
           ? [
@@ -31,7 +33,7 @@ export default defineComponent({
           {...attrs}
           class={[
             'i-link',
-            `i-link--${props.type}`,
+            `i-link--${type}`,
             `i-link--${props.size || config.value.size}`,
             `i-link--underline-${underline}`,
             { 'i-link--disabled': props.disabled },

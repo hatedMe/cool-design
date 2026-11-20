@@ -11,6 +11,7 @@ import {
   type PropType
 } from 'vue';
 import Checkbox from '../checkbox';
+import { useConfig } from '../config-provider/context';
 import Tooltip from '../tooltip';
 import type {
   TableCellClassName,
@@ -74,7 +75,7 @@ export default defineComponent({
     highlightCurrentRow: Boolean,
     currentRowKey: { type: [String, Number] as PropType<string | number>, default: undefined },
     tableLayout: { type: String as PropType<'fixed' | 'auto'>, default: 'fixed' },
-    showOverflowTooltip: { type: [Boolean, Object] as PropType<boolean | TableOverflowTooltipOptions>, default: false },
+    showOverflowTooltip: { type: [Boolean, Object] as PropType<boolean | TableOverflowTooltipOptions>, default: undefined },
     showSummary: Boolean,
     sumText: { type: String, default: '合计' },
     summaryMethod: { type: Function as PropType<TableSummaryMethod>, default: undefined },
@@ -107,7 +108,8 @@ export default defineComponent({
     flexible: Boolean,
     nativeScrollbar: { type: Boolean, default: true },
     preserveExpandedContent: Boolean,
-    tooltipEffect: { type: String as PropType<'light' | 'dark'>, default: 'dark' }
+    tooltipEffect: String,
+    tooltipOptions: Object as PropType<TableOverflowTooltipOptions>
   },
   emits: [
     'select',
@@ -135,6 +137,7 @@ export default defineComponent({
     'scroll'
   ],
   setup(props, { emit, slots, expose }) {
+    const config = useConfig();
     const fieldOf = (column: TableColumn) => column.prop ?? column.property ?? column.key ?? '';
     const titleOf = (column: TableColumn) => column.label ?? column.title ?? '';
     const kindOf = (column: TableColumn) => column.type ?? 'default';
@@ -794,12 +797,24 @@ export default defineComponent({
     const indexText = (column: TableColumn, index: number): string | number =>
       typeof column.index === 'function' ? column.index(index) : index + (column.index ?? 1);
     const overflowOf = (column: TableColumn): TableOverflowTooltipOptions | null => {
-      const value = column.showOverflowTooltip ?? props.showOverflowTooltip;
-      if (!value) return null;
-      return value === true ? {} : value;
+      const defaults = config.value.table;
+      const tableOverflow = props.showOverflowTooltip;
+      const columnOverflow = column.showOverflowTooltip;
+      const providerOverflow = defaults?.showOverflowTooltip;
+      if (!(columnOverflow ?? tableOverflow ?? providerOverflow)) return null;
+      return {
+        placement: 'top',
+        effect: defaults?.tooltipEffect ?? 'dark',
+        ...defaults?.tooltipOptions,
+        ...(typeof providerOverflow === 'object' ? providerOverflow : undefined),
+        ...props.tooltipOptions,
+        ...(props.tooltipEffect !== undefined ? { effect: props.tooltipEffect } : undefined),
+        ...(typeof tableOverflow === 'object' ? tableOverflow : undefined),
+        ...(typeof columnOverflow === 'object' ? columnOverflow : undefined)
+      };
     };
     const tooltipTextOf = (column: TableColumn, row: object, cellValue: unknown, index: number, text: string) => {
-      const formatter = column.tooltipFormatter ?? props.tooltipFormatter;
+      const formatter = column.tooltipFormatter ?? props.tooltipFormatter ?? config.value.table?.tooltipFormatter;
       return formatter ? formatter({ row, column, cellValue, index }) : text;
     };
     // 单元格编辑（受控：需监听 update:data 更新数据）
@@ -1195,12 +1210,17 @@ export default defineComponent({
                             custom
                           ) : overflow ? (
                             <Tooltip
-                              content={tooltipTextOf(column, row, cellValue, index, text ?? '')}
-                              placement={overflow.placement ?? 'top'}
-                              offset={overflow.offset}
-                              popperClass={overflow.popperClass}
-                              effect={overflow.effect ?? props.tooltipEffect}>
-                              <span class='i-table__cell-text'>{text}</span>
+                              {...overflow}
+                              canOpen={(reference) => {
+                                if (!(reference instanceof HTMLElement)) return false;
+                                const textElement = reference.firstElementChild;
+                                return reference.scrollWidth > reference.clientWidth ||
+                                  !!textElement && textElement.scrollWidth > textElement.clientWidth;
+                              }}>
+                              {{
+                                default: () => <span class='i-table__cell-text'>{text}</span>,
+                                content: () => tooltipTextOf(column, row, cellValue, index, text ?? '')
+                              }}
                             </Tooltip>
                           ) : (
                             text

@@ -1,4 +1,5 @@
 import { defineComponent, onBeforeUnmount, watch, type Component, type PropType, type VNode } from 'vue';
+import { useConfig } from '../config-provider/context';
 import Icon from '../icon';
 export type MessageType = 'primary' | 'success' | 'warning' | 'info' | 'error';
 export type MessageIcon = string | Component;
@@ -7,11 +8,11 @@ export default defineComponent({
   props: {
     type: { type: String as PropType<MessageType>, default: 'info' },
     message: { type: [String, Object] as PropType<string | VNode>, required: true },
-    duration: { type: Number, default: 3000 },
-    showClose: { type: Boolean, default: false },
+    duration: { type: Number, default: undefined },
+    showClose: { type: Boolean, default: undefined },
     dangerouslyUseHTMLString: Boolean,
     center: Boolean,
-    plain: Boolean,
+    plain: { type: Boolean, default: undefined },
     customClass: { type: String, default: '' },
     icon: [String, Object] as PropType<MessageIcon>,
     closeIcon: [String, Object] as PropType<MessageIcon>,
@@ -19,8 +20,10 @@ export default defineComponent({
   },
   emits: ['close'],
   setup(props, { emit }) {
+    const config = useConfig();
+    const duration = () => props.duration ?? config.value.message?.duration ?? 3000;
     let timer: ReturnType<typeof setTimeout> | undefined;
-    let remaining = props.duration;
+    let remaining = duration();
     let deadline = 0;
     const clear = () => {
       if (timer) clearTimeout(timer);
@@ -40,10 +43,10 @@ export default defineComponent({
       clear();
     };
     watch(
-      () => [props.message, props.duration],
+      () => [props.message, duration()],
       () => {
         clear();
-        remaining = props.duration;
+        remaining = duration();
         start();
       },
       { immediate: true }
@@ -58,7 +61,7 @@ export default defineComponent({
         );
       return (
         <div
-          class={['i-message', `i-message--${props.type}`, { 'is-center': props.center, 'is-plain': props.plain }, props.customClass]}
+          class={['i-message', `i-message--${props.type}`, { 'is-center': props.center, 'is-plain': props.plain ?? config.value.message?.plain }, props.customClass]}
           role={props.type === 'error' ? 'alert' : 'status'}
           onMouseenter={pause}
           onMouseleave={start}>
@@ -69,7 +72,7 @@ export default defineComponent({
               {props.repeatNum}
             </span>
           )}
-          {props.showClose &&
+          {(props.showClose ?? config.value.message?.showClose) &&
           (props.closeIcon ? (
             <button
               type='button'
