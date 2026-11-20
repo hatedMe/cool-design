@@ -238,3 +238,20 @@ test('禁用密码输入框不改变模型也不切换显示', async () => {
   expect(control.emitted('update:modelValue')).toBeUndefined();
   wrapper.unmount();
 });
+
+test('commits lazy numeric input only on change and exposes textarea styling', async () => {
+  const wrapper = mount(Input, {
+    props: { type: 'textarea', modelModifiers: { trim: true, number: true, lazy: true }, resize: 'none' },
+    attrs: { class: 'outer', name: 'amount' }
+  });
+  const control = wrapper.get('textarea');
+  expect(wrapper.classes()).toContain('outer');
+  expect(control.classes()).not.toContain('outer');
+  expect(control.attributes('name')).toBe('amount');
+  control.element.value = ' 12 ';
+  await control.trigger('input');
+  expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  await control.trigger('change');
+  expect(wrapper.emitted('update:modelValue')).toEqual([[12]]);
+  expect(wrapper.vm.textareaStyle).toBeDefined();
+});

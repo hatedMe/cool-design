@@ -110,3 +110,7 @@
 事件：`update:modelValue(value: string)` 在输入和清空时触发；`change(value: string)` 在原生 change 或清空时触发；`blur(event: FocusEvent)`。实例方法 focus()。禁用、只读不能编辑和清空。在 FormItem 内自动关联标签和错误。
 
 示例：`<Input v-model="name" clearable placeholder="请输入姓名" />`。`formatter` 只改变展示值，`parser` 将用户输入转换为模型值；文本域设置 `autosize` 可根据内容自动调整高度。
+
+Input 支持 `v-model.trim`、`v-model.number` 和 `v-model.lazy`。也可通过 `modelModifiers` 传入 `{ trim?: boolean; number?: boolean; lazy?: boolean }`。启用 `lazy` 时，键入期间仍触发 `input`，原生 `change` 时提交模型值。
+
+容器接收 `class` 和 `style`，原生输入元素接收 `name`、`autocomplete` 等属性。`textareaStyle` 提供文本域样式，`input`、`textarea` 和 `ref` 提供原生元素引用。`resizeTextarea()` 可重新测量自动高度。

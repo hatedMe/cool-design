@@ -7,6 +7,7 @@ export default defineComponent({
   inheritAttrs: false,
   props: {
     modelValue: { type: [String, Number], default: '' },
+    modelModifiers: { type: Object as PropType<{ trim?: boolean; number?: boolean; lazy?: boolean }>, default: () => ({}) },
     clearable: Boolean,
     disabled: Boolean,
     readonly: Boolean,
@@ -54,9 +55,15 @@ export default defineComponent({
     const input = ref<HTMLInputElement | HTMLTextAreaElement>();
     const passwordVisible = ref(false);
     const { isComposing, handleCompositionStart, handleCompositionEnd } = useComposition();
-    const currentValue = ref(String(props.modelValue));
+    const textareaHeight = ref<string>();
+    const textareaStyle = computed(() => [props.inputStyle, {
+      resize: props.resize, height: props.autosize ? textareaHeight.value : undefined
+    }]);
     const lastChangedValue = ref(String(props.modelValue));
+    const draft = ref<string>();
+    watch(() => props.modelValue, (value) => { draft.value = undefined; if (props.modelModifiers.lazy) lastChangedValue.value = String(value); });
     const displayValue = computed(() => {
+      if (draft.value !== undefined) return draft.value;
       const value = String(props.modelValue);
       return props.type !== 'textarea' && props.formatter ? props.formatter(value) : value;
     });
@@ -83,14 +90,15 @@ export default defineComponent({
       const lineHeight = Number.parseFloat(getComputedStyle(textarea).lineHeight) || 20;
       const minHeight = minRows ? minRows * lineHeight : 0;
       const maxHeight = maxRows ? maxRows * lineHeight : Number.POSITIVE_INFINITY;
-      textarea.style.height = `${Math.min(maxHeight, Math.max(minHeight, textarea.scrollHeight))}px`;
+      textareaHeight.value = `${Math.min(maxHeight, Math.max(minHeight, textarea.scrollHeight))}px`;
+      textarea.style.height = textareaHeight.value;
     };
     onMounted(async () => {
       await nextTick();
       resizeTextarea();
     });
     watch(
-      () => [props.modelValue, props.autosize, props.rows],
+      () => [props.modelValue, props.autosize, props.rows, props.type],
       async () => {
         await nextTick();
         resizeTextarea();
@@ -98,7 +106,10 @@ export default defineComponent({
     );
     const clear = () => {
       if (disabled.value || props.readonly || !hasValue()) return;
-      update('');
+      draft.value = undefined;
+      lastChangedValue.value = '';
+      commit('');
+      emit('input', '');
       emit('change', '');
       emit('clear');
       input.value?.focus();
@@ -108,32 +119,52 @@ export default defineComponent({
       blur: () => input.value?.blur(),
       select: () => input.value?.select(),
       resize: resizeTextarea,
+      resizeTextarea, textareaStyle, isComposing, passwordVisible,
+      autosize: computed(() => props.autosize),
+      input: computed(() => props.type === 'textarea' ? undefined : input.value as HTMLInputElement | undefined),
+      textarea: computed(() => props.type === 'textarea' ? input.value as HTMLTextAreaElement | undefined : undefined),
+      ref: input,
       clear
     });
-    const update = (value: string) => {
-      currentValue.value = value;
+    const resolveValue = (value: string) => {
+      const parsed = parseValue(value);
+      const normalized = props.modelModifiers.trim ? parsed.trim() : parsed;
+      const number = props.modelModifiers.number ? Number.parseFloat(normalized) : NaN;
+      return Number.isNaN(number) ? normalized : number;
+    };
+    const commit = (value: string | number) => {
       emit('update:modelValue', value);
-      emit('input', value);
       if (props.validateEvent) nextTick(() => field?.validate('change'));
     };
-    const handleChange = (value: string) => {
-      if (disabled.value || props.readonly) return;
-      if (value !== lastChangedValue.value) {
-        lastChangedValue.value = value;
-        emit('change', value);
+    const update = (raw: string) => {
+      const value = resolveValue(raw);
+      if (!props.modelModifiers.lazy) commit(value);
+      else draft.value = raw;
+      emit('input', value);
+    };
+    const handleChange = (event: Event) => {
+      if (disabled.value || props.readonly || isComposing.value || (event as KeyboardEvent).isComposing) return;
+      if (props.modelModifiers.lazy && event.type !== 'change') return;
+      const value = resolveValue((event.target as HTMLInputElement).value);
+      if (props.modelModifiers.lazy) draft.value = undefined;
+      if (String(value) !== lastChangedValue.value) {
+        lastChangedValue.value = String(value);
+        if (props.modelModifiers.lazy) commit(value);
+        emit('change', value, event);
       }
     };
     return () => {
+      const { class: outerClass, style: outerStyle, ...controlAttrs } = attrs;
       const isTextarea = props.type === 'textarea';
       const inputType =
         props.type === 'password' && !passwordVisible.value ? 'password' : props.type === 'search' ? 'search' : 'text';
       const control = isTextarea ? (
         <textarea
-          {...attrs}
+          {...controlAttrs}
           id={(attrs.id as string) || field?.id}
           ref={input}
           value={displayValue.value}
-          style={{ ...(typeof props.inputStyle === 'object' ? props.inputStyle : {}), ...(props.resize ? { resize: props.resize } : {}) }}
+          style={textareaStyle.value}
           rows={props.rows}
           maxlength={props.maxlength}
           minlength={props.minlength}
@@ -150,17 +181,20 @@ export default defineComponent({
           onCompositionend={(e: CompositionEvent) => {
             handleCompositionEnd();
             emit('compositionend', e);
-            if (!disabled.value && !props.readonly) update(parseValue((e.target as HTMLTextAreaElement).value));
+            if (!disabled.value && !props.readonly) {
+              update((e.target as HTMLTextAreaElement).value);
+              nextTick(resizeTextarea);
+            }
           }}
           onFocus={(e: FocusEvent) => emit('focus', e)}
           onInput={(e: Event) => {
             if (!isComposing.value && !disabled.value && !props.readonly) {
-              update(parseValue((e.target as HTMLTextAreaElement).value));
+              update((e.target as HTMLTextAreaElement).value);
               nextTick(() => resizeTextarea());
             }
           }}
           onChange={(e: Event) => {
-            if (!disabled.value && !props.readonly) handleChange((e.target as HTMLInputElement).value);
+            if (!disabled.value && !props.readonly) handleChange(e);
           }}
           onBlur={(e: FocusEvent) => {
             if (props.validateEvent) field?.validate('blur');
@@ -169,7 +203,7 @@ export default defineComponent({
         />
       ) : (
         <input
-          {...attrs}
+          {...controlAttrs}
           id={(attrs.id as string) || field?.id}
           ref={input}
           type={inputType}
@@ -190,18 +224,18 @@ export default defineComponent({
           onCompositionend={(e: CompositionEvent) => {
             handleCompositionEnd();
             emit('compositionend', e);
-            if (!disabled.value && !props.readonly) update(parseValue((e.target as HTMLInputElement).value));
+            if (!disabled.value && !props.readonly) update((e.target as HTMLInputElement).value);
           }}
           onInput={(e: Event) => {
-            if (!isComposing.value && !disabled.value && !props.readonly) update(parseValue((e.target as HTMLInputElement).value));
+            if (!isComposing.value && !disabled.value && !props.readonly) update((e.target as HTMLInputElement).value);
           }}
           onChange={(e: Event) => {
-            if (!disabled.value && !props.readonly) handleChange((e.target as HTMLInputElement).value);
+            if (!disabled.value && !props.readonly) handleChange(e);
           }}
           onFocus={(e: FocusEvent) => emit('focus', e)}
           onKeydown={(e: KeyboardEvent) => {
             emit('keydown', e);
-            if (e.key === 'Enter') handleChange((e.target as HTMLInputElement).value);
+            if (e.key === 'Enter') handleChange(e);
           }}
           onMouseenter={(e: MouseEvent) => emit('mouseenter', e)}
           onMouseleave={(e: MouseEvent) => emit('mouseleave', e)}
@@ -251,14 +285,14 @@ export default defineComponent({
         </span>
       );
       return props.wordLimitPosition === 'outside' && countNode ? (
-        <span class='i-input__outside'>
+        <span class={['i-input__outside', outerClass]} style={outerStyle as string}>
           {slots.prepend?.() && <span class='i-input__prepend'>{slots.prepend()}</span>}
           {wrapper}
           {slots.append?.() && <span class='i-input__append'>{slots.append()}</span>}
           {countNode}
         </span>
       ) : (
-        <span class='i-input__outside'>
+        <span class={['i-input__outside', outerClass]} style={outerStyle as string}>
           {slots.prepend?.() && <span class='i-input__prepend'>{slots.prepend()}</span>}
           {wrapper}
           {slots.append?.() && <span class='i-input__append'>{slots.append()}</span>}
