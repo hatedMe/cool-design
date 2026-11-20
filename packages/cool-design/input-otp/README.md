@@ -39,7 +39,7 @@
 | ------------------- | ------------------------ | ------------------ |
 | `update:modelValue` | 值变化                   | `value: string`    |
 | `change`            | 失焦且值有变化           | `value: string`    |
-| `finish`            | 所有格填满（仅一次）     | —                  |
+| `finish` | 形成新的完整验证码 | `value: string` |
 | `focus` / `blur`    | 聚焦 / 失焦              | `event: FocusEvent` |
 
 ### 插槽
@@ -55,3 +55,5 @@
 | `inputRefs` | 所有输入格元素数组         |
 | `focus()`   | 聚焦第一个空格（或首格）   |
 | `blur()`    | 取消所有聚焦               |
+
+`finish(value)` 返回新完成的验证码（`string`）。编辑已完整的验证码并形成另一个完整值时会再次触发。格间移动不会触发整个组件的 `focus` 或 `blur`。

@@ -100,3 +100,10 @@ test('InputOTP 直挂 Form 时继承尺寸和禁用', () => {
   expect(otp.classes()).toContain('i-control--small');
   wrapper.unmount();
 });
+
+test('reports each newly completed value including edits to a full code', async () => {
+  const wrapper = mount(InputOtp, { props: { length: 2, modelValue: '12' } });
+  await wrapper.findAll('input')[1].setValue('3');
+  await wrapper.findAll('input')[1].setValue('4');
+  expect(wrapper.emitted('finish')).toEqual([['13'], ['14']]);
+});

@@ -28,34 +28,34 @@ export default defineComponent({
     const form = inject(formKey, undefined);
     const config = useConfig();
     const inputs = ref<HTMLInputElement[]>([]);
-    const innerValue = ref(String(props.modelValue ?? ''));
+    const innerValue = ref(Array.from(String(props.modelValue ?? '')).slice(0, props.length).join(''));
     let changedSinceFocus = false;
-    let finished = false;
+    const root = ref<HTMLElement>();
+    let composing = false;
+    let compositionCommitted = false;
 
     watch(
       () => props.modelValue,
       (value) => {
-        innerValue.value = String(value ?? '');
+        innerValue.value = Array.from(String(value ?? '')).slice(0, props.length).join('');
       }
     );
 
-    const chars = computed(() => Array.from({ length: props.length }, (_, index) => innerValue.value[index] ?? ''));
+    const chars = computed(() => {
+      const codePoints = Array.from(innerValue.value);
+      return Array.from({ length: props.length }, (_, index) => codePoints[index] ?? '');
+    });
     const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
 
     const commit = (value: string, nextIndex?: number) => {
       if (isDisabled() || props.readonly) return;
+      if (nextIndex !== undefined) nextTick(() => inputs.value[nextIndex]?.focus());
+      if (value === innerValue.value) return;
       innerValue.value = value;
       changedSinceFocus = true;
       emit('update:modelValue', value);
       if (props.validateEvent) nextTick(() => field?.validate('change'));
-      if (value.length >= props.length && !finished) {
-        finished = true;
-        emit('finish');
-      }
-      if (value.length < props.length) finished = false;
-      if (nextIndex !== undefined) {
-        nextTick(() => inputs.value[nextIndex]?.focus());
-      }
+      if (Array.from(value).length === props.length && !value.includes(' ')) emit('finish', value);
     };
 
     const setChar = (index: number, char: string) => {
@@ -71,23 +71,33 @@ export default defineComponent({
 
     const onInput = (index: number, event: Event) => {
       const element = event.target as HTMLInputElement;
-      const typed = element.value.slice(-1);
-      if (typed && props.validator(typed)) {
-        commit(setChar(index, typed), Math.min(index + 1, props.length - 1));
-      } else {
+      if (composing || (event as InputEvent).isComposing) return;
+      if (event.type === 'input' && compositionCommitted) {
+        compositionCommitted = false;
         element.value = displayChar(chars.value[index] ?? '');
+        return;
       }
+      if (isDisabled() || props.readonly) {
+        element.value = displayChar(chars.value[index] ?? '');
+        return;
+      }
+      const data = (event as InputEvent | CompositionEvent).data ?? element.value;
+      element.value = displayChar(chars.value[index] ?? '');
+      if (data) insertText(index, data);
     };
 
     const onKeydown = (index: number, event: KeyboardEvent) => {
-      if (isDisabled() || props.readonly) return;
+      if (isDisabled() || props.readonly || composing || event.isComposing) return;
       if (event.key === 'Backspace') {
         event.preventDefault();
-        if (chars.value[index]) {
+        if (displayChar(chars.value[index])) {
           commit(setChar(index, ''));
         } else if (index > 0) {
           commit(setChar(index - 1, ''), index - 1);
         }
+      } else if (event.key === 'Delete') {
+        event.preventDefault();
+        commit(setChar(index, ''));
       } else if (event.key === 'ArrowLeft' && index > 0) {
         event.preventDefault();
         inputs.value[index - 1]?.focus();
@@ -97,9 +107,7 @@ export default defineComponent({
       }
     };
 
-    const onPaste = (index: number, event: ClipboardEvent) => {
-      event.preventDefault();
-      const text = event.clipboardData?.getData('text') ?? '';
+    const insertText = (index: number, text: string) => {
       const accepted = Array.from(text)
         .filter((char) => props.validator(char))
         .slice(0, props.length - index);
@@ -117,10 +125,16 @@ export default defineComponent({
       );
     };
 
+    const onPaste = (index: number, event: ClipboardEvent) => {
+      event.preventDefault();
+      if (!isDisabled() && !props.readonly) insertText(index, event.clipboardData?.getData('text') ?? '');
+    };
+
     const onFocus = (event: FocusEvent) => {
-      emit('focus', event);
+      if (!root.value?.contains(event.relatedTarget as Node)) emit('focus', event);
     };
     const onBlur = (event: FocusEvent) => {
+      if (root.value?.contains(event.relatedTarget as Node)) return;
       emit('blur', event);
       if (changedSinceFocus) {
         changedSinceFocus = false;
@@ -130,9 +144,9 @@ export default defineComponent({
     };
 
     expose({
-      inputRefs: inputs,
+      inputRefs: computed(() => inputs.value.filter(Boolean)),
       focus: () => {
-        const target = inputs.value.find((_element, index) => !chars.value[index]) ?? inputs.value[0];
+        const target = inputs.value.find((_element, index) => !displayChar(chars.value[index])) ?? inputs.value[0];
         target?.focus();
       },
       blur: () => inputs.value.forEach((element) => element.blur())
@@ -140,6 +154,7 @@ export default defineComponent({
 
     return () => (
       <div
+        ref={root}
         class={[
           'i-input-otp',
           `i-input-otp--${props.type}`,
@@ -163,15 +178,23 @@ export default defineComponent({
             key={index}
             ref={(element) => {
               if (element) inputs.value[index] = element as HTMLInputElement;
+              else delete inputs.value[index];
             }}
             class='i-input-otp__field'
             type={props.mask ? 'password' : 'text'}
             value={displayChar(char)}
-            maxlength={1}
+
             inputmode={props.inputmode}
             disabled={isDisabled()}
             readonly={props.readonly}
             aria-label={`第 ${index + 1} 位`}
+            onCompositionstart={() => { composing = true; }}
+            onCompositionend={(event: CompositionEvent) => {
+              composing = false;
+              onInput(index, event);
+              compositionCommitted = true;
+              queueMicrotask(() => { compositionCommitted = false; });
+            }}
             onInput={(event: Event) => onInput(index, event)}
             onKeydown={(event: KeyboardEvent) => onKeydown(index, event)}
             onPaste={(event: ClipboardEvent) => onPaste(index, event)}
