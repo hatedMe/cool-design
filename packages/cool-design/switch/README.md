@@ -139,6 +139,6 @@ const beforeChange = async () => {
 - 没有可见文字时，请使用 `aria-label`；显式 `aria-label` 优先于兼容属性 `label`。
 - 组件级 `class` 和 `style` 应用于根节点；`id`、`name`、`tabindex` 及原生 ARIA 属性应用于内部 input。
 - 除 `activeColor`、`inactiveColor`、`borderColor` 外，也可以使用 `--i-switch-on-color`、`--i-switch-off-color` 和 `--i-switch-border-color` CSS 变量。
-- `size` 仅接受 `small`、`default`、`large`；未传时继承 Field 或 ConfigProvider 的尺寸，其他值按默认尺寸处理。
+- `size` 仅接受 `small`、`default`、`large`；未传时继承 FormItem、Form 或 ConfigProvider 的尺寸，其他值按默认尺寸处理。
 - `loading` 时只显示 loading 指示器，不同时显示 action 图标或 action 插槽内容。
 - 组件同时触发兼容事件 `input` 和标准事件 `change`。

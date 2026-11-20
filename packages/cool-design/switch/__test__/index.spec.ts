@@ -3,7 +3,8 @@ import { expect, test, vi } from 'vitest';
 import Switch from '../index';
 import { fieldKey } from '../../form/context';
 import { configKey } from '../../config-provider/context';
-import { computed } from 'vue';
+import { computed, h, ref } from 'vue';
+import Form from '../../form';
 
 test('Switch 支持自定义值、文字和尺寸', async () => {
   const wrapper = mount(Switch, {
@@ -284,4 +285,26 @@ test('支持 Switch 主题变量并忽略非法尺寸类名', () => {
   });
   expect((wrapper.element as HTMLElement).style.getPropertyValue('--i-switch-on-color')).toBe('green');
   expect(wrapper.classes()).not.toContain('i-switch--extra-large');
+});
+
+test('Switch 忽略在 Form 禁用后完成的异步确认', async () => {
+  let finish!: (value: boolean) => void;
+  const pending = new Promise<boolean>((resolve) => { finish = resolve; });
+  const modelValue = ref(false);
+  const wrapper = mount(Form, {
+    props: { model: {}, size: 'small' },
+    slots: { default: () => h(Switch, { modelValue: modelValue.value, beforeChange: () => pending }) }
+  });
+  const control = wrapper.getComponent(Switch);
+  const input = control.get('input');
+  await input.setValue(true);
+  modelValue.value = true;
+  await wrapper.setProps({ disabled: true });
+  finish(true);
+  await Promise.resolve();
+  expect(control.emitted('update:modelValue')).toBeUndefined();
+  expect(input.element.checked).toBe(true);
+  expect(input.attributes('disabled')).toBeDefined();
+  expect(control.classes()).toContain('i-switch--small');
+  wrapper.unmount();
 });

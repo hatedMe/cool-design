@@ -1,7 +1,8 @@
 import { defineComponent, nextTick, ref, watch, type PropType, type StyleValue } from 'vue';
 import Icon from '../icon/icon';
 import type { IconProp } from '../icon';
-import { useField } from '../form/context';
+import { inject } from 'vue';
+import { formKey, useField } from '../form/context';
 import { useConfig } from '../config-provider/context';
 export default defineComponent({
   name: 'i-switch',
@@ -31,6 +32,8 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'input'],
   setup(props, { attrs, emit, slots, expose }) {
     const field = useField();
+    const form = inject(formKey, undefined);
+    const disabledOf = () => props.disabled || (field?.disabled?.() ?? form?.disabled?.()) || props.loading;
     const config = useConfig();
     const input = ref<HTMLInputElement>();
     let invalidValueWarned = false;
@@ -55,9 +58,9 @@ export default defineComponent({
       const componentStyle = attrs.style as StyleValue;
       const validValue = props.modelValue === props.activeValue || props.modelValue === props.inactiveValue;
       const active = validValue && props.modelValue === props.activeValue;
-      const size = props.size || field?.size?.() || config.value.size;
+      const size = props.size || field?.size?.() || form?.size?.() || config.value.size;
       const normalizedSize = size === 'small' || size === 'default' || size === 'large' ? size : undefined;
-      const disabled = props.disabled || field?.disabled?.() || props.loading;
+      const disabled = disabledOf();
       const text = active ? props.activeText : props.inactiveText;
       const icon = active ? props.activeIcon : props.inactiveIcon;
       const actionIcon = active ? props.activeActionIcon : props.inactiveActionIcon;
@@ -104,13 +107,13 @@ export default defineComponent({
               try {
                 guard = props.beforeChange?.() ?? true;
               } catch {
-                target.checked = active;
+                target.checked = props.modelValue === props.activeValue;
                 return;
               }
               Promise.resolve(guard)
                 .then((allowed) => {
-                  if (!allowed) {
-                    target.checked = active;
+                  if (!allowed || disabledOf()) {
+                    target.checked = props.modelValue === props.activeValue;
                     return;
                   }
                   emit('update:modelValue', next);
@@ -119,7 +122,7 @@ export default defineComponent({
                   if (props.validateEvent) nextTick(() => field?.validate('change'));
                 })
                 .catch(() => {
-                  target.checked = active;
+                  target.checked = props.modelValue === props.activeValue;
                 });
             }}
           />
