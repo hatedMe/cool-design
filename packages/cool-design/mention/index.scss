@@ -91,3 +91,10 @@
   padding: 6px 12px;
   color: var(--i-text-secondary, #909399);
 }
+
+.i-mention.i-control--small input.i-mention__input {
+  min-height: 28px;
+}
+.i-mention.i-control--large input.i-mention__input {
+  min-height: 40px;
+}

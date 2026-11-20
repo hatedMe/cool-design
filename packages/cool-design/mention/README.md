@@ -73,3 +73,5 @@
 | ----------------- | ------------------------ |
 | `input`           | 输入元素引用             |
 | `dropdownVisible` | 下拉是否展开             |
+
+Mention 的尺寸依次取组件、FormItem、Form 和 ConfigProvider。Form 禁用时，已打开的建议面板会关闭，输入和选项提交也会禁用。

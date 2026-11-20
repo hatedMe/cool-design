@@ -7,6 +7,7 @@ beforeEach(() => {
 });
 const doc = () => new DOMWrapper(document.body);
 import Mention from '..';
+import Form from '../../form';
 import type { MentionOption } from '../mention';
 
 const mountMention = (
@@ -145,4 +146,25 @@ describe('test `Mention` component', () => {
     expect(mention.emitted('search')!.at(-1)).toEqual(['ni', '@']);
     expect(doc().findAll('.i-mention__option')).toHaveLength(1);
   });
+});
+
+test('Mention 禁用 Form 后拒绝选择已打开的建议', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, size: 'large' },
+    slots: { default: () => h(Mention, { options: [{ value: 'Alice' }], teleported: false, persistent: true }) }
+  });
+  const mention = wrapper.getComponent(Mention);
+  const input = mention.get('input');
+  await input.setValue('@');
+  const option = mention.get('[role="option"]');
+  const updates = mention.emitted('update:modelValue')?.slice();
+  await wrapper.setProps({ disabled: true });
+  option.element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+  expect(mention.emitted('update:modelValue')).toEqual(updates);
+  expect(mention.emitted('select')).toBeUndefined();
+  expect(mention.get('[role="listbox"]').attributes('aria-hidden')).toBe('true');
+  expect(mention.get('[role="listbox"]').attributes('style')).toContain('display: none');
+  expect(input.attributes('disabled')).toBeDefined();
+  expect(mention.classes()).toContain('i-control--large');
+  wrapper.unmount();
 });

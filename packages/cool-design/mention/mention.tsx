@@ -1,6 +1,8 @@
 import {
   computed,
   defineComponent,
+  inject,
+  watch,
   h,
   nextTick,
   ref,
@@ -9,7 +11,7 @@ import {
 } from 'vue';
 import { Teleport } from 'vue';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
-import { useField } from '../form/context';
+import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useComposition } from '../../hooks/index.ts';
 
@@ -59,6 +61,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'input', 'search', 'select', 'whole-remove', 'focus', 'blur', 'clear'],
   setup(props, { emit, slots, expose }) {
     const field = useField();
+    const form = inject(formKey, undefined);
     const config = useConfig();
     const { isComposing, handleCompositionStart, handleCompositionEnd } = useComposition();
     const inputRef = ref<HTMLInputElement | HTMLTextAreaElement>();
@@ -67,7 +70,7 @@ export default defineComponent({
     const pattern = ref('');
     const activePrefix = ref('@');
     const highlighted = ref(-1);
-    const isDisabled = () => props.disabled || !!field?.disabled?.();
+    const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
 
     const labelKey = computed(() => props.props?.label || 'label');
     const valueKey = computed(() => props.props?.value || 'value');
@@ -96,10 +99,12 @@ export default defineComponent({
     });
 
     const setOpen = (value: boolean) => {
-      if (open.value === value) return;
+      if (open.value === value || (value && isDisabled())) return;
       open.value = value;
       if (value) highlighted.value = -1;
     };
+
+    watch(isDisabled, (disabled) => { if (disabled) setOpen(false); });
 
     const detectToken = (value: string, caret: number) => {
       const before = value.slice(0, caret);
@@ -121,6 +126,7 @@ export default defineComponent({
     };
 
     const handleInput = (event: Event) => {
+      if (isDisabled()) return;
       const element = event.target as HTMLInputElement | HTMLTextAreaElement;
       const value = element.value;
       emit('input', value);
@@ -143,7 +149,7 @@ export default defineComponent({
     };
 
     const selectOption = (option: MentionOption) => {
-      if (option[disabledKey.value]) return;
+      if (isDisabled() || option[disabledKey.value]) return;
       const element = inputRef.value;
       const value = String(option[valueKey.value] ?? '');
       if (element) {
@@ -167,10 +173,12 @@ export default defineComponent({
       setOpen(false);
     };
     const onChange = (event: Event) => {
+      if (isDisabled()) return;
       emit('change', (event.target as HTMLInputElement | HTMLTextAreaElement).value);
     };
 
     const onKeydown = (event: KeyboardEvent) => {
+      if (isDisabled()) return;
       const element = inputRef.value;
       if (event.key === 'Escape') {
         setOpen(false);
@@ -256,7 +264,7 @@ export default defineComponent({
         <div
           class={[
             'i-mention',
-            `i-control--${props.size ?? field?.size?.() ?? config.value.size}`,
+            `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`,
             { 'is-disabled': isDisabled() }
           ]}>
           {h(props.type === 'textarea' ? 'textarea' : 'input', shared)}
@@ -271,7 +279,8 @@ export default defineComponent({
               <div
                 ref={floating}
                 class={['i-mention__dropdown', `i-mention__dropdown--${props.effect}`, props.popperClass]}
-                style={[position.style.value, props.popperStyle]}
+                style={[position.style.value, props.popperStyle, !open.value && { display: 'none' }]}
+                aria-hidden={!open.value || undefined}
                 data-placement={position.placement.value}
                 role='listbox'>
                 {slots.header?.()}
