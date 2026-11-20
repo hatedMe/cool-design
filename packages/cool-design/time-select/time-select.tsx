@@ -1,7 +1,7 @@
-import { computed, defineComponent, nextTick, ref, type CSSProperties, type PropType } from 'vue';
+import { computed, defineComponent, inject, nextTick, ref, watch, type CSSProperties, type PropType } from 'vue';
 import { Teleport } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
-import { useField } from '../form/context';
+import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 
@@ -42,6 +42,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear', 'visible-change'],
   setup(props, { emit, expose }) {
     const field = useField();
+    const form = inject(formKey, undefined);
     const config = useConfig();
     const { getValueOnClear, isEmptyValue } = useEmptyValues({
       emptyValues: computed(() => props.emptyValues),
@@ -52,7 +53,7 @@ export default defineComponent({
     const dropdown = ref<HTMLElement>();
     const open = ref(false);
     const shownOnce = ref(false);
-    const isDisabled = () => props.disabled || !!field?.disabled?.();
+    const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
     const position = useFloating({
       open,
       reference: root,
@@ -80,11 +81,12 @@ export default defineComponent({
     });
 
     const setOpen = (value: boolean) => {
-      if (isDisabled() || open.value === value) return;
+      if (open.value === value || (value && isDisabled())) return;
       open.value = value;
       if (value) shownOnce.value = true;
       emit('visible-change', value);
     };
+    watch(isDisabled, (disabled) => { if (disabled) setOpen(false); });
     const choose = (value: string, disabled: boolean) => {
       if (disabled || isDisabled()) return;
       emit('update:modelValue', value);
@@ -118,7 +120,7 @@ export default defineComponent({
         ref={root}
         class={[
           'i-time-select',
-          `i-control--${props.size ?? field?.size?.() ?? config.value.size}`,
+          `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`,
           { 'is-open': open.value, 'is-disabled': isDisabled() }
         ]}>
         <button

@@ -66,3 +66,10 @@
   color: var(--i-text-secondary, #909399);
   cursor: not-allowed;
 }
+
+.i-time-select.i-control--small .i-time-select__control {
+  min-height: 28px;
+}
+.i-time-select.i-control--large .i-time-select__control {
+  min-height: 40px;
+}

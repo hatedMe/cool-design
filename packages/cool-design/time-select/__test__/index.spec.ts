@@ -118,3 +118,27 @@ test('TimeSelect 继承 Provider 空值配置和清空工厂', async () => {
   expect(calls).toBe(1);
   wrapper.unmount();
 });
+
+test('TimeSelect 直挂 Form 时继承尺寸和禁用', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, size: 'small', disabled: true },
+    slots: { default: () => h(TimeSelect, { modelValue: '09:00' }) }
+  });
+  const select = wrapper.getComponent(TimeSelect);
+  expect(select.classes()).toContain('i-control--small');
+  expect(select.get('.i-time-select__control').attributes('disabled')).toBeDefined();
+  expect(select.find('.i-time-select__clear').exists()).toBe(false);
+  wrapper.unmount();
+});
+
+test('TimeSelect 打开后禁用 Form 会关闭菜单', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {} },
+    slots: { default: () => h(TimeSelect, { modelValue: '09:00', teleported: false }) }
+  });
+  const select = wrapper.getComponent(TimeSelect);
+  await select.get('.i-time-select__control').trigger('click');
+  await wrapper.setProps({ disabled: true });
+  expect(select.emitted('visible-change')).toEqual([[true], [false]]);
+  wrapper.unmount();
+});

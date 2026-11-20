@@ -27,7 +27,7 @@
 | `emptyValues` | 视为空的模型值 | `unknown[]` | 继承 ConfigProvider |
 | `valueOnClear` | 清空值或工厂 | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider，根级 `undefined` |
 | `clearable`     | 是否可清空             | `boolean` | `true`   |
-| `size`          | 尺寸：`small` / `default` / `large`        | `string`  | 继承全局尺寸 |
+| `size`          | 尺寸：`small` / `default` / `large`        | `string`  | 继承 FormItem、Form 或 ConfigProvider |
 | `name`          | 原生隐藏 input 名称                        | `string`  | —        |
 | `validateEvent` | 值变化时触发表单校验                       | `boolean` | `true`   |
 | `teleported`    | 下拉面板是否传送到 body                    | `boolean` | `true`   |
