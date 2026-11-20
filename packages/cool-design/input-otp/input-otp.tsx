@@ -1,5 +1,5 @@
-import { computed, defineComponent, nextTick, ref, watch, type PropType, type VNode } from 'vue';
-import { useField } from '../form/context';
+import { computed, defineComponent, inject, nextTick, ref, watch, type PropType, type VNode } from 'vue';
+import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 
 export type InputOtpType = 'outlined' | 'filled' | 'underlined';
@@ -25,6 +25,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'finish', 'focus', 'blur'],
   setup(props, { emit, slots, expose }) {
     const field = useField();
+    const form = inject(formKey, undefined);
     const config = useConfig();
     const inputs = ref<HTMLInputElement[]>([]);
     const innerValue = ref(String(props.modelValue ?? ''));
@@ -39,9 +40,10 @@ export default defineComponent({
     );
 
     const chars = computed(() => Array.from({ length: props.length }, (_, index) => innerValue.value[index] ?? ''));
-    const isDisabled = () => props.disabled || !!field?.disabled?.();
+    const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
 
     const commit = (value: string, nextIndex?: number) => {
+      if (isDisabled() || props.readonly) return;
       innerValue.value = value;
       changedSinceFocus = true;
       emit('update:modelValue', value);
@@ -141,7 +143,7 @@ export default defineComponent({
         class={[
           'i-input-otp',
           `i-input-otp--${props.type}`,
-          `i-control--${props.size ?? field?.size?.() ?? config.value.size}`,
+          `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`,
           { 'is-disabled': isDisabled() }
         ]}
         id={props.id ?? field?.id}

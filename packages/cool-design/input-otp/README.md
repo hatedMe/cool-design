@@ -25,7 +25,7 @@
 | `validator`     | 单字符校验函数                             | `(value: string) => boolean`      | `() => true` |
 | `inputmode`     | 原生 inputmode（如 `numeric`）             | `string`                          | —         |
 | `type`          | 样式：`outlined` / `filled` / `underlined` | `string`                          | `outlined` |
-| `size`          | 尺寸：`small` / `default` / `large`        | `string`                          | 继承全局尺寸 |
+| `size`          | 尺寸：`small` / `default` / `large`        | `string`                          | 继承 FormItem、Form 或 ConfigProvider |
 | `mask`          | 密码遮蔽显示                               | `boolean`                         | `false`   |
 | `disabled`      | 禁用                                       | `boolean`                         | `false`   |
 | `readonly`      | 只读                                       | `boolean`                         | `false`   |

@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils';
 import { defineComponent, h, ref } from 'vue';
 import { describe, expect, test } from 'vitest';
 import InputOtp from '..';
+import Form from '../../form';
 
 const mountOtp = (props: Record<string, unknown> = {}, slots?: Record<string, unknown>, initial = '') => {
   const value = ref(initial);
@@ -83,4 +84,19 @@ describe('test `InputOtp` component', () => {
     expect(otp.emitted('focus')).toHaveLength(1);
     wrapper.unmount();
   });
+});
+
+test('InputOTP 直挂 Form 时继承尺寸和禁用', () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, disabled: true, size: 'small' },
+    slots: { default: () => h(InputOtp, { modelValue: '1234' }) }
+  });
+  const otp = wrapper.getComponent(InputOtp);
+  const input = otp.get('input');
+  input.element.value = '5';
+  input.element.dispatchEvent(new Event('input'));
+  expect(otp.emitted('update:modelValue')).toBeUndefined();
+  expect(input.attributes('disabled')).toBeDefined();
+  expect(otp.classes()).toContain('i-control--small');
+  wrapper.unmount();
 });
