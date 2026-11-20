@@ -12,7 +12,8 @@ import {
   type VNode
 } from 'vue';
 import { Teleport } from 'vue';
-import { useField } from '../form/context';
+import { inject } from 'vue';
+import { formKey, useField } from '../form/context';
 import { useConfig, useLocale, type Size } from '../config-provider/context';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 
@@ -106,6 +107,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear', 'visible-change', 'remove-tag'],
   setup(props, { slots, attrs, emit, expose }) {
     const field = useField();
+    const form = inject(formKey, undefined);
     const config = useConfig();
     const { t } = useLocale();
     const placeholder = computed(() => props.placeholder ?? t('el.select.placeholder', '请选择'));
@@ -141,7 +143,7 @@ export default defineComponent({
       close: () => setOpen(false)
     });
 
-    const isDisabled = () => props.disabled || field?.disabled?.();
+    const isDisabled = () => props.disabled || (field?.disabled?.() ?? form?.disabled?.());
     const keyOf = (value: unknown): unknown =>
       value !== null && typeof value === 'object' ? (value as Record<string, unknown>)[props.valueKey] : value;
     const sameValue = (left: unknown, right: unknown) => keyOf(left) === keyOf(right);
@@ -295,6 +297,7 @@ export default defineComponent({
       }
     };
     const onKeydown = (event: KeyboardEvent) => {
+      if (isDisabled()) return;
       if (event.key === 'Escape') return setOpen(false);
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
@@ -397,7 +400,7 @@ export default defineComponent({
         );
       };
       return (
-        <span ref={root} class={['i-select', `i-control--${props.size || config.value.size}`, { 'is-disabled': isDisabled(), 'is-open': open.value }]}>
+        <span ref={root} class={['i-select', `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`, { 'is-disabled': isDisabled(), 'is-open': open.value }]}>
           <div
             {...attrs}
             id={(attrs.id as string) || field?.id}
@@ -427,7 +430,9 @@ export default defineComponent({
               title={props.collapseTagsTooltip ? selectedRecords.value.map((item) => item.label).join('、') : undefined}>
               +{selectedRecords.value.length - displayRecords.length}
             </span>}
-            {(props.filterable || props.remote) && <input ref={input} value={query.value} aria-label='筛选选项' placeholder={selectedRecords.value.length ? '' : placeholder.value} onInput={(event: Event) => loadRemote((event.target as HTMLInputElement).value)} onFocus={() => setOpen(true)} />}
+            {(props.filterable || props.remote) && <input ref={input} value={query.value} aria-label='筛选选项' disabled={isDisabled()} placeholder={selectedRecords.value.length ? '' : placeholder.value} onInput={(event: Event) => {
+              if (!isDisabled()) loadRemote((event.target as HTMLInputElement).value);
+            }} onFocus={() => setOpen(true)} />}
             {props.clearable && selectedValues.value.length > 0 && <button type='button' aria-label='清空' onClick={(event) => { event.stopPropagation(); clear(); }}>×</button>}
             {slots.suffix?.()}
           </div>
@@ -447,6 +452,7 @@ export default defineComponent({
             onFocus={(event: FocusEvent) => emit('focus', event)}
             onBlur={(event: FocusEvent) => { emit('blur', event); setOpen(false); }}
             onChange={(event: Event) => {
+              if (isDisabled()) return;
               const values = [...(event.target as HTMLSelectElement).selectedOptions].map((option) => resolveNativeValue(option.value));
               const nextValue = props.multiple
                 ? (props.multipleLimit > 0 ? values.slice(0, props.multipleLimit) : values)

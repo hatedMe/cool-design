@@ -50,7 +50,7 @@
 | placeholder | 未选择时的提示 | `string` | `请选择` |
 | clearable | 显示清空按钮 | `boolean` | `false` |
 | disabled | 禁用选择器 | `boolean` | `false` |
-| size | 尺寸：`small` / `default` / `large` | `string` | 继承 ConfigProvider |
+| size | 尺寸：`small` / `default` / `large` | `string` | 继承 FormItem、Form 或 ConfigProvider |
 | multiple | 是否多选 | `boolean` | `false` |
 | multiple-limit | 多选最大数量，`0` 表示不限制 | `number` | `0` |
 | collapse-tags | 多选时折叠标签 | `boolean` | `false` |

@@ -4,6 +4,7 @@ import { expect, test, vi, beforeEach } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import Select from '../index';
 import SelectOption from '../../select-option';
+import Form from '../../form';
 
 // 下拉面板默认传送到 document.body，测试中用文档级查询访问传送内容。
 beforeEach(() => {
@@ -417,4 +418,29 @@ test('Select 支持 focus、blur 和 loading API', async () => {
   expect(wrapper.emitted('blur')).toHaveLength(1);
   expect(wrapper.text()).toContain('加载中');
   expect(wrapper.get('.i-select__loading').text()).toContain('加载中');
+});
+
+test('Select 直接放在 Form 下也继承尺寸和禁用', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, size: 'small', disabled: true },
+    slots: { default: () => h(Select, { clearable: true, modelValue: 'a' }) }
+  });
+  const select = wrapper.getComponent(Select);
+  expect(select.get('.i-select').classes()).toContain('i-control--small');
+  expect(select.get('[role="combobox"]').attributes('aria-disabled')).toBe('true');
+  await select.get('[role="combobox"]').trigger('click');
+  expect(select.emitted('visible-change')).toBeUndefined();
+  wrapper.unmount();
+});
+
+test('禁用 Select 忽略筛选创建与原生 change', () => {
+  const wrapper = mount(Select, { props: { disabled: true, filterable: true, allowCreate: true } });
+  const input = wrapper.get('[aria-label="筛选选项"]');
+  input.element.value = '新选项';
+  input.element.dispatchEvent(new Event('input', { bubbles: true }));
+  input.element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  wrapper.get('select').element.dispatchEvent(new Event('change'));
+  expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  expect(input.attributes('disabled')).toBeDefined();
+  wrapper.unmount();
 });
