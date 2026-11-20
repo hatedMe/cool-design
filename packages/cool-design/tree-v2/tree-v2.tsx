@@ -265,6 +265,11 @@ export default defineComponent({
       return result;
     });
 
+    const maxScrollTop = computed(() => Math.max(0, rows.value.length * props.itemSize - props.height));
+    watch([maxScrollTop, listRef], ([limit]) => {
+      scrollTo(Math.min(scrollTop.value, limit));
+    }, { flush: 'post' });
+
     const windowRows = computed(() => {
       const count = Math.ceil(props.height / props.itemSize) + 4;
       const start = Math.max(0, Math.floor(scrollTop.value / props.itemSize) - 2);

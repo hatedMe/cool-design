@@ -214,6 +214,54 @@ describe('test `TreeV2` component', () => {
     expect(wrapper.get('.i-tree-v2__label').text()).toBe('X');
   });
 
+  test('过滤至空态后替换数据会同步新列表的虚拟窗口', async () => {
+    const wrapper = mount(TreeV2, {
+      props: { data: Array.from({ length: 80 }, (_, id) => ({ id, label: `N${id}` })) }
+    });
+    const api = wrapper.vm as unknown as TreeV2Exposed;
+    api.scrollTo(1000);
+    await nextTick();
+    expect(wrapper.get('.i-tree-v2__label').text()).toBe('N36');
+
+    api.filter('short');
+    await nextTick();
+    expect(wrapper.find('.i-tree-v2__empty').exists()).toBe(true);
+    api.setData([{ id: 'x', label: 'short' }]);
+    await nextTick();
+
+    expect(wrapper.get('.i-tree-v2__label').text()).toBe('short');
+    expect(wrapper.get<HTMLElement>('.i-tree-v2__list').element.scrollTop).toBe(0);
+  });
+
+  test('缩短列表时将实际滚动位置限制在新的可见范围', async () => {
+    const data = Array.from({ length: 80 }, (_, id) => ({ id, label: `N${id}` }));
+    const wrapper = mount(TreeV2, { props: { data } });
+    const api = wrapper.vm as unknown as TreeV2Exposed;
+    api.scrollTo(1000);
+    await nextTick();
+
+    api.setData(data.slice(0, 10));
+    await nextTick();
+
+    expect(wrapper.get<HTMLElement>('.i-tree-v2__list').element.scrollTop).toBe(60);
+    expect(wrapper.get('.i-tree-v2__label').text()).toBe('N0');
+  });
+
+  test('同一更新周期清空并恢复数据会重置滚动位置', async () => {
+    const data = Array.from({ length: 80 }, (_, id) => ({ id, label: `N${id}` }));
+    const wrapper = mount(TreeV2, { props: { data } });
+    const api = wrapper.vm as unknown as TreeV2Exposed;
+    api.scrollTo(1000);
+    await nextTick();
+
+    api.setData([]);
+    api.setData(data);
+    await nextTick();
+
+    expect(wrapper.get<HTMLElement>('.i-tree-v2__list').element.scrollTop).toBe(0);
+    expect(wrapper.get('.i-tree-v2__label').text()).toBe('N0');
+  });
+
   test('暴露 getExpandedKeys、isChecked、isIndeterminate 与 toggleCheckbox', () => {
     const wrapper = mount(TreeV2, {
       props: { data: data(), showCheckbox: true, defaultExpandedKeys: ['a'] }
