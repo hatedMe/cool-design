@@ -99,3 +99,5 @@ Transfer 用于在两个列表之间移动和管理选项，支持搜索过滤�
 | clearQuery | 清空搜索框 | `which?: 'left' \| 'right' \| 0 \| 1`，不传则清空两侧 |
 
 `leftPanel` 和 `rightPanel` 为实际面板实例，读取或写入各自的 `query: string` 会同步筛选框和结果。`clearQuery()` 清空两侧查询，也可添加 `'left'` 或 `'right'` 参数清空单侧。
+
+启用 `virtual-scroll` 仅渲染可见区域附近的选项，筛选、全选和移动仍覆盖完整列表。`item-size` 指定固定行高（`number`，默认 `30` 像素）。

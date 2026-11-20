@@ -32,6 +32,8 @@ export interface TransferProps {
   titles?: string[];
   buttonTexts?: string[];
   filterable?: boolean;
+  virtualScroll?: boolean;
+  itemSize?: number;
   filterPlaceholder?: string;
   filterMethod?: TransferFilterMethod;
   targetOrder?: TransferTargetOrder;

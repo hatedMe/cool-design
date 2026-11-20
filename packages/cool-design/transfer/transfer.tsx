@@ -40,6 +40,8 @@ export default defineComponent({
     titles: { type: Array as PropType<string[]>, default: () => [...DEFAULT_TITLES] },
     buttonTexts: { type: Array as PropType<string[]>, default: () => [] },
     filterable: Boolean,
+    virtualScroll: Boolean,
+    itemSize: { type: Number, default: 30 },
     filterPlaceholder: { type: String, default: '请输入搜索内容' },
     filterMethod: Function as PropType<TransferFilterMethod>,
     targetOrder: { type: String as PropType<TransferTargetOrder>, default: 'original' },
@@ -184,11 +186,32 @@ export default defineComponent({
       return template.replace(/\$\{checked\}|\{checked\}/g, String(count)).replace(/\$\{total\}|\{total\}/g, String(total));
     };
 
-    const panel = (items: TransferItem[], side: number) => {
-      const shown = visible(items, side);
+    const listElements = ref<Array<HTMLElement | undefined>>([]);
+    const listScroll = ref([0, 0]);
+    const rowHeight = computed(() => Number.isFinite(props.itemSize) && props.itemSize > 0 ? props.itemSize : 30);
+    watch([() => queryOf(0), () => queryOf(1)], (next, previous) => {
+      next.forEach((query, side) => {
+        if (query === previous[side]) return;
+        listScroll.value[side] = 0;
+        if (listElements.value[side]) listElements.value[side]!.scrollTop = 0;
+      });
+    });
+
+    const panelStates = [left, right].map((items, side) => computed(() => {
+      const shown = visible(items.value, side);
       const available = selectable(shown);
-      const availableKeys = available.map((item) => keyOf(item, map.value));
-      const count = availableKeys.filter((key) => checked.value[side].has(key)).length;
+      const count = available.filter((item) => checked.value[side].has(keyOf(item, map.value))).length;
+      return { shown, available, count };
+    }));
+
+    const panel = (items: TransferItem[], side: number) => {
+      const { shown, available, count } = panelStates[side].value;
+      const height = rowHeight.value;
+      const viewport = listElements.value[side]?.clientHeight || 300;
+      const maximum = Math.max(0, shown.length * height - viewport);
+      const offset = Math.min(maximum, listScroll.value[side]);
+      const start = props.virtualScroll ? Math.max(0, Math.floor(offset / height) - 3) : 0;
+      const end = props.virtualScroll ? Math.min(shown.length, start + Math.ceil(viewport / height) + 7) : shown.length;
       const allChecked = available.length > 0 && count === available.length;
       const halfChecked = count > 0 && count < available.length;
       const syncIndeterminate = (el: unknown) => {
@@ -214,17 +237,21 @@ export default defineComponent({
             <span class="i-transfer__title">{titleOf(side)}</span>
             <span class="i-transfer__count">{formatCount(count, items.length)}</span>
           </header>), default: () => <>
-          <div class="i-transfer__items" role="listbox" aria-multiselectable="true" aria-label={titleOf(side)}>
+          <div class="i-transfer__items" role="listbox" aria-multiselectable="true" aria-label={titleOf(side)}
+            ref={(element) => { listElements.value[side] = element as HTMLElement | undefined; }}
+            onScroll={(event: Event) => { listScroll.value[side] = (event.currentTarget as HTMLElement).scrollTop; }}>
+            {props.virtualScroll && <div aria-hidden='true' style={{ height: `${start * height}px` }} />}
             {shown.length === 0
               ? emptySlot?.() ?? <span class="i-transfer__empty">{queryOf(side) ? props.noMatchText : props.noDataText}</span>
-              : shown.map((item) => {
+              : shown.slice(start, end).map((item) => {
                   const key = keyOf(item, map.value);
                   const itemDisabled = isDisabled() || disabledOf(item, map.value);
                   const isChecked = checked.value[side].has(key);
                   return (
                     <label
                       class={['i-transfer__item', itemDisabled && 'is-disabled']}
-                      key={String(key)}
+                      key={key}
+                      style={props.virtualScroll ? { height: `${height}px`, boxSizing: 'border-box', paddingBlock: 0, overflow: 'hidden' } : undefined}
                       role="option"
                       aria-selected={isChecked ? 'true' : 'false'}
                       aria-disabled={itemDisabled ? 'true' : undefined}
@@ -234,6 +261,7 @@ export default defineComponent({
                     </label>
                   );
                 })}
+            {props.virtualScroll && <div aria-hidden='true' style={{ height: `${(shown.length - end) * height}px` }} />}
           </div>
           {footerSlot ? <footer class="i-transfer__footer">{footerSlot()}</footer> : null}
           </> }}

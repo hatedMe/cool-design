@@ -363,3 +363,13 @@ test('exposes both mounted filter panels', async () => {
   await wrapper.vm.$nextTick();
   expect(wrapper.vm.leftPanel?.query).toBe('');
 });
+
+test('bounds both virtual panels while select-all uses all filtered data', async () => {
+  const data = Array.from({ length: 4000 }, (_, key) => ({ key, label: String(key) }));
+  const wrapper = mount(Transfer, {
+    props: { data, modelValue: data.slice(2000).map((item) => item.key), virtualScroll: true, itemSize: 30 }
+  });
+  expect(wrapper.findAll('[role="option"]').length).toBeLessThan(60);
+  await wrapper.findAll('.i-transfer__select-all')[0].setValue(true);
+  expect(wrapper.findAll('.i-transfer__count')[0].text()).toBe('2000/2000');
+});
