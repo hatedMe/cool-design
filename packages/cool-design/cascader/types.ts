@@ -53,3 +53,17 @@ export type CascaderFilterMethod = (
   option: CascaderOption,
   path: CascaderOption[]
 ) => boolean;
+
+export interface CascaderTag {
+  node: CascaderNode | null;
+  key: string;
+  text: string;
+  hitState: boolean;
+  closable: boolean;
+  value: CascaderItemValue;
+}
+
+export interface CascaderSuggestion extends CascaderNode {
+  text: string;
+  checked: boolean;
+}

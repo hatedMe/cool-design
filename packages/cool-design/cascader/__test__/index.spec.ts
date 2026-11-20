@@ -69,7 +69,7 @@ describe('test `Cascader` component', () => {
     await clickNode(wrapper, '一致');
     expect(wrapper.emitted('update:modelValue')![0][0]).toEqual(['zhinan', 'sheji', 'yizhi']);
     expect(wrapper.emitted('change')![0][0]).toEqual(['zhinan', 'sheji', 'yizhi']);
-    expect(wrapper.find('.i-cascader__dropdown').exists()).toBe(false);
+    expect(wrapper.find('.i-cascader__dropdown').isVisible()).toBe(false);
     expect(wrapper.emitted('visible-change')).toEqual([[true], [false]]);
   });
 
@@ -144,7 +144,7 @@ describe('test `Cascader` component', () => {
     await open(wrapper);
     await clickNode(wrapper, '指南');
     expect(wrapper.emitted('update:modelValue')![0][0]).toEqual(['zhinan']);
-    expect(wrapper.find('.i-cascader__dropdown').exists()).toBe(false);
+    expect(wrapper.find('.i-cascader__dropdown').isVisible()).toBe(false);
   });
 
   test('clearable 清空并触发 change(undefined) / change([])', async () => {
@@ -212,7 +212,7 @@ describe('test `Cascader` component', () => {
     expect(wrapper.find('.i-cascader__suggestion').text()).toBe('指南 / 设计 / 反馈');
     await wrapper.find('.i-cascader__suggestion').trigger('click');
     expect(wrapper.emitted('update:modelValue')![0][0]).toEqual(['zhinan', 'sheji', 'fankui']);
-    expect(wrapper.find('.i-cascader__dropdown').exists()).toBe(false);
+    expect(wrapper.find('.i-cascader__dropdown').isVisible()).toBe(false);
   });
 
   test('filterMethod 自定义过滤，无匹配时展示 empty 插槽', async () => {
@@ -251,7 +251,7 @@ describe('test `Cascader` component', () => {
     await open(wrapper);
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
     await nextTick();
-    expect(wrapper.find('.i-cascader__dropdown').exists()).toBe(false);
+    expect(wrapper.find('.i-cascader__dropdown').isVisible()).toBe(false);
     expect(wrapper.emitted('visible-change')).toEqual([[true], [false]]);
   });
 
@@ -302,7 +302,7 @@ describe('test `Cascader` component', () => {
     expect(wrapper.find('.i-cascader__dropdown').exists()).toBe(true);
     exposed.togglePopperVisibility(false);
     await nextTick();
-    expect(wrapper.find('.i-cascader__dropdown').exists()).toBe(false);
+    expect(wrapper.find('.i-cascader__dropdown').isVisible()).toBe(false);
 
     expect(exposed.getCheckedNodes().map((node) => node.value)).toEqual([
       'zhinan',
@@ -518,4 +518,53 @@ test('Cascader 打开后禁用表单会关闭面板', async () => {
   await wrapper.setProps({ disabled: true });
   expect(control.emitted('visible-change')).toEqual([[true], [false]]);
   wrapper.unmount();
+});
+
+test('keeps panel mounted with popup slots and exposes its content', async () => {
+  const wrapper = mount(Cascader, {
+    props: { options, teleported: false, persistent: true, placement: 'top-end' },
+    slots: {
+      prefix: () => h('span', { class: 'custom-prefix' }, 'Prefix'),
+      header: () => h('span', { class: 'custom-header' }, 'Header'),
+      footer: () => h('span', { class: 'custom-footer' }, 'Footer'),
+      default: ({ node }: { node: CascaderNode }) => h('span', { class: 'custom-node' }, node.label)
+    }
+  });
+  expect(wrapper.find('.custom-prefix').exists()).toBe(true);
+  wrapper.vm.togglePopperVisible(true);
+  await nextTick();
+  const panel = wrapper.get('.i-cascader__dropdown');
+  expect(wrapper.vm.contentRef).toBe(panel.element);
+  expect(panel.attributes('data-placement')).toBe('top-end');
+  expect(panel.find('.custom-header').exists()).toBe(true);
+  expect(panel.find('.custom-footer').exists()).toBe(true);
+  expect(panel.find('.custom-node').exists()).toBe(true);
+  wrapper.vm.togglePopperVisible(false);
+  await nextTick();
+  expect(wrapper.get('.i-cascader__dropdown').element).toBe(panel.element);
+  expect(panel.isVisible()).toBe(false);
+});
+
+test('provides complete slot data and deletes a tag with one argument', async () => {
+  const wrapper = mount(Cascader, {
+    props: {
+      options, multiple: true, filterable: true, debounce: 0, teleported: false,
+      modelValue: [['zhinan', 'kaifa']]
+    },
+    slots: {
+      tag: ({ data, deleteTag }) => h('button', {
+        class: 'custom-tag', onClick: (event: MouseEvent) => {
+          event.stopPropagation();
+          deleteTag(data[0]);
+        }
+      }, data[0].text),
+      'suggestion-item': ({ item }) => h('span', { 'data-checked': item.checked }, item.text)
+    }
+  });
+  expect(wrapper.vm.presentText).toBe('');
+  expect(wrapper.get('.custom-tag').text()).toContain('开发');
+  await wrapper.get('input[type="text"]').setValue('开发');
+  expect(wrapper.get('.i-cascader__suggestion [data-checked]').attributes('data-checked')).toBe('true');
+  await wrapper.get('.custom-tag').trigger('click');
+  expect(wrapper.emitted('update:modelValue')).toEqual([[[]]]);
 });

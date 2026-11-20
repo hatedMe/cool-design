@@ -7,13 +7,16 @@ import {
   onBeforeUnmount,
   ref,
   watch,
+  type CSSProperties,
   type PropType
 } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
-import { useFloating } from '../../../src/utils/use-floating';
+import { useFloating, type Placement, type FloatingOptions } from '../../../src/utils/use-floating';
 import { createNamespace } from '../../../src/utils/create';
+import Tooltip from '../tooltip';
+import type { TagType } from '../tag/tag';
 import { useCascaderNodes } from './node';
 import type {
   CascaderFilterMethod,
@@ -23,6 +26,7 @@ import type {
   CascaderNode,
   CascaderNodeValue,
   CascaderOption,
+  CascaderTag,
   CascaderPropsMapping
 } from './types';
 
@@ -45,6 +49,17 @@ export default defineComponent({
     separator: { type: String, default: ' / ' },
     collapseTags: Boolean,
     collapseTagsTooltip: Boolean,
+    maxCollapseTagsTooltipHeight: [String, Number],
+    tagType: { type: String as PropType<TagType>, default: 'info' },
+    tagEffect: { type: String as PropType<'light' | 'dark' | 'plain'>, default: 'light' },
+    persistent: { type: Boolean, default: true },
+    appendTo: [String, Object] as PropType<string | HTMLElement>,
+    placement: { type: String as PropType<Placement>, default: 'bottom-start' },
+    fallbackPlacements: { type: Array as PropType<Placement[]>, default: () => ['bottom-start', 'bottom', 'top-start', 'top', 'right', 'left'] },
+    popperStyle: [String, Object, Array] as PropType<string | CSSProperties | CSSProperties[]>,
+    popperOptions: Object as PropType<FloatingOptions>,
+    effect: { type: String as PropType<'light' | 'dark'>, default: 'light' },
+    fitInputWidth: [Boolean, Number],
     maxCollapseTags: { type: Number, default: 1 },
     clearable: Boolean,
     emptyValues: Array as PropType<unknown[]>,
@@ -77,6 +92,8 @@ export default defineComponent({
     const floating = ref<HTMLElement>();
     const inputRef = ref<HTMLInputElement>();
     const open = ref(false);
+    const shownOnce = ref(false);
+    const referenceWidth = ref(0);
     const query = ref('');
     const activeValues = ref<CascaderNodeValue[]>([]);
     const panelId = `i-cascader-panel-${Math.random().toString(36).slice(2)}`;
@@ -116,6 +133,15 @@ export default defineComponent({
       }
       return Array.isArray(entry.item) ? entry.item.join(props.separator) : String(entry.item);
     };
+
+    const tags = computed<CascaderTag[]>(() => displayEntries.value.map((entry) => ({
+      node: entry.node,
+      key: JSON.stringify(entry.item),
+      text: entryLabel(entry),
+      hitState: false,
+      closable: !isDisabled() && (!entry.node || !isEffectivelyDisabled(entry.node)),
+      value: entry.item
+    })));
 
     const renderEntryText = (entry: { item: CascaderItemValue; node: CascaderNode | null }) => {
       if (entry.node && slots.default) return slots.default({ data: entry.node.data, node: entry.node });
@@ -180,7 +206,10 @@ export default defineComponent({
       open,
       reference,
       floating,
-      placement: () => 'bottom-start',
+      placement: () => props.popperOptions?.placement ?? props.placement,
+      fallbackPlacements: () => props.fallbackPlacements,
+      offset: () => props.popperOptions?.offset ?? 4,
+      appendTo: () => props.appendTo,
       close: () => setOpen(false),
       closeOnOutside: () => true
     });
@@ -189,6 +218,8 @@ export default defineComponent({
       if (open.value === value || (value && isDisabled())) return;
       open.value = value;
       if (value) {
+        shownOnce.value = true;
+        referenceWidth.value = reference.value?.getBoundingClientRect().width ?? 0;
         const node = selectedNodes.value[0];
         activeValues.value = node ? nodes.activePathValues(node) : [];
         nextTick(() => position.update());
@@ -198,6 +229,12 @@ export default defineComponent({
       emit('visible-change', value);
     };
 
+    watch([open, reference], ([opened, target], _, cleanup) => {
+      if (!opened || !target || typeof ResizeObserver === 'undefined') return;
+      const observer = new ResizeObserver(() => { referenceWidth.value = target.getBoundingClientRect().width; });
+      observer.observe(target);
+      cleanup(() => observer.disconnect());
+    });
     watch(isDisabled, (disabled) => { if (disabled) setOpen(false); });
 
     const update = (value: unknown) => {
@@ -259,13 +296,17 @@ export default defineComponent({
       target?.focus();
     };
 
+    const togglePopperVisible = (visible?: boolean) => setOpen(visible ?? !open.value);
     expose({
       focus: focusTarget,
       blur: () => {
         const target = inputRef.value ?? root.value?.querySelector<HTMLElement>('[role="combobox"]');
         target?.blur();
       },
-      togglePopperVisibility: (visible?: boolean) => setOpen(visible ?? !open.value),
+      togglePopperVisibility: togglePopperVisible,
+      togglePopperVisible,
+      contentRef: floating,
+      presentText: computed(() => props.multiple ? '' : displayText.value),
       getCheckedNodes: (leafOnly = false): CascaderNode[] => {
         if (props.multiple) {
           const result: CascaderNode[] = [];
@@ -319,7 +360,7 @@ export default defineComponent({
               onChange={() => toggleCheck(node)}
             />
           )}
-          <span class={bem('label')}>{node.label}</span>
+          <span class={bem('label')}>{slots.default?.({ node, data: node.data }) ?? node.label}</span>
           {!node.leaf && (
             <span
               class={bem('expand')}
@@ -336,27 +377,45 @@ export default defineComponent({
       );
     };
 
+    const renderTag = (tag: CascaderTag, custom = false) => (
+      <span class={bem('tag', { [props.tagEffect]: true, [props.tagType]: true })} key={tag.key}>
+        <span class={bem('tag-text')}>{custom ? renderEntryText({ item: tag.value, node: tag.node }) : tag.text}</span>
+        {tag.closable && <button type='button' aria-label={`移除 ${tag.text}`} onClick={(event: MouseEvent) => {
+          event.stopPropagation();
+          removeTag(tag.value);
+        }}>×</button>}
+      </span>
+    );
+
     return () => {
       const visibleEntries = displayEntries.value;
       const tagEntries = props.collapseTags
         ? visibleEntries.slice(0, props.maxCollapseTags)
         : visibleEntries;
-      const panel = open.value ? (
+      const width = typeof props.fitInputWidth === 'number' ? props.fitInputWidth : props.fitInputWidth ? referenceWidth.value : 0;
+      const panel = open.value || (props.persistent && shownOnce.value) ? (
         <div
           id={panelId}
           ref={floating}
-          class={[bem('dropdown'), props.popperClass]}
-          style={position.style.value}>
+          class={[bem('dropdown'), bem('dropdown', { [props.effect]: true }), props.popperClass]}
+          data-placement={position.placement.value}
+          aria-hidden={!open.value || undefined}
+          style={[position.style.value, props.popperStyle, !open.value ? { display: 'none' } : undefined]}>
+          {slots.header?.()}
           {isFiltering.value ? (
             suggestionNodes.value.length ? (
-              <ul class={bem('suggestions')} role='listbox'>
+              <ul class={bem('suggestions')} role='listbox' style={width > 0 ? { width: `${width}px` } : undefined}>
                 {suggestionNodes.value.map((node) => (
                   <li
                     key={`${node.level}-${String(node.value)}`}
                     class={bem('suggestion')}
                     role='option'
                     onClick={() => selectNode(node)}>
-                    {node.path.map((item) => item.label).join(props.separator)}
+                    {slots['suggestion-item']?.({ item: {
+                      ...node,
+                      text: entryLabel({ item: nodeValue(node), node }),
+                      checked: props.multiple ? checkState.value.checked.has(node) : selectedNodes.value.includes(node)
+                    } }) ?? node.path.map((item) => item.label).join(props.separator)}
                   </li>
                 ))}
               </ul>
@@ -374,6 +433,7 @@ export default defineComponent({
               ))}
             </div>
           )}
+          {slots.footer?.()}
         </div>
       ) : null;
       const content = props.teleported && panel ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
@@ -413,29 +473,33 @@ export default defineComponent({
                 setOpen(true);
               }
             }}>
-            {props.multiple &&
-              tagEntries.map((entry) => (
-                <span class={bem('tag')} key={`${entry.node ? 'n' : 'v'}-${String(entry.item)}`}>
-                  <span class={bem('tag-text')}>{renderEntryText(entry)}</span>
-                  {!isDisabled() && (
-                    <button
-                      type='button'
-                      aria-label={`移除 ${entryLabel(entry)}`}
-                      onClick={(event: MouseEvent) => {
-                        event.stopPropagation();
-                        removeTag(entry.item);
-                      }}>
-                      ×
-                    </button>
-                  )}
-                </span>
-              ))}
-            {props.multiple && props.collapseTags && visibleEntries.length > props.maxCollapseTags && (
-              <span
-                class={bem('more')}
-                title={props.collapseTagsTooltip ? visibleEntries.map(entryLabel).join('、') : undefined}>
-                +{visibleEntries.length - props.maxCollapseTags}
-              </span>
+            {slots.prefix?.()}
+            {props.multiple && (slots.tag
+              ? slots.tag({ data: tags.value, deleteTag: (tag: CascaderTag) => {
+                if (tag.closable) removeTag(tag.value);
+              } })
+              : tags.value.slice(0, tagEntries.length).map((tag) => renderTag(tag, true)))}
+            {props.multiple && !slots.tag && props.collapseTags && visibleEntries.length > props.maxCollapseTags && (
+              props.collapseTagsTooltip ? (
+                <Tooltip effect={props.effect} disabled={isDisabled() || open.value}
+                  popperClass={props.popperClass} popperStyle={props.popperStyle}>
+                  {{
+                    default: () => <span class={bem('more')}
+                      title={!open.value && !isDisabled() ? visibleEntries.map(entryLabel).join('、') : undefined}>
+                      +{visibleEntries.length - props.maxCollapseTags}
+                    </span>,
+                    content: () => <div style={{
+                      maxHeight: typeof props.maxCollapseTagsTooltipHeight === 'number'
+                        ? `${props.maxCollapseTagsTooltipHeight}px` : props.maxCollapseTagsTooltipHeight,
+                      overflowY: 'auto'
+                    }}>
+                      {tags.value.slice(props.maxCollapseTags).map((tag) => renderTag(tag))}
+                    </div>
+                  }}
+                </Tooltip>
+              ) : (
+                <span class={bem('more')}>+{visibleEntries.length - props.maxCollapseTags}</span>
+              )
             )}
             {!props.multiple && !props.filterable && (
               <span class={bem('text')}>

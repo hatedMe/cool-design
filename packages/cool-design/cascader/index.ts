@@ -6,6 +6,9 @@ import _Cascader from './cascader';
 export interface CascaderInstance {
   focus(): void;
   blur(): void;
+  readonly contentRef: HTMLElement | undefined;
+  readonly presentText: string;
+  togglePopperVisible(visible?: boolean): void;
   togglePopperVisibility(visible?: boolean): void;
   getCheckedNodes(leafOnly?: boolean): CascaderNode[];
 }
@@ -21,5 +24,7 @@ export type {
   CascaderNodePath,
   CascaderNodeValue,
   CascaderOption,
+  CascaderSuggestion,
+  CascaderTag,
   CascaderPropsMapping
 } from './types';

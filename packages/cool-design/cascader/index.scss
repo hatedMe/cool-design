@@ -226,3 +226,33 @@
 .i-cascader.i-control--large .i-cascader__control {
   min-height: 40px;
 }
+
+.i-cascader__dropdown--dark {
+  background: #303133;
+  border-color: #303133;
+  color: #fff;
+}
+
+.i-cascader__tag {
+  --i-cascader-tag-color: #909399;
+  color: var(--i-cascader-tag-color);
+}
+
+.i-cascader__tag--primary { --i-cascader-tag-color: var(--i-color-primary, #409eff); }
+.i-cascader__tag--success { --i-cascader-tag-color: var(--i-color-success, #67c23a); }
+.i-cascader__tag--warning { --i-cascader-tag-color: var(--i-color-warning, #e6a23c); }
+.i-cascader__tag--danger { --i-cascader-tag-color: var(--i-color-danger, #f56c6c); }
+
+.i-cascader__tag--dark {
+  background: var(--i-cascader-tag-color);
+  color: #fff;
+}
+
+.i-cascader__tag--plain {
+  border: 1px solid var(--i-cascader-tag-color);
+  background: transparent;
+}
+
+.i-cascader__tag button {
+  color: inherit;
+}

@@ -23,7 +23,7 @@
 | showAllLevels | 输入框是否显示完整路径，`false` 只显示最后一级 | `boolean` | `true` |
 | separator | 路径文本分隔符 | `string` | `' / '` |
 | collapseTags | 多选是否折叠标签 | `boolean` | `false` |
-| collapseTagsTooltip | 折叠标签是否显示原生悬浮提示 | `boolean` | `false` |
+| collapseTagsTooltip | 折叠标签是否显示折叠项悬浮提示 | `boolean` | `false` |
 | maxCollapseTags | 折叠标签时最多显示的标签数量 | `number` | `1` |
 | empty-values | 视为空的模型值 | `unknown[]` | 继承 ConfigProvider |
 | value-on-clear | 单选清空值或工厂，多选清空为 `[]` | `unknown` | 继承 ConfigProvider |
@@ -41,6 +41,17 @@
 | popperClass | 下拉面板自定义类名 | `string` | — |
 | teleported | 下拉面板是否传送到 body | `boolean` | `true` |
 | validateEvent | 值变化/失焦时是否触发表单校验 | `boolean` | `true` |
+| `persistent` | 首次展开后保留关闭的下拉面板 | `boolean` | `true` |
+| `appendTo` | 下拉面板挂载容器 | `string \| HTMLElement` | `document.body` |
+| `placement` | 面板位置 | `Placement` | `'bottom-start'` |
+| `fallbackPlacements` | 定位备选位置 | `Placement[]` | `['bottom-start', 'bottom', 'top-start', 'top', 'right', 'left']` |
+| `popperStyle` | 面板自定义样式 | `string \| CSSProperties \| CSSProperties[]` | — |
+| `popperOptions` | 面板的 `placement` 和 `offset` 覆盖 | `FloatingOptions` | — |
+| `effect` | 面板主题 | `'light' \| 'dark'` | `'light'` |
+| `fitInputWidth` | 搜索建议匹配输入区域宽度，或使用指定像素值 | `boolean \| number` | `false` |
+| `maxCollapseTagsTooltipHeight` | 折叠标签提示最大高度，数字按像素处理 | `string \| number` | — |
+| `tagType` | 多选标签颜色 | `'primary' \| 'success' \| 'warning' \| 'danger' \| 'info'` | `'info'` |
+| `tagEffect` | 多选标签主题 | `'light' \| 'dark' \| 'plain'` | `'light'` |
 
 `CascaderOption`：`{ value: string \| number; label?: string; children?: CascaderOption[]; disabled?: boolean; leaf?: boolean }`，字段名可通过 `props` 映射。
 
@@ -63,3 +74,7 @@
 | empty | 无匹配数据 | — |
 
 单选默认清空为 `undefined`，依赖原清空值 `null` 的代码可设置 `:value-on-clear="null"`。
+
+多选可通过 `tag({ data, deleteTag })` 替换默认标签列表，`data` 为 `CascaderTag[]`，调用 `deleteTag(tag)` 删除单个标签。建议项可通过 `suggestion-item({ item })` 自定义，其中 `item` 包含级联节点字段及 `text`、`checked`。`prefix`、`header` 和 `footer` 分别渲染在输入区域起始处和下拉内容两端。
+
+`togglePopperVisible(visible?)` 切换下拉面板，可继续使用原 `togglePopperVisibility(visible?)` 方法。`contentRef` 是下拉面板元素，`presentText` 是当前单选显示文本。

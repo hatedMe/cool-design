@@ -113,7 +113,7 @@ export type {
   TableV2SortOrder
 } from './table-v2';
 export type { SelectRemoteOption, SelectTagType, SelectPropsMapping } from './select/select';
-export type { CascaderFilterMethod, CascaderModelValue, CascaderNode, CascaderOption, CascaderPropsMapping } from './cascader';
+export type { CascaderFilterMethod, CascaderModelValue, CascaderNode, CascaderOption, CascaderPropsMapping, CascaderSuggestion, CascaderTag } from './cascader';
 export type { Size, Config, ButtonConfigContext, DialogConfigContext, LinkConfigContext, MessageConfigContext, TableConfigContext } from './config-provider/context';
 
 export {
