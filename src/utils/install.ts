@@ -18,10 +18,14 @@ export function withInstall<T extends Component>(opt: T) {
 
 export type sfcInstall<T> = T & Plugin;
 export type sfcInstallWithContext<T> = T & { _context: AppContext };
-export function withFunctionInstall<T>(fn: T, name: string) {
+export function withFunctionInstall<T>(fn: T, name: string, bindContext?: (context: AppContext) => T) {
   (fn as sfcInstall<T>).install = (app: App) => {
+    if (bindContext) {
+      app.config.globalProperties[name] = bindContext(app._context);
+      return;
+    }
     (fn as sfcInstallWithContext<T>)._context = app._context;
     app.config.globalProperties[`${name}`] = fn;
   };
-  return fn as sfcInstallWithContext<T>;
+  return fn as sfcInstallWithContext<T> & { install: (app: App) => void };
 }

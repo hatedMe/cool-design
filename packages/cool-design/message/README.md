@@ -76,6 +76,8 @@ ElMessage('你好', getCurrentInstance()?.appContext ?? null);
 | ------ | ---- | -------- |
 | `close` | 计时结束或关闭按钮触发，父级移除组件 | 无 |
 
+安装后，应用内的服务方法使用所属应用的 `ConfigProvider` 配置。传入 `appContext` 可指定应用，传入 `null` 使用默认配置。显式 `zIndex` 优先，包含 `0`。应用绑定方法的 `closeAll` 只关闭属于该应用的实例，包导出方法的 `closeAll` 可关闭所有应用的实例。
+
 ### 服务选项 `MessageOptions`
 
 | 参数 | 说明 | 类型 | 默认值 |
@@ -85,6 +87,7 @@ ElMessage('你好', getCurrentInstance()?.appContext ?? null);
 | `duration` | 自动关闭毫秒数，`0` 不自动关闭 | `number` | `3000` |
 | `show-close` / `showClose` | 是否显示关闭按钮 | `boolean` | `false` |
 | `offset` | 距边缘像素 | `number` | `20` |
+| `zIndex` | 单条服务浮层层级 | `number` | 按应用层级递增 |
 | `placement` | 位置：`top` / `bottom` | `MessagePlacement` | `top` |
 | `dangerouslyUseHTMLString` | 是否解析 HTML | `boolean` | `false` |
 | `center` | 文本是否居中 | `boolean` | `false` |

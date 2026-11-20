@@ -1,4 +1,7 @@
 import { createVNode, render, type AppContext } from 'vue';
+import { nextOverlayZIndex } from '../../hooks/use-z-index';
+import { positionServices } from '../../../src/utils/service-position';
+import { defaultConfig, getAppConfig } from '../config-provider/context';
 import Notification from './notification';
 import type { NotificationHandle, NotificationOptions, NotificationPosition, NotificationType } from './types';
 
@@ -17,55 +20,48 @@ type NotifyFn = {
   _context?: AppContext | null;
 };
 
-const containers = new Map<NotificationPosition, HTMLElement>();
-const closers = new Set<() => void>();
+const instances = new Set<{
+  close: () => void;
+  context: AppContext | null;
+  position: NotificationPosition;
+  container: HTMLElement;
+  offset: number;
+}>();
 
 function normalize(input: NotifyInput | undefined, type?: NotificationType): NotificationOptions {
   const base: NotificationOptions = typeof input === 'string' ? { message: input } : (input ?? {});
   return type ? { ...base, type } : { ...base };
 }
 
-function getContainer(position: NotificationPosition, offset: number): HTMLElement {
-  let container = containers.get(position);
-  if (!container || !container.isConnected) {
-    container = document.createElement('div');
-    container.className = `i-notification-container i-notification-container--${position}`;
-    document.body.appendChild(container);
-    containers.set(position, container);
-  }
-  const base = 20 + offset;
-  container.style.top = '';
-  container.style.bottom = '';
-  container.style.left = '';
-  container.style.right = '';
-  if (position.startsWith('top')) container.style.top = `${base}px`;
-  else container.style.bottom = `${base}px`;
-  if (position.endsWith('right')) container.style.right = '20px';
-  else container.style.left = '20px';
-  return container;
-}
-
-function notifyFn(input?: NotifyInput, appContext?: AppContext | null): NotificationHandle {
+function notifyFn(input: NotifyInput | undefined, context: AppContext | null): NotificationHandle {
   const options = normalize(input);
   const position = options.position ?? 'top-right';
-  const offset = options.offset ?? 0;
-  const container = getContainer(position, offset);
-  const wrapper = document.createElement('div');
-  container.appendChild(wrapper);
-  let closed = false;
-  const doClose = () => {
-    if (closed) return;
-    closed = true;
-    closers.delete(doClose);
-    render(null, wrapper);
-    wrapper.remove();
-    if (container.childElementCount === 0) {
+  const offset = 20 + (options.offset ?? 0);
+  const config = getAppConfig(context) ?? defaultConfig;
+  const container = document.createElement('div');
+  container.className = `i-notification-container i-notification-container--${position}`;
+  container.style[position.endsWith('right') ? 'right' : 'left'] = '20px';
+  container.style.zIndex = String(options.zIndex ?? nextOverlayZIndex(config.zIndex));
+  document.body.appendChild(container);
+  const reposition = () => positionServices(
+    [...instances].filter((entry) => entry.position === position),
+    position.startsWith('top') ? 'top' : 'bottom',
+    16
+  );
+  const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(reposition);
+  observer?.observe(container);
+  const entry = {
+    context, position, container, offset,
+    close() {
+      if (!instances.delete(entry)) return;
+      observer?.disconnect();
+      render(null, container);
       container.remove();
-      containers.delete(position);
+      reposition();
+      options.onClose?.();
     }
-    options.onClose?.();
   };
-  closers.add(doClose);
+  instances.add(entry);
   const vnode = createVNode(Notification, {
     title: options.title,
     message: options.message,
@@ -76,21 +72,26 @@ function notifyFn(input?: NotifyInput, appContext?: AppContext | null): Notifica
     duration: options.duration ?? 4500,
     showClose: options.showClose ?? true,
     onClick: options.onClick,
-    onClose: doClose
+    onClose: entry.close
   });
-  vnode.appContext =
-    appContext ?? (notifyFn as NotifyFn)._context ?? null;
-  render(vnode, wrapper);
-  return { close: doClose };
+  vnode.appContext = context;
+  render(vnode, container);
+  reposition();
+  return { close: entry.close };
 }
 
-const fn = notifyFn as NotifyFn;
-(['primary', 'success', 'warning', 'info', 'error', 'danger'] as NotificationType[]).forEach((type) => {
-  fn[type] = (input?: NotifyInput, appContext?: AppContext | null) =>
-    notifyFn(normalize(input, type), appContext);
-});
-fn.closeAll = () => {
-  [...closers].forEach((close) => close());
-};
+export function createNotifyService(context?: AppContext): NotifyFn {
+  const fn = ((input, appContext = fn._context ?? null) => notifyFn(input, appContext)) as NotifyFn;
+  fn._context = context;
+  (['primary', 'success', 'warning', 'info', 'error', 'danger'] as const).forEach((type) => {
+    fn[type] = (input, appContext) => fn(normalize(input, type), appContext);
+  });
+  fn.closeAll = () => {
+    [...instances].forEach((entry) => {
+      if (!context || entry.context === context) entry.close();
+    });
+  };
+  return fn;
+}
 
-export default fn;
+export default createNotifyService();

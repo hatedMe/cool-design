@@ -90,7 +90,7 @@ test('Message 服务读取应用级 Provider 的默认值并遵循显式覆盖�
     await wrapper.find('button').trigger('click');
     const container = document.querySelector<HTMLElement>('.i-message-container--bottom');
     expect(container?.style.bottom).toBe('0px');
-    const messages = container?.querySelectorAll('.i-message');
+    const messages = document.querySelectorAll('.i-message-container--bottom .i-message');
     expect(messages).toHaveLength(2);
     expect(messages?.[0].classList.contains('is-plain')).toBe(true);
     expect(messages?.[0].querySelector('button')).not.toBeNull();

@@ -1,5 +1,7 @@
 import { createVNode, render, type AppContext, type VNode } from 'vue';
-import { getAppConfig } from '../config-provider/context';
+import { nextOverlayZIndex } from '../../hooks/use-z-index';
+import { positionServices } from '../../../src/utils/service-position';
+import { defaultConfig, getAppConfig } from '../config-provider/context';
 import MessageComponent, { type MessageIcon, type MessageType } from './message';
 
 export type MessagePlacement = 'top' | 'top-left' | 'top-right' | 'bottom' | 'bottom-left' | 'bottom-right';
@@ -10,6 +12,7 @@ export interface MessageOptions {
   duration?: number;
   showClose?: boolean;
   offset?: number;
+  zIndex?: number;
   placement?: MessagePlacement;
   dangerouslyUseHTMLString?: boolean;
   center?: boolean;
@@ -36,31 +39,24 @@ type MessageFn = {
   _context?: AppContext | null;
 };
 
-const containers = new Map<MessagePlacement, HTMLElement>();
-const closers = new Set<{ close: () => void; type: MessageType; context: AppContext | null; placement: MessagePlacement }>();
+const closers = new Set<{
+  close: () => void;
+  type: MessageType;
+  context: AppContext | null;
+  placement: MessagePlacement;
+  container: HTMLElement;
+  offset: number;
+}>();
 const grouped = new Map<AppContext | null, Map<string, { handle: MessageHandle; bump: () => void }>>();
-
-function getContainer(placement: MessagePlacement, offset: number): HTMLElement {
-  let container = containers.get(placement);
-  if (!container || !container.isConnected) {
-    container = document.createElement('div');
-    container.className = `i-message-container i-message-container--${placement}`;
-    document.body.appendChild(container);
-    containers.set(placement, container);
-  }
-  if (placement.startsWith('top')) container.style.top = `${offset}px`;
-  else container.style.bottom = `${offset}px`;
-  return container;
-}
 
 function normalize(input: string | MessageOptions, type?: MessageType): MessageOptions {
   const base = typeof input === 'string' ? { message: input } : input;
   return type ? { ...base, type } : { ...base };
 }
 
-function messageFn(input: string | MessageOptions, appContext?: AppContext | null): MessageHandle {
-  const context = appContext === undefined ? (messageFn as MessageFn)._context ?? null : appContext;
-  const defaults = getAppConfig(context)?.message;
+function messageFn(input: string | MessageOptions, context: AppContext | null): MessageHandle {
+  const config = getAppConfig(context) ?? defaultConfig;
+  const defaults = config.message;
   const options = normalize(input);
   const opts = {
     ...options,
@@ -88,12 +84,20 @@ function messageFn(input: string | MessageOptions, appContext?: AppContext | nul
       [...closers].filter((entry) => entry.context === context && entry.placement === placement).length >= defaults.max) {
     return { close: () => {} };
   }
-  const container = getContainer(placement, offset);
-  const wrapper = document.createElement('div');
-  container.appendChild(wrapper);
+  const container = document.createElement('div');
+  container.className = `i-message-container i-message-container--${placement}`;
+  container.style.zIndex = String(opts.zIndex ?? nextOverlayZIndex(config.zIndex));
+  document.body.appendChild(container);
+  const reposition = () => positionServices(
+    [...closers].filter((entry) => entry.placement === placement),
+    placement.startsWith('top') ? 'top' : 'bottom',
+    8
+  );
+  const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(reposition);
+  observer?.observe(container);
   let closed = false;
   let count = 1;
-  const entry = { close: () => doClose(), type: (opts.type ?? 'info') as MessageType, context, placement };
+  const entry = { close: () => doClose(), type: (opts.type ?? 'info') as MessageType, context, placement, container, offset };
   const doClose = () => {
     if (closed) return;
     closed = true;
@@ -102,12 +106,10 @@ function messageFn(input: string | MessageOptions, appContext?: AppContext | nul
       groups.delete(groupKey);
       if (!groups.size) grouped.delete(context);
     }
-    render(null, wrapper);
-    wrapper.remove();
-    if (container.childElementCount === 0) {
-      container.remove();
-      containers.delete(placement);
-    }
+    observer?.disconnect();
+    render(null, container);
+    container.remove();
+    reposition();
     opts.onClose?.();
   };
   closers.add(entry);
@@ -127,7 +129,8 @@ function messageFn(input: string | MessageOptions, appContext?: AppContext | nul
       onClose: doClose
     });
     vnode.appContext = context;
-    render(vnode, wrapper);
+    render(vnode, container);
+    reposition();
   };
   draw();
   const handle: MessageHandle = { close: doClose };
@@ -138,16 +141,19 @@ function messageFn(input: string | MessageOptions, appContext?: AppContext | nul
   return handle;
 }
 
-const fn = messageFn as MessageFn;
-(['primary', 'success', 'warning', 'info', 'error'] as const).forEach((type) => {
-  fn[type] = (input: string | MessageOptions, appContext?: AppContext | null) =>
-    messageFn(normalize(input, type), appContext);
-});
-fn.closeAll = (type?: MessageType) => {
-  [...closers].forEach((entry) => {
-    if (!type || entry.type === type) entry.close();
+export function createMessageService(context?: AppContext): MessageFn {
+  const fn = ((input, appContext = fn._context ?? null) => messageFn(input, appContext)) as MessageFn;
+  fn._context = context;
+  (['primary', 'success', 'warning', 'info', 'error'] as const).forEach((type) => {
+    fn[type] = (input, appContext) => fn(normalize(input, type), appContext);
   });
-};
+  fn.closeAll = (type) => {
+    [...closers].forEach((entry) => {
+      if ((!context || entry.context === context) && (!type || entry.type === type)) entry.close();
+    });
+  };
+  return fn;
+}
 
-export const message = fn;
+export const message = createMessageService();
 export type { MessageType };

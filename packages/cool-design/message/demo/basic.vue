@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Button, Message, Space } from '../../index';
+import { Button, ElMessage, Message, Space } from '../../index';
 const feedback = ref<{ type: 'success' | 'warning' | 'info' | 'error'; text: string }>();
 const sequence = ref(0);
 function show(type: 'success' | 'warning' | 'info' | 'error') {
@@ -15,6 +15,7 @@ function show(type: 'success' | 'warning' | 'info' | 'error') {
       <Button type="primary" @click="show('success')">成功提示</Button>
       <Button type="danger" @click="show('error')">错误提示</Button>
       <Button @click="show('warning')">警告提示</Button>
+      <Button @click="ElMessage({ message: '指定层级的消息', zIndex: 5000 })">指定层级</Button>
     </Space>
     <Message
       v-if="feedback"

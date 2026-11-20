@@ -84,6 +84,8 @@ Notify({ title: '你好', message: '内容' }, getCurrentInstance()?.appContext 
 | ------ | ---- |
 | `default` | 内容，覆盖 `message` 属性 |
 
+安装后，应用内的服务方法使用所属应用的 `ConfigProvider` 配置。传入 `appContext` 可指定应用，传入 `null` 使用默认配置。显式 `zIndex` 优先，包含 `0`。应用绑定方法的 `closeAll` 只关闭属于该应用的实例，包导出方法的 `closeAll` 可关闭所有应用的实例。
+
 ### 服务选项 `NotificationOptions`
 
 | 参数 | 说明 | 类型 | 默认值 |
@@ -95,6 +97,7 @@ Notify({ title: '你好', message: '内容' }, getCurrentInstance()?.appContext 
 | `duration` | 自动关闭毫秒数，`0` 不自动关闭 | `number` | `4500` |
 | `position` | 位置：`top-right` / `top-left` / `bottom-right` / `bottom-left` | `NotificationPosition` | `top-right` |
 | `offset` | 额外偏移像素 | `number` | `0` |
+| `zIndex` | 单条服务浮层层级 | `number` | 按应用层级递增 |
 | `show-close` / `showClose` | 是否显示关闭按钮 | `boolean` | `true` |
 | `dangerouslyUseHTMLString` | 是否解析 HTML（仅 `message`） | `boolean` | `false` |
 | `customClass` | 自定义类名 | `string` | — |

@@ -40,5 +40,5 @@ test('函数式通知能单独关闭并卸载，不删除其他实例，回调�
 test('通知插件可以通过 app.use 注册', () => {
   const app = createApp({});
   app.use(Notify);
-  expect(app.config.globalProperties.$notify).toBe(Notify);
+  expect(app.config.globalProperties.$notify._context).toBe(app._context);
 });

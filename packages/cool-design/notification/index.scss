@@ -1,9 +1,7 @@
 .i-notification-container {
   position: fixed;
-  z-index: 2100;
   display: flex;
   flex-direction: column;
-  gap: 16px;
   pointer-events: none;
 }
 .i-notification-container .i-notification {

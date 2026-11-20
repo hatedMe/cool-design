@@ -8,6 +8,7 @@ export interface NotificationOptions {
   duration?: number;
   position?: NotificationPosition;
   offset?: number;
+  zIndex?: number;
   showClose?: boolean;
   dangerouslyUseHTMLString?: boolean;
   customClass?: string;
