@@ -31,7 +31,6 @@
 | `prefixIcon`         | 输入框前置图标                              | `string \| Component`                                        | —      |
 | `suffixIcon`         | 输入框后置图标                              | `string \| Component`                                        | —      |
 | `validateEvent`      | 值变化时触发表单校验                        | `boolean`                                                    | `true`  |
-
 | `valueKey` | 用于显示和选择建议的字段 | `string` | `'value'` |
 | `ariaLabel` | 原生输入框的无障碍标签 | `string` | — |
 | `teleported` | 是否将面板挂载到外部容器 | `boolean` | `true` |
