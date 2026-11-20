@@ -224,9 +224,11 @@
   }
 }
 
-.i-date-picker.i-control--small {
+.i-date-picker.i-control--small,
+.i-time-picker.i-control--small {
   min-height: 28px;
 }
-.i-date-picker.i-control--large {
+.i-date-picker.i-control--large,
+.i-time-picker.i-control--large {
   min-height: 40px;
 }

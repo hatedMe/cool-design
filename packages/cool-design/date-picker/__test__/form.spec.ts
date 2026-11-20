@@ -6,6 +6,7 @@ import type { FormInstance } from '../../form';
 import FormItem from '../../form-item';
 import DatePicker from '../date-picker';
 import DateTimePicker from '../date-time-picker';
+import TimePicker from '../time-picker';
 
 test('DatePicker 清空触发表单 change 校验，validateEvent=false 不触发', async () => {
   const model = reactive<{ date: Date | null }>({ date: new Date() });
@@ -104,5 +105,23 @@ test('日期选择器打开后禁用 Form 会阻止提交', async () => {
   expect(picker.emitted('update:modelValue')).toBeUndefined();
   expect(picker.get('input').attributes('disabled')).toBeDefined();
   expect(picker.find('button[aria-label="确认"]').exists()).toBe(false);
+  wrapper.unmount();
+});
+
+test('TimePicker 禁用 Form 后丢弃待确认时间', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, disabled: false, size: 'large' },
+    slots: { default: () => h(TimePicker, { showConfirm: true, teleported: false, format: 'HH:mm' }) }
+  });
+  const picker = wrapper.getComponent(TimePicker);
+  await picker.get('input').trigger('click');
+  await picker.get('[data-unit="hour"][data-value="10"]').trigger('click');
+  await picker.get('[data-unit="minute"][data-value="20"]').trigger('click');
+  const confirm = picker.get('button[aria-label="确认"]');
+  await wrapper.setProps({ disabled: true });
+  confirm.element.dispatchEvent(new MouseEvent('click'));
+  expect(picker.emitted('update:modelValue')).toBeUndefined();
+  expect(picker.classes()).toContain('i-control--large');
+  expect(picker.get('input').attributes('disabled')).toBeDefined();
   wrapper.unmount();
 });

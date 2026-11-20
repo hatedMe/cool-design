@@ -43,7 +43,7 @@ const time = ref(null);
 | readonly            | 只读                                     | `boolean`                              | `false`        |
 | editable            | 是否允许手动输入                         | `boolean`                              | `true`         |
 | clearable           | 是否可清空                               | `boolean`                              | `false`        |
-| size                | 尺寸：`large` / `default` / `small`      | `string`                               | 继承全局尺寸   |
+| size                | 尺寸：`large` / `default` / `small`      | `string`                               | 继承 FormItem、Form 或 ConfigProvider   |
 | disabled-hours       | 禁用小时列表                             | `() => number[]`                       | —              |
 | disabled-minutes    | 禁用分钟列表                             | `(hour: number) => number[]`           | —              |
 | disabled-seconds    | 禁用秒列表                               | `(hour: number, minute: number) => number[]` | —         |

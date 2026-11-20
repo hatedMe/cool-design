@@ -1,7 +1,7 @@
-import { Teleport, computed, defineComponent, h, markRaw, nextTick, onBeforeUnmount, onMounted, ref, toRaw, type Component, type ComponentPublicInstance, type PropType } from 'vue';
+import { Teleport, computed, defineComponent, h, inject, markRaw, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch, type Component, type ComponentPublicInstance, type PropType } from 'vue';
 import { useConfig, type Size } from '../config-provider/context';
 import { useEmptyValues } from '../../hooks/use-empty-values';
-import { useField } from '../form/context';
+import { formKey, useField } from '../form/context';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 import { emitValue, formatTimeParts, parseTimeParts, timeInputValue, type DateModelValue, type DateValue, type TimeParts } from './date';
 import TimePickerPanel, { type TimeDisabledRule, type TimeUnit } from './time-picker-panel';
@@ -49,7 +49,8 @@ export default defineComponent({
   setup(props, { attrs, emit, expose }) {
     const config = useConfig();
     const field = useField();
-    const disabledOf = () => props.disabled || !!field?.disabled?.();
+    const form = inject(formKey, undefined);
+    const disabledOf = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
     const validate = (trigger: 'blur' | 'change') => {
       if (props.validateEvent) nextTick(() => field?.validate(trigger));
     };
@@ -91,7 +92,7 @@ export default defineComponent({
     };
     const parseAt = (index: number) => parseTimeParts(values.value[index]) || { hour: 0, minute: 0, second: 0 };
     const setOpen = (value: boolean) => {
-      if (disabledOf() || props.readonly || open.value === value) return;
+      if (open.value === value || (value && (disabledOf() || props.readonly))) return;
       open.value = value;
       emit('visible-change', value);
       if (value) {
@@ -103,6 +104,7 @@ export default defineComponent({
     };
     const close = () => setOpen(false);
     const confirm = () => {
+      if (disabledOf() || props.readonly) return;
       if (draftValue.value !== null) {
         const value = draftValue.value;
         draftValue.value = null;
@@ -112,6 +114,11 @@ export default defineComponent({
       close();
     };
     const cancel = () => { draftValue.value = null; close(); };
+    watch(disabledOf, (disabled) => {
+      if (!disabled) return;
+      pendingInputs.length = 0;
+      cancel();
+    });
     const displayValue = (value: DateValue | null | undefined) => timeInputValue(value, props.format);
     const renderIcon = (icon: string | Component | undefined, className: string) => typeof icon === 'string' ? <i class={[className, icon]} aria-hidden='true' /> : icon ? h(markRaw(toRaw(icon))) : null;
     const commit = (parts: TimeParts, index = 0) => {
@@ -152,6 +159,7 @@ export default defineComponent({
       }
     };
     const choose = (unit: TimeUnit, value: number) => {
+      if (disabledOf() || props.readonly) return;
       if (disabledFor(unit, value)) return;
       const next = { ...draft.value, [unit]: value };
       draft.value = next;
@@ -167,6 +175,7 @@ export default defineComponent({
       pendingInputs[index ?? 0] = value;
     };
     const commitInput = (index: number | undefined) => {
+      if (disabledOf() || props.readonly) return;
       const value = pendingInputs[index ?? 0];
       if (value === undefined) return;
       if (value === '' || emptyValues.value.some((empty) => String(empty) === value)) {
@@ -253,7 +262,7 @@ export default defineComponent({
       const content = props.teleported && panel ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
       const value = model.value;
       return (
-        <span ref={root} class={['i-time-picker', `i-control--${props.size ?? field?.size?.() ?? config.value.size}`, range.value && 'is-range']}>
+        <span ref={root} class={['i-time-picker', `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`, range.value && 'is-range']}>
           {range.value ? <><div ref={reference}>{props.prefixIcon && <span class='i-time-picker__prefix-icon'>{renderIcon(props.prefixIcon as string | Component, 'i-time-picker__icon')}</span>}{renderInput(Array.isArray(value) ? value[0] : null, 0)}</div><span class='i-time-picker__separator'>{props.rangeSeparator}</span><div>{renderInput(Array.isArray(value) ? value[1] : null, 1)}</div></> : <div ref={reference}>{props.prefixIcon && <span class='i-time-picker__prefix-icon'>{renderIcon(props.prefixIcon as string | Component, 'i-time-picker__icon')}</span>}{renderInput(value as DateValue | null)}</div>}
           {props.clearable && (range.value ? Array.isArray(value) && value.some((item) => item != null && !isEmptyValue(item)) : value != null) && <button type='button' class='i-time-picker__clear' disabled={disabledOf() || props.readonly} aria-label='清空' onClick={() => clear()}>{props.clearIcon ? <span class='i-time-picker__clear-icon'>{renderIcon(props.clearIcon as string | Component, 'i-time-picker__icon')}</span> : '×'}</button>}
           {content}
