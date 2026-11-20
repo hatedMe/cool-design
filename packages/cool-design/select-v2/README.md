@@ -27,7 +27,14 @@
 | `props`         | 字段映射（`label` / `value` / `disabled` / `options`） | `SelectV2PropsMapping`           | —        |
 | `valueKey`      | 对象值的唯一标识字段                       | `string`                               | `value`  |
 | `filterable`    | 本地过滤                                   | `boolean`                              | `false`  |
-| `filterMethod`  | 自定义过滤                                 | `(query, option) => boolean`           | —        |
+| `filterMethod`  | 查询变化回调 | `(query: string) => void`           | —        |
+| `optionFilterMethod` | 本地逐项过滤 | `(query, option) => boolean` | — |
+| `remote` | 使用远程选项 | `boolean` | `false` |
+| `remoteMethod` | 远程查询回调 | `SelectV2RemoteMethod` | — |
+| `debounce` | 远程查询防抖毫秒数 | `number` | `300` |
+| `allowCreate` | 允许创建不存在的选项，需开启 `filterable` | `boolean` | `false` |
+| `defaultFirstOption` | 查询后高亮首个可用选项 | `boolean` | `false` |
+| `reserveKeyword` | 多选选中后保留搜索词 | `boolean` | `true` |
 | `multiple`      | 多选                                       | `boolean`                              | `false`  |
 | `multipleLimit` | 多选数量上限，`0` 不限                     | `number`                               | `0`      |
 | `collapseTags` / `collapseTagsTooltip` / `maxCollapseTags` | 标签折叠     | `boolean` / `boolean` / `number`       | `false` / `false` / `1` |
@@ -81,3 +88,6 @@
 | --------- | ------------ |
 | `focus()` | 聚焦输入框   |
 | `blur()`  | 取消聚焦     |
+
+
+配置 `filterable`、`remote` 和 `remote-method` 后，回调可更新外部 `options`。外部写入由调用方管理，异步请求宜用序号避免过时结果覆盖。`remoteMethod` 也可直接返回选项数组或相应的 Promise，组件只采纳当前查询的结果。旧的双参数 `filterMethod` 保留逐项过滤语义，新代码可显式使用 `optionFilterMethod`。

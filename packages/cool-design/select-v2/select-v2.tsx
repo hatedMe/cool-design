@@ -1,10 +1,11 @@
-import { computed, defineComponent, inject, nextTick, ref, watch, type CSSProperties, type PropType } from 'vue';
+import { computed, defineComponent, inject, nextTick, onBeforeUnmount, ref, watch, type CSSProperties, type PropType } from 'vue';
 import { Teleport } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
+import { useComposition } from '../../hooks/use-composition';
 import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
-import type { SelectV2Option, SelectV2PropsMapping, SelectV2Value } from './types';
+import type { SelectV2FilterMethod, SelectV2OptionFilterMethod, SelectV2RemoteMethod, SelectV2Option, SelectV2PropsMapping, SelectV2Value } from './types';
 
 type FlatRow =
   | { type: 'group'; label: string }
@@ -18,7 +19,14 @@ export default defineComponent({
     props: Object as PropType<SelectV2PropsMapping>,
     valueKey: { type: String, default: 'value' },
     filterable: Boolean,
-    filterMethod: Function as PropType<(query: string, option: SelectV2Option) => boolean>,
+    filterMethod: Function as PropType<SelectV2FilterMethod>,
+    optionFilterMethod: Function as PropType<SelectV2OptionFilterMethod>,
+    remote: Boolean,
+    remoteMethod: Function as PropType<SelectV2RemoteMethod>,
+    debounce: { type: Number, default: 300 },
+    allowCreate: Boolean,
+    defaultFirstOption: Boolean,
+    reserveKeyword: { type: Boolean, default: true },
     multiple: Boolean,
     multipleLimit: { type: Number, default: 0 },
     collapseTags: Boolean,
@@ -63,7 +71,22 @@ export default defineComponent({
     const dropdown = ref<HTMLElement>();
     const open = ref(false);
     const shownOnce = ref(false);
+    const { isComposing, handleCompositionStart, handleCompositionEnd } = useComposition();
     const query = ref('');
+    const remoteOptions = ref<SelectV2Option[]>();
+    const cachedOptions = ref<SelectV2Option[]>([]);
+    let searchTimer: ReturnType<typeof setTimeout> | undefined;
+    let searchId = 0;
+    const cancelSearch = () => {
+      searchId++;
+      if (searchTimer !== undefined) clearTimeout(searchTimer);
+      searchTimer = undefined;
+    };
+    onBeforeUnmount(cancelSearch);
+    const optionFilter = computed(() => props.optionFilterMethod ??
+      (props.filterMethod && props.filterMethod.length >= 2 ? props.filterMethod as SelectV2OptionFilterMethod : undefined));
+    const queryFilter = computed(() => props.filterMethod && props.filterMethod.length < 2
+      ? props.filterMethod as (value: string) => void : undefined);
     const highlighted = ref(0);
     const scrollTop = ref(0);
     const position = useFloating({
@@ -104,13 +127,13 @@ export default defineComponent({
           }
         });
       };
-      walk(props.options, true);
+      walk(props.remote ? remoteOptions.value ?? props.options : props.options, true);
       return result;
     });
 
-    const visibleRows = computed<FlatRow[]>(() => {
-      if (!props.filterable || !query.value) return rows.value;
-      const filter = props.filterMethod;
+    const filteredRows = computed<FlatRow[]>(() => {
+      if (!props.filterable || !query.value || queryFilter.value || props.remote) return rows.value;
+      const filter = optionFilter.value;
       const matches = (option: SelectV2Option) =>
         filter
           ? filter(query.value, option)
@@ -138,6 +161,17 @@ export default defineComponent({
       return result;
     });
 
+    const creatable = computed<SelectV2Option | undefined>(() => {
+      if (!props.allowCreate || !props.filterable || !query.value) return;
+      if ([...rows.value, ...cachedOptions.value.map((option) => ({ type: 'option', option }) as const)].some(
+        (row) => row.type === 'option' && (optionLabel(row.option) === query.value || sameValue(row.option[valueKey.value], query.value))
+      )) return;
+      return { [valueKey.value]: query.value, [labelKey.value]: query.value };
+    });
+    const visibleRows = computed<FlatRow[]>(() => creatable.value
+      ? [{ type: 'option', option: creatable.value }, ...filteredRows.value]
+      : filteredRows.value);
+
     const flatOptions = computed(() =>
       rows.value.filter((row): row is { type: 'option'; option: SelectV2Option } => row.type === 'option')
     );
@@ -148,9 +182,17 @@ export default defineComponent({
         ? []
         : [props.modelValue];
     });
+    watch([selectedValues, flatOptions], ([values, options]) => {
+      cachedOptions.value = values.flatMap((value) => {
+        const option = options.find((row) => sameValue(row.option[valueKey.value], value))?.option ??
+          cachedOptions.value.find((item) => sameValue(item[valueKey.value], value));
+        return option ? [option] : [];
+      });
+    }, { immediate: true });
     const selectedOptions = computed(() =>
       selectedValues.value.map(
-        (value) => flatOptions.value.find((row) => sameValue(row.option[valueKey.value], value))?.option
+        (value) => flatOptions.value.find((row) => sameValue(row.option[valueKey.value], value))?.option ??
+          cachedOptions.value.find((option) => sameValue(option[valueKey.value], value))
       )
     );
 
@@ -167,6 +209,7 @@ export default defineComponent({
       emit('visible-change', value);
       if (value) {
         query.value = '';
+        remoteOptions.value = undefined;
         scrollTop.value = 0;
         // 打开时优先高亮选中项，未选中时高亮首个可用项
         const selectedIndex = visibleRows.value.findIndex(
@@ -182,7 +225,7 @@ export default defineComponent({
           syncScrollToHighlighted();
           input.value?.focus();
         });
-      }
+      } else cancelSearch();
     };
 
     watch(isDisabled, (disabled) => { if (disabled) setOpen(false); });
@@ -200,6 +243,42 @@ export default defineComponent({
       nextTick(syncScrollToHighlighted);
     });
 
+    const resetHighlight = () => {
+      highlighted.value = props.defaultFirstOption
+        ? visibleRows.value.findIndex((row) => row.type === 'option' && !row.option[disabledKey.value])
+        : -1;
+      scrollTop.value = 0;
+    };
+    watch(visibleRows, () => {
+      if (open.value && query.value && props.defaultFirstOption) resetHighlight();
+    });
+    const changeQuery = (value: string) => {
+      if (value === query.value || isDisabled()) return;
+      query.value = value;
+      cancelSearch();
+      resetHighlight();
+      if (queryFilter.value) {
+        queryFilter.value(value);
+        return;
+      }
+      if (!props.remote || !props.filterable || !props.remoteMethod) return;
+      const id = searchId;
+      const search = async () => {
+        searchTimer = undefined;
+        try {
+          const options = await props.remoteMethod?.(value);
+          if (id === searchId && Array.isArray(options)) {
+            remoteOptions.value = options;
+            resetHighlight();
+          }
+        } catch {
+          if (id === searchId) remoteOptions.value = undefined;
+        }
+      };
+      if (props.debounce > 0) searchTimer = setTimeout(search, props.debounce);
+      else void search();
+    };
+
     const update = (value: SelectV2Value) => {
       emit('update:modelValue', value);
       emit('change', value);
@@ -211,6 +290,7 @@ export default defineComponent({
       const option = row.option;
       if (option[disabledKey.value]) return;
       const value = option[valueKey.value];
+      const created = option === creatable.value;
       if (props.multiple) {
         const current = [...selectedValues.value];
         const index = current.findIndex((item) => sameValue(item, value));
@@ -219,8 +299,11 @@ export default defineComponent({
           emit('remove-tag', value);
         } else if (!props.multipleLimit || current.length < props.multipleLimit) current.push(value);
         else return;
+        if (created || props.remote) cachedOptions.value.push(option);
         update(current);
+        if (created || !props.reserveKeyword) changeQuery('');
       } else {
+        if (created || props.remote) cachedOptions.value.push(option);
         update(value);
         setOpen(false);
       }
@@ -239,6 +322,8 @@ export default defineComponent({
     };
 
     const onKeydown = (event: KeyboardEvent) => {
+      if (isDisabled()) return;
+      if (isComposing.value || event.isComposing) return;
       if (event.key === 'Escape') return setOpen(false);
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
@@ -333,11 +418,15 @@ export default defineComponent({
               readonly={!props.filterable}
               disabled={isDisabled()}
               aria-label='筛选选项'
+              onCompositionstart={handleCompositionStart}
+              onCompositionend={(event: CompositionEvent) => {
+                handleCompositionEnd();
+                changeQuery((event.target as HTMLInputElement).value);
+              }}
               onInput={(event: Event) => {
+                if (isComposing.value || (event as InputEvent).isComposing) return;
                 if (isDisabled()) return;
-                query.value = (event.target as HTMLInputElement).value;
-                highlighted.value = 0;
-                scrollTop.value = 0;
+                changeQuery((event.target as HTMLInputElement).value);
               }}
             />
             {props.clearable && selectedValues.value.length > 0 && (

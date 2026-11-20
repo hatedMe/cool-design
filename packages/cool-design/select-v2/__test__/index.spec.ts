@@ -208,3 +208,118 @@ test('SelectV2 直挂 Form 时继承尺寸并在禁用后关闭下拉', async ()
   expect(select.get('[role="combobox"]').attributes('aria-disabled')).toBe('true');
   wrapper.unmount();
 });
+
+test('SelectV2 远程查询防抖，过时的返回选项不会覆盖新查询', async () => {
+  vi.useFakeTimers();
+  const callbacks = new Map<string, (items: SelectV2Option[]) => void>();
+  const remoteMethod = vi.fn((query: string) => new Promise<SelectV2Option[]>((resolve) => {
+    callbacks.set(query, resolve);
+  }));
+  const { wrapper } = mountSelect({ filterable: true, remote: true, remoteMethod, debounce: 20, teleported: false });
+  try {
+    await openSelect(wrapper);
+    const input = wrapper.get('input.i-select-v2__input');
+    await input.setValue('旧');
+    await vi.advanceTimersByTimeAsync(20);
+    await input.setValue('新');
+    await vi.advanceTimersByTimeAsync(20);
+    expect(remoteMethod.mock.calls).toEqual([['旧'], ['新']]);
+    callbacks.get('新')?.([{ label: '最新结果', value: 2 }]);
+    await vi.advanceTimersByTimeAsync(0);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.text()).toContain('最新结果');
+    callbacks.get('旧')?.([{ label: '过时结果', value: 1 }]);
+    await vi.advanceTimersByTimeAsync(0);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.text()).not.toContain('过时结果');
+  } finally {
+    wrapper.unmount();
+    vi.useRealTimers();
+  }
+});
+
+test('SelectV2 创建首项并保留多选标签', async () => {
+  const { wrapper, value } = mountSelect({ multiple: true, filterable: true, allowCreate: true,
+    defaultFirstOption: true, teleported: false }, []);
+  await openSelect(wrapper);
+  const input = wrapper.get('input.i-select-v2__input');
+  await input.setValue('新选项');
+  await input.trigger('keydown', { key: 'Enter' });
+  expect(value.value).toEqual(['新选项']);
+  expect(wrapper.text()).toContain('新选项');
+  expect(input.element.value).toBe('');
+  wrapper.unmount();
+});
+
+test('SelectV2 查询回调和逐选项过滤保持独立', async () => {
+  const query = vi.fn<(value: string) => void>();
+  const { wrapper } = mountSelect({ filterable: true, filterMethod: query,
+    options: [{ label: '外部结果', value: true }], teleported: false });
+  await openSelect(wrapper);
+  await wrapper.get('input.i-select-v2__input').setValue('查询');
+  expect(query.mock.calls).toEqual([['查询']]);
+  expect(wrapper.text()).toContain('外部结果');
+  wrapper.unmount();
+
+  const filter = vi.fn((value: string, option: SelectV2Option) => option.label === value);
+  const local = mountSelect({ filterable: true, optionFilterMethod: filter,
+    options: [{ label: '匹配', value: true }, { label: '其他', value: false }], teleported: false });
+  await openSelect(local.wrapper);
+  await local.wrapper.get('input.i-select-v2__input').setValue('匹配');
+  expect(local.wrapper.text()).toContain('匹配');
+  expect(local.wrapper.text()).not.toContain('其他');
+  local.wrapper.unmount();
+});
+
+test('SelectV2 组合输入结束前不查询或选择', async () => {
+  const remoteMethod = vi.fn();
+  const { wrapper, value } = mountSelect({ filterable: true, remote: true, remoteMethod, debounce: 0,
+    defaultFirstOption: true, options: [{ label: '候选', value: 'a' }], teleported: false });
+  await openSelect(wrapper);
+  const input = wrapper.get('input.i-select-v2__input');
+  await input.trigger('compositionstart');
+  await input.setValue('拼');
+  await input.trigger('keydown', { key: 'Enter', isComposing: true });
+  expect(remoteMethod).not.toHaveBeenCalled();
+  expect(value.value).toBeUndefined();
+  await input.trigger('compositionend');
+  expect(remoteMethod.mock.calls).toEqual([['拼']]);
+  input.element.dispatchEvent(new Event('input', { bubbles: true }));
+  expect(remoteMethod.mock.calls).toEqual([['拼']]);
+  wrapper.unmount();
+});
+
+test('SelectV2 可重新创建刚移除的选项', async () => {
+  const { wrapper, value } = mountSelect({ multiple: true, filterable: true, allowCreate: true,
+    defaultFirstOption: true, teleported: false }, []);
+  await openSelect(wrapper);
+  const input = wrapper.get('input.i-select-v2__input');
+  await input.setValue('重复创建');
+  await input.trigger('keydown', { key: 'Enter' });
+  await wrapper.get('[aria-label="移除 重复创建"]').trigger('click');
+  expect(value.value).toEqual([]);
+  await input.setValue('重复创建');
+  await input.trigger('keydown', { key: 'Enter' });
+  expect(value.value).toEqual(['重复创建']);
+  wrapper.unmount();
+});
+
+test('SelectV2 外部远程结果更新后重新高亮并缓存已选标签', async () => {
+  const options = ref<SelectV2Option[]>([]);
+  const value = ref<unknown[]>([]);
+  const wrapper = mount(defineComponent({
+    setup: () => () => h(SelectV2, { options: options.value, remote: true, filterable: true, multiple: true,
+      defaultFirstOption: true, teleported: false, modelValue: value.value, 'onUpdate:modelValue': (next: unknown[]) => { value.value = next; } })
+  }));
+  await openSelect(wrapper);
+  const input = wrapper.get('input.i-select-v2__input');
+  await input.setValue('查询');
+  options.value = [{ label: '外部结果', value: 7 }];
+  await wrapper.vm.$nextTick();
+  await input.trigger('keydown', { key: 'Enter' });
+  expect(value.value).toEqual([7]);
+  options.value = [];
+  await wrapper.vm.$nextTick();
+  expect(wrapper.find('[aria-label="移除 外部结果"]').exists()).toBe(true);
+  wrapper.unmount();
+});

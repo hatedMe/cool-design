@@ -14,3 +14,7 @@ export interface SelectV2PropsMapping {
 }
 
 export type SelectV2Value = unknown;
+
+export type SelectV2OptionFilterMethod = (query: string, option: SelectV2Option) => boolean;
+export type SelectV2FilterMethod = ((query: string) => void) | SelectV2OptionFilterMethod;
+export type SelectV2RemoteMethod = (query: string) => void | SelectV2Option[] | Promise<void | SelectV2Option[]>;
