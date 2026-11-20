@@ -188,3 +188,38 @@ test('predefined alpha colors remain previews until confirmed', async () => {
   expect(wrapper.emitted('update:modelValue')).toEqual([['rgba(255, 0, 0, 0.5)']]);
   wrapper.unmount();
 });
+
+test('ColorPicker 清空使用 Provider 工厂一次并接受受控布尔值', async () => {
+  let calls = 0;
+  const state = reactive({ value: '#409eff' as string | boolean });
+  const warnings: string[] = [];
+  const wrapper = mount(CoolDesign.ConfigProvider, {
+    props: { valueOnClear: () => { calls++; return false; }, emptyValues: [false] },
+    global: { config: { warnHandler: (warning) => warnings.push(warning) } },
+    slots: { default: () => h(ColorPicker, { modelValue: state.value, teleported: false,
+      'onUpdate:modelValue': (next: unknown) => { if (typeof next === 'boolean') state.value = next; } }) }
+  });
+  const picker = wrapper.getComponent(ColorPicker);
+  await picker.get('.i-color-picker__trigger').trigger('click');
+  expect(calls).toBe(0);
+  await picker.get('.i-color-picker__clear').trigger('click');
+  expect(picker.emitted('update:modelValue')).toEqual([[false]]);
+  expect(picker.emitted('change')).toEqual([[false]]);
+  expect(picker.emitted('clear')).toEqual([[]]);
+  expect(state.value).toBe(false);
+  expect(calls).toBe(1);
+  expect(warnings).toEqual([]);
+  wrapper.unmount();
+});
+
+test('ColorPicker 受控 undefined 清空后维持空颜色', async () => {
+  const state = reactive<{ value?: string }>({ value: '#ff0000' });
+  const wrapper = mount(defineComponent({
+    setup: () => () => h(ColorPicker, { modelValue: state.value, valueOnClear: () => undefined,
+      teleported: false, 'onUpdate:modelValue': () => { state.value = undefined; } })
+  }));
+  await wrapper.get('.i-color-picker__trigger').trigger('click');
+  await wrapper.get('.i-color-picker__clear').trigger('click');
+  expect((wrapper.get('.i-color-picker__trigger').element as HTMLElement).style.backgroundColor).toBe('');
+  wrapper.unmount();
+});

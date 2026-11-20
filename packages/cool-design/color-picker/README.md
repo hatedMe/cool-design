@@ -25,7 +25,7 @@
 />
 ```
 
-预览颜色、透明度或预定义颜色时仅触发 `active-change`，点击“确定”后才更新 `v-model` 并触发 `change`。点击“清空”提交 `null`；关闭面板会放弃未确认的预览。面板默认传送到 `body`，可通过 `append-to` 指定容器，或设置 `:teleported="false"` 在原位置渲染。
+预览颜色、透明度或预定义颜色时仅触发 `active-change`，点击“确定”后才更新 `v-model` 并触发 `change`。点击“清空”默认提交 `null`；关闭面板会放弃未确认的预览。面板默认传送到 `body`，可通过 `append-to` 指定容器，或设置 `:teleported="false"` 在原位置渲染。
 
 ### 禁用状态
 
@@ -39,7 +39,9 @@
 
 | 属性 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| `modelValue` | 当前颜色值；清空后为 `null` | `string \| null` | `#409eff` |
+| `modelValue` | 当前颜色值，默认清空为 `null` | `string \| number \| boolean \| null` | `#409eff` |
+| `emptyValues` | 视为空的模型值 | `unknown[]` | 继承 ConfigProvider |
+| `valueOnClear` | 清空值或工厂 | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider，根级 `null` |
 | `clearable` | 是否显示清空按钮 | `boolean` | `true` |
 | `teleported` | 是否传送面板 | `boolean` | `true` |
 | `append-to` | 面板挂载目标，选择器或元素 | `string` / `HTMLElement` | `body` |
@@ -58,9 +60,10 @@
 
 | 事件 | 说明 | 参数 |
 | --- | --- | --- |
-| `update:modelValue` | 确认或清空时更新受控值 | `value: string \| null` |
+| `update:modelValue` | 确认或清空时更新受控值 | `value: string \| number \| boolean \| null \| undefined` |
 | `active-change` | 颜色或透明度实时变化时触发 | `value: string` |
-| `change` | 点击确定或清空时触发 | `value: string \| null` |
+| `clear` | 点击清空时触发 | 无参数 |
+| `change` | 点击确定或清空时触发 | `value: string \| number \| boolean \| null \| undefined` |
 
 ### 插槽
 

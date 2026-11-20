@@ -1,4 +1,5 @@
-import { defineComponent, nextTick, ref, watch, Teleport, type PropType } from 'vue';
+import { computed, defineComponent, getCurrentInstance, nextTick, ref, watch, Teleport, type PropType } from 'vue';
+import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useField } from '../form/context';
 import { useFloating } from '../../../src/utils/use-floating';
 
@@ -128,7 +129,9 @@ export default defineComponent({
   name: 'i-color-picker',
   inheritAttrs: false,
   props: {
-    modelValue: { type: String as PropType<string | null>, default: '#409eff' },
+    modelValue: { type: [String, Number, Boolean] as PropType<string | number | boolean | null>, default: undefined },
+    emptyValues: Array as PropType<unknown[]>,
+    valueOnClear: { type: [String, Number, Boolean, Function], default: undefined },
     clearable: { type: Boolean, default: true },
     teleported: { type: Boolean, default: true },
     appendTo: { type: [String, Object] as PropType<string | HTMLElement>, default: undefined },
@@ -141,13 +144,24 @@ export default defineComponent({
     popperClass: { type: String, default: '' },
     validateEvent: { type: Boolean, default: true }
   },
-  emits: ['update:modelValue', 'change', 'active-change'],
+  emits: ['update:modelValue', 'change', 'active-change', 'clear'],
   setup(props, { attrs, emit, slots, expose }) {
     const field = useField();
     const isDisabled = () => props.disabled || !!field?.disabled?.();
+    const { getValueOnClear, isEmptyValue } = useEmptyValues({
+      emptyValues: computed(() => props.emptyValues),
+      valueOnClear: computed(() => props.valueOnClear)
+    });
+    const instance = getCurrentInstance();
+    const modelColor = () => {
+      const supplied = instance?.vnode.props;
+      const value = props.modelValue === undefined && !('modelValue' in (supplied ?? {})) &&
+        !('model-value' in (supplied ?? {})) ? '#409eff' : props.modelValue;
+      return typeof value === 'string' && !isEmptyValue(value) ? value : '';
+    };
     const open = ref(false);
-    const currentColor = ref(props.modelValue || '#409eff');
-    const alpha = ref(parseColor(props.modelValue || '#409eff').alpha * 100);
+    const currentColor = ref(modelColor() || '#409eff');
+    const alpha = ref(parseColor(modelColor() || '#409eff').alpha * 100);
     const trigger = ref<HTMLButtonElement>();
     const panel = ref<HTMLElement>();
     const position = useFloating({
@@ -159,11 +173,11 @@ export default defineComponent({
       close: () => close()
     });
     const reset = () => {
-      currentColor.value = props.modelValue || '#409eff';
+      currentColor.value = modelColor() || '#409eff';
       alpha.value = parseColor(currentColor.value).alpha * 100;
     };
     watch(
-      () => props.modelValue,
+      modelColor,
       () => {
         reset();
       }
@@ -175,9 +189,10 @@ export default defineComponent({
     };
     const commit = (value: string | null) => {
       if (isDisabled()) return;
-      const formatted = value === null ? null : formatColor(value, props.colorFormat, alpha.value / 100, props.showAlpha);
+      const formatted = value === null ? getValueOnClear(null) : formatColor(value, props.colorFormat, alpha.value / 100, props.showAlpha);
       emit('update:modelValue', formatted);
       emit('change', formatted);
+      if (value === null) emit('clear');
       if (props.validateEvent) nextTick(() => field?.validate('change'));
       close();
     };
@@ -217,7 +232,7 @@ export default defineComponent({
           aria-haspopup='dialog'
           aria-invalid={field?.invalid() || undefined}
           aria-describedby={field?.invalid() ? field.errorId : undefined}
-          style={{ backgroundColor: open.value ? currentColor.value : props.modelValue || undefined }}
+          style={{ backgroundColor: open.value ? currentColor.value : modelColor() || undefined }}
           onClick={() => open.value ? close() : show()}
         >
           {slots.default?.()}
