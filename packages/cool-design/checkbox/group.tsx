@@ -20,6 +20,8 @@ export interface CheckboxGroupContext {
   modelValue: CheckboxValue[];
   disabled: boolean;
   size?: 'small' | 'default' | 'large';
+  fill?: string;
+  textColor?: string;
   min?: number;
   max?: number;
   update: (value: CheckboxValue, checked: boolean) => void;
@@ -29,6 +31,8 @@ export default defineComponent({
   name: 'i-checkbox-group',
   props: {
     modelValue: { type: Array as unknown as PropType<CheckboxValue[]>, default: () => [] },
+    fill: String,
+    textColor: String,
     min: Number,
     max: Number,
     disabled: Boolean,
@@ -56,6 +60,8 @@ export default defineComponent({
       get size() {
         return props.size;
       },
+      get fill() { return props.fill; },
+      get textColor() { return props.textColor; },
       get min() {
         return props.min;
       },

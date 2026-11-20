@@ -12,6 +12,7 @@
 | -------------------- | -------------------------- | ------------------------- | ------ |
 | modelValue / v-model | 是否勾选或绑定 true-value / false-value | `string` / `number` / `boolean` | — |
 | label                | 选项文本                   | `string`                  | —      |
+| trueLabel / falseLabel | 旧版选中与未选中值 | `string` / `number` / `boolean` | — |
 | trueValue            | 选中时的模型值             | `string` / `number` / `boolean` | `true` |
 | falseValue           | 未选中时的模型值           | `string` / `number` / `boolean` | `false` |
 | checked              | 初始是否选中               | `boolean`                 | `false` |
@@ -44,6 +45,7 @@
 | 参数                 | 说明                       | 类型                                      | 默认值 |
 | -------------------- | -------------------------- | ----------------------------------------- | ------ |
 | modelValue / v-model | 已选值数组                 | `(string \| number \| boolean \| object)[]` | `[]` |
+| fill / textColor | 选中 CheckboxButton 的背景与文字颜色 | `string` | — |
 | min                  | 最少可选数量               | `number`                                  | —      |
 | max                  | 最多可选数量               | `number`                                  | —      |
 | disabled             | 是否禁用全部子项，继承 Form 禁用状态           | `boolean`                                 | `false` |
@@ -88,3 +90,7 @@
 ## 使用说明
 
 单个 Checkbox 的 v-model 默认使用 boolean，也支持通过 trueValue / falseValue 映射模型值。默认插槽为空时显示 label。indeterminate 只影响视觉状态。支持键盘空格切换。
+
+在组内，`value` 优先于旧的 `label` 值写法。单独使用时，`true-label` 与 `false-label` 接受 `string | number | boolean`。配置 `true-value` 或 `false-value` 后，切换时优先提交对应的新值。旧 `true-label` 仍可读取为选中状态。
+
+CheckboxGroup 的 `fill` 与 `text-color` 接受 CSS 颜色字符串，用于已选中的 CheckboxButton。

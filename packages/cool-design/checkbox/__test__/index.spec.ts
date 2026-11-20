@@ -181,3 +181,24 @@ test('CheckboxGroup 未设置尺寸时保留更近的 FormItem 尺寸', () => {
   expect(wrapper.getComponent(Checkbox).classes()).toContain('is-large');
   wrapper.unmount();
 });
+
+test('supports legacy labels and prefers explicit checked values', async () => {
+  const wrapper = mount(Checkbox, { props: { modelValue: 2, trueLabel: 2, trueValue: 3, falseLabel: 0 } });
+  expect(wrapper.get('input').element.checked).toBe(true);
+  await wrapper.get('input').setValue(false);
+  expect(wrapper.emitted('update:modelValue')).toEqual([[0]]);
+});
+
+test('uses legacy label only when group value is omitted', async () => {
+  const wrapper = mount(CheckboxGroup, {
+    props: { modelValue: [7] },
+    slots: { default: () => [
+      h(Checkbox, { label: 7 }),
+      h(Checkbox, { value: false, label: 7 })
+    ] }
+  });
+  const inputs = wrapper.findAll('input');
+  expect(inputs.map((input) => input.element.checked)).toEqual([true, false]);
+  await inputs[1].setValue(true);
+  expect(wrapper.emitted('update:modelValue')).toEqual([[[7, false]]]);
+});
