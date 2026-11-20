@@ -30,7 +30,7 @@
 | clearable | 是否可清空 | `boolean` | `false` |
 | disabled | 是否禁用 | `boolean` | `false` |
 | placeholder | 占位文本 | `string` | `请选择` |
-| size | 尺寸：`small` / `default` / `large` | `string` | 继承 ConfigProvider |
+| size | 尺寸：`small` / `default` / `large` | `string` | 继承 FormItem、Form 或 ConfigProvider |
 | filterable | 是否可搜索过滤 | `boolean` | `false` |
 | filterMethod | 自定义过滤方法 | `(query: string, option: CascaderOption, path: CascaderOption[]) => boolean` | — |
 | beforeFilter | 过滤前置钩子，返回 `false` 或被拒绝的 Promise 时停止过滤 | `(query: string) => boolean \| Promise<boolean>` | — |

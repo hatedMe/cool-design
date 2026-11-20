@@ -2,13 +2,15 @@ import {
   Teleport,
   computed,
   defineComponent,
+  inject,
   nextTick,
   onBeforeUnmount,
   ref,
+  watch,
   type PropType
 } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
-import { useField } from '../form/context';
+import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useFloating } from '../../../src/utils/use-floating';
 import { createNamespace } from '../../../src/utils/create';
@@ -64,6 +66,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'expand-change', 'visible-change', 'remove-tag', 'clear', 'focus', 'blur'],
   setup(props, { attrs, emit, expose, slots }) {
     const field = useField();
+    const form = inject(formKey, undefined);
     const config = useConfig();
     const { getValueOnClear, isEmptyValue } = useEmptyValues({
       emptyValues: computed(() => props.emptyValues),
@@ -78,7 +81,7 @@ export default defineComponent({
     const activeValues = ref<CascaderNodeValue[]>([]);
     const panelId = `i-cascader-panel-${Math.random().toString(36).slice(2)}`;
 
-    const isDisabled = () => props.disabled || field?.disabled?.();
+    const isDisabled = () => props.disabled || (field?.disabled?.() ?? form?.disabled?.());
 
     // 节点建树、勾选级联、半选计算与展开列：与独立面板共享同一实现。
     const nodes = useCascaderNodes({
@@ -183,7 +186,7 @@ export default defineComponent({
     });
 
     const setOpen = (value: boolean) => {
-      if (isDisabled() || open.value === value) return;
+      if (open.value === value || (value && isDisabled())) return;
       open.value = value;
       if (value) {
         const node = selectedNodes.value[0];
@@ -194,6 +197,8 @@ export default defineComponent({
       }
       emit('visible-change', value);
     };
+
+    watch(isDisabled, (disabled) => { if (disabled) setOpen(false); });
 
     const update = (value: unknown) => {
       emit('update:modelValue', value);
@@ -377,7 +382,7 @@ export default defineComponent({
           ref={root}
           class={[
             bem(),
-            `i-control--${props.size || config.value.size}`,
+            `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`,
             { 'is-disabled': isDisabled(), 'is-open': open.value }
           ]}>
           <div

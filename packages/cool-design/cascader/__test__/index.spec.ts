@@ -493,3 +493,29 @@ test('Cascader 按路径内容识别空值', () => {
   expect(wrapper.find('.i-cascader__clear').exists()).toBe(false);
   wrapper.unmount();
 });
+
+test('Cascader 直接继承 Form 的尺寸与禁用', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, size: 'small', disabled: true },
+    slots: { default: () => h(Cascader, { options }) }
+  });
+  const control = wrapper.getComponent(Cascader);
+  expect(control.classes()).toContain('i-control--small');
+  const combobox = control.get('[role="combobox"]');
+  await combobox.trigger('click');
+  expect(control.emitted('visible-change')).toBeUndefined();
+  wrapper.unmount();
+});
+
+test('Cascader 打开后禁用表单会关闭面板', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, disabled: false },
+    slots: { default: () => h(Cascader, { options, teleported: false }) }
+  });
+  const control = wrapper.getComponent(Cascader);
+  await control.get('[role="combobox"]').trigger('click');
+  expect(control.emitted('visible-change')).toEqual([[true]]);
+  await wrapper.setProps({ disabled: true });
+  expect(control.emitted('visible-change')).toEqual([[true], [false]]);
+  wrapper.unmount();
+});
