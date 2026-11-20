@@ -316,3 +316,32 @@ describe('Slider', () => {
     expect(lower.model.value[1]).toBe(20);
   });
 });
+
+test('Slider 直挂禁用 Form 时继承尺寸并拦截方向键', async () => {
+  const wrapper = mount(CoolDesign.Form, {
+    props: { model: {}, size: 'small', disabled: true },
+    slots: { default: () => h(Slider, { modelValue: 10 }) }
+  });
+  const slider = wrapper.getComponent(Slider);
+  await slider.get('[role="slider"]').trigger('keydown', { key: 'ArrowRight' });
+  expect(slider.emitted('update:modelValue')).toBeUndefined();
+  expect(slider.classes()).toContain('i-slider--small');
+  wrapper.unmount();
+});
+
+test('Slider 禁用 Form 后拦截在途拖拽提交', async () => {
+  const wrapper = mount(CoolDesign.Form, {
+    props: { model: {} },
+    slots: { default: () => h(Slider, { modelValue: 10 }) }
+  });
+  const slider = wrapper.getComponent(Slider);
+  const handle = slider.get('[role="slider"]');
+  const track = slider.get('.i-slider__track');
+  await handle.trigger('pointerdown', { pointerId: 1 });
+  await wrapper.setProps({ disabled: true });
+  await track.trigger('pointermove', { pointerId: 1, clientX: 70 });
+  await track.trigger('pointerup', { pointerId: 1 });
+  expect(slider.emitted('update:modelValue')).toBeUndefined();
+  expect(slider.emitted('change')).toBeUndefined();
+  wrapper.unmount();
+});

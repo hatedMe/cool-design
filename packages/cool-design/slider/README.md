@@ -42,7 +42,7 @@
 | range-start-label     | 区间起点无障碍名称                                           | `string`                               | —            |
 | range-end-label      | 区间终点无障碍名称                                           | `string`                               | —            |
 | marks                | 刻度标记                                                     | `Record<number, string \| { style?: CSSProperties; label?: string }>` | — |
-| size                 | 尺寸：`large` / `default` / `small`                          | `string`                               | 继承全局尺寸 |
+| size                 | 尺寸：`large` / `default` / `small`                          | `string`                               | 继承 FormItem、Form 或 ConfigProvider |
 | debounce             | 输入更新节流（毫秒），`0` 为即时                             | `number`                               | `300`        |
 | validate-event       | 值变化时触发表单校验                                         | `boolean`                              | `true`       |
 | ariaLabel           | 无障碍名称（兼容属性，推荐标准 `aria-label`）               | `string`                               | —            |

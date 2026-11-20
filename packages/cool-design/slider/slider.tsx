@@ -1,5 +1,5 @@
-import { computed, defineComponent, nextTick, onBeforeUnmount, type CSSProperties, type PropType, ref } from 'vue';
-import { useField } from '../form/context';
+import { computed, defineComponent, inject, nextTick, onBeforeUnmount, type CSSProperties, type PropType, ref } from 'vue';
+import { formKey, useField } from '../form/context';
 import { useConfig } from '../config-provider/context';
 import InputNumber from '../input-number/input-number';
 
@@ -71,9 +71,10 @@ export default defineComponent({
     const activeHandle = ref(0);
     const focusedHandle = ref<number | null>(null);
     const field = useField();
+    const form = inject(formKey, undefined);
     const config = useConfig();
-    const isDisabled = computed(() => props.disabled || !!field?.disabled?.());
-    const resolvedSize = computed(() => props.size ?? field?.size?.() ?? config.value.size);
+    const isDisabled = computed(() => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.()));
+    const resolvedSize = computed(() => props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size);
     const bounds = computed(() => {
       const min = Number.isFinite(props.min) ? props.min : 0;
       const max = Number.isFinite(props.max) && props.max > min ? props.max : min + 100;
@@ -141,8 +142,9 @@ export default defineComponent({
       update(bounds.value.min + ratio * (bounds.value.max - bounds.value.min), activeHandle.value, false);
     };
     const stopDragging = () => {
-      if (dragging) commitValue(output(values.value));
+      const shouldCommit = dragging && !isDisabled.value;
       dragging = false;
+      if (shouldCommit) commitValue(output(values.value));
     };
     const startDragging = (event: PointerEvent, handle: number) => {
       if (isDisabled.value) return;
