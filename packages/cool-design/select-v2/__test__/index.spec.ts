@@ -3,6 +3,7 @@ import { defineComponent, h, ref } from 'vue';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import SelectV2 from '..';
 import ConfigProvider from '../../config-provider';
+import Form from '../../form';
 import type { SelectV2Option } from '../types';
 
 // 下拉面板默认传送到 document.body，测试中用文档级查询访问传送内容。
@@ -191,4 +192,19 @@ describe('test `SelectV2` component', () => {
     await wrapper.get('[role="combobox"]').trigger('keydown', { key: 'ArrowDown' });
     expect((dropdown.element as HTMLElement).scrollTop).toBeGreaterThan(0);
   });
+});
+
+test('SelectV2 直挂 Form 时继承尺寸并在禁用后关闭下拉', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, size: 'large' },
+    slots: { default: () => h(SelectV2, { options: manyOptions(3), teleported: false, persistent: true }) }
+  });
+  const select = wrapper.getComponent(SelectV2);
+  await select.get('[role="combobox"]').trigger('click');
+  await wrapper.setProps({ disabled: true });
+  expect(select.emitted('visible-change')).toEqual([[true], [false]]);
+  expect(select.classes()).toContain('i-control--large');
+  expect(select.get('input.i-select-v2__input').attributes('disabled')).toBeDefined();
+  expect(select.get('[role="combobox"]').attributes('aria-disabled')).toBe('true');
+  wrapper.unmount();
 });

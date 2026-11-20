@@ -116,3 +116,10 @@
   padding: 8px 12px;
   color: var(--i-text-secondary, #909399);
 }
+
+.i-select-v2.i-control--small .i-select-v2__control {
+  min-height: 28px;
+}
+.i-select-v2.i-control--large .i-select-v2__control {
+  min-height: 40px;
+}

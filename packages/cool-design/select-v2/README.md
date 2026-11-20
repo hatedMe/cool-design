@@ -37,7 +37,7 @@
 | `loading`       | 加载态                                     | `boolean`                              | `false`  |
 | `placeholder`   | 占位文本                                   | `string`                               | `请选择` |
 | `noDataText` / `noMatchText` | 空/无匹配文案                     | `string`                               | `暂无数据` / `无匹配数据` |
-| `size`          | 尺寸：`small` / `default` / `large`        | `string`                               | 继承全局尺寸 |
+| `size`          | 尺寸：`small` / `default` / `large`        | `string`                               | 继承 FormItem、Form 或 ConfigProvider |
 | `height`        | 面板高度（px）                             | `number`                               | `240`    |
 | `itemHeight`    | 选项行高（px，虚拟滚动依据）               | `number`                               | `34`     |
 | `automaticDropdown` | 聚焦即展开                               | `boolean`                              | `false`  |

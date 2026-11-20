@@ -1,7 +1,7 @@
-import { computed, defineComponent, nextTick, ref, watch, type CSSProperties, type PropType } from 'vue';
+import { computed, defineComponent, inject, nextTick, ref, watch, type CSSProperties, type PropType } from 'vue';
 import { Teleport } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
-import { useField } from '../form/context';
+import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 import type { SelectV2Option, SelectV2PropsMapping, SelectV2Value } from './types';
@@ -51,6 +51,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'focus', 'blur', 'clear', 'visible-change', 'remove-tag'],
   setup(props, { emit, slots, expose }) {
     const field = useField();
+    const form = inject(formKey, undefined);
     const config = useConfig();
     const { getValueOnClear, isEmptyValue } = useEmptyValues({
       emptyValues: computed(() => props.emptyValues),
@@ -85,7 +86,7 @@ export default defineComponent({
         ? (value as Record<string, unknown>)[props.valueKey]
         : value;
     const sameValue = (left: SelectV2Value, right: SelectV2Value) => keyOf(left) === keyOf(right);
-    const isDisabled = () => props.disabled || !!field?.disabled?.();
+    const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
 
     const optionLabel = (option: SelectV2Option) =>
       String(option[labelKey.value] ?? option[valueKey.value] ?? '');
@@ -160,7 +161,7 @@ export default defineComponent({
     });
 
     const setOpen = (value: boolean) => {
-      if (isDisabled() || open.value === value) return;
+      if (open.value === value || (value && isDisabled())) return;
       open.value = value;
       if (value) shownOnce.value = true;
       emit('visible-change', value);
@@ -183,6 +184,8 @@ export default defineComponent({
         });
       }
     };
+
+    watch(isDisabled, (disabled) => { if (disabled) setOpen(false); });
 
     const syncScrollToHighlighted = () => {
       const view = dropdown.value;
@@ -273,11 +276,12 @@ export default defineComponent({
           ref={root}
           class={[
             'i-select-v2',
-            `i-control--${props.size ?? field?.size?.() ?? config.value.size}`,
+            `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`,
             { 'is-open': open.value, 'is-disabled': isDisabled() }
           ]}>
           <div
             role='combobox'
+            aria-disabled={isDisabled() || undefined}
             tabindex={isDisabled() ? -1 : 0}
             aria-expanded={open.value}
             aria-haspopup='listbox'
@@ -327,8 +331,10 @@ export default defineComponent({
               value={query.value}
               placeholder={selectedOptions.value.length ? '' : props.placeholder}
               readonly={!props.filterable}
+              disabled={isDisabled()}
               aria-label='筛选选项'
               onInput={(event: Event) => {
+                if (isDisabled()) return;
                 query.value = (event.target as HTMLInputElement).value;
                 highlighted.value = 0;
                 scrollTop.value = 0;
@@ -338,6 +344,7 @@ export default defineComponent({
               <button
                 type='button'
                 aria-label='清空'
+                disabled={isDisabled()}
                 onClick={(event: MouseEvent) => {
                   event.stopPropagation();
                   clear();
