@@ -3,8 +3,30 @@ import { camelize, defineComponent, h, ref, type ComponentPublicInstance } from 
 import Component from './table';
 import { resolveColumns } from './declarative-columns';
 
-export const Table = withInstall(
-  defineComponent({
+import type { TableSortOrder } from './types';
+
+export interface TableInstance {
+  clearSelection(): void;
+  getSelectionRows(): object[];
+  getHalfSelectionRows(): object[];
+  toggleRowSelection(row: object, checked?: boolean): void;
+  toggleAllSelection(): void;
+  toggleRowExpansion(row: object, expanded?: boolean): void;
+  setCurrentRow(row?: object | null): void;
+  clearSort(): void;
+  sort(prop: string, order: TableSortOrder): void;
+  doLayout(): void;
+  scrollTo(options?: { top?: number; left?: number }): void;
+  setScrollTop(top: number): void;
+  setScrollLeft(left: number): void;
+  updateKeyChildren(key: string | number, children: object[]): void;
+  setColumnVisibility(key: string, visible: boolean): void;
+  moveColumn(fromKey: string, toIndex: number): void;
+  getColumnOrder(): string[];
+  clearFilter(keys?: string[]): void;
+}
+
+const TableComponent = defineComponent({
     name: 'i-table',
     inheritAttrs: false,
     props: Component.props,
@@ -43,8 +65,8 @@ export const Table = withInstall(
         );
       };
     }
-  })
-);
+  });
+export const Table = withInstall<typeof TableComponent, TableInstance>(TableComponent);
 export default Table;
 export type {
   TableCellClassName,

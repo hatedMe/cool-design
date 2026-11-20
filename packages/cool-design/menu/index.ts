@@ -5,7 +5,13 @@ import Item from './menu-item';
 import SubMenuComp from './sub-menu';
 import ItemGroup from './menu-item-group';
 
-export const Menu = withInstall(Component);
+export interface MenuInstance {
+  open(index: string): void;
+  close(index: string): void;
+  updateActiveIndex(index?: string): void;
+  handleResize(): void;
+}
+export const Menu = withInstall<typeof Component, MenuInstance>(Component);
 export const MenuItem = withInstall(Item);
 export const SubMenu = withInstall(SubMenuComp);
 export const MenuItemGroup = withInstall(ItemGroup);

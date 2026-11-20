@@ -1,3 +1,4 @@
+import type { TreeV2Exposed } from './types';
 import { withInstall } from '../../../src/utils/with-install';
 import Component from './tree-v2';
 import './index.scss';
@@ -10,5 +11,6 @@ export type {
   TreeV2Node,
   TreeV2PropsMapping
 } from './types';
-export const TreeV2 = withInstall(Component);
+export type TreeV2Instance = TreeV2Exposed;
+export const TreeV2 = withInstall<typeof Component, TreeV2Instance>(Component);
 export default TreeV2;

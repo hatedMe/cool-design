@@ -1,3 +1,4 @@
+import type { CascaderOption } from '../cascader/types';
 import { withInstall } from '../../../src/utils/with-install';
 import Component from './cascader-panel';
 import './index.scss';
@@ -9,5 +10,8 @@ export type {
   CascaderOption,
   CascaderPropsMapping
 } from '../cascader/types';
-export const CascaderPanel = withInstall(Component);
+export interface CascaderPanelInstance {
+  getCheckedNodes(leafOnly?: boolean): CascaderOption[];
+}
+export const CascaderPanel = withInstall<typeof Component, CascaderPanelInstance>(Component);
 export default CascaderPanel;
