@@ -763,7 +763,7 @@ export type { InputOtpInstance } from './input-otp';
 export type { InputTagInstance } from './input-tag';
 export type { SwitchInstance } from './switch';
 export type { MentionInstance } from './mention';
-export type { AutocompleteInstance } from './autocomplete';
+export type { AutocompleteFetchSuggestions, AutocompleteInstance, AutocompleteSuggestion } from './autocomplete';
 export type { ColorPickerInstance } from './color-picker';
 
 export type { SelectInstance } from './select';

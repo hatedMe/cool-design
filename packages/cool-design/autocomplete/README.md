@@ -14,9 +14,9 @@
 
 | 参数                 | 说明                                        | 类型                                                         | 默认值 |
 | -------------------- | ------------------------------------------- | ------------------------------------------------------------ | ------ |
-| `modelValue`         | 输入值                                      | `string`                                                     | `''`   |
+| `modelValue`         | 输入值                                      | `string \| number`                                                     | `''`   |
 | `suggestions`        | 静态建议列表                                | `(string \| AutocompleteSuggestion)[]`                       | `[]`   |
-| `fetchSuggestions`   | 远程获取建议，回调返回结果                  | `(query, cb: (items) => void) => void`                       | —      |
+| `fetchSuggestions`   | 建议数组，或通过回调、返回值提供建议                  | `AutocompleteFetchSuggestions`                       | —      |
 | `debounce`           | 远程建议防抖延迟，单位 ms，`0` 表示不防抖   | `number`                                                     | `300`  |
 | `placeholder`        | 占位文本                                    | `string`                                                     | —      |
 | `disabled`           | 是否禁用                                    | `boolean`                                                    | `false` |
@@ -32,7 +32,19 @@
 | `suffixIcon`         | 输入框后置图标                              | `string \| Component`                                        | —      |
 | `validateEvent`      | 值变化时触发表单校验                        | `boolean`                                                    | `true`  |
 
-`AutocompleteSuggestion`：`{ value: string; [key: string]: unknown }`。
+| `valueKey` | 用于显示和选择建议的字段 | `string` | `'value'` |
+| `ariaLabel` | 原生输入框的无障碍标签 | `string` | — |
+| `teleported` | 是否将面板挂载到外部容器 | `boolean` | `true` |
+| `appendTo` | 面板挂载容器 | `string \| HTMLElement` | `document.body` |
+| `placement` | 面板位置 | `Placement` | `'bottom-start'` |
+| `fitInputWidth` | 将面板宽度匹配输入控制区域 | `boolean` | `false` |
+| `showArrow` | 显示面板箭头 | `boolean` | `true` |
+| `popperClass` | 面板自定义类 | `string \| string[] \| Record<string, boolean>` | — |
+| `popperStyle` | 面板自定义样式 | `string \| CSSProperties \| CSSProperties[]` | — |
+| `popperOptions` | 共享浮层的定位配置，支持 `placement` 和 `offset` | `FloatingOptions` | — |
+| `loopNavigation` | 键盘高亮跨首尾循环 | `boolean` | `true` |
+
+建议对象允许自定义字段。例如设置 `value-key="label"`，可直接用 `{ label: '北京' }` 作为建议项。本地 `suggestions` 会按该字段过滤，`fetchSuggestions` 提供的结果直接用于展示。
 
 ### 事件
 
@@ -55,6 +67,9 @@
 | `append`  | 输入框外部后置内容               |
 | `prefix`  | 输入框内前置内容                 |
 | `suffix`  | 输入框内后置内容                 |
+| `header` | 建议面板顶部内容 |
+| `footer` | 建议面板底部内容 |
+| `loading` | 远程查询加载内容 |
 
 ### 实例方法
 
@@ -63,4 +78,11 @@
 | `focus()`                | 聚焦输入框               |
 | `blur()`                 | 取消聚焦                 |
 | `select()`               | 选中输入框文本           |
-| `handleSelect(item)`     | 以编程方式选中建议项     |
+| `handleSelect(item)`     | 以编程方式选中建议项，返回 `Promise<void>` |
+| `handleKeyEnter()` | 确认当前高亮项，返回 `Promise<void>` |
+| `getData(query)` | 立即请求建议，返回 `Promise<void>` |
+| `highlight(index)` | 更新键盘高亮 |
+| `close()` | 关闭面板并取消待处理的建议请求 |
+| `inputRef` | 内部 `InputInstance` |
+| `popperRef` | 内部 `TooltipInstance` |
+| `activated` / `loading` / `highlightedIndex` / `suggestions` | 激活状态、加载状态、高亮索引和当前建议 |

@@ -12,18 +12,19 @@
   padding: 0 10px;
   background: #fff;
 }
+.i-tooltip.i-autocomplete__popper {
+  max-width: calc(100vw - 16px);
+  overflow: visible;
+  padding: 0;
+}
 .i-autocomplete__list {
-  position: absolute;
-  z-index: 10;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin: 4px 0;
+  box-sizing: border-box;
+  max-width: calc(100vw - 18px);
+  max-height: 280px;
+  overflow: auto;
+  margin: 0;
   padding: 4px 0;
-  border: 1px solid #ebeef5;
-  background: #fff;
   list-style: none;
-  box-shadow: 0 4px 12px #0001;
 }
 .i-autocomplete__list li {
   padding: 6px 10px;

@@ -38,7 +38,7 @@ export default defineComponent({
     visible: { type: Boolean as PropType<boolean | null>, default: null },
     teleported: { type: Boolean, default: true },
     appendTo: { type: [String, Object] as PropType<AppendTo>, default: undefined },
-    popperClass: { type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>, default: undefined },
+    popperClass: { type: [String, Array, Object] as PropType<string | Array<string | Record<string, boolean> | string[] | undefined> | Record<string, boolean>>, default: undefined },
     popperStyle: { type: [String, Array, Object] as PropType<string | CSSProperties | CSSProperties[]>, default: undefined },
     zIndex: { type: Number, default: undefined },
     virtualTriggering: Boolean,

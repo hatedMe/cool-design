@@ -8,20 +8,20 @@ import FormItem from '../../form-item';
 describe('test `Autocomplete` component', () => {
   test('输入过滤建议并点击选中', async () => {
     const wrapper = mount(Autocomplete, {
-      props: { suggestions: ['Apple', 'Banana', 'Cherry'] }
+      props: { teleported: false, suggestions: ['Apple', 'Banana', 'Cherry'] }
     });
     const input = wrapper.get('input');
     await input.trigger('focus');
     await input.setValue('a');
-    expect(wrapper.findAll('li').map((item) => item.text())).toEqual(['Apple', 'Banana']);
-    await wrapper.findAll('li')[0].trigger('mousedown');
+    expect(wrapper.findAll('[role="option"]').map((item) => item.text())).toEqual(['Apple', 'Banana']);
+    await wrapper.findAll('[role="option"]')[0].trigger('click');
     expect(wrapper.emitted('select')![0][0]).toEqual({ value: 'Apple' });
     expect(wrapper.emitted('update:modelValue')!.at(-1)![0]).toBe('Apple');
   });
 
   test('键盘上下移动高亮，Enter 选中', async () => {
     const wrapper = mount(Autocomplete, {
-      props: { modelValue: 'a', suggestions: ['Apple', 'Banana'] }
+      props: { teleported: false, modelValue: 'a', suggestions: ['Apple', 'Banana'] }
     });
     const input = wrapper.get('input');
     await input.trigger('focus');
@@ -32,7 +32,7 @@ describe('test `Autocomplete` component', () => {
 
   test('highlightFirstItem 默认高亮首项，selectWhenUnmatched 支持回车自定义', async () => {
     const wrapper = mount(Autocomplete, {
-      props: { suggestions: ['Apple'], highlightFirstItem: true, selectWhenUnmatched: true, modelValue: '' }
+      props: { teleported: false, suggestions: ['Apple'], highlightFirstItem: true, selectWhenUnmatched: true, modelValue: '' }
     });
     const input = wrapper.get('input');
     await input.trigger('focus');
@@ -48,7 +48,7 @@ describe('test `Autocomplete` component', () => {
   test('fetchSuggestions 显示加载态，hideLoading 可关闭', async () => {
     const fetchSuggestions = vi.fn((_query: string, cb: (items: { value: string }[]) => void) => cb([]));
     const wrapper = mount(Autocomplete, {
-      props: { fetchSuggestions }
+      props: { teleported: false, fetchSuggestions }
     });
     await wrapper.get('input').trigger('focus');
     await flushPromises();
@@ -56,13 +56,13 @@ describe('test `Autocomplete` component', () => {
     expect(wrapper.find('.i-autocomplete__loading').exists()).toBe(false);
 
     const pending = mount(Autocomplete, {
-      props: { fetchSuggestions: vi.fn(() => undefined) }
+      props: { teleported: false, fetchSuggestions: vi.fn(() => undefined) }
     });
     await pending.get('input').trigger('focus');
     expect(pending.find('.i-autocomplete__loading').exists()).toBe(true);
 
     const hidden = mount(Autocomplete, {
-      props: { fetchSuggestions: vi.fn(() => undefined), hideLoading: true }
+      props: { teleported: false, fetchSuggestions: vi.fn(() => undefined), hideLoading: true }
     });
     await hidden.get('input').trigger('focus');
     expect(hidden.find('.i-autocomplete__loading').exists()).toBe(false);
@@ -71,7 +71,7 @@ describe('test `Autocomplete` component', () => {
   test('debounce 防抖远程请求，连续输入只发起最后一次', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const fetchSuggestions = vi.fn((q: string, cb: (items: { value: string }[]) => void) => cb([{ value: q }]));
-    const wrapper = mount(Autocomplete, { props: { fetchSuggestions, debounce: 200 } });
+    const wrapper = mount(Autocomplete, {  props: { teleported: false, fetchSuggestions, debounce: 200 } });
     const input = wrapper.get('input');
     await input.trigger('focus');
     // 聚焦触发的请求不走防抖。
@@ -87,14 +87,14 @@ describe('test `Autocomplete` component', () => {
     expect(fetchSuggestions).toHaveBeenCalledTimes(2);
     expect(fetchSuggestions).toHaveBeenLastCalledWith('ab', expect.any(Function));
     await flushPromises();
-    expect(wrapper.findAll('li').map((li) => li.text())).toEqual(['ab']);
+    expect(wrapper.findAll('[role="option"]').map((li) => li.text())).toEqual(['ab']);
     vi.useRealTimers();
   });
 
   test('过期响应被丢弃，仅采纳最后一次请求的结果', async () => {
     const callbacks: ((items: { value: string }[]) => void)[] = [];
     const wrapper = mount(Autocomplete, {
-      props: {
+      props: { teleported: false,
         debounce: 0,
         fetchSuggestions: (_q: string, cb: (items: { value: string }[]) => void) => {
           callbacks.push(cb);
@@ -108,12 +108,12 @@ describe('test `Autocomplete` component', () => {
     callbacks[2]([{ value: 'ab-result' }]);
     callbacks[0]([{ value: 'stale-result' }]);
     await flushPromises();
-    expect(wrapper.findAll('li').map((li) => li.text())).toEqual(['ab-result']);
+    expect(wrapper.findAll('[role="option"]').map((li) => li.text())).toEqual(['ab-result']);
   });
 
   test('暴露 focus、blur、select、handleSelect', async () => {
     const wrapper = mount(Autocomplete, {
-      props: { suggestions: ['Apple'] },
+      props: { teleported: false, suggestions: ['Apple'] },
       attachTo: document.body
     });
     const api = wrapper.vm as unknown as {
@@ -135,7 +135,7 @@ describe('test `Autocomplete` component', () => {
   test('接入表单校验，blur 触发校验并可关闭', async () => {
     const model = reactive({ name: '' });
     const wrapper = mount(Form, {
-      props: { model, rules: { name: [{ required: true, message: '名称必填' }] } },
+      props: { teleported: false, model, rules: { name: [{ required: true, message: '名称必填' }] } },
       slots: {
         default: () =>
           h(
@@ -163,14 +163,14 @@ describe('test `Autocomplete` component', () => {
 test('Autocomplete 禁用 Form 后不接受已显示的建议', async () => {
   const wrapper = mount(Form, {
     props: { model: {}, size: 'large' },
-    slots: { default: () => h(Autocomplete, { suggestions: ['苹果'] }) }
+    slots: { default: () => h(Autocomplete, { suggestions: ['苹果'], teleported: false }) }
   });
   const control = wrapper.getComponent(Autocomplete);
   await control.get('input').trigger('focus');
   const previousUpdates = control.emitted('update:modelValue')?.slice();
-  const suggestion = control.get('li');
+  const suggestion = control.get('[role="option"]');
   await wrapper.setProps({ disabled: true });
-  suggestion.element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+  suggestion.element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   suggestion.element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   expect(control.emitted('update:modelValue')).toEqual(previousUpdates);
   expect(control.get('input').attributes('disabled')).toBeDefined();
@@ -182,7 +182,7 @@ test('Autocomplete 禁用 Form 后丢弃未完成的建议请求', async () => {
   let finish!: (items: Array<{ value: string }>) => void;
   const wrapper = mount(Form, {
     props: { model: {} },
-    slots: { default: () => h(Autocomplete, { fetchSuggestions: (_query, complete) => { finish = complete; } }) }
+    slots: { default: () => h(Autocomplete, { teleported: false, fetchSuggestions: (_query, complete) => { finish = complete; } }) }
   });
   const control = wrapper.getComponent(Autocomplete);
   await control.get('input').trigger('focus');
@@ -193,4 +193,25 @@ test('Autocomplete 禁用 Form 后丢弃未完成的建议请求', async () => {
   await wrapper.setProps({ disabled: false });
   expect(control.find('.i-autocomplete__list').exists()).toBe(false);
   wrapper.unmount();
+});
+
+test('Autocomplete 在新请求防抖期间忽略已过时的响应', async () => {
+  vi.useFakeTimers();
+  const callbacks = new Map<string, (items: Array<{ value: string }>) => void>();
+  const wrapper = mount(Autocomplete, {
+    props: { teleported: false, debounce: 20, triggerOnFocus: false, fetchSuggestions: (query, complete) => { callbacks.set(query, complete); } }
+  });
+  try {
+    const input = wrapper.get('input');
+    await input.trigger('focus');
+    await input.setValue('旧');
+    await vi.advanceTimersByTimeAsync(20);
+    await input.setValue('新');
+    callbacks.get('旧')?.([{ value: '过时请求' }]);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.text()).not.toContain('过时请求');
+  } finally {
+    wrapper.unmount();
+    vi.useRealTimers();
+  }
 });

@@ -165,7 +165,7 @@ export function useFloating(options: {
     if (isTopOverlay(token) && !contains(event.target as Node)) options.close();
   };
   const keydown = (event: KeyboardEvent) => {
-    if (event.key === 'Escape' && isTopOverlay(token)) {
+    if (event.key === 'Escape' && !event.isComposing && isTopOverlay(token)) {
       event.preventDefault();
       event.stopImmediatePropagation();
       options.close();
