@@ -46,7 +46,7 @@ const value = ref(1);
 | `controls-position` | 控制按钮位置：`default` / `right` | `string` | `default` |
 | `disabled` | 是否禁用 | `boolean` | `false` |
 | `readonly` | 是否只读 | `boolean` | `false` |
-| `size` | 尺寸：`large` / `default` / `small` | `string` | `default` |
+| `size` | 尺寸：`large` / `default` / `small` | `string` | 继承 FormItem、Form 或 ConfigProvider |
 | `placeholder` | 输入框占位文本 | `string` | — |
 | `formatter` | 格式化展示值 | `(value) => string` | — |
 | `parser` | 将展示文本解析为数值 | `(value) => number \| null` | — |

@@ -1,6 +1,6 @@
-import { computed, defineComponent, nextTick, ref, type PropType } from 'vue';
+import { computed, defineComponent, inject, nextTick, ref, type PropType } from 'vue';
 import { createNamespace } from '../../../src/utils/create';
-import { useField } from '../form/context';
+import { formKey, useField } from '../form/context';
 import { useConfig } from '../config-provider/context';
 import './index.scss';
 
@@ -51,6 +51,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'focus', 'blur'],
   setup(props, { attrs, emit, expose, slots }) {
     const field = useField();
+    const form = inject(formKey, undefined);
     const config = useConfig();
     const input = ref<HTMLInputElement>();
     const editing = ref(false);
@@ -71,7 +72,7 @@ export default defineComponent({
       return props.min + Math.round((value - props.min) / props.step) * props.step;
     };
     const normalize = (value: number) => round(clamp(alignStep(value)), precision.value);
-    const isDisabled = () => props.disabled || !!field?.disabled?.();
+    const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
     const emitValue = (value: number | null) => {
       emit('update:modelValue', value);
       // 提交值未变化时不触发 change，避免 blur/按钮重复通知。
@@ -108,11 +109,13 @@ export default defineComponent({
     };
     const handleBlur = (event: FocusEvent) => {
       editing.value = false;
-      const value = parse(draft.value);
-      if (value === null) {
-        if (draft.value.trim() === '') clearValue();
-      } else {
-        emitValue(normalize(value));
+      if (!isDisabled() && !props.readonly) {
+        const value = parse(draft.value);
+        if (value === null) {
+          if (draft.value.trim() === '') clearValue();
+        } else {
+          emitValue(normalize(value));
+        }
       }
       emit('blur', event);
     };
@@ -161,7 +164,7 @@ export default defineComponent({
         />
       );
       return (
-        <div class={[bem({ disabled }), `i-control--${props.size ?? field?.size?.() ?? config.value.size}`, props.controlsPosition === 'right' && 'is-controls-right']}>
+        <div class={[bem({ disabled }), `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`, props.controlsPosition === 'right' && 'is-controls-right']}>
           {slots.prefix?.()}
           {props.controls && props.controlsPosition !== 'right' && (
             <button type='button' class={buttonClass('decrease')} aria-label='减少' disabled={disabled || currentValue.value! <= props.min} onClick={() => updateBy(-props.step)}>

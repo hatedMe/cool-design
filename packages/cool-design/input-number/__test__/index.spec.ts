@@ -105,3 +105,33 @@ describe('InputNumber', () => {
     expect(number.emitted('change')).toHaveLength(2);
   });
 });
+
+test('InputNumber 直挂 Form 时继承尺寸和禁用', async () => {
+  const wrapper = mount(CoolDesign.Form, {
+    props: { model: {}, size: 'large', disabled: true },
+    slots: { default: () => h(InputNumber, { modelValue: 2 }) }
+  });
+  const control = wrapper.getComponent(InputNumber);
+  control.get('button[aria-label="增加"]').element.dispatchEvent(new MouseEvent('click'));
+  expect(control.emitted('update:modelValue')).toBeUndefined();
+  expect(control.classes()).toContain('i-control--large');
+  expect(control.get('input').attributes('disabled')).toBeDefined();
+  wrapper.unmount();
+});
+
+test('InputNumber 禁用后不提交失焦草稿', async () => {
+  const wrapper = mount(CoolDesign.Form, {
+    props: { model: {} },
+    slots: { default: () => h(InputNumber, { modelValue: 2 }) }
+  });
+  const control = wrapper.getComponent(InputNumber);
+  const input = control.get('input');
+  await input.trigger('focus');
+  input.element.value = '5';
+  input.element.dispatchEvent(new Event('input'));
+  await wrapper.setProps({ disabled: true });
+  input.element.dispatchEvent(new FocusEvent('blur'));
+  expect(control.emitted('update:modelValue')).toEqual([[5]]);
+  expect(control.emitted('change')).toBeUndefined();
+  wrapper.unmount();
+});
