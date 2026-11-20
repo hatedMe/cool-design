@@ -712,6 +712,9 @@ export const pages: Page[] = [
   component('autocomplete', 'Autocomplete 自动补全', '表单组件', [
     ['basic', '建议项补全', '根据输入内容展示静态建议项。']
   ]),
+  component('color-picker-panel', 'ColorPickerPanel 颜色面板', '表单组件', [
+    ['basic', '独立颜色面板', '预览并立即更新当前颜色。']
+  ]),
   component('color-picker', 'ColorPicker 颜色选择器', '表单组件', [
     ['basic', '选择颜色', '选择颜色并使用预定义色板。']
   ]),
@@ -879,7 +882,7 @@ const componentNavigation: { title: string; ids: string[] }[] = [
   {
     title: '表单组件',
     ids: [
-      'autocomplete', 'cascader', 'checkbox', 'color-picker', 'date-picker', 'date-time-picker', 'form',
+      'autocomplete', 'cascader', 'checkbox', 'color-picker', 'color-picker-panel', 'date-picker', 'date-time-picker', 'form',
       'input', 'input-number', 'input-tag', 'input-otp', 'mention', 'radio', 'rate', 'select', 'select-v2',
       'slider', 'switch', 'time-picker', 'time-select', 'transfer', 'tree-select', 'upload'
     ]

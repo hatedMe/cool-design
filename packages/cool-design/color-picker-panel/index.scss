@@ -1,0 +1,39 @@
+.i-color-picker-editor {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: max-content 20px;
+  padding: 8px;
+}
+.i-color-picker-editor > :not(.i-color-picker-editor__plane, .i-color-picker-editor__hue) {
+  grid-column: 1 / -1;
+}
+.i-color-picker-editor__hue {
+  writing-mode: vertical-lr;
+  width: 20px;
+  height: 132px;
+  margin: 0;
+}
+.i-color-picker-editor.has-border { border: 1px solid var(--i-border, #dcdfe6); }
+.i-color-picker-editor__plane {
+  position: relative;
+  width: 220px;
+  height: 132px;
+  touch-action: none;
+  cursor: crosshair;
+  background-image: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent);
+}
+.i-color-picker-editor__plane span {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.i-color-picker-editor__presets button {
+  width: 20px;
+  height: 20px;
+  margin-right: 4px;
+  border: 1px solid var(--i-border, #dcdfe6);
+}

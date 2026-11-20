@@ -58,6 +58,7 @@ import { DatePicker, TimePicker, DateTimePicker, Calendar } from './date-picker'
 import TimeSelect from './time-select';
 import Autocomplete from './autocomplete';
 import ColorPicker from './color-picker';
+import ColorPickerPanel from './color-picker-panel';
 import Slider from './slider';
 import Transfer from './transfer';
 import TreeSelect from './tree-select';
@@ -184,6 +185,7 @@ export {
   Calendar,
   Autocomplete,
   ColorPicker,
+  ColorPickerPanel,
   Slider,
   Transfer,
   TreeSelect,
@@ -298,6 +300,7 @@ const components = [
   Calendar,
   Autocomplete,
   ColorPicker,
+  ColorPickerPanel,
   Slider,
   Transfer,
   TreeSelect,
@@ -482,6 +485,7 @@ export {
   Calendar as ElCalendar,
   Autocomplete as ElAutocomplete,
   ColorPicker as ElColorPicker,
+  ColorPickerPanel as ElColorPickerPanel,
   Slider as ElSlider,
   Transfer as ElTransfer,
   TreeSelect as ElTreeSelect,
@@ -602,6 +606,7 @@ declare module 'vue' {
     ElCalendar: typeof import('./index')['ElCalendar'];
     ElAutocomplete: typeof import('./index')['ElAutocomplete'];
     ElColorPicker: typeof import('./index')['ElColorPicker'];
+    ElColorPickerPanel: typeof import('./index')['ElColorPickerPanel'];
     ElSlider: typeof import('./index')['ElSlider'];
     ElTransfer: typeof import('./index')['ElTransfer'];
     ElTreeSelect: typeof import('./index')['ElTreeSelect'];
@@ -708,6 +713,7 @@ declare module 'vue' {
     ICalendar: typeof Calendar;
     IAutocomplete: typeof Autocomplete;
     IColorPicker: typeof ColorPicker;
+    IColorPickerPanel: typeof ColorPickerPanel;
     ISlider: typeof Slider;
     ITransfer: typeof Transfer;
     ITreeSelect: typeof TreeSelect;
@@ -816,3 +822,5 @@ export type { UploadInstance } from './upload';
 export type { TableInstance } from './table';
 
 export type { AutoResizerSize } from './auto-resizer';
+
+export type { ColorPickerPanelInstance } from './color-picker-panel';

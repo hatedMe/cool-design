@@ -107,6 +107,7 @@
   },
   "packageManager": "pnpm@10.33.0",
   "dependencies": {
+    "@ctrl/tinycolor": "4.2.2",
     "async-validator": "^4.2.5",
     "dayjs": "^1.11.23"
   }
