@@ -1,5 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils';
-import { h, reactive, ref } from 'vue';
+import { h, nextTick, reactive, ref } from 'vue';
 import { expect, test, vi } from 'vitest';
 import Form from '../index';
 import type { FormInstance, FormItemInstance } from '../index';
@@ -247,6 +247,53 @@ test('复审：同路径字段迁移后保留字段可更新初值', async () =>
   form.setInitialValues({ name: '新初值', other: '其他' });
   form.resetFields('name');
   expect(model.name).toBe('新初值');
+});
+
+test('字面点号路径的初值与嵌套路径隔离', async () => {
+  const mounted = ref(true);
+  const model = reactive({ 'contact.email': '字面当前', contact: { email: '嵌套当前' } });
+  const wrapper = mount(Form, {
+    props: { model },
+    slots: {
+      default: () => [
+        mounted.value ? h(FormItem, { key: 'literal', prop: ['contact.email'] }) : null,
+        h(FormItem, { key: 'nested', prop: ['contact', 'email'] })
+      ]
+    }
+  });
+  const form = wrapper.vm as unknown as FormInstance;
+  form.setInitialValues({ 'contact.email': '字面初值', contact: { email: '嵌套初值' } });
+
+  form.resetFields([['contact.email']]);
+  expect(model).toEqual({ 'contact.email': '字面初值', contact: { email: '嵌套初值' } });
+
+  mounted.value = false;
+  await nextTick();
+  form.setInitialValues({ 'contact.email': '卸载后字面初值', contact: { email: '新嵌套初值' } });
+  form.resetFields([['contact.email']]);
+  expect(model).toEqual({ 'contact.email': '卸载后字面初值', contact: { email: '新嵌套初值' } });
+
+  mounted.value = true;
+  await nextTick();
+  model['contact.email'] = '编辑后字面值';
+  form.resetFields();
+  expect(model).toEqual({ 'contact.email': '卸载后字面初值', contact: { email: '新嵌套初值' } });
+});
+
+test('字面点号路径变化后字段使用新属性的初值', async () => {
+  const path = ref(['contact.email']);
+  const model = reactive({ 'contact.email': '字面值', contact: { email: '嵌套值' } });
+  const wrapper = mount(Form, {
+    props: { model },
+    slots: { default: () => h(FormItem, { prop: path.value }) }
+  });
+  const form = wrapper.vm as unknown as FormInstance;
+  path.value = ['contact', 'email'];
+  await nextTick();
+
+  model.contact.email = '编辑后嵌套值';
+  form.resetFields();
+  expect(model).toEqual({ 'contact.email': '字面值', contact: { email: '嵌套值' } });
 });
 
 test('复审：值变更取消旧校验状态并保留更新一轮的状态', async () => {

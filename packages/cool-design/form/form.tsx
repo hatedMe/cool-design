@@ -1,6 +1,6 @@
 import { defineComponent, nextTick, provide, watch, type PropType } from 'vue';
 import type { Size } from '../config-provider/context';
-import { cloneFormValue, formKey, getFieldPathParts, getFieldValue, normalizeFieldPath, setFieldValue, type Field } from './context';
+import { cloneFormValue, formKey, getFieldPathIdentity, getFieldPathParts, getFieldValue, normalizeFieldPath, setFieldValue, type Field } from './context';
 import type { ValidateError, ValidateFieldsError } from 'async-validator';
 import type { FormFieldPaths, FormInstance, FormItemProp, FormRule, FormValidateCallback } from './types';
 export default defineComponent({
@@ -34,26 +34,26 @@ export default defineComponent({
       },
       { flush: 'sync', deep: true }
     );
-    const fields = new Map<Field, string>();
+    const fields = new Map<Field, { identity: string; parts: string[] }>();
     let registrationVersion = 0;
-    const initialValues = new Map<string, unknown>();
-    const getKeys = (paths?: FormFieldPaths) =>
-      (Array.isArray(paths) ? paths : paths ? [paths] : []).map(normalizeFieldPath);
+    const initialValues = new Map<string, { parts: string[]; value: unknown }>();
+    const toPathList = (paths?: FormFieldPaths) => Array.isArray(paths) ? paths : paths ? [paths] : [];
+    const identifyPath = (path: FormItemProp) => getFieldPathIdentity(getFieldPathParts(path));
     const selectFields = (paths?: FormFieldPaths) => {
-      const keys = getKeys(paths);
-      return [...fields].filter(([, key]) => !keys.length || keys.includes(key));
+      const keys = toPathList(paths).map(normalizeFieldPath);
+      return [...fields].filter(([, { parts }]) => !keys.length || keys.includes(parts.join('.')));
     };
     const getField = (path: FormItemProp) => {
       const key = normalizeFieldPath(path);
-      return [...fields].find(([, registeredPath]) => registeredPath === key)?.[0];
+      return [...fields].find(([, { parts }]) => parts.join('.') === key)?.[0];
     };
     const resetFields = (paths?: FormFieldPaths) => {
-      const keys = getKeys(paths);
+      const identities = toPathList(paths).map(identifyPath);
       for (const [field] of selectFields(paths)) field.resetField();
-      const active = new Set(fields.values());
-      for (const [key, value] of initialValues) {
-        if (!active.has(key) && (!keys.length || keys.includes(key))) {
-          setFieldValue(props.model, getFieldPathParts(key), cloneFormValue(value));
+      const active = new Set([...fields.values()].map(({ identity }) => identity));
+      for (const [identity, { parts, value }] of initialValues) {
+        if (!active.has(identity) && (!identities.length || identities.includes(identity))) {
+          setFieldValue(props.model, parts, cloneFormValue(value));
         }
       }
     };
@@ -67,22 +67,26 @@ export default defineComponent({
     provide(formKey, {
       model: () => props.model!,
       rules: () => props.rules,
-      register: (key, field) => {
+      register: (parts, field) => {
+        const identity = getFieldPathIdentity(parts);
         const previous = fields.get(field);
-        if (previous === key) return;
-        if (previous !== undefined) {
-          initialValues.delete(previous);
-          initialValues.delete(key);
+        if (previous?.identity === identity) return;
+        if (previous) {
+          initialValues.delete(previous.identity);
+          initialValues.delete(identity);
         }
-        if (initialValues.has(key)) field.setInitialValue(initialValues.get(key));
-        else initialValues.set(key, cloneFormValue(field.getInitialValue()));
-        fields.set(field, key);
+        const registeredParts = [...parts];
+        const initial = initialValues.get(identity);
+        if (initial) field.setInitialValue(initial.value);
+        else initialValues.set(identity, { parts: registeredParts, value: cloneFormValue(field.getInitialValue()) });
+        fields.set(field, { identity, parts: registeredParts });
         registrationVersion++;
       },
       unregister: (field) => {
-        const key = fields.get(field);
-        if (key === undefined) return;
-        initialValues.set(key, cloneFormValue(field.getInitialValue()));
+        const registration = fields.get(field);
+        if (!registration) return;
+        const { identity, parts } = registration;
+        initialValues.set(identity, { parts, value: cloneFormValue(field.getInitialValue()) });
         fields.delete(field);
         registrationVersion++;
       },
@@ -116,7 +120,7 @@ export default defineComponent({
         const errors = new Map<string, ValidateError[]>();
         results.forEach((result, index) => {
           if (!Array.isArray(result)) return;
-          const key = registered[index][1];
+          const key = registered[index][1].parts.join('.');
           errors.set(key, [...(errors.get(key) ?? []), ...result]);
         });
         invalidFields = Object.fromEntries(errors);
@@ -147,17 +151,17 @@ export default defineComponent({
         const directPath = Array.isArray(paths) && paths.length && paths.every((part) => typeof part === 'string')
           ? getField(paths.join('.'))
           : undefined;
-        const field = directPath ?? getKeys(paths).map(getField).find(Boolean);
+        const field = directPath ?? toPathList(paths).map(getField).find(Boolean);
         field?.scrollTo?.();
       },
       getField,
       setInitialValues(model) {
-        for (const key of initialValues.keys()) {
-          initialValues.set(key, cloneFormValue(getFieldValue(model, getFieldPathParts(key))));
+        for (const initial of initialValues.values()) {
+          initial.value = cloneFormValue(getFieldValue(model, initial.parts));
         }
-        for (const [field, key] of fields) {
-          const value = getFieldValue(model, getFieldPathParts(key));
-          initialValues.set(key, cloneFormValue(value));
+        for (const [field, { identity, parts }] of fields) {
+          const value = getFieldValue(model, parts);
+          initialValues.set(identity, { parts, value: cloneFormValue(value) });
           field.setInitialValue(value);
         }
       },

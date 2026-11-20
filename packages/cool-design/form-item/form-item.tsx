@@ -10,7 +10,7 @@ import {
   type PropType
 } from 'vue';
 import Schema, { type RuleItem, type ValidateError, type ValidateResult } from 'async-validator';
-import { formKey, fieldKey, getFieldPathParts, getFieldValue, nextFieldId, normalizeFieldPath, cloneFormValue, setFieldValue, type Field } from '../form/context';
+import { formKey, fieldKey, getFieldPathIdentity, getFieldPathParts, getFieldValue, nextFieldId, normalizeFieldPath, cloneFormValue, setFieldValue, type Field } from '../form/context';
 import type { FormItemProp, FormRule, FormValidateState } from '../form/types';
 
 function normalizeRule(rule: FormRule): RuleItem {
@@ -203,12 +203,12 @@ export default defineComponent({
       error: () => error.value
     };
     watch(
-      propKey,
-      (key, previousKey) => {
-        if (previousKey) clear();
-        if (key) {
+      () => getFieldPathIdentity(pathParts.value),
+      (_identity, previousIdentity) => {
+        if (previousIdentity) clear();
+        if (propKey.value) {
           field.setInitialValue(getValue());
-          form?.register(key, field);
+          form?.register(pathParts.value, field);
         } else {
           form?.unregister(field);
         }

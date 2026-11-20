@@ -11,6 +11,7 @@ export const getFieldPathParts = (path?: FormItemProp) =>
         .filter(Boolean);
 
 export const normalizeFieldPath = (path: FormItemProp) => getFieldPathParts(path).join('.');
+export const getFieldPathIdentity = (parts: string[]) => JSON.stringify(parts);
 export const getFieldValue = (model: unknown, path: string[]) =>
   path.reduce<unknown>(
     (value, part) => (value as Record<string, unknown> | undefined)?.[part],
@@ -83,7 +84,7 @@ export interface Field extends FormFieldContext {
 export interface FormContext {
   model: () => Record<string, unknown>;
   rules: () => Record<string, FormRule[]>;
-  register: (key: string, field: Field) => void;
+  register: (parts: string[], field: Field) => void;
   unregister: (field: Field) => void;
   disabled?: () => boolean;
   size?: () => 'small' | 'default' | 'large' | undefined;

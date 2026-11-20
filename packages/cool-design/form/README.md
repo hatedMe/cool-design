@@ -92,6 +92,8 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 
 `model` 为必填的响应式对象，`rules` 以字段路径作为键。`prop` 支持 `user.name`、`items[0].name` 和 `['items', '0', 'name']`。括号路径与数组路径在 `fields` 和错误映射中使用点分隔键，例如 `items.0.name`。
 
+模型属性名含点号时，可以用 `['contact.email']` 保留该名称，且其重置初值与 `['contact', 'email']` 分别保存。重置已卸载的字面点号字段时，可传入 `resetFields([['contact.email']])`。
+
 ```ts
 import type { FormRule } from 'cool-design';
 
