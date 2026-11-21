@@ -1,6 +1,6 @@
 import { withInstall } from '../../../src/utils/with-install';
 import { camelize, defineComponent, h, ref, type ComponentPublicInstance } from 'vue';
-import Component from './table';
+import Component, { tableProps } from './table';
 import { resolveColumns } from './declarative-columns';
 
 import type { TableSortOrder } from './types';
@@ -29,7 +29,7 @@ export interface TableInstance {
 const TableComponent = defineComponent({
     name: 'i-table',
     inheritAttrs: false,
-    props: Component.props,
+    props: tableProps,
     emits: Component.emits,
     setup(props, { attrs, slots, emit, expose }) {
       const table = ref<ComponentPublicInstance>();
@@ -79,10 +79,12 @@ export type {
   TableFilterItem,
   TableHeaderCellClassName,
   TableHeaderCellStyle,
+  TableHeaderRenderParams,
   TableHeaderRowClassName,
   TableHeaderRowStyle,
   TableLoadMethod,
   TableOverflowTooltipOptions,
+  TableRowExpandable,
   TableRowClassName,
   TableRowStyle,
   TableSize,

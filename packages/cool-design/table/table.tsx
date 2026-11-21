@@ -2,17 +2,23 @@ import Empty from '../empty';
 import Loading from '../loading';
 import {
   Fragment,
+  Teleport,
   computed,
   defineComponent,
+  inject,
   onBeforeUnmount,
   ref,
+  shallowRef,
+  toRaw,
   watch,
+  watchEffect,
   type CSSProperties,
   type PropType
 } from 'vue';
 import Checkbox from '../checkbox';
-import { useConfig } from '../config-provider/context';
+import { overlayKey, useConfig } from '../config-provider/context';
 import Tooltip from '../tooltip';
+import { useFloating } from '../../../src/utils/use-floating';
 import type {
   TableCellClassName,
   TableCellStyle,
@@ -24,6 +30,7 @@ import type {
   TableLoadMethod,
   TableOverflowTooltipOptions,
   TableRowClassName,
+  TableRowExpandable,
   TableRowStyle,
   TableSize,
   TableSortOrder,
@@ -33,6 +40,7 @@ import type {
   TableTreeProps
 } from './types';
 import { columnSlots } from './declarative-columns';
+import type { TableInstance } from './index';
 
 const SELECTION_KEY = '__i_selection__';
 const selectionColumn: TableColumn = { type: 'selection', key: SELECTION_KEY, width: 48 };
@@ -56,61 +64,65 @@ interface VisibleRow {
   level: number;
 }
 
+export const tableProps = {
+  data: { type: Array as PropType<object[]>, default: () => [] },
+  columns: { type: Array as PropType<TableColumn[]>, default: () => [] },
+  rowKey: { type: [String, Function] as PropType<string | ((row: object) => string | number)>, default: 'id' },
+  selection: Boolean,
+  loading: Boolean,
+  height: { type: [String, Number] as PropType<string | number>, default: undefined },
+  maxHeight: { type: [String, Number] as PropType<string | number>, default: undefined },
+  emptyText: { type: String, default: '没有符合条件的数据' },
+  stripe: Boolean,
+  border: Boolean,
+  showHeader: { type: Boolean, default: true },
+  size: { type: String as PropType<TableSize>, default: 'default' },
+  fit: { type: Boolean, default: true },
+  highlightCurrentRow: Boolean,
+  currentRowKey: { type: [String, Number] as PropType<string | number>, default: undefined },
+  tableLayout: { type: String as PropType<'fixed' | 'auto'>, default: 'fixed' },
+  showOverflowTooltip: { type: [Boolean, Object] as PropType<boolean | TableOverflowTooltipOptions>, default: undefined },
+  showSummary: Boolean,
+  sumText: { type: String, default: '合计' },
+  summaryMethod: { type: Function as PropType<TableSummaryMethod>, default: undefined },
+  spanMethod: { type: Function as PropType<TableSpanMethod>, default: undefined },
+  rowClassName: { type: [String, Function] as PropType<TableRowClassName>, default: undefined },
+  expandRowKeys: { type: Array as PropType<Array<string | number>>, default: undefined },
+  rowExpandable: Function as PropType<TableRowExpandable>,
+  reserveSelection: Boolean,
+  treeProps: { type: Object as PropType<TableTreeProps>, default: undefined },
+  lazy: Boolean,
+  load: { type: Function as PropType<TableLoadMethod>, default: undefined },
+  resizable: { type: Boolean, default: true },
+  allowDragLastColumn: Boolean,
+  tooltipFormatter: { type: Function as PropType<TableTooltipFormatter>, default: undefined },
+  rowStyle: { type: [Object, Function] as PropType<TableRowStyle>, default: undefined },
+  cellClassName: { type: [String, Function] as PropType<TableCellClassName>, default: undefined },
+  cellStyle: { type: [Object, Function] as PropType<TableCellStyle>, default: undefined },
+  headerRowClassName: { type: [String, Function] as PropType<TableHeaderRowClassName>, default: undefined },
+  headerRowStyle: { type: [Object, Function] as PropType<TableHeaderRowStyle>, default: undefined },
+  headerCellClassName: { type: [String, Function] as PropType<TableHeaderCellClassName>, default: undefined },
+  headerCellStyle: { type: [Object, Function] as PropType<TableHeaderCellStyle>, default: undefined },
+  defaultExpandAll: Boolean,
+  defaultSort: {
+    type: Object as PropType<{ prop: string; order: 'ascending' | 'descending' } | null>,
+    default: undefined
+  },
+  indent: { type: Number, default: 16 },
+  selectOnIndeterminate: { type: Boolean, default: true },
+  scrollbarAlwaysOn: Boolean,
+  scrollbarTabindex: { type: Number, default: undefined },
+  flexible: Boolean,
+  nativeScrollbar: { type: Boolean, default: true },
+  preserveExpandedContent: Boolean,
+  tooltipEffect: String,
+  tooltipOptions: Object as PropType<TableOverflowTooltipOptions>,
+  appendFilterPanelTo: [String, Object] as PropType<string | HTMLElement>
+};
+
 export default defineComponent({
   name: 'i-table',
-  props: {
-    data: { type: Array as PropType<object[]>, default: () => [] },
-    columns: { type: Array as PropType<TableColumn[]>, default: () => [] },
-    rowKey: { type: [String, Function] as PropType<string | ((row: object) => string | number)>, default: 'id' },
-    selection: Boolean,
-    loading: Boolean,
-    height: { type: [String, Number] as PropType<string | number>, default: undefined },
-    maxHeight: { type: [String, Number] as PropType<string | number>, default: undefined },
-    emptyText: { type: String, default: '没有符合条件的数据' },
-    stripe: Boolean,
-    border: Boolean,
-    showHeader: { type: Boolean, default: true },
-    size: { type: String as PropType<TableSize>, default: 'default' },
-    fit: { type: Boolean, default: true },
-    highlightCurrentRow: Boolean,
-    currentRowKey: { type: [String, Number] as PropType<string | number>, default: undefined },
-    tableLayout: { type: String as PropType<'fixed' | 'auto'>, default: 'fixed' },
-    showOverflowTooltip: { type: [Boolean, Object] as PropType<boolean | TableOverflowTooltipOptions>, default: undefined },
-    showSummary: Boolean,
-    sumText: { type: String, default: '合计' },
-    summaryMethod: { type: Function as PropType<TableSummaryMethod>, default: undefined },
-    spanMethod: { type: Function as PropType<TableSpanMethod>, default: undefined },
-    rowClassName: { type: [String, Function] as PropType<TableRowClassName>, default: undefined },
-    expandRowKeys: { type: Array as PropType<Array<string | number>>, default: undefined },
-    reserveSelection: Boolean,
-    treeProps: { type: Object as PropType<TableTreeProps>, default: undefined },
-    lazy: Boolean,
-    load: { type: Function as PropType<TableLoadMethod>, default: undefined },
-    resizable: { type: Boolean, default: true },
-    allowDragLastColumn: Boolean,
-    tooltipFormatter: { type: Function as PropType<TableTooltipFormatter>, default: undefined },
-    rowStyle: { type: [Object, Function] as PropType<TableRowStyle>, default: undefined },
-    cellClassName: { type: [String, Function] as PropType<TableCellClassName>, default: undefined },
-    cellStyle: { type: [Object, Function] as PropType<TableCellStyle>, default: undefined },
-    headerRowClassName: { type: [String, Function] as PropType<TableHeaderRowClassName>, default: undefined },
-    headerRowStyle: { type: [Object, Function] as PropType<TableHeaderRowStyle>, default: undefined },
-    headerCellClassName: { type: [String, Function] as PropType<TableHeaderCellClassName>, default: undefined },
-    headerCellStyle: { type: [Object, Function] as PropType<TableHeaderCellStyle>, default: undefined },
-    defaultExpandAll: Boolean,
-    defaultSort: {
-      type: Object as PropType<{ prop: string; order: 'ascending' | 'descending' } | null>,
-      default: undefined
-    },
-    indent: { type: Number, default: 16 },
-    selectOnIndeterminate: { type: Boolean, default: true },
-    scrollbarAlwaysOn: Boolean,
-    scrollbarTabindex: { type: Number, default: undefined },
-    flexible: Boolean,
-    nativeScrollbar: { type: Boolean, default: true },
-    preserveExpandedContent: Boolean,
-    tooltipEffect: String,
-    tooltipOptions: Object as PropType<TableOverflowTooltipOptions>
-  },
+  props: tableProps,
   emits: [
     'select',
     'select-all',
@@ -138,11 +150,12 @@ export default defineComponent({
   ],
   setup(props, { emit, slots, expose }) {
     const config = useConfig();
+    const overlayHost = inject(overlayKey, undefined);
     const fieldOf = (column: TableColumn) => column.prop ?? column.property ?? column.key ?? '';
     const titleOf = (column: TableColumn) => column.label ?? column.title ?? '';
     const kindOf = (column: TableColumn) => column.type ?? 'default';
     const filterKeyOf = (column: TableColumn) => column.columnKey ?? fieldOf(column);
-    const fixedSide = (column: TableColumn) =>
+    const ownFixedSide = (column: TableColumn) =>
       column.fixed === true ? 'left' : column.fixed === 'left' || column.fixed === 'right' ? column.fixed : undefined;
     const toPx = (value: string | number | undefined) =>
       value === undefined ? undefined : typeof value === 'number' ? `${value}px` : value;
@@ -195,6 +208,19 @@ export default defineComponent({
       const byKey = new Map(props.columns.map((c) => [colKeyOf(c), c] as const));
       return topOrder.value.map((k) => byKey.get(k)).filter((c): c is TableColumn => c !== undefined);
     });
+    const fixedSides = computed(() => {
+      const sides = new Map<TableColumn, 'left' | 'right'>();
+      const walk = (columns: TableColumn[], inherited?: 'left' | 'right') => {
+        columns.forEach((column) => {
+          const side = inherited ?? ownFixedSide(column);
+          if (side) sides.set(column, side);
+          if (column.children?.length) walk(column.children, side);
+        });
+      };
+      walk(orderedTop.value);
+      return sides;
+    });
+    const fixedSide = (column: TableColumn) => fixedSides.value.get(column);
     const leafColumns = computed<TableColumn[]>(() => {
       const out: TableColumn[] = [];
       const walk = (cols: TableColumn[]) =>
@@ -308,11 +334,8 @@ export default defineComponent({
       const kind = kindOf(column);
       return kind === 'selection' ? 48 : kind === 'index' || kind === 'expand' ? 50 : undefined;
     };
-    const columnStyle = (column: TableColumn, index: number): CSSProperties => {
-      const width = widthOf(column);
-      const style: CSSProperties = { width: toPx(width), minWidth: toPx(column.minWidth ?? width) ?? '140px' };
-      const side = column === selectionColumn ? undefined : fixedSide(column);
-      if (!side) return style;
+    const stickyStyle = (side: 'left' | 'right' | undefined, index: number): CSSProperties => {
+      if (!side) return {};
       const cols = renderColumns.value;
       const stickyWidth = (c: TableColumn) => numWidth(widthOf(c)) ?? numWidth(c.minWidth) ?? 140;
       const offset =
@@ -321,10 +344,15 @@ export default defineComponent({
               .slice(0, index)
               .reduce((n, c) => n + (c === selectionColumn || fixedSide(c) === 'left' ? stickyWidth(c) : 0), 0)
           : cols.slice(index + 1).reduce((n, c) => n + (fixedSide(c) === 'right' ? stickyWidth(c) : 0), 0);
-      style.position = 'sticky';
-      style[side] = `${offset}px`;
-      style.zIndex = 1;
-      return style;
+      return { position: 'sticky', [side]: `${offset}px`, zIndex: 1 };
+    };
+    const columnStyle = (column: TableColumn, index: number): CSSProperties => {
+      const width = widthOf(column);
+      return {
+        width: toPx(width),
+        minWidth: toPx(column.minWidth ?? width) ?? '140px',
+        ...stickyStyle(fixedSide(column), index)
+      };
     };
 
     // 树形数据
@@ -492,9 +520,30 @@ export default defineComponent({
       return out;
     };
     const openFilter = ref<string | null>(null);
+    const filterAnchor = ref<HTMLElement>();
+    const filterPanel = ref<HTMLElement>();
+    const activeFilterColumn = computed(() =>
+      props.showHeader && openFilter.value !== null
+        ? visibleLeaves.value.find((column) => filterKeyOf(column) === openFilter.value && column.filters?.length)
+        : undefined
+    );
+    const filterPosition = useFloating({
+      open: computed(() => !!activeFilterColumn.value),
+      reference: filterAnchor,
+      floating: filterPanel,
+      placement: () => activeFilterColumn.value?.filterPlacement ?? 'bottom-start',
+      appendTo: () => props.appendFilterPanelTo,
+      offset: () => 0,
+      close: () => { openFilter.value = null; }
+    });
+    watch(activeFilterColumn, (column) => {
+      if (!column) openFilter.value = null;
+    });
+    watch([filterAnchor, () => props.appendFilterPanelTo], filterPosition.update, { flush: 'post' });
     const draftFilters = ref<unknown[]>([]);
-    const openFilterPanel = (column: TableColumn) => {
+    const openFilterPanel = (column: TableColumn, anchor: HTMLElement) => {
       const k = filterKeyOf(column);
+      filterAnchor.value = anchor;
       openFilter.value = openFilter.value === k ? null : k;
       draftFilters.value = [...(activeFilters.value[k] ?? [])];
     };
@@ -595,6 +644,7 @@ export default defineComponent({
         })
         .map((item) => item.row);
     });
+    const headerStore = { states: { columns: renderColumns, data: displayData } };
     const clearSort = () => {
       const state = sortState.value;
       if (!state) return;
@@ -607,30 +657,33 @@ export default defineComponent({
       applySort(column, fieldOf(column), order, false);
     };
 
-    // 展开行（与树形共用展开键）
+    // 展开列与树节点各自保存展开状态。
     const expandColumns = computed(() => visibleLeaves.value.filter((c) => kindOf(c) === 'expand'));
-    const expandedKeys = ref<Array<string | number>>([...(props.expandRowKeys ?? [])]);
+    const treeExpandedKeys = ref([...(props.expandRowKeys ?? [])]);
+    const detailKey = (row: object) => key(row) ?? toRaw(row);
+    const detailExpandedKeys = shallowRef<Array<ReturnType<typeof detailKey>>>([...(props.expandRowKeys ?? [])]);
     watch(
       () => props.expandRowKeys,
       (value) => {
-        expandedKeys.value = [...(value ?? [])];
+        treeExpandedKeys.value = [...(value ?? [])];
+        detailExpandedKeys.value = [...(value ?? [])];
       },
       { deep: true }
     );
-    const expandedRows = () => allNodes.value.filter((n) => expandedKeys.value.includes(n.key)).map((n) => n.row);
-    const setExpanded = (row: object, expanded: boolean) => {
-      const k = key(row);
-      const has = expandedKeys.value.includes(k);
-      if (has === expanded) return;
-      expandedKeys.value = expanded ? [...expandedKeys.value, k] : expandedKeys.value.filter((id) => id !== k);
-      emit('expand-change', row, expandedRows());
+    const setExpanded = <T,>(keys: { value: T[] }, k: T, expanded: boolean) => {
+      if (keys.value.includes(k) === expanded) return false;
+      keys.value = expanded ? [...keys.value, k] : keys.value.filter((id) => id !== k);
+      return true;
     };
-    const toggleRowExpansion = (row: object, expanded?: boolean) =>
-      setExpanded(row, expanded ?? !expandedKeys.value.includes(key(row)));
+    const setTreeExpanded = (row: object, expanded: boolean) => {
+      if (setExpanded(treeExpandedKeys, key(row), expanded)) {
+        emit('expand-change', row, allNodes.value.filter((n) => treeExpandedKeys.value.includes(n.key)).map((n) => n.row));
+      }
+    };
     const toggleTreeNode = (row: object) => {
       const k = key(row);
-      if (expandedKeys.value.includes(k)) {
-        setExpanded(row, false);
+      if (treeExpandedKeys.value.includes(k)) {
+        setTreeExpanded(row, false);
         return;
       }
       if (props.lazy && props.load && ownChildren(row) === undefined && !resolvedKeys.value.includes(k)) {
@@ -641,26 +694,25 @@ export default defineComponent({
           loadingKeys.value = loadingKeys.value.filter((id) => id !== k);
           if (!resolvedKeys.value.includes(k)) resolvedKeys.value = [...resolvedKeys.value, k];
           loadedChildren.value = { ...loadedChildren.value, [k]: children ?? [] };
-          if ((children ?? []).length) setExpanded(row, true);
+          if ((children ?? []).length) setTreeExpanded(row, true);
         });
         return;
       }
-      setExpanded(row, true);
+      setTreeExpanded(row, true);
     };
     const updateKeyChildren = (k: string | number, children: object[]) => {
       if (!resolvedKeys.value.includes(k)) resolvedKeys.value = [...resolvedKeys.value, k];
       loadedChildren.value = { ...loadedChildren.value, [k]: children ?? [] };
     };
-    const expandAll = () => {
-      const keys = allNodes.value.filter((n) => expandableOf(n.row)).map((n) => n.key);
-      expandedKeys.value = [...new Set([...expandedKeys.value, ...keys])];
-    };
-    if (props.defaultExpandAll) expandAll();
     watch(
-      () => props.data,
+      [() => props.data, () => props.defaultExpandAll],
       () => {
-        if (props.defaultExpandAll) expandAll();
-      }
+        if (props.defaultExpandAll && props.expandRowKeys === undefined) {
+          const keys = allNodes.value.filter((n) => expandableOf(n.row)).map((n) => n.key);
+          treeExpandedKeys.value = [...new Set([...treeExpandedKeys.value, ...keys])];
+        }
+      },
+      { immediate: true }
     );
     const visibleRows = computed<VisibleRow[]>(() => {
       const out: VisibleRow[] = [];
@@ -668,7 +720,7 @@ export default defineComponent({
         if (level > 100) return;
         rows.forEach((row) => {
           out.push({ row, index: out.length, level });
-          if (expandedKeys.value.includes(key(row))) {
+          if (treeExpandedKeys.value.includes(key(row))) {
             const children = childRowsOf(row);
             if (children.length) walk(children, level + 1);
           }
@@ -677,6 +729,63 @@ export default defineComponent({
       walk(displayData.value, 0);
       return out;
     });
+    const detailExpandable = computed(() => {
+      const rows = new Map<ReturnType<typeof detailKey>, object>();
+      if (expandColumns.value.length) {
+        visibleRows.value.forEach(({ row, index }) => {
+          if (props.rowExpandable?.(row, index) ?? true) rows.set(detailKey(row), row);
+        });
+      }
+      return rows;
+    });
+    const canExpandDetail = (row: object) => detailExpandable.value.has(detailKey(row));
+    const detailExpanded = (row: object) => canExpandDetail(row) && detailExpandedKeys.value.includes(detailKey(row));
+    watch(
+      [detailExpandable, () => props.defaultExpandAll && props.expandRowKeys === undefined],
+      ([eligible, expandAll], [previous, previouslyExpandAll]) => {
+        if (!expandAll) return;
+        const newKeys = Array.from(eligible.keys()).filter((k) => !previouslyExpandAll || !previous?.has(k));
+        if (newKeys.length) detailExpandedKeys.value = [...new Set([...detailExpandedKeys.value, ...newKeys])];
+      },
+      { immediate: true }
+    );
+    let appliedDetailIndices = new Map<ReturnType<typeof detailKey>, number>();
+    const syncExpandedDetails = () => {
+      if (!expandColumns.value.length || !detailExpandedKeys.value.length) {
+        appliedDetailIndices.clear();
+        return [];
+      }
+      const visibleIndices = new Map(visibleRows.value.map(({ row, index }) => [detailKey(row), index]));
+      const requestedKeys = new Set(detailExpandedKeys.value);
+      const nextIndices = new Map<ReturnType<typeof detailKey>, number>();
+      const rows: object[] = [];
+      allNodes.value.forEach(({ row }) => {
+        const id = detailKey(row);
+        if (!requestedKeys.has(id)) return;
+        const visibleIndex = visibleIndices.get(id);
+        const index = visibleIndex ?? appliedDetailIndices.get(id);
+        if (index === undefined) return;
+        const expandable = visibleIndex === undefined
+          ? props.rowExpandable?.(row, index) ?? true
+          : detailExpandable.value.has(id);
+        if (!expandable) return;
+        nextIndices.set(id, index);
+        rows.push(row);
+      });
+      appliedDetailIndices = nextIndices;
+      return rows;
+    };
+    watchEffect(syncExpandedDetails);
+    const toggleRowExpansion = (row: object, expanded?: boolean) => {
+      if (!expandColumns.value.length) {
+        setTreeExpanded(row, expanded ?? !treeExpandedKeys.value.includes(key(row)));
+        return;
+      }
+      const rowId = detailKey(row);
+      const current = detailExpandable.value.get(rowId);
+      if (!current || !setExpanded(detailExpandedKeys, rowId, expanded ?? !detailExpanded(current))) return;
+      emit('expand-change', current, syncExpandedDetails());
+    };
 
     // 选择动作（作用于可见行）
     const allSelected = computed(() => {
@@ -802,16 +911,37 @@ export default defineComponent({
       const columnOverflow = column.showOverflowTooltip;
       const providerOverflow = defaults?.showOverflowTooltip;
       if (!(columnOverflow ?? tableOverflow ?? providerOverflow)) return null;
-      return {
-        placement: 'top',
-        effect: defaults?.tooltipEffect ?? 'dark',
-        ...defaults?.tooltipOptions,
-        ...(typeof providerOverflow === 'object' ? providerOverflow : undefined),
-        ...props.tooltipOptions,
-        ...(props.tooltipEffect !== undefined ? { effect: props.tooltipEffect } : undefined),
-        ...(typeof tableOverflow === 'object' ? tableOverflow : undefined),
-        ...(typeof columnOverflow === 'object' ? columnOverflow : undefined)
+      const options: TableOverflowTooltipOptions = {
+        placement: 'top', offset: 0, hideAfter: 0, effect: defaults?.tooltipEffect ?? 'dark'
       };
+      const layers = [
+        defaults?.tooltipOptions,
+        providerOverflow,
+        props.tooltipEffect === undefined ? undefined : { effect: props.tooltipEffect },
+        props.tooltipOptions,
+        tableOverflow,
+        columnOverflow
+      ];
+      for (const layer of layers) {
+        if (typeof layer !== 'object') continue;
+        const { popperClass, popperStyle, ...other } = layer;
+        Object.assign(options, Object.fromEntries(Object.entries(other).filter(([, value]) => value !== undefined)));
+        if (popperClass !== undefined) {
+          const previous = options.popperClass;
+          options.popperClass = previous && typeof previous === 'object' && !Array.isArray(previous) &&
+            typeof popperClass === 'object' && !Array.isArray(popperClass)
+            ? { ...previous, ...popperClass }
+            : popperClass;
+        }
+        if (popperStyle !== undefined) {
+          const previous = options.popperStyle;
+          options.popperStyle = previous && typeof previous === 'object' && !Array.isArray(previous) &&
+            typeof popperStyle === 'object' && !Array.isArray(popperStyle)
+            ? { ...previous, ...popperStyle }
+            : popperStyle;
+        }
+      }
+      return options;
     };
     const tooltipTextOf = (column: TableColumn, row: object, cellValue: unknown, index: number, text: string) => {
       const formatter = column.tooltipFormatter ?? props.tooltipFormatter ?? config.value.table?.tooltipFormatter;
@@ -898,10 +1028,10 @@ export default defineComponent({
       if (!value) return {};
       return (typeof value === 'function' ? value({ rowIndex, column, columnIndex }) : value) ?? {};
     };
-    const firstLeafOf = (column: TableColumn): TableColumn => {
-      let current = column;
-      while (current.children?.length) current = current.children[0];
-      return current;
+    const edgeLeafOf = (column: TableColumn, side?: 'left' | 'right'): TableColumn => {
+      if (!column.children?.length) return column;
+      const children = column.children.filter((child) => countLeaves([child]) > 0);
+      return edgeLeafOf(children[side === 'right' ? children.length - 1 : 0], side);
     };
     const scrollEl = ref<HTMLDivElement | null>(null);
     const scrollStyle = computed<CSSProperties>(() =>
@@ -912,7 +1042,7 @@ export default defineComponent({
       emit('scroll', { scrollLeft: el.scrollLeft, scrollTop: el.scrollTop });
     };
 
-    expose({
+    const tableMethods: TableInstance = {
       clearSelection,
       getSelectionRows: selectedRows,
       getHalfSelectionRows,
@@ -945,9 +1075,17 @@ export default defineComponent({
       moveColumn,
       getColumnOrder,
       clearFilter
-    });
+    };
+    expose(tableMethods);
+    const headerInstance = { ...tableMethods, $props: props };
 
     const stop = (event: Event) => event.stopPropagation();
+
+    const renderHeadLabel = (column: TableColumn, index: number) => {
+      const scope = { column, $index: index };
+      return column.renderHeader?.({ ...scope, store: headerStore, _self: headerInstance }) ??
+        columnSlots.get(column)?.header?.(scope) ?? slots[`${fieldOf(column)}-header`]?.(scope) ?? titleOf(column);
+    };
 
     const renderLeafHead = (column: TableColumn, columnIndex: number) => {
       const kind = kindOf(column);
@@ -955,7 +1093,7 @@ export default defineComponent({
       const filterKey = filterKeyOf(column);
       const active =
         sortState.value !== null && sortState.value.prop === field && filterKeyOf(sortState.value.column) === filterKey;
-      const label = columnSlots.get(column)?.header?.({ column, $index: columnIndex }) ?? slots[`${field}-header`]?.({ column, $index: columnIndex }) ?? titleOf(column);
+      const label = kind === 'selection' ? undefined : renderHeadLabel(column, columnIndex);
       return (
         <>
           {kind === 'selection' ? (
@@ -969,10 +1107,13 @@ export default defineComponent({
           ) : (
             <>
               {kind === 'default' && column.sortable ? (
-                <button type='button' onClick={() => cycleSort(column)}>
-                  {label}{' '}
-                  <span aria-hidden='true'>{!active ? '↕' : sortState.value!.order === 'ascending' ? '↑' : '↓'}</span>
-                </button>
+                <>
+                  {column.renderHeader && label}
+                  <button type='button' aria-label={`排序${titleOf(column)}`} onClick={() => cycleSort(column)}>
+                    {!column.renderHeader && label}{' '}
+                    <span aria-hidden='true'>{!active ? '↕' : sortState.value!.order === 'ascending' ? '↑' : '↓'}</span>
+                  </button>
+                </>
               ) : (
                 label
               )}
@@ -988,7 +1129,7 @@ export default defineComponent({
                     aria-expanded={openFilter.value === filterKey}
                     onClick={(event: MouseEvent) => {
                       event.stopPropagation();
-                      openFilterPanel(column);
+                      openFilterPanel(column, event.currentTarget as HTMLElement);
                     }}>
                     {slots[`${field}-filter-icon`]?.({ column }) ?? column.filterIcon?.({ column }) ?? (
                       <svg width='12' height='12' viewBox='0 0 12 12' fill='currentColor' aria-hidden='true'>
@@ -996,21 +1137,19 @@ export default defineComponent({
                       </svg>
                     )}
                   </button>
-                  {openFilter.value === filterKey && (
-                    <>
+                  {activeFilterColumn.value === column && (
+                    <Teleport
+                      to={filterPosition.target.value}
+                      disabled={props.appendFilterPanelTo === undefined && !overlayHost?.value}>
                       <div
-                        class='i-table__filter-mask'
-                        onClick={(event: MouseEvent) => {
-                          event.stopPropagation();
-                          openFilter.value = null;
-                        }}
-                      />
-                      <div
+                        ref={filterPanel}
                         class={[
                           'i-table__filter-panel',
                           `is-${column.filterPlacement ?? 'bottom'}`,
                           column.filterClassName
                         ]}
+                        style={filterPosition.style.value}
+                        data-placement={filterPosition.placement.value}
                         role='dialog'
                         aria-label={`${titleOf(column)}筛选`}
                         onClick={stop}>
@@ -1056,7 +1195,7 @@ export default defineComponent({
                           </>
                         )}
                       </div>
-                    </>
+                    </Teleport>
                   )}
                 </>
               ) : null}
@@ -1091,6 +1230,13 @@ export default defineComponent({
             tabindex={props.scrollbarTabindex}
             onScroll={onScroll}>
             <table style={{ tableLayout: props.tableLayout }}>
+              {headerRows.value.length > 1 && props.tableLayout === 'fixed' && (
+                <colgroup>
+                  {renderColumns.value.map((column, index) => (
+                    <col key={index} style={{ width: toPx(widthOf(column) ?? column.minWidth ?? 140) }} />
+                  ))}
+                </colgroup>
+              )}
               {props.showHeader && (
                 <thead>
                   {headerRows.value.map((cells, r) => (
@@ -1118,15 +1264,19 @@ export default defineComponent({
                             colspan={cell.colspan > 1 ? cell.colspan : undefined}
                             class={[
                               cell.column.labelClassName,
-                              headerCellClassNameOf(r, cell.column, renderIndexOf(firstLeafOf(cell.column)))
+                              headerCellClassNameOf(r, cell.column, renderIndexOf(edgeLeafOf(cell.column)))
                             ]}
                             style={{
+                              ...stickyStyle(
+                                fixedSide(cell.column),
+                                renderIndexOf(edgeLeafOf(cell.column, fixedSide(cell.column)))
+                              ),
                               textAlign: cell.column.headerAlign || cell.column.align,
-                              ...headerCellStyleOf(r, cell.column, renderIndexOf(firstLeafOf(cell.column)))
+                              ...headerCellStyleOf(r, cell.column, renderIndexOf(edgeLeafOf(cell.column)))
                             }}
                             onClick={(event: MouseEvent) => emit('header-click', cell.column, event)}
                             onContextmenu={(event: MouseEvent) => emit('header-contextmenu', cell.column, event)}>
-                            {columnSlots.get(cell.column)?.header?.({ column: cell.column, $index: ci }) ?? titleOf(cell.column)}
+                            {renderHeadLabel(cell.column, ci + Number(r === 0 && hasPseudoSelection.value))}
                           </th>
                         ) : (
                           <th
@@ -1155,7 +1305,7 @@ export default defineComponent({
                             }
                             onClick={(event: MouseEvent) => emit('header-click', cell.column, event)}
                             onContextmenu={(event: MouseEvent) => emit('header-contextmenu', cell.column, event)}>
-                            {renderLeafHead(cell.column, renderIndexOf(cell.column))}
+                            {renderLeafHead(cell.column, ci + Number(r === 0 && hasPseudoSelection.value))}
                             {showResizeHandle(cell.column) && (
                               <span
                                 class='i-table__resize-handle'
@@ -1298,17 +1448,24 @@ export default defineComponent({
                               <button
                                 type='button'
                                 class='i-table__expand-toggle'
-                                aria-expanded={expandedKeys.value.includes(key(row))}
-                                aria-label={expandedKeys.value.includes(key(row)) ? '收起行' : '展开行'}
-                                onClick={() => toggleRowExpansion(row)}>
-                                <span
+                                disabled={!canExpandDetail(row)}
+                                aria-expanded={detailExpanded(row)}
+                                aria-label={detailExpanded(row) ? '收起行' : '展开行'}
+                                onClick={(event: MouseEvent) => {
+                                  stop(event);
+                                  toggleRowExpansion(row);
+                                }}>
+                                {columnSlots.get(column)?.expand?.({
+                                  expanded: detailExpanded(row),
+                                  expandable: canExpandDetail(row)
+                                }) ?? <span
                                   class={{
                                     'i-table__expand-icon': true,
-                                    'is-expanded': expandedKeys.value.includes(key(row))
+                                    'is-expanded': detailExpanded(row)
                                   }}
                                   aria-hidden='true'>
                                   ›
-                                </span>
+                                </span>}
                               </button>
                             ) : treeActive.value && column === treeColumn.value ? (
                               <>
@@ -1324,8 +1481,8 @@ export default defineComponent({
                                     type='button'
                                     class='i-table__expand-toggle'
                                     disabled={loadingKeys.value.includes(key(row))}
-                                    aria-expanded={expandedKeys.value.includes(key(row))}
-                                    aria-label={expandedKeys.value.includes(key(row)) ? '收起子行' : '展开子行'}
+                                    aria-expanded={treeExpandedKeys.value.includes(key(row))}
+                                    aria-label={treeExpandedKeys.value.includes(key(row)) ? '收起子行' : '展开子行'}
                                     onClick={(event: MouseEvent) => {
                                       event.stopPropagation();
                                       toggleTreeNode(row);
@@ -1336,7 +1493,7 @@ export default defineComponent({
                                       <span
                                         class={{
                                           'i-table__expand-icon': true,
-                                          'is-expanded': expandedKeys.value.includes(key(row))
+                                          'is-expanded': treeExpandedKeys.value.includes(key(row))
                                         }}
                                         aria-hidden='true'>
                                         ›
@@ -1355,10 +1512,10 @@ export default defineComponent({
                         );
                       })}
                     </tr>
-                    {(props.preserveExpandedContent || expandedKeys.value.includes(key(row))) &&
+                    {canExpandDetail(row) && (props.preserveExpandedContent || detailExpanded(row)) &&
                       expandColumns.value.map((column, i) => {
                         const field = fieldOf(column);
-                        const expanded = expandedKeys.value.includes(key(row));
+                        const expanded = detailExpanded(row);
                         return (
                           <tr
                             key={`${String(key(row))}__expand_${i}`}

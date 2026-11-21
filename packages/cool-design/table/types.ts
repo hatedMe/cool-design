@@ -1,9 +1,27 @@
-import type { VNode } from 'vue';
+import type { ComputedRef, ExtractPropTypes, VNode } from 'vue';
 import type Tooltip from '../tooltip/tooltip';
+import type { Placement } from '../../../src/utils/use-floating';
+import type { TableInstance } from './index';
+import type { tableProps } from './table';
 
 export type TableSize = 'large' | 'default' | 'small';
 export type TableColumnType = 'default' | 'selection' | 'index' | 'expand';
 export type TableSortOrder = 'ascending' | 'descending' | null;
+export type TableRowExpandable<T extends object = object> = {
+  canExpand(row: T, index: number): boolean;
+}['canExpand'];
+
+export interface TableHeaderRenderParams<T extends object = Record<string, unknown>> {
+  column: TableColumn<T>;
+  $index: number;
+  store: {
+    states: {
+      columns: ComputedRef<TableColumn[]>;
+      data: ComputedRef<object[]>;
+    };
+  };
+  _self: TableInstance & { readonly $props: Readonly<ExtractPropTypes<typeof tableProps>> };
+}
 
 export interface TableFilterItem {
   text: string;
@@ -34,9 +52,10 @@ export interface TableColumn<T extends object = Record<string, unknown>> {
   filterMultiple?: boolean;
   filterMethod?: (value: unknown, row: T, column: TableColumn<T>) => boolean;
   filteredValue?: unknown[];
-  filterPlacement?: 'top' | 'bottom' | 'left' | 'right';
+  filterPlacement?: Placement;
   filterClassName?: string;
   filterIcon?: (params: { column: TableColumn }) => unknown;
+  renderHeader?: (params: TableHeaderRenderParams<T>) => VNode;
   showOverflowTooltip?: boolean | TableOverflowTooltipOptions;
   className?: string;
   labelClassName?: string;

@@ -30,7 +30,9 @@ const data = [{ id: 1, name: '陈晨', department: '产品设计' }];
 </template>
 ```
 
-全局注册后可使用 `<i-table>` 和 `<i-table-column>`。列支持 `v-if`、`v-for` 和属性更新；分组列使用不带 `prop` 的外层 `TableColumn`。声明式列存在时优先于 `columns`；请直接声明列，不要用自定义组件包裹列。列属性与下文的列配置一致，默认作用域插槽提供 `{ row, column, $index }`，`header` 提供 `{ column, $index }`。
+全局注册后可使用 `<i-table>` 和 `<i-table-column>`。支持直接声明、`v-if`、`v-for` 和 Fragment。分组列使用不带字段及类型的外层 `TableColumn`，在无参默认插槽中直接声明子列。配置式分组使用 `children`。声明式列存在时优先于 `columns`。自定义包装组件内部的列属于该组件的渲染内容。无字段操作列可显式设置 `type="default"`，使默认插槽只在正文中接收 `{ row, column, $index }`。未设置类型时，编译后的模板插槽可能在分组检查中被无参调用。
+
+普通列及分组表头依次使用 `renderHeader`、`header` 插槽和 `label`。配置式列可使用 `{字段名}-header` 插槽。表头回调的 `$index` 从当前表头行的 0 开始计数。选择列保留全选控件。
 
 ## 基础用法
 
@@ -128,7 +130,7 @@ const columns = [
 </template>
 ```
 
-多选面板经确认生效，单选（`filterMultiple: false`）点击即生效；`filteredValue` 可受控初始值；`filter-change` 载荷以 `columnKey`（未设置时用字段名）为键。过滤后全选仅作用于可见行。
+多选面板经确认生效，单选（`filterMultiple: false`）点击即生效。`filteredValue` 可设置筛选值，`filter-change` 载荷以 `columnKey`（未设置时用字段名）为键。过滤后全选仅作用于可见行。使用 `append-filter-panel-to="#filter-host"` 或传入已挂载的 `HTMLElement`，可将面板挂到滚动容器外。
 
 ## 展开行、合计行与合并单元格
 
@@ -145,7 +147,7 @@ const columns = [
 </template>
 ```
 
-展开内容来自展开列的默认插槽；`toggleRowExpansion(row, expanded?)` 可编程式控制。默认合计行为首列显示 `sumText`、数字列求和、非数字列显示 `N/A`，可用 `summaryMethod({ columns, data })` 自定义。`spanMethod({ row, column, rowIndex, columnIndex })` 返回 `[rowspan, colspan]` 或 `{ rowspan, colspan }`，返回 `0` 隐藏对应单元格。
+展开内容来自展开列的默认插槽。`toggleRowExpansion(row, expanded?)` 可编程式控制。`row-expandable` 接收当前行和排序、筛选后的正文索引。返回 `false` 时禁用展开列按钮，并限制默认展开、`expand-row-keys` 和实例方法。默认合计行为首列显示 `sumText`、数字列求和、非数字列显示 `N/A`，可用 `summaryMethod({ columns, data })` 自定义。`spanMethod({ row, column, rowIndex, columnIndex })` 返回 `[rowspan, colspan]` 或 `{ rowspan, colspan }`，返回 `0` 隐藏对应单元格。
 
 ## 树形数据与懒加载
 
@@ -160,7 +162,7 @@ const columns = [
 </template>
 ```
 
-含子节点的行在首个普通列渲染缩进与展开开关；树形展开与行展开共用 `expandRowKeys` 并触发 `expand-change`。树形默认级联选择（`getHalfSelectionRows()` 返回半选行），`treeProps.checkStrictly` 可关闭级联。懒加载示例：
+含子节点的行在首个普通列渲染缩进与展开开关。`expandRowKeys` 可同步树节点与展开行，两个按钮分别更新各自状态并触发 `expand-change`。`rowExpandable` 仅约束展开列。树形默认级联选择（`getHalfSelectionRows()` 返回半选行），`treeProps.checkStrictly` 可关闭级联。懒加载示例：
 
 ```vue
 <template>
@@ -243,6 +245,8 @@ const columns = [
 | spanMethod              | 合并单元格，返回 `[rowspan, colspan]` 或 `{ rowspan, colspan }`               | `(params) => [number, number] \| { rowspan?, colspan? } \| void`       | —                    |
 | rowClassName            | 行类名，字符串或函数                                                          | `string \| (({ row, rowIndex }) => string)`                            | —                    |
 | expandRowKeys           | 受控展开行键值                                                                | `(string \| number)[]`                                                 | —                    |
+| rowExpandable | 展开列的行资格，索引来自当前正文行 | `(row, index) => boolean` | — |
+| appendFilterPanelTo | 筛选面板宿主的 CSS 选择器或元素 | `string` / `HTMLElement` | — |
 | reserveSelection        | 替换数据时保留选择，需稳定 `rowKey`                                           | `boolean`                                                              | `false`              |
 | treeProps               | 树形字段映射与级联配置                                                        | `{ children?: string; hasChildren?: string; checkStrictly?: boolean }` | —                    |
 | lazy                    | 是否懒加载子节点                                                              | `boolean`                                                              | `false`              |
@@ -356,7 +360,8 @@ const columns = [
 | filterMultiple      | 是否多选筛选                                                                        | `boolean`                                                   |
 | filterMethod        | 筛选判断                                                                            | `(value, row, column) => boolean`                           |
 | filteredValue       | 受控筛选项，变化时同步内部状态                                                      | `unknown[]`                                                 |
-| filterPlacement     | 筛选弹层位置                                                                        | `top` / `bottom` / `left` / `right`                         |
+| filterPlacement     | 筛选弹层位置，支持各方向的 `-start` 和 `-end` 对齐，默认 `bottom-start` | `Placement` |
+| renderHeader | 表头渲染函数，优先于表头插槽 | `(params: TableHeaderRenderParams) => VNode` |
 | filterClassName     | 筛选弹层类名                                                                        | `string`                                                    |
 | filterIcon          | 自定义筛选图标，可用 `{字段名}-filter-icon` 插槽代替                                | `(params: { column }) => VNode`                             |
 | showOverflowTooltip | 本列溢出提示，布尔或 Tooltip 选项对象，优先于表格级                                 | `boolean \| TableOverflowTooltipOptions` |
@@ -383,11 +388,11 @@ const columns = [
 
 - `width` / `minWidth` 支持数字或 CSS 宽度字符串；固定列请显式指定 `width`，非 px 字符串的固定偏移按 `minWidth` 数字或 `140` 估算。
 - `height` 与 `maxHeight` 同时设置时 `height` 优先。
-- 筛选面板为简化实现：多选经确认/重置生效，单选点击即生效；无 `filterMethod` 的列确认后仅发出事件不过滤。
+- 筛选面板默认使用 ConfigProvider 的浮层宿主，独立表格默认保留表头内挂载。多选经确认或重置生效，单选点击即生效。无 `filterMethod` 的列确认后仅发出事件。
 - 默认文本单元格实际溢出时显示 Tooltip。`tooltipFormatter` 可返回字符串或 Vue VNode。
-- `tooltipOptions` 和对象形式的 `showOverflowTooltip` 支持 `placement`、`offset`、`popperClass`、`effect`、`disabled`、`trigger`、`showAfter`、`hideAfter`、`enterable`、`showArrow`、`fallbackPlacements`、`teleported`、`appendTo`、`popperStyle`、`zIndex`。选项按 Provider、表格、列分层合并，靠近单元格的同名字段优先。设置 `showOverflowTooltip: false` 可关闭对应级别的提示。
+- `tooltipOptions` 和对象形式的 `showOverflowTooltip` 支持 `placement`、`offset`、`popperClass`、`effect`、`disabled`、`trigger`、`showAfter`、`hideAfter`、`enterable`、`showArrow`、`fallbackPlacements`、`teleported`、`appendTo`、`popperStyle`、`zIndex`。选项按 Provider、表格、列分层合并。每层中 `tooltipOptions.effect` 优先于 `tooltipEffect`，对象形式的 `showOverflowTooltip` 再覆盖该层选项。对象类型的 `popperClass` 和 `popperStyle` 按字段合并。设置 `showOverflowTooltip: false` 可关闭对应级别的提示。实际定位选项以 [Tooltip API](../tooltip/README.md) 为准。
 - `select` / `select-all` 仅用户点击触发；编程式选择方法只触发 `selection-change`。
-- 排序与筛选仅作用于根行；`rowKey` 在树形中必须全局唯一；树形展开与行展开共用 `expandRowKeys`。
+- 排序与筛选仅作用于根行，`rowKey` 在树形中必须全局唯一。
 - 拖拽列宽最小 `40px`，手柄支持鼠标拖拽与方向键调整，拖拽中禁选文本；隐藏列不参与筛选/排序/合计；`moveColumn` 移动顶层列或分组。
 - 溢出提示使用 Tooltip 组件悬浮层；编辑单元格默认文本输入，可用 `{字段名}-edit` 插槽或 `editor` 自定义，编辑值均为字符串，需监听 `update:data` 更新数据。
 - 不可选行禁用勾选并跳过树形级联；`flexible` 使表格宽度按内容收缩；`preserveExpandedContent` 保留收起的展开行内容。

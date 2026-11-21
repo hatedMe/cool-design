@@ -34,13 +34,14 @@ export function resolveColumns(nodes: VNode[], path = ''): TableColumn[] {
     }
     column.columnKey ??= column.prop ?? column.property ?? `$declarative${id}`;
     const slots = (node.children && !Array.isArray(node.children) ? node.children : {}) as Slots;
-    // 有字段或展开类型的默认插槽用于单元格；无字段列也可以声明分组。
-    if (!column.prop && !column.property && !column.type && slots.default) {
+    // 仅在无字段、无类型的列中读取直接子列或无参默认插槽。
+    if (!column.prop && !column.property && !column.type) {
       try {
-        const children = resolveColumns(slots.default({ row: {}, column, $index: -1 }), id);
+        const nodes = Array.isArray(node.children) ? node.children : slots.default?.length === 0 ? slots.default() : [];
+        const children = resolveColumns(nodes as VNode[], id);
         if (children.length) column.children = children;
       } catch {
-        // 无字段操作列的作用域插槽可能读取行数据，延迟至渲染单元格时执行。
+        // Vue 编译的插槽包装函数隐藏参数个数，作用域由正文渲染提供。
       }
     }
     columnSlots.set(column, slots);

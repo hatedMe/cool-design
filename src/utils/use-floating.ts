@@ -144,18 +144,28 @@ export function useFloating(options: {
     x = Math.max(gap, Math.min(x, width - p.width - gap));
     y = Math.max(gap, Math.min(y, height - p.height - gap));
     placement.value = actualPlacement;
+    const offsetParent = panel.offsetParent;
+    const parent = offsetParent instanceof HTMLElement && getComputedStyle(panel).position === 'fixed'
+      ? offsetParent
+      : undefined;
+    const origin = parent?.getBoundingClientRect();
+    // Convert the viewport coordinates to layout pixels at the fixed containing block's padding edge.
+    const scaleX = parent?.offsetWidth && origin?.width ? origin.width / parent.offsetWidth : 1;
+    const scaleY = parent?.offsetHeight && origin?.height ? origin.height / parent.offsetHeight : 1;
+    const left = parent && origin ? (x - origin.left) / scaleX - parent.clientLeft + parent.scrollLeft : x;
+    const top = parent && origin ? (y - origin.top) / scaleY - parent.clientTop + parent.scrollTop : y;
     style.value = {
       position: 'fixed',
-      left: `${x}px`,
-      top: `${y}px`,
+      left: `${left}px`,
+      top: `${top}px`,
       zIndex,
       visibility: 'visible'
     };
     const arrow = 8;
     arrowStyle.value =
       side === 'top' || side === 'bottom'
-        ? { left: `${Math.max(arrow, Math.min(a.left + a.width / 2 - x, p.width - arrow))}px` }
-        : { top: `${Math.max(arrow, Math.min(a.top + a.height / 2 - y, p.height - arrow))}px` };
+        ? { left: `${Math.max(arrow, Math.min((a.left + a.width / 2 - x) / scaleX, p.width / scaleX - arrow))}px` }
+        : { top: `${Math.max(arrow, Math.min((a.top + a.height / 2 - y) / scaleY, p.height / scaleY - arrow))}px` };
   };
   const contains = (value: Node | null) =>
     !!value &&

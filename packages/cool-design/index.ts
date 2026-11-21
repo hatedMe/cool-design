@@ -106,7 +106,7 @@ export { ClickOutside, InfiniteScroll, ElInfiniteScroll, LoadingDirective, VPopo
 export type { PopoverDirectiveValue } from './popover';
 import './style/index.scss';
 export type { FormRule, FormInstance, FormFieldContext, FormItemInstance, FormValidateCallback, FormValidateState, FormItemProp, FormFieldPaths } from './form';
-export type { SortChange } from './table';
+export type { SortChange, TableHeaderRenderParams, TableOverflowTooltipOptions, TableRowExpandable } from './table';
 export const TableColumn = TableColumnComponent;
 export type TableColumn<T extends object = Record<string, unknown>> = import('./table/types').TableColumn<T>;
 export type {

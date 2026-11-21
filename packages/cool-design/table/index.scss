@@ -190,16 +190,7 @@
 .i-table__filter-trigger.is-active {
   color: var(--i-primary);
 }
-.i-table__filter-mask {
-  position: fixed;
-  inset: 0;
-  z-index: 9;
-}
 .i-table__filter-panel {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  z-index: 10;
   min-width: 140px;
   padding: 8px 12px;
   background: var(--i-bg);
@@ -207,19 +198,6 @@
   border-radius: var(--i-radius);
   box-shadow: var(--i-shadow);
   font-weight: 400;
-}
-.i-table__filter-panel.is-top {
-  top: auto;
-  bottom: 100%;
-}
-.i-table__filter-panel.is-left {
-  top: 0;
-  right: 100%;
-}
-.i-table__filter-panel.is-right {
-  top: 0;
-  right: auto;
-  left: 100%;
 }
 .i-table__filter-panel .i-checkbox {
   display: flex;

@@ -26,6 +26,7 @@ const columnProps = {
   filterPlacement: String as PropType<TableColumn['filterPlacement']>,
   filterClassName: String,
   filterIcon: Function as PropType<TableColumn['filterIcon']>,
+  renderHeader: Function as PropType<TableColumn['renderHeader']>,
   showOverflowTooltip: [Boolean, Object] as PropType<TableColumn['showOverflowTooltip']>,
   className: String,
   labelClassName: String,
