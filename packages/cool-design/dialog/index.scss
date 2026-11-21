@@ -1,0 +1,116 @@
+.i-dialog__mask {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgb(10 22 40 / 48%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+.i-dialog__wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+.i-dialog__wrapper.is-penetrable {
+  pointer-events: none;
+}
+.i-dialog__wrapper.is-penetrable > .i-dialog {
+  pointer-events: auto;
+}
+.dialog-fade-enter-active,
+.dialog-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.dialog-fade-enter-from,
+.dialog-fade-leave-to {
+  opacity: 0;
+}
+.i-dialog__mask.is-top,
+.i-dialog__wrapper.is-top {
+  align-items: flex-start;
+}
+.i-dialog__mask.is-fullscreen,
+.i-dialog__wrapper.is-fullscreen {
+  padding: 0;
+}
+.i-dialog {
+  position: relative;
+  width: 480px;
+  max-width: 100%;
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  border: 1px solid var(--i-border);
+  border-radius: 10px;
+  background: var(--i-bg);
+  color: var(--i-text);
+  box-shadow: var(--i-shadow);
+}
+.i-dialog.is-fullscreen {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border-radius: 0;
+}
+.i-dialog--center .i-dialog__header,
+.i-dialog--center .i-dialog__footer {
+  justify-content: center;
+  text-align: center;
+}
+.i-dialog__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--i-border);
+}
+.i-dialog__header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.i-dialog__close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: 0;
+  color: var(--i-text-secondary);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+.i-dialog__close:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.i-dialog__body {
+  padding: 24px;
+}
+.i-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--i-border);
+}
+
+.i-dialog__mask.is-align-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.i-dialog__mask.is-align-center .i-dialog {
+  margin: 0 auto;
+}
+.i-dialog__header.is-draggable {
+  cursor: move;
+  user-select: none;
+}

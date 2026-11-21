@@ -1,0 +1,36 @@
+:root,
+.i-config-provider {
+  --i-border-width: 1px;
+  --i-border-style: solid;
+  --i-border-color: var(--i-border);
+  --i-border-color-light: #e8edf4;
+  --i-border-color-lighter: #f0f3f8;
+  --i-border-color-strong: #b6c3d5;
+  --i-border-base: var(--i-border-width) var(--i-border-style) var(--i-border-color);
+  --i-radius-none: 0;
+  --i-radius-small: 4px;
+  --i-radius-base: var(--i-radius);
+  --i-radius-large: 10px;
+  --i-radius-round: 20px;
+  --i-radius-circle: 50%;
+  --i-shadow-color: rgb(26 43 68 / 16%);
+  --i-shadow-small: 0 2px 8px var(--i-shadow-color);
+  --i-shadow-base: var(--i-shadow);
+  --i-shadow-large: 0 20px 56px var(--i-shadow-color);
+  --i-shadow-inset: inset 0 1px 3px var(--i-shadow-color);
+}
+.i-config-provider[data-theme='dark'] {
+  --i-border-color-light: #2c3a4e;
+  --i-border-color-lighter: #263347;
+  --i-border-color-strong: #586a82;
+  --i-shadow-color: rgb(0 0 0 / 48%);
+}
+@supports (color: color-mix(in srgb, red, blue)) {
+  :root,
+  .i-config-provider,
+  .i-config-provider[data-theme] {
+    --i-border-color-light: color-mix(in srgb, var(--i-border), var(--i-bg) 40%);
+    --i-border-color-lighter: color-mix(in srgb, var(--i-border), var(--i-bg) 70%);
+    --i-border-color-strong: color-mix(in srgb, var(--i-border), var(--i-text) 20%);
+  }
+}

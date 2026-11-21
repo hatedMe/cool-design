@@ -1,0 +1,167 @@
+import { DOMWrapper, flushPromises, mount } from '@vue/test-utils';
+import { h, reactive } from 'vue';
+import { beforeEach, describe, expect, test } from 'vitest';
+// 下拉面板默认传送到 document.body，测试中用文档级查询访问传送内容。
+beforeEach(() => {
+  document.body.innerHTML = '';
+});
+const doc = () => new DOMWrapper(document.body);
+import TimeSelect from '..';
+import Form from '../../form';
+import ConfigProvider from '../../config-provider';
+import FormItem from '../../form-item';
+
+describe('test `TimeSelect` component', () => {
+  test('按 start/step/end 生成时间点并选中', async () => {
+    const wrapper = mount(TimeSelect, {
+      props: { start: '09:00', step: '00:30', end: '10:00', modelValue: '' }
+    });
+    await wrapper.find('.i-time-select__control').trigger('click');
+    const options = doc().findAll('[role="option"]');
+    expect(options.map((item) => item.text())).toEqual(['09:00', '09:30', '10:00']);
+    await options[1].trigger('click');
+    expect(wrapper.emitted('update:modelValue')).toEqual([['09:30']]);
+    expect(wrapper.emitted('change')).toEqual([['09:30']]);
+  });
+
+  test('minTime/maxTime 禁用越界选项', async () => {
+    const wrapper = mount(TimeSelect, {
+      props: { start: '09:00', step: '01:00', end: '12:00', minTime: '10:00', maxTime: '11:00', modelValue: '' }
+    });
+    await wrapper.find('.i-time-select__control').trigger('click');
+    const options = doc().findAll('[role="option"]');
+    expect(options.map((item) => item.classes().includes('is-disabled'))).toEqual([
+      true,
+      true,
+      true,
+      true
+    ]);
+    await options[0].trigger('click');
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  });
+
+  test('默认清空输出 undefined 并触发 clear', async () => {
+    const wrapper = mount(TimeSelect, {
+      props: { modelValue: '09:00' }
+    });
+    await wrapper.find('.i-time-select__clear').trigger('click');
+    expect(wrapper.emitted('update:modelValue')).toEqual([[undefined]]);
+    expect(wrapper.emitted('clear')).toHaveLength(1);
+  });
+
+  test('接入表单校验', async () => {
+    const model = reactive<{ time: string }>({ time: '' });
+    const wrapper = mount(Form, {
+      props: { model, rules: { time: [{ required: true, message: '时间必填' }] } },
+      slots: {
+        default: () =>
+          h(
+            FormItem,
+            { prop: 'time', label: '时间' },
+            () =>
+              h(TimeSelect, {
+                modelValue: model.time,
+                'onUpdate:modelValue': (v: string) => (model.time = v)
+              })
+          )
+      }
+    });
+    await wrapper.find('.i-time-select__control').trigger('blur');
+    await flushPromises();
+    expect(wrapper.text()).toContain('时间必填');
+    await wrapper.find('.i-time-select__control').trigger('click');
+    await doc().findAll('[role="option"]')[0].trigger('click');
+    await flushPromises();
+    expect(wrapper.text()).not.toContain('时间必填');
+  });
+
+  test('下拉传送到 body，Escape 与外点关闭', async () => {
+    const wrapper = mount(TimeSelect, {
+      props: { start: '09:00', end: '10:00', popperClass: 'time-scope' },
+      attachTo: document.body
+    });
+    await wrapper.find('.i-time-select__control').trigger('click');
+    expect(wrapper.find('.i-time-select__dropdown').exists()).toBe(false);
+    const mine = () => doc().find('.time-scope');
+    expect(mine().exists()).toBe(true);
+    expect(mine().attributes('data-placement')).toBe('bottom-start');
+
+    document.body.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+    await flushPromises();
+    expect(mine().exists()).toBe(false);
+
+    await wrapper.find('.i-time-select__control').trigger('click');
+    (wrapper.get('.i-time-select__control').element as HTMLElement).dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+    );
+    await flushPromises();
+    expect(mine().exists()).toBe(false);
+    wrapper.unmount();
+  });
+});
+
+test('TimeSelect 继承 Provider 空值配置和清空工厂', async () => {
+  let calls = 0;
+  const state = reactive<{ value: string | boolean }>({ value: '09:00' });
+  const wrapper = mount(ConfigProvider, {
+    props: { emptyValues: [false], valueOnClear: () => { calls++; return false; } },
+    slots: { default: () => h(TimeSelect, { name: 'time', modelValue: state.value,
+      'onUpdate:modelValue': (value: unknown) => { if (typeof value === 'boolean') state.value = value; } }) }
+  });
+  const time = wrapper.getComponent(TimeSelect);
+  expect(calls).toBe(0);
+  await time.get('.i-time-select__clear').trigger('click');
+  expect(time.emitted('change')).toEqual([[false]]);
+  expect(time.emitted('clear')).toEqual([[]]);
+  expect(time.get('input[type="hidden"]').element.value).toBe('');
+  expect(time.find('.i-time-select__clear').exists()).toBe(false);
+  expect(calls).toBe(1);
+  wrapper.unmount();
+});
+
+test('TimeSelect 直挂 Form 时继承尺寸和禁用', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {}, size: 'small', disabled: true },
+    slots: { default: () => h(TimeSelect, { modelValue: '09:00' }) }
+  });
+  const select = wrapper.getComponent(TimeSelect);
+  expect(select.classes()).toContain('i-control--small');
+  expect(select.get('.i-time-select__control').attributes('disabled')).toBeDefined();
+  expect(select.find('.i-time-select__clear').exists()).toBe(false);
+  wrapper.unmount();
+});
+
+test('TimeSelect 打开后禁用 Form 会关闭菜单', async () => {
+  const wrapper = mount(Form, {
+    props: { model: {} },
+    slots: { default: () => h(TimeSelect, { modelValue: '09:00', teleported: false }) }
+  });
+  const select = wrapper.getComponent(TimeSelect);
+  await select.get('.i-time-select__control').trigger('click');
+  await wrapper.setProps({ disabled: true });
+  expect(select.emitted('visible-change')).toEqual([[true], [false]]);
+  wrapper.unmount();
+});
+
+test('formats options and submits keyboard selection from the raw grid', async () => {
+  const model = reactive({ time: '' });
+  const wrapper = mount({
+    render: () => h('form', [h(TimeSelect, {
+      modelValue: model.time, name: 'time', teleported: false,
+      start: '12:00', end: '13:10', step: '00:30', minTime: '12:00',
+      format: 'hh:mm A', includeEndTime: true,
+      'onUpdate:modelValue': (value: string) => (model.time = value)
+    })])
+  });
+  const control = wrapper.get('.i-time-select__control');
+  await control.trigger('click');
+  const options = wrapper.findAll('[role="option"]');
+  expect(options.map((item) => item.text())).toEqual(['12:00 中午', '12:30 中午', '01:00 下午', '01:10 下午']);
+  expect(options[0].attributes('aria-disabled')).toBe('true');
+  await control.setValue('01:10');
+  expect(wrapper.findAll('[role="option"]').map((item) => item.text())).toEqual(['01:10 下午']);
+  await control.trigger('keydown', { key: 'ArrowDown' });
+  await control.trigger('keydown', { key: 'Enter' });
+  expect(model.time).toBe('01:10 下午');
+  expect(new FormData(wrapper.get('form').element).getAll('time')).toEqual(['01:10 下午']);
+});

@@ -1,0 +1,65 @@
+.i-form-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.i-form-item__label {
+  display: flex;
+  align-items: center;
+  width: var(--i-form-item-label-width, auto);
+  margin-right: 12px;
+  line-height: 32px;
+  font-weight: 500;
+  text-align: right;
+}
+.i-form-item__required {
+  margin: 0 4px;
+  color: var(--i-danger);
+}
+.i-form-item__content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.i-form-item__status-icon {
+  margin-left: 6px;
+  font-size: 12px;
+}
+.i-form-item__status-icon.is-success {
+  color: var(--i-success);
+}
+.i-form-item__status-icon.is-error {
+  color: var(--i-danger);
+}
+.i-form-item__error {
+  color: var(--i-danger);
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 5px;
+}
+.i-form-item__error.is-inline-message {
+  display: inline-block;
+  margin: 0 0 0 8px;
+  vertical-align: middle;
+}
+.i-form-item--label-left .i-form-item__label {
+  text-align: left;
+}
+.i-form-item--label-top {
+  display: block;
+}
+.i-form-item--label-top .i-form-item__label {
+  width: auto;
+  margin-right: 0;
+  margin-bottom: 7px;
+  line-height: 1.5;
+  text-align: left;
+}
+.i-form--inline .i-form-item {
+  display: inline-flex;
+  margin-right: 32px;
+  margin-bottom: 0;
+}
+.i-form--inline .i-form-item__content {
+  width: auto;
+}

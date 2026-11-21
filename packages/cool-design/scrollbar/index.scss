@@ -1,0 +1,43 @@
+.i-scrollbar {
+  position: relative;
+  overflow: hidden;
+}
+.i-scrollbar__wrap {
+  overflow: auto;
+}
+.i-scrollbar__view {
+  min-width: fit-content;
+}
+.i-scrollbar__bar {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.i-scrollbar:hover .i-scrollbar__bar,
+.i-scrollbar.is-always .i-scrollbar__bar {
+  opacity: 1;
+}
+.i-scrollbar__bar.is-vertical {
+  top: 2px;
+  bottom: 2px;
+  width: 6px;
+}
+.i-scrollbar__bar.is-horizontal {
+  right: 2px;
+  left: 2px;
+  height: 6px;
+}
+.i-scrollbar__thumb {
+  border-radius: 4px;
+  background: rgb(0 0 0 / 25%);
+  cursor: pointer;
+}
+.i-scrollbar__bar.is-vertical .i-scrollbar__thumb {
+  width: 100%;
+}
+.i-scrollbar__bar.is-horizontal .i-scrollbar__thumb {
+  height: 100%;
+}

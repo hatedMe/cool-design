@@ -1,0 +1,357 @@
+html,
+body,
+#app {
+  margin: 0;
+  min-height: 100%;
+}
+body {
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+.admin-shell {
+  min-height: 100vh;
+  display: flex;
+  background: var(--i-bg-page);
+}
+.sidebar {
+  width: 224px;
+  flex: 0 0 224px;
+  background: var(--i-bg);
+  border-right: 1px solid var(--i-border);
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px 24px;
+}
+.brand {
+  height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px;
+}
+.brand__mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--i-primary);
+  color: var(--i-on-primary);
+  font-size: 20px;
+  font-weight: 800;
+}
+.brand strong {
+  font-size: 21px;
+  letter-spacing: -0.7px;
+}
+.brand__edition {
+  font-size: 11px;
+  color: var(--i-text-muted);
+  margin-top: 5px;
+}
+.workspace {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 10px;
+  border-top: 1px solid var(--i-border);
+  border-bottom: 1px solid var(--i-border);
+  margin: 0 0 26px;
+}
+.workspace__avatar {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--i-border);
+  border-radius: 6px;
+  color: var(--i-text-secondary);
+}
+.workspace strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+}
+.workspace small {
+  color: var(--i-text-muted);
+  font-size: 11px;
+}
+.sidebar__label {
+  color: var(--i-text-muted);
+  font-size: 11px;
+  padding: 0 14px 10px;
+}
+.sidebar__active {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 14px;
+  text-decoration: none;
+  border-radius: 6px;
+  color: var(--i-primary);
+  background: var(--i-bg-subtle);
+  font-weight: 600;
+  box-shadow: inset 3px 0 var(--i-primary);
+}
+.sidebar__active span {
+  font-size: 18px;
+}
+.sidebar__bottom {
+  margin-top: auto;
+  padding: 40px 12px 0;
+  color: var(--i-text-muted);
+  font-size: 11px;
+}
+.sidebar__dot {
+  display: inline-block;
+  background: var(--i-success);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 7px;
+}
+.main-area {
+  min-width: 0;
+  flex: 1;
+}
+.topbar {
+  height: 64px;
+  border-bottom: 1px solid var(--i-border);
+  background: var(--i-bg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 0 32px;
+}
+.breadcrumb {
+  font-size: 12px;
+  color: var(--i-text-muted);
+}
+.breadcrumb span {
+  margin: 0 12px;
+  color: var(--i-border);
+}
+.breadcrumb strong {
+  font-weight: 400;
+  color: var(--i-text);
+}
+.appearance {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 12px;
+  color: var(--i-text-secondary);
+}
+.color-setting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.color-setting input {
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--i-border);
+  background: none;
+  border-radius: 5px;
+  padding: 1px;
+  cursor: pointer;
+}
+.page-content {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 32px;
+}
+.page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.page-heading h1 {
+  font-size: 25px;
+  letter-spacing: -0.6px;
+  line-height: 1.4;
+  font-weight: 600;
+  margin: 0;
+}
+.page-heading p {
+  color: var(--i-text-secondary);
+  font-size: 13px;
+  margin: 7px 0 0;
+}
+.page-heading__tag {
+  font-size: 12px;
+  color: var(--i-text-muted);
+}
+.query-panel,
+.list-panel {
+  border: 1px solid var(--i-border);
+  border-radius: 8px;
+  background: var(--i-bg);
+}
+.query-panel {
+  padding: 22px 24px;
+  margin-bottom: 20px;
+}
+.query-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.query-field {
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.query-field > span:first-child {
+  font-size: 12px;
+  color: var(--i-text-secondary);
+}
+.query-actions {
+  display: flex;
+  gap: 10px;
+  padding-left: 4px;
+}
+.list-panel {
+  padding: 0 24px 24px;
+}
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 0;
+  gap: 16px;
+}
+.list-toolbar > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.list-toolbar h2 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+}
+.list-toolbar__count {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--i-bg-subtle);
+  color: var(--i-text-secondary);
+}
+.selection-hint {
+  color: var(--i-text-muted);
+  font-size: 12px;
+}
+.user-cell {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+}
+.user-cell strong {
+  font-weight: 500;
+}
+.user-avatar {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  border-radius: 50%;
+  border: 1px solid var(--i-border);
+  background: var(--i-bg-subtle);
+  color: var(--i-text-secondary);
+  font-size: 12px;
+}
+.load-error {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--i-danger);
+  color: var(--i-danger);
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+.edit-description {
+  font-size: 12px;
+  color: var(--i-text-muted);
+  margin: 0 0 22px;
+}
+.demo-settings {
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--i-text-secondary);
+}
+.demo-settings summary {
+  cursor: pointer;
+  width: max-content;
+}
+.demo-settings > div {
+  padding: 10px 0;
+}
+.demo-settings button {
+  margin-right: 10px;
+}
+.page-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 28px;
+  font-size: 11px;
+  color: var(--i-text-muted);
+}
+@media (max-width: 1000px) {
+  .sidebar {
+    width: 180px;
+    flex-basis: 180px;
+  }
+  .brand__edition {
+    display: none;
+  }
+  .page-content {
+    padding: 24px;
+  }
+  .query-field {
+    width: 200px;
+  }
+}
+@media (max-width: 700px) {
+  .sidebar {
+    display: none;
+  }
+  .topbar {
+    padding: 0 16px;
+  }
+  .page-content {
+    padding: 20px 14px;
+  }
+  .query-panel,
+  .list-panel {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .query-field {
+    width: 100%;
+  }
+  .appearance {
+    gap: 10px;
+  }
+  .breadcrumb {
+    font-size: 11px;
+  }
+  .breadcrumb span {
+    margin: 0 6px;
+  }
+  .selection-hint {
+    display: none;
+  }
+}
+
+.selection-help {
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  cursor: help;
+}

@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  // 组件范围用通配整体纳入，不逐目录列举；与 vite.config.ts 中 dts.include 是同一份范围，调整时两处同步。
+  "include": [
+    "packages/hooks/**/*.ts",
+    "packages/cool-design/**/*.ts",
+    "packages/cool-design/**/*.tsx",
+    "src/utils/create.ts",
+    "src/utils/with-install.ts",
+    "src/utils/overlay-stack.ts",
+    "src/utils/use-floating.ts",
+    "examples/**/*.ts",
+    "examples/**/*.vue",
+    "src/**/*.d.ts"
+  ],
+  "exclude": ["**/__test__/**"],
+  "references": []
+}

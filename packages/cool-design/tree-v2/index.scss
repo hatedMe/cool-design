@@ -1,0 +1,54 @@
+.i-tree-v2 {
+  position: relative;
+  font-size: 14px;
+}
+.i-tree-v2__empty {
+  padding: 12px;
+  color: var(--i-text-secondary, #909399);
+}
+.i-tree-v2.has-scrollbar .i-tree-v2__list {
+  overflow-y: scroll;
+}
+.i-tree-v2__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 8px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.i-tree-v2__row:hover {
+  background: #f5f7fa;
+}
+.i-tree-v2__row.is-current {
+  color: var(--i-primary, #409eff);
+}
+.i-tree-v2__row.is-disabled {
+  color: var(--i-text-secondary, #909399);
+  cursor: not-allowed;
+}
+.i-tree-v2__expand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--i-text-secondary, #909399);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.i-tree-v2__expand.is-expanded {
+  transform: rotate(90deg);
+}
+.i-tree-v2__leaf {
+  display: inline-block;
+  width: 16px;
+}
+.i-tree-v2__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

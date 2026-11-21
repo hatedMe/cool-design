@@ -1,0 +1,84 @@
+.i-tour {
+  position: fixed;
+  width: 320px;
+  padding: 16px;
+  border-radius: var(--i-radius, 4px);
+  background: var(--i-bg, #fff);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+  color: var(--i-text, #303133);
+  font-size: 14px;
+}
+.i-tour--primary .i-tour__next {
+  background: var(--i-primary, #409eff);
+  color: #fff;
+}
+.i-tour__mask {
+  position: fixed;
+  inset: 0;
+}
+.i-tour__spotlight {
+  position: fixed;
+  border-radius: var(--i-radius, 4px);
+}
+.i-tour__arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  transform: rotate(45deg);
+}
+.i-tour__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: 0;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+}
+.i-tour__title {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.i-tour__description {
+  color: var(--i-text-secondary, #606266);
+  line-height: 1.6;
+}
+.i-tour__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+.i-tour__indicator {
+  margin-right: auto;
+  color: var(--i-text-secondary, #606266);
+}
+.i-tour__prev,
+.i-tour__next {
+  padding: 5px 12px;
+  border: 1px solid var(--i-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--i-bg, #fff);
+  cursor: pointer;
+}
+.i-tour__next {
+  background: var(--i-text, #303133);
+  color: var(--i-bg, #fff);
+}
+
+.i-tour__indicators {
+  display: inline-flex;
+  gap: 5px;
+}
+.i-tour__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--i-border, #dcdfe6);
+}
+.i-tour__dot.is-active {
+  background: var(--i-primary, #409eff);
+}

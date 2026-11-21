@@ -1,0 +1,66 @@
+.i-mention {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+.i-mention__input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--i-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--i-bg-color, #fff);
+  color: inherit;
+  font: inherit;
+  resize: vertical;
+}
+.i-mention.is-disabled .i-mention__input {
+  opacity: 0.5;
+}
+.i-mention__clear {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.i-tooltip.i-mention__dropdown {
+  min-width: 180px;
+  max-width: calc(100vw - 16px);
+  overflow-wrap: normal;
+  max-height: 280px;
+  overflow: visible;
+  padding: 0;
+}
+.i-mention__list {
+  max-height: 278px;
+  overflow: auto;
+  padding: 4px 0;
+}
+.i-mention__option {
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.i-mention__option:hover,
+.i-mention__option.is-highlighted {
+  background: #f5f7fa;
+}
+.i-mention__option.is-disabled {
+  color: var(--i-text-secondary, #909399);
+  cursor: not-allowed;
+}
+.i-mention__loading,
+.i-mention__empty {
+  padding: 6px 12px;
+  color: var(--i-text-secondary, #909399);
+}
+
+.i-mention.i-control--small input.i-mention__input {
+  min-height: 28px;
+}
+.i-mention.i-control--large input.i-mention__input {
+  min-height: 40px;
+}
