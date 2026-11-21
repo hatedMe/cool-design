@@ -2,12 +2,15 @@ import { defineComponent, onBeforeUnmount, ref, watch, type PropType } from 'vue
 import Dialog from '../dialog';
 import Button from '../button';
 import type { ButtonType } from '../button/types';
+import { useConfig } from '../config-provider/context';
 import type {
   MessageBoxAction,
   MessageBoxBeforeClose,
   MessageBoxOptions,
   MessageBoxType
 } from './types';
+const defaultTransition = { css: false };
+
 export default defineComponent({
   name: 'i-message-box',
   props: {
@@ -42,6 +45,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'update:inputValue', 'confirm', 'cancel', 'close'],
   setup(props, { slots, emit }) {
+    const config = useConfig();
     const pending = ref(false),
       error = ref('');
     const input = ref(props.inputValue);
@@ -151,10 +155,9 @@ export default defineComponent({
         closeOnClickModal={props.closeOnClickModal && !pending.value}
         closeOnPressEscape={props.closeOnPressEscape && !pending.value}
         lockScroll={props.lockScroll}
+        transition={config.value.dialog?.transition ?? defaultTransition}
         destroyOnClose
-        onUpdate:modelValue={(open: boolean) => {
-          if (!open) close();
-        }}>
+        beforeClose={close}>
         {{
           default: () => (
             <div class={['i-message-box', `i-message-box--${props.type}`, { 'is-center': props.center }, props.customClass]}>

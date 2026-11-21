@@ -128,13 +128,14 @@ test('Dialog 等待显式过渡完成并保留调用方钩子', async () => {
   await nextTick();
   expect(events).toEqual([]);
   finishEnter();
-  expect(events).toEqual(['opened', 'user-enter']);
+  expect(events).toEqual(['user-enter', 'opened']);
   visible.value = false;
   await nextTick();
   expect(wrapper.find('.i-dialog').exists()).toBe(true);
-  expect(events).toEqual(['opened', 'user-enter']);
+  expect(events).toEqual(['user-enter', 'opened']);
   finishLeave();
-  expect(events).toEqual(['opened', 'user-enter', 'closed', 'user-leave']);
+  await nextTick();
+  expect(events).toEqual(['user-enter', 'opened', 'user-leave', 'closed']);
   expect(wrapper.find('.i-dialog').exists()).toBe(false);
   wrapper.unmount();
 });
@@ -145,13 +146,14 @@ test('离场期间移除 Dialog 过渡时完成关闭并释放滚动锁与焦点
   outside.focus();
   const visible = ref(true);
   const closed = vi.fn();
+  const afterLeave = vi.fn();
   let finishLeave: (() => void) | undefined;
   const onLeave = (_element: Element, done: () => void) => {
     finishLeave = done;
   };
   const wrapper = mount(ConfigProvider, {
     attachTo: document.body,
-    props: { dialog: { transition: { css: false, onLeave } } },
+    props: { dialog: { transition: { css: false, onLeave, onAfterLeave: [afterLeave] } } },
     global: { stubs: { transition: false } },
     slots: { default: () => h(Dialog, { modelValue: visible.value, destroyOnClose: true, onClosed: closed }) }
   });
@@ -166,8 +168,10 @@ test('离场期间移除 Dialog 过渡时完成关闭并释放滚动锁与焦点
     expect(document.body.style.overflow).toBe('');
     expect(document.activeElement).toBe(outside);
     expect(closed).toHaveBeenCalledTimes(1);
-    finishLeave?.();
+    expect(document.querySelector<HTMLElement>('.i-dialog__mask')?.style.display).toBe('none');
     expect(wrapper.find('.i-dialog').exists()).toBe(false);
+    finishLeave?.();
+    expect(afterLeave).not.toHaveBeenCalled();
     expect(closed).toHaveBeenCalledTimes(1);
   } finally {
     wrapper.unmount();

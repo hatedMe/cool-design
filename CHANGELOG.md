@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Dialog 增加打开与关闭延时、可穿透的无遮罩模式、自定义遮罩类与标题等级，支持 `append-to-body` 和自定义挂载目标。`close` 改为实际离场开始时触发，`update:modelValue(false)` 在离场完成后触发。依赖旧关闭请求时机的页面可在 `before-close` 回调中处理。默认使用 `dialog-fade`，可以通过 `:transition="{ css: false }"` 禁用 CSS 动画。原无遮罩穿透和允许拖动越界的用法可分别加上 `modal-penetrable` 和 `overflow`。传给组件的 `class` 应用于面板，外层样式使用 `modal-class`。
+  单独设置 `append-to="body"` 时改为就地渲染，旧版使用该写法挂载到 `document.body` 的页面可改用 `append-to-body`。
+
 - Popconfirm 改用共享 Tooltip 和 Popper 定位，支持触发键、过渡、箭头、虚拟锚点和 `popper-options`。确认和取消按钮先发出原始点击事件，随后按默认 `200` 毫秒延迟请求关闭，实例 `hide()` 使用同一延迟。可传 `:hide-after="0"` 恢复立即关闭。入场焦点默认落在面板。启用 `persistent` 时从首次渲染起保留节点。依赖旧定位的页面可设置 `popper-options.strategy` 为 `fixed`，并将 `offset` modifier 配置为 `[0, 8]`。
 
 - DropdownItem 的 `click` 也会在按键激活时触发，回调类型扩展为 `MouseEvent | KeyboardEvent`。鼠标点击监听器调用 `preventDefault()` 后会取消命令，菜单保持打开。

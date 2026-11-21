@@ -828,7 +828,7 @@ export type { AffixInstance } from './affix';
 export type { AnchorInstance } from './anchor';
 export type { CarouselInstance } from './carousel';
 export type { CollapseInstance, CollapseItemInstance } from './collapse';
-export type { DialogInstance } from './dialog';
+export type { DialogBeforeClose, DialogContentInstance, DialogHeaderScope, DialogInstance, DialogModalClass, DialogSlots } from './dialog';
 export type { DrawerInstance } from './drawer';
 export type {
   DropdownCommand, DropdownInstance, DropdownItemInstance, DropdownItemOption, DropdownPlacement, DropdownProps,

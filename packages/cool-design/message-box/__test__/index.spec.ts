@@ -51,6 +51,69 @@ test('函数确认与取消都返回明确结果并独立卸载', async () => {
   expect(document.querySelector('[role="dialog"]')).toBeNull();
   expect(document.body.style.overflow).toBe('');
 });
+test('Escape 等待 MessageBox 的关闭许可，并保留 Provider 过渡', async () => {
+  let finish!: () => void;
+  const events: string[] = [];
+  const open = ref(true);
+  const w = mount(ConfigProvider, {
+    attachTo: document.body,
+    global: { stubs: { transition: false } },
+    props: { dialog: { transition: { css: false, onBeforeLeave: () => events.push('leave') } } },
+    slots: { default: () => h(MessageBoxComponent, {
+      modelValue: open.value,
+      beforeClose: (action, _instance, done) => { events.push(action); finish = done; },
+      onClose: () => events.push('close-event'),
+      'onUpdate:modelValue': (value: boolean) => { open.value = value; }
+    }) }
+  });
+  wrappers.push(w);
+  await flushPromises();
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  await flushPromises();
+  expect(events).toEqual(['close']);
+  expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+  finish();
+  await flushPromises();
+  expect(events).toEqual(['close', 'close-event', 'leave']);
+  expect(document.querySelector('.i-message-box')).toBeNull();
+});
+test('移除 Provider 过渡立即释放已关闭 MessageBox 的遮罩、焦点与滚动锁', async () => {
+  let finishLeave!: () => void;
+  const afterLeave = vi.fn();
+  const trigger = document.createElement('button');
+  document.body.append(trigger);
+  trigger.focus();
+  const open = ref(true);
+  const w = mount(ConfigProvider, {
+    attachTo: document.body,
+    global: { stubs: { transition: false } },
+    props: { dialog: { transition: {
+      css: false,
+      onLeave: (_: Element, done: () => void) => { finishLeave = done; },
+      onAfterLeave: [afterLeave]
+    } } },
+    slots: { default: () => h(MessageBoxComponent, {
+      modelValue: open.value,
+      'onUpdate:modelValue': (value: boolean) => { open.value = value; }
+    }) }
+  });
+  wrappers.push(w);
+  await flushPromises();
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  await flushPromises();
+  expect(open.value).toBe(false);
+  expect(finishLeave).toBeTypeOf('function');
+  expect(document.body.style.overflow).toBe('hidden');
+  await w.setProps({ dialog: undefined });
+  expect(document.querySelector('.i-message-box')).toBeNull();
+  expect(document.querySelector<HTMLElement>('.i-dialog__mask')?.style.display).toBe('none');
+  expect(document.body.style.overflow).toBe('');
+  expect(document.activeElement).toBe(trigger);
+  finishLeave();
+  expect(afterLeave).not.toHaveBeenCalled();
+  expect(w.getComponent(MessageBoxComponent).emitted('close')).toHaveLength(1);
+  expect(w.getComponent(MessageBoxComponent).emitted('update:modelValue')).toEqual([[false]]);
+});
 test('组合式调用继承响应式主题，调用者卸载取消并清理弹窗', async () => {
   let result: Promise<'confirm'> | undefined;
   const dark = ref(true);

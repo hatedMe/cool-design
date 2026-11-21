@@ -12,6 +12,10 @@ export function lockDialog(token: symbol, lockScroll = true) {
   return pushOverlay(token, true);
 }
 export const isTopDialog = (token: symbol) => isTopOverlay(token);
+export function bringDialogToFront(token: symbol) {
+  removeOverlay(token);
+  return pushOverlay(token, true);
+}
 export function unlockDialog(token: symbol) {
   removeOverlay(token);
   const index = dialogs.indexOf(token);

@@ -16,10 +16,20 @@
   justify-content: center;
   align-items: center;
   padding: 24px;
+}
+.i-dialog__wrapper.is-penetrable {
   pointer-events: none;
 }
-.i-dialog__wrapper > .i-dialog {
+.i-dialog__wrapper.is-penetrable > .i-dialog {
   pointer-events: auto;
+}
+.dialog-fade-enter-active,
+.dialog-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.dialog-fade-enter-from,
+.dialog-fade-leave-to {
+  opacity: 0;
 }
 .i-dialog__mask.is-top,
 .i-dialog__wrapper.is-top {

@@ -18,7 +18,11 @@ function create(service?: Partial<UserService>) {
     updateUser: vi.fn().mockImplementation(async (id, draft) => ({ id, ...draft })),
     ...service
   };
-  const w = mount(UserManagement, { props: { service: api }, attachTo: document.body });
+  const w = mount(UserManagement, {
+    props: { service: api },
+    attachTo: document.body,
+    global: { stubs: { transition: false } }
+  });
   wrappers.push(w);
   return { w, api };
 }

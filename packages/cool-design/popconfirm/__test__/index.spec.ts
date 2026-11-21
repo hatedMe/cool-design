@@ -47,7 +47,7 @@ test('弹窗内气泡确认的 Esc 仅关最上层，焦点恢复且继承主题
     defineComponent({
       setup: () => () =>
         h(ConfigProvider, { theme: 'dark' }, () =>
-          h(Dialog, { modelValue: open.value, 'onUpdate:modelValue': (v: boolean) => (open.value = v) }, () =>
+          h(Dialog, { modelValue: open.value, transition: { css: false }, 'onUpdate:modelValue': (v: boolean) => (open.value = v) }, () =>
             h(Popconfirm, { title: '确认删除？', transition: { css: false } }, () => h('button', { id: 'delete-trigger' }, '删除'))
           )
         )
@@ -105,7 +105,7 @@ test('同一次遮罩手势只关闭气泡，下一次才关闭底层弹窗', as
     defineComponent({
       setup: () => () =>
         h(ConfigProvider, {}, () =>
-          h(Dialog, { modelValue: open.value, 'onUpdate:modelValue': (value: boolean) => (open.value = value) }, () =>
+          h(Dialog, { modelValue: open.value, transition: { css: false }, 'onUpdate:modelValue': (value: boolean) => (open.value = value) }, () =>
             h(Popconfirm, { title: '确认？', transition: { css: false } }, () => h('button', { id: 'mask-trigger' }, '删除'))
           )
         )
