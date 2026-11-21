@@ -1,8 +1,13 @@
 import { DOMWrapper, mount } from '@vue/test-utils';
 import { defineComponent, h, ref, type Component } from 'vue';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
-// 下拉面板默认传送到 document.body，测试中用文档级查询访问传送内容。
-beforeEach(() => {
+import { afterEach, describe, expect, test, vi } from 'vitest';
+
+const wrappers: ReturnType<typeof mount>[] = [];
+afterEach(() => {
+  // 先卸载组件，释放传送到 body 的下拉面板及其监听。
+  for (const wrapper of wrappers.splice(0)) {
+    if (wrapper.exists()) wrapper.unmount();
+  }
   document.body.innerHTML = '';
 });
 const doc = () => new DOMWrapper(document.body);
@@ -26,6 +31,7 @@ const mountMention = (
     }),
     { attachTo: document.body, global: { stubs: { transition: false } } }
   );
+  wrappers.push(wrapper);
   return { wrapper, text, mention: wrapper.findComponent(Mention) };
 };
 
