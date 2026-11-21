@@ -1,4 +1,4 @@
-import { computed, defineComponent, getCurrentInstance, normalizeClass, normalizeStyle, shallowRef, type PropType, type SlotsType } from 'vue';
+import { computed, defineComponent, getCurrentInstance, normalizeClass, normalizeStyle, shallowRef, type PropType } from 'vue';
 import type { FloatingReference, Placement } from '../../../src/utils/use-floating';
 import type { TooltipInstance } from '../tooltip';
 import Tooltip, { tooltipProps } from '../tooltip/tooltip';
@@ -18,7 +18,13 @@ export type PopoverDirectiveValue =
       disabled?: boolean;
     };
 
-export default defineComponent({
+type PopoverSlots = Readonly<{
+  reference: () => unknown;
+  default: (scope: { hide: () => void }) => unknown;
+  content: () => unknown;
+}>;
+
+const Popover = defineComponent({
   name: 'i-popover',
   props: {
     content: tooltipProps.content,
@@ -62,12 +68,8 @@ export default defineComponent({
     'before-leave': () => true,
     'after-leave': () => true
   },
-  slots: Object as SlotsType<{
-    reference: () => unknown;
-    default: (scope: { hide: () => void }) => unknown;
-    content: () => unknown;
-  }>,
-  setup(props, { slots, emit, expose }) {
+  setup(props, { slots: contextSlots, emit, expose }) {
+    const slots: Partial<PopoverSlots> = contextSlots;
     const owner = getCurrentInstance();
     const tooltip = shallowRef<TooltipInstance>();
     const hasUpdateHandler = () => !!owner?.vnode.props?.['onUpdate:visible'];
@@ -132,3 +134,13 @@ export default defineComponent({
     };
   }
 });
+
+// Vue 3.2 的 $slots 使用字符串索引，在公开实例上替换为声明的插槽。
+type PopoverOptions = { [K in keyof typeof Popover]: (typeof Popover)[K] };
+type PopoverComponent = PopoverOptions & (
+  new (...args: ConstructorParameters<typeof Popover>) => Omit<InstanceType<typeof Popover>, '$slots'> & {
+    $slots: PopoverSlots;
+  }
+);
+
+export default (Popover as PopoverOptions) as PopoverComponent;
