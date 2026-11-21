@@ -158,12 +158,13 @@ test('逐行删除先确认，取消不调用接口，处理中不能重复提�
   const deleteUsers = vi.fn().mockImplementation(() => new Promise<void>((resolve) => (complete = resolve)));
   const { w, api } = create({ deleteUsers });
   await flushPromises();
-  await w.findAll('[data-test="delete"]')[0].trigger('click');
+  const trigger = w.findAll('[data-test="delete"]')[0];
+  await trigger.trigger('click');
   await flushPromises();
   document.querySelector<HTMLButtonElement>('.i-popconfirm button')!.click();
-  await flushPromises();
+  await vi.waitFor(() => expect(trigger.attributes('aria-expanded')).toBe('false'));
   expect(deleteUsers).not.toHaveBeenCalled();
-  await w.findAll('[data-test="delete"]')[0].trigger('click');
+  await trigger.trigger('click');
   await flushPromises();
   const confirm = document.querySelector<HTMLButtonElement>('[data-popconfirm-confirm]')!;
   confirm.click();

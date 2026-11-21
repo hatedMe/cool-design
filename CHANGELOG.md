@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Popconfirm 改用共享 Tooltip 和 Popper 定位，支持触发键、过渡、箭头、虚拟锚点和 `popper-options`。确认和取消按钮先发出原始点击事件，随后按默认 `200` 毫秒延迟请求关闭，实例 `hide()` 使用同一延迟。可传 `:hide-after="0"` 恢复立即关闭。入场焦点默认落在面板。启用 `persistent` 时从首次渲染起保留节点。依赖旧定位的页面可设置 `popper-options.strategy` 为 `fixed`，并将 `offset` modifier 配置为 `[0, 8]`。
+
 - DropdownItem 的 `click` 也会在按键激活时触发，回调类型扩展为 `MouseEvent | KeyboardEvent`。鼠标点击监听器调用 `preventDefault()` 后会取消命令，菜单保持打开。
 
 - Dropdown 默认保留隐藏的菜单节点，并使用 Popper 的 `absolute` 定位。可设置 `:persistent="false"` 在离场后销毁，设置 `:max-height="172"` 恢复旧的滚动区上限，或用 `popper-options.strategy` 恢复 `fixed` 定位。默认按键为 `Enter`、`Space`、`ArrowDown`、`NumpadEnter`，兼容旧键名。只有单独使用 `hover` 时应用默认 `150` 毫秒延时。`command` 在命令和菜单项实例之后补充原始事件。新增虚拟锚点、挂载宿主、箭头与 Popper 配置。

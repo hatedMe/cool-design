@@ -60,6 +60,7 @@ export function useFloating(options: {
   fallbackPlacements?: () => PopperPlacement[] | undefined;
   close: (event: Event) => void;
   trapFocus?: boolean;
+  focusOnOpen?: boolean;
   offset?: () => number;
   appendTo?: () => AppendTo;
   zIndex?: () => number | undefined;
@@ -328,7 +329,7 @@ export function useFloating(options: {
       await nextTick();
       if (!active || !options.open.value) return;
       update();
-      if (options.trapFocus) focusFirst();
+      if (options.trapFocus && options.focusOnOpen !== false) focusFirst();
       if (typeof ResizeObserver !== 'undefined') {
         observer = new ResizeObserver(update);
         observeElements();

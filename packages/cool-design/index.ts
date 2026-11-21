@@ -841,6 +841,7 @@ export type { CascaderInstance } from './cascader';
 export type { CascaderPanelInstance } from './cascader-panel';
 export type { MenuInstance } from './menu';
 export type { PopoverInstance, PopoverProps, PopoverVirtualRef } from './popover';
+export type { PopconfirmActions, PopconfirmInstance, PopconfirmProps } from './popconfirm';
 export type { RateInstance } from './rate';
 export type { ScrollbarInstance } from './scrollbar';
 export type { SplitterPanelInstance } from './splitter';

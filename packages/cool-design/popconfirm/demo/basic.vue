@@ -14,7 +14,9 @@ const result = ref('尚未执行操作');
       confirm-button-text="停用"
       @confirm="result = '账号已停用'"
       @cancel="result = '已取消操作'">
-      <Button type="danger">停用账号</Button>
+      <template #reference>
+        <Button type="danger">停用账号</Button>
+      </template>
     </Popconfirm>
     <span role="status">{{ result }}</span>
   </Space>

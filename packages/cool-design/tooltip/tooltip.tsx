@@ -88,7 +88,12 @@ export const tooltipProps = {
 
 export default defineComponent({
   name: 'i-tooltip',
-  props: tooltipProps,
+  props: {
+    ...tooltipProps,
+    trapFocus: Boolean,
+    onDismiss: Function as PropType<(event: Event) => void>,
+    onControlledClose: Function as PropType<() => void>
+  },
   emits: ['update:visible', 'before-show', 'show', 'before-hide', 'hide', 'open', 'close', 'visible-change'],
   setup(props, { slots, emit, expose }) {
     const owner = getCurrentInstance();
@@ -129,7 +134,9 @@ export default defineComponent({
       closeOnEscape: () => !isControlled(),
       closeOnOutside: () => !isControlled() && (props.closeOnOutside ??
         (!props.virtualTriggering || triggers.value.every((trigger) => trigger === 'click' || trigger === 'contextmenu'))),
-      close: (event) => onClose(event),
+      close: (event) => dismiss(event),
+      trapFocus: props.trapFocus,
+      focusOnOpen: false,
       popper: {
         options: () => props.popperOptions,
         strategy: () => props.strategy ?? (legacyPosition.value === 'fixed' ? 'fixed' : 'absolute'),
@@ -171,14 +178,18 @@ export default defineComponent({
       if (typeof value === 'boolean') setReason(value, controlledRequest?.visible === value ? controlledRequest.event : undefined);
       controlledRequest = undefined;
     }, { flush: 'sync' });
-    const schedule = (value: boolean, event?: Event) => {
+    const schedule = (value: boolean, event?: Event, closeControlled?: () => void) => {
+      const controlled = isControlled();
+      if (controlled && !closeControlled) return;
       clearTimer();
-      if (inactive.value || isControlled() || props.disabled || value === open.value) return;
+      if (inactive.value || props.disabled || value === open.value) return;
       const toggle = () => {
         clearTimer();
         const trigger = triggerWrapper.value ?? reference.value;
         if (value && props.canOpen && (!trigger || !props.canOpen(trigger))) return;
-        setVisible(value, event);
+        if (controlled) {
+          if (isControlled()) closeControlled?.();
+        } else setVisible(value, event);
       };
       const delay = value ? props.showAfter : props.hideAfter;
       if (delay > 0) {
@@ -188,7 +199,15 @@ export default defineComponent({
     };
     const onOpen = (event?: Event) => schedule(true, event);
     const onClose = (event?: Event) => schedule(false, event);
-    const toggle = (event: Event) => schedule(!(pending ?? open.value), event);
+    const dismiss = (event: Event) => {
+      if (props.onDismiss) props.onDismiss(event);
+      else onClose(event);
+    };
+    const toggle = (event: Event) => {
+      if (isControlled()) return;
+      if (props.onDismiss && open.value) dismiss(event);
+      else schedule(!(pending ?? open.value), event);
+    };
     const onMouseenter = (event: MouseEvent) => {
       if (!triggers.value.includes('hover')) return;
       hovered = true;
@@ -288,7 +307,8 @@ export default defineComponent({
     onDeactivated(() => {
       clearTimer();
       clearTimeout(autoCloseTimer);
-      setVisible(false);
+      if (open.value && isControlled()) props.onControlledClose?.();
+      else setVisible(false);
       inactive.value = true;
       rendered.value = false;
       hovered = false;
@@ -308,12 +328,13 @@ export default defineComponent({
         emit('before-show', showReason);
       };
       const afterEnter = () => {
+        if (props.trapFocus) floating.value?.focus({ preventScroll: true });
         emit('show', showReason);
         showReason = undefined;
       };
       return {
         name: 'el-fade-in-linear',
-        appear: !props.persistent,
+        appear: props.trapFocus || !props.persistent,
         ...custom,
         onBeforeEnter(el) {
           callTransitionHook(custom?.onBeforeEnter, el);
@@ -352,7 +373,7 @@ export default defineComponent({
     expose({
       popperRef: {
         get triggerRef() { return reference.value; },
-        get contentRef() { return floating.value; },
+        get contentRef() { return floating.value ?? undefined; },
         get popperInstanceRef() { return position.instance.value; }
       },
       contentRef: computed(() => floating.value ? {
@@ -362,7 +383,7 @@ export default defineComponent({
       } : undefined),
       isFocusInsideContent,
       onOpen,
-      onClose,
+      onClose: (event?: Event) => schedule(false, event, props.onControlledClose),
       show: () => {
         if (props.visible != null) return;
         clearTimer();
@@ -395,6 +416,7 @@ export default defineComponent({
           ref={floating}
           class={['i-tooltip', `i-tooltip--${props.effect}`, props.popperClass]}
           role={props.contentRole}
+          tabindex={props.trapFocus ? -1 : undefined}
           aria-label={props.ariaLabel}
           aria-hidden={open.value ? undefined : 'true'}
           style={[position.style.value, props.popperStyle]}
@@ -441,6 +463,11 @@ export default defineComponent({
             {children.map((vnode) =>
               cloneVNode(vnode, {
                 onVnodeUpdated: updateTriggerRoot,
+                ...(props.trapFocus ? {
+                  'aria-haspopup': props.contentRole,
+                  'aria-expanded': open.value,
+                  'aria-controls': open.value ? tooltipId : undefined
+                } : undefined),
                 'aria-describedby': open.value
                   ? [vnode.props?.['aria-describedby'], tooltipId].filter(Boolean).join(' ')
                   : vnode.props?.['aria-describedby']
