@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { h, nextTick } from 'vue';
 import { expect, test, vi } from 'vitest';
-import { AutoResizer } from '..';
+import { AutoResizer } from '../..';
 
 test('measures the content box, masks disabled axes and disconnects', async () => {
   let deliver: ResizeObserverCallback;

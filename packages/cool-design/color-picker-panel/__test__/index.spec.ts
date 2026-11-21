@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { expect, test } from 'vitest';
-import { ColorPickerPanel } from '..';
+import { ColorPickerPanel } from '../..';
 
 test('updates the color immediately through the standalone controls', async () => {
   const wrapper = mount(ColorPickerPanel, { props: { modelValue: '#ff0000', predefine: ['#00ff00'] } });

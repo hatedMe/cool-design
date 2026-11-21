@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { expect, test } from 'vitest';
-import { CheckTag, ElCheckTag } from '..';
+import { CheckTag, ElCheckTag } from '../..';
 
 test('toggles a controlled check tag and respects disabled', async () => {
   expect(CheckTag).toBe(ElCheckTag);
