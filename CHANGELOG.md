@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Popover 默认宽度为 `150`，定位策略为 `absolute`，并从首次渲染起保留浮层节点。旧布局可显式设置 `width="auto"` 或 `strategy="fixed"`，关闭后需要销毁时设置 `:persistent="false"`。默认插槽提供立即请求关闭的 `hide()`，离场完成时会再次发送 `update:visible(false)`。虚拟 `click` 或 `contextmenu` 触发模式现在会在点击外部时请求关闭。
+
 - Tooltip 的默认定位从 `fixed` 改为 `absolute`，可显式传入 `strategy="fixed"` 延续旧布局。启用 `persistent` 后，内容从首次渲染起挂载并在关闭时隐藏。实例方法 `hide()` 立即请求关闭，需要保留 `hide-after` 延迟时改用 `onClose()`。
 
 - TreeV2 增加 `setData(data)` 实例方法，默认插槽同时提供 `node` 和 `data`。替换 `data` 属性时，勾选状态按节点键保留。

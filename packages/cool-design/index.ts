@@ -837,7 +837,7 @@ export type { TabsInstance } from './tabs';
 export type { CascaderInstance } from './cascader';
 export type { CascaderPanelInstance } from './cascader-panel';
 export type { MenuInstance } from './menu';
-export type { PopoverInstance } from './popover';
+export type { PopoverInstance, PopoverProps, PopoverVirtualRef } from './popover';
 export type { RateInstance } from './rate';
 export type { ScrollbarInstance } from './scrollbar';
 export type { SplitterPanelInstance } from './splitter';

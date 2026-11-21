@@ -47,43 +47,47 @@ const updateDescription = (element: HTMLElement, id: string, active: boolean) =>
   else element.removeAttribute('aria-describedby');
 };
 
+export const tooltipProps = {
+  content: { type: String, default: '' },
+  rawContent: Boolean,
+  placement: { type: String as PropType<Placement>, default: 'bottom' },
+  disabled: Boolean,
+  canOpen: Function as PropType<(reference: FloatingReference) => boolean>,
+  trigger: { type: [String, Array] as PropType<Trigger | Trigger[]>, default: 'hover' },
+  triggerKeys: { type: Array as PropType<string[]>, default: () => ['Enter', 'Space'] },
+  transition: [String, Object] as PropType<string | TransitionProps>,
+  persistent: Boolean,
+  eager: Boolean,
+  ariaLabel: String,
+  contentRole: { type: String, default: 'tooltip' },
+  closeOnOutside: { type: Boolean, default: undefined },
+  triggerClass: String,
+  arrowClass: String,
+  showAfter: { type: Number, default: 0 },
+  hideAfter: { type: Number, default: 200 },
+  autoClose: { type: Number, default: 0 },
+  enterable: { type: Boolean, default: true },
+  showArrow: { type: Boolean, default: true },
+  arrowOffset: { type: Number, default: 5 },
+  effect: { type: String, default: 'dark' },
+  offset: { type: Number, default: 12 },
+  fallbackPlacements: { type: Array as PropType<Placement[]>, default: undefined },
+  strategy: String as PropType<PositioningStrategy>,
+  gpuAcceleration: { type: Boolean, default: true },
+  popperOptions: Object as PropType<PopperOptions>,
+  visible: { type: Boolean as PropType<boolean | null>, default: null },
+  teleported: { type: Boolean, default: true },
+  appendTo: { type: [String, Object] as PropType<AppendTo>, default: undefined },
+  popperClass: { type: [String, Array, Object] as PropType<string | Array<string | Record<string, boolean> | string[] | undefined> | Record<string, boolean>>, default: undefined },
+  popperStyle: { type: [String, Array, Object] as PropType<string | CSSProperties | CSSProperties[]>, default: undefined },
+  zIndex: { type: Number, default: undefined },
+  virtualTriggering: Boolean,
+  virtualRef: { type: Object as PropType<TooltipVirtualRef>, default: undefined }
+};
+
 export default defineComponent({
   name: 'i-tooltip',
-  props: {
-    content: { type: String, default: '' },
-    rawContent: Boolean,
-    placement: { type: String as PropType<Placement>, default: 'bottom' },
-    disabled: Boolean,
-    canOpen: Function as PropType<(reference: FloatingReference) => boolean>,
-    trigger: { type: [String, Array] as PropType<Trigger | Trigger[]>, default: 'hover' },
-    triggerKeys: { type: Array as PropType<string[]>, default: () => ['Enter', 'Space'] },
-    transition: [String, Object] as PropType<string | TransitionProps>,
-    persistent: Boolean,
-    eager: Boolean,
-    contentRole: { type: String, default: 'tooltip' },
-    closeOnOutside: { type: Boolean, default: undefined },
-    arrowClass: String,
-    showAfter: { type: Number, default: 0 },
-    hideAfter: { type: Number, default: 200 },
-    autoClose: { type: Number, default: 0 },
-    enterable: { type: Boolean, default: true },
-    showArrow: { type: Boolean, default: true },
-    arrowOffset: { type: Number, default: 5 },
-    effect: { type: String, default: 'dark' },
-    offset: { type: Number, default: 12 },
-    fallbackPlacements: { type: Array as PropType<Placement[]>, default: undefined },
-    strategy: String as PropType<PositioningStrategy>,
-    gpuAcceleration: { type: Boolean, default: true },
-    popperOptions: Object as PropType<PopperOptions>,
-    visible: { type: Boolean as PropType<boolean | null>, default: null },
-    teleported: { type: Boolean, default: true },
-    appendTo: { type: [String, Object] as PropType<AppendTo>, default: undefined },
-    popperClass: { type: [String, Array, Object] as PropType<string | Array<string | Record<string, boolean> | string[] | undefined> | Record<string, boolean>>, default: undefined },
-    popperStyle: { type: [String, Array, Object] as PropType<string | CSSProperties | CSSProperties[]>, default: undefined },
-    zIndex: { type: Number, default: undefined },
-    virtualTriggering: Boolean,
-    virtualRef: { type: Object as PropType<TooltipVirtualRef>, default: undefined }
-  },
+  props: tooltipProps,
   emits: ['update:visible', 'before-show', 'show', 'before-hide', 'hide', 'open', 'close', 'visible-change'],
   setup(props, { slots, emit, expose }) {
     const owner = getCurrentInstance();
@@ -387,6 +391,7 @@ export default defineComponent({
           ref={floating}
           class={['i-tooltip', `i-tooltip--${props.effect}`, props.popperClass]}
           role={props.contentRole}
+          aria-label={props.ariaLabel}
           aria-hidden={open.value ? undefined : 'true'}
           style={[position.style.value, props.popperStyle]}
           data-placement={position.placement.value}
@@ -420,7 +425,7 @@ export default defineComponent({
       return (
         <>
           <span
-            class='i-tooltip__trigger'
+            class={['i-tooltip__trigger', props.triggerClass]}
             ref={setTriggerWrapper}
             onMouseenter={onMouseenter}
             onMouseleave={onMouseleave}

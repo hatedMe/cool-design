@@ -6,17 +6,18 @@
 .i-popover {
   box-sizing: border-box;
   min-width: 150px;
-  max-width: calc(100vw - 16px);
   max-height: calc(100vh - 16px);
-  overflow: auto;
   overflow-wrap: anywhere;
-  padding: 12px;
   border: 1px solid var(--i-border);
   border-radius: var(--i-radius);
   background: var(--i-bg);
   color: var(--i-text);
   font-size: var(--i-font-size);
   box-shadow: var(--i-shadow);
+}
+.i-popover.i-tooltip {
+  max-width: calc(100vw - 16px);
+  padding: 12px;
 }
 .i-popover--dark {
   background: #303133;
@@ -28,33 +29,6 @@
   font-size: 16px;
   font-weight: 600;
 }
-.i-popover__arrow {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  box-sizing: border-box;
-  background: inherit;
-  border: inherit;
-  transform: translate(-50%, -50%) rotate(45deg);
-  pointer-events: none;
-}
-.i-popover[data-placement^='top'] .i-popover__arrow {
-  bottom: -5px;
-  border-top: 0;
-  border-left: 0;
-}
-.i-popover[data-placement^='bottom'] .i-popover__arrow {
-  top: 0;
-  border-bottom: 0;
-  border-right: 0;
-}
-.i-popover[data-placement^='left'] .i-popover__arrow {
-  right: -5px;
-  border-bottom: 0;
-  border-left: 0;
-}
-.i-popover[data-placement^='right'] .i-popover__arrow {
-  left: 0;
-  border-top: 0;
-  border-right: 0;
+.i-popover .i-tooltip__content {
+  max-height: calc(100vh - 42px);
 }
