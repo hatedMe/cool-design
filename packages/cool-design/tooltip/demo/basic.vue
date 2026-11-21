@@ -13,7 +13,7 @@ const visible = ref(false);
     <Tooltip content="只有管理员可以修改权限" placement="bottom-start">
       <Button>下方提示</Button>
     </Tooltip>
-    <Tooltip content="点击查看帮助" trigger="click" effect="light">
+    <Tooltip content="点击或按 Enter 打开帮助" trigger="click" :trigger-keys="['Enter']" effect="light">
       <Button>点击提示</Button>
     </Tooltip>
     <Tooltip content="右键查看帮助" trigger="contextmenu">

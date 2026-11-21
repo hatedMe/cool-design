@@ -5,11 +5,13 @@ import {
   onBeforeUnmount,
   onMounted,
   ref,
+  shallowRef,
   watch,
   type CSSProperties,
   type Ref,
   type ComputedRef
 } from 'vue';
+import { createPopper, type Instance, type Options, type Placement as PopperPlacement, type State, type VirtualElement } from '@popperjs/core';
 import { overlayKey } from '../../packages/cool-design/config-provider/context';
 import { isTopOverlay, isTopFocusOverlay, pushOverlay, removeOverlay } from './overlay-stack';
 import { useZIndex } from '../../packages/hooks/use-z-index';
@@ -30,16 +32,19 @@ export type Placement =
 
 type BasePlacement = 'top' | 'bottom' | 'left' | 'right';
 type AppendTo = string | HTMLElement | undefined;
-export type FloatingReference = HTMLElement | { getBoundingClientRect: () => DOMRect };
+export type FloatingReference = HTMLElement | VirtualElement;
 export type FloatingOptions = { offset?: number; placement?: Placement };
+export type PopperOptions = Partial<Options>;
 
 interface FloatingController {
-  target: ComputedRef<HTMLElement>;
+  target: ComputedRef<HTMLElement | string>;
   style: Ref<CSSProperties>;
-  placement: Ref<Placement>;
+  placement: Ref<PopperPlacement>;
   arrowStyle: Ref<CSSProperties>;
+  attributes: Ref<State['attributes']>;
+  instance: Ref<Instance | undefined>;
   restoreFocus: () => void;
-  update: () => void;
+  update: () => Promise<Partial<State>> | void;
 }
 
 const placementParts = (value: Placement): [BasePlacement, 'start' | 'end' | undefined] => {
@@ -51,9 +56,9 @@ export function useFloating(options: {
   open: Ref<boolean>;
   reference: Ref<FloatingReference | undefined>;
   floating: Ref<HTMLElement | undefined>;
-  placement: () => Placement;
-  fallbackPlacements?: () => Placement[] | undefined;
-  close: () => void;
+  placement: () => PopperPlacement;
+  fallbackPlacements?: () => PopperPlacement[] | undefined;
+  close: (event: Event) => void;
   trapFocus?: boolean;
   offset?: () => number;
   appendTo?: () => AppendTo;
@@ -61,18 +66,32 @@ export function useFloating(options: {
   closeOnEscape?: () => boolean;
   closeOnOutside?: () => boolean;
   options?: () => FloatingOptions | undefined;
+  popper?: {
+    options: () => PopperOptions | undefined;
+    strategy: () => Options['strategy'];
+    gpuAcceleration: () => boolean;
+    roundOffsets?: () => boolean;
+    arrow?: () => HTMLElement | undefined;
+    arrowOffset?: () => number;
+    eventListeners?: () => boolean;
+    teleported?: () => boolean;
+  };
 }): FloatingController {
   const host = inject(overlayKey, undefined);
   const token = Symbol('floating');
   let active = false;
   let observer: ResizeObserver | undefined;
-  const style = ref<CSSProperties>({ position: 'fixed', visibility: 'hidden' });
+  const initialStrategy = options.popper?.options()?.strategy ?? options.popper?.strategy() ?? 'fixed';
+  const style = ref<CSSProperties>({ position: initialStrategy, visibility: 'hidden' });
   const arrowStyle = ref<CSSProperties>({});
-  const placement = ref<Placement>(options.placement());
+  const placement = ref(options.placement());
+  const attributes = shallowRef<State['attributes']>({});
+  const instance = shallowRef<Instance>();
   const { nextZIndex } = useZIndex();
   let zIndex = 2001;
   const target = computed(() => {
     const value = options.appendTo?.();
+    if (typeof document === 'undefined') return typeof value === 'string' ? value : 'body';
     if (value instanceof HTMLElement) return value;
     if (typeof value === 'string') {
       try {
@@ -91,11 +110,19 @@ export function useFloating(options: {
       ) || []
     );
   const focusFirst = () => (items()[0] || options.floating.value)?.focus();
-  const restoreFocus = () => {
-    if (options.reference.value instanceof HTMLElement)
-      options.reference.value.querySelector<HTMLElement>('button,a[href],input,select,textarea,[tabindex]')?.focus();
+  const referenceElement = () => {
+    const anchor = options.reference.value;
+    return anchor && ('nodeType' in anchor ? anchor : anchor.contextElement);
   };
-  const update = () => {
+  const restoreFocus = () => {
+    const anchor = referenceElement();
+    const focusable = 'button,a[href],input,select,textarea,[tabindex]';
+    if (anchor instanceof HTMLElement) {
+      const focusTarget = anchor.matches(focusable) ? anchor : anchor.querySelector<HTMLElement>(focusable);
+      focusTarget?.focus({ preventScroll: true });
+    }
+  };
+  const updateLegacy = () => {
     const anchor = options.reference.value;
     const panel = options.floating.value;
     if (!active || !anchor || !panel) return;
@@ -112,11 +139,11 @@ export function useFloating(options: {
       right: width - a.right - gap
     };
     const opposite: Record<BasePlacement, BasePlacement> = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' };
-    const requested = configured?.placement ?? options.placement();
+    const requested = (configured?.placement ?? options.placement()) as Placement;
     const [requestedSide, requestedAlign] = placementParts(requested);
     let side = requestedSide;
     let align = requestedAlign;
-    const candidates = [requested, ...(options.fallbackPlacements?.() || [])];
+    const candidates = [requested, ...((options.fallbackPlacements?.() || []) as Placement[])];
     const fits = (candidate: Placement) => {
       const [candidateSide] = placementParts(candidate);
       const extent = candidateSide === 'top' || candidateSide === 'bottom' ? p.height : p.width;
@@ -167,19 +194,88 @@ export function useFloating(options: {
         ? { left: `${Math.max(arrow, Math.min((a.left + a.width / 2 - x) / scaleX, p.width / scaleX - arrow))}px` }
         : { top: `${Math.max(arrow, Math.min((a.top + a.height / 2 - y) / scaleY, p.height / scaleY - arrow))}px` };
   };
+  const update = () => options.popper ? instance.value?.update() : updateLegacy();
+  const observeElements = () => {
+    observer?.disconnect();
+    const anchor = referenceElement();
+    if (anchor) observer?.observe(anchor);
+    if (options.floating.value) observer?.observe(options.floating.value);
+  };
+  const destroyPopper = () => {
+    instance.value?.destroy();
+    instance.value = undefined;
+  };
+  if (options.popper) {
+    const config = options.popper;
+    const popperOptions = computed<Options>(() => {
+      const overrides = config.options();
+      const arrow = config.arrow?.();
+      return {
+        placement: options.placement(),
+        strategy: config.strategy(),
+        ...overrides,
+        modifiers: [
+          { name: 'offset', options: { offset: [0, options.offset?.() ?? 12] } },
+          { name: 'preventOverflow', options: { padding: 0 } },
+          { name: 'flip', options: { padding: 5, fallbackPlacements: options.fallbackPlacements?.() } },
+          { name: 'computeStyles', options: {
+            gpuAcceleration: config.gpuAcceleration(), roundOffsets: config.roundOffsets?.() ?? true
+          } },
+          { name: 'arrow', enabled: !!arrow, options: { element: arrow, padding: config.arrowOffset?.() ?? 5 } },
+          { name: 'eventListeners', enabled: config.eventListeners?.() ?? options.open.value },
+          ...overrides?.modifiers ?? [],
+          { name: 'applyStyles', enabled: false },
+          {
+            name: 'updateState', enabled: true, phase: 'afterWrite',
+            effect: ({ state, instance }) => {
+              // Popper reads the offset parent during its first update, including after public setOptions calls.
+              state.elements.popper.style.position = state.options.strategy;
+              return () => {
+                // Discard output from modifiers that may be disabled by the next setOptions.
+                instance.state.styles = {};
+                instance.state.attributes = {};
+              };
+            },
+            fn: ({ state }) => {
+              placement.value = state.placement;
+              style.value = { position: state.options.strategy, zIndex, ...state.styles.popper as CSSProperties };
+              arrowStyle.value = { ...state.styles.arrow as CSSProperties };
+              attributes.value = Object.fromEntries(
+                Object.entries(state.attributes).map(([name, attrs]) => [name, Object.fromEntries(
+                  Object.entries(attrs).filter(([, value]) => value !== false)
+                    .map(([key, value]) => [key, value === true ? '' : value])
+                )])
+              );
+            }
+          }
+        ]
+      };
+    });
+    const teleportTarget = () => config.teleported?.() === false ? undefined : target.value;
+    watch([options.reference, options.floating, popperOptions, teleportTarget, referenceElement],
+      ([anchor, panel, config, container, context], [oldAnchor, oldPanel, , oldContainer, oldContext]) => {
+        if (!anchor || !panel || anchor !== oldAnchor || panel !== oldPanel || container !== oldContainer || context !== oldContext) {
+          destroyPopper();
+          observeElements();
+          if (anchor && panel) instance.value = createPopper(anchor, panel, config);
+        } else {
+          void instance.value?.setOptions(config);
+        }
+      }, { deep: true, flush: 'post' });
+  }
   const contains = (value: Node | null) =>
     !!value &&
     ((options.reference.value instanceof HTMLElement && options.reference.value.contains(value)) ||
       !!options.floating.value?.contains(value));
   const outside = (event: Event) => {
     if (options.closeOnOutside?.() === false) return;
-    if (isTopOverlay(token) && !contains(event.target as Node)) options.close();
+    if (isTopOverlay(token) && !contains(event.target as Node)) options.close(event);
   };
   const keydown = (event: KeyboardEvent) => {
     if (event.key === 'Escape' && !event.isComposing && options.closeOnEscape?.() !== false && isTopOverlay(token)) {
       event.preventDefault();
       event.stopImmediatePropagation();
-      options.close();
+      options.close(event);
       return;
     }
     if (event.key !== 'Tab' || !options.trapFocus || !isTopFocusOverlay(token)) return;
@@ -203,8 +299,10 @@ export function useFloating(options: {
     const shouldRestore = restore && options.trapFocus && isTopFocusOverlay(token) && options.floating.value?.contains(document.activeElement);
     active = false;
     removeOverlay(token);
-    window.removeEventListener('resize', update);
-    window.removeEventListener('scroll', update, true);
+    if (!options.popper) {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('scroll', update, true);
+    }
     document.removeEventListener('pointerdown', outside, true);
     document.removeEventListener('keydown', keydown, true);
     document.removeEventListener('focusin', focusin);
@@ -219,9 +317,11 @@ export function useFloating(options: {
       active = true;
       const stackZIndex = pushOverlay(token, options.trapFocus);
       zIndex = options.zIndex?.() ?? Math.max(stackZIndex, nextZIndex());
-      style.value = { position: 'fixed', visibility: 'hidden', zIndex };
-      window.addEventListener('resize', update);
-      window.addEventListener('scroll', update, true);
+      if (!options.popper) {
+        style.value = { position: 'fixed', visibility: 'hidden', zIndex };
+        window.addEventListener('resize', update);
+        window.addEventListener('scroll', update, true);
+      }
       document.addEventListener('pointerdown', outside, true);
       document.addEventListener('keydown', keydown, true);
       document.addEventListener('focusin', focusin);
@@ -231,13 +331,14 @@ export function useFloating(options: {
       if (options.trapFocus) focusFirst();
       if (typeof ResizeObserver !== 'undefined') {
         observer = new ResizeObserver(update);
-        const referenceElement = options.reference.value;
-        if (referenceElement && 'nodeType' in referenceElement) observer.observe(referenceElement as Element);
-        if (options.floating.value) observer.observe(options.floating.value);
+        observeElements();
       }
     }, { immediate: true, flush: 'sync' })
   );
-  watch(options.placement, () => nextTick(update));
-  onBeforeUnmount(() => cleanup(true));
-  return { target, style, placement, arrowStyle, restoreFocus, update };
+  if (!options.popper) watch(options.placement, () => nextTick(update));
+  onBeforeUnmount(() => {
+    cleanup(true);
+    destroyPopper();
+  });
+  return { target, style, placement, arrowStyle, attributes, instance, restoreFocus, update };
 }

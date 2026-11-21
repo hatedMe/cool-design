@@ -1,6 +1,6 @@
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { defineComponent, h, nextTick, reactive } from 'vue';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 import ConfigProvider from '../../config-provider';
 import Table, { type TableInstance } from '../index';
 import TableColumn from '../../table-column';
@@ -205,6 +205,47 @@ test('表格溢出 Tooltip 消费分层对象选项并保留未覆盖的样式�
     expect((tip.element as HTMLElement).style).toMatchObject({ color: 'blue', fontSize: '13px', fontWeight: '700' });
   } finally {
     wrapper.unmount();
+  }
+});
+
+test('溢出提示组合宿主、strategy 及多层 Popper modifier', async () => {
+  const host = document.body.appendChild(document.createElement('div'));
+  const firstUpdate = vi.fn();
+  const wrapper = mount(Table, {
+    attachTo: document.body,
+    props: {
+      data: [{ name: '甲' }],
+      showOverflowTooltip: true,
+      tooltipOptions: {
+        appendTo: host, teleported: true,
+        popperOptions: {
+          strategy: 'fixed', onFirstUpdate: firstUpdate,
+          modifiers: [{ name: 'computeStyles', options: { gpuAcceleration: false } }]
+        }
+      },
+      columns: [{ prop: 'name', showOverflowTooltip: {
+        popperOptions: { modifiers: [{
+          name: 'markTable', phase: 'write', enabled: true,
+          fn: ({ state }: { state: { attributes: Record<string, Record<string, boolean>> } }) => {
+            state.attributes.popper['data-table-modifier'] = true;
+          }
+        }] }
+      } }]
+    }
+  });
+  try {
+    const trigger = wrapper.get('.i-tooltip__trigger');
+    Object.defineProperty(trigger.element, 'scrollWidth', { value: 100 });
+    await trigger.trigger('mouseenter');
+    await flushPromises();
+    const panel = host.querySelector<HTMLElement>('[role=tooltip]');
+    expect(panel?.hasAttribute('data-table-modifier')).toBe(true);
+    expect(panel?.style.position).toBe('fixed');
+    expect(panel?.style.transform).toBe('');
+    expect(firstUpdate).toHaveBeenCalledTimes(1);
+  } finally {
+    wrapper.unmount();
+    host.remove();
   }
 });
 

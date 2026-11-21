@@ -3,6 +3,27 @@ import { h } from 'vue';
 import { afterEach, expect, test, vi } from 'vitest';
 import Tooltip from '..';
 const wrappers: ReturnType<typeof mount>[] = [];
+const mockLayout = (anchorRect: () => DOMRect) => {
+  vi.spyOn(Element.prototype, 'clientWidth', 'get').mockImplementation(function (this: Element) {
+    return this === document.documentElement ? 1024 : 0;
+  });
+  vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
+    return this === document.documentElement ? 768 : 0;
+  });
+  vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (this: HTMLElement) {
+    return this.getBoundingClientRect().width;
+  });
+  vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (this: HTMLElement) {
+    return this.getBoundingClientRect().height;
+  });
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+    if (this.parentElement?.classList.contains('i-tooltip__trigger')) return anchorRect();
+    if (this.classList.contains('i-tooltip')) return new DOMRect(0, 0, 100, 40);
+    if (this.classList.contains('i-tooltip__arrow')) return new DOMRect(0, 0, 8, 8);
+    return new DOMRect();
+  });
+};
+
 afterEach(() => {
   wrappers.forEach((w) => w.unmount());
   wrappers.length = 0;
@@ -13,9 +34,10 @@ afterEach(() => {
 test('聚焦显示纯文本说明，Esc 隐藏并解除关联，禁用不显示', async () => {
   vi.useFakeTimers();
   const w = mount(Tooltip, {
-    props: { content: '<b>说明</b>' },
+    props: { content: '<b>说明</b>', transition: { css: false } },
     slots: { default: () => h('button', '帮助') },
-    attachTo: document.body
+    attachTo: document.body,
+    global: { stubs: { transition: false } }
   });
   wrappers.push(w);
   await w.get('button').trigger('focusin');
@@ -35,14 +57,11 @@ test('聚焦显示纯文本说明，Esc 隐藏并解除关联，禁用不显示'
   expect(document.querySelector('[role="tooltip"]')).toBeNull();
 });
 test('视口顶部放不下时翻转，滚动更新坐标，卸载移除监听和 DOM', async () => {
-  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
-    return this.classList.contains('i-tooltip__trigger')
-      ? { x: 100, y: 2, left: 100, top: 2, right: 160, bottom: 22, width: 60, height: 20, toJSON() {} }
-      : { x: 0, y: 0, left: 0, top: 0, right: 100, bottom: 40, width: 100, height: 40, toJSON() {} };
-  });
+  let anchorLeft = 100;
+  mockLayout(() => new DOMRect(anchorLeft, 2, 60, 20));
   const remove = vi.spyOn(window, 'removeEventListener');
   const w = mount(Tooltip, {
-    props: { content: '说明', placement: 'top', offset: 8 },
+    props: { content: '说明', placement: 'top', offset: 8, gpuAcceleration: false },
     slots: { default: () => h('button', '帮助') },
     attachTo: document.body
   });
@@ -52,9 +71,10 @@ test('视口顶部放不下时翻转，滚动更新坐标，卸载移除监听�
   const tip = document.querySelector<HTMLElement>('[role="tooltip"]')!;
   expect(tip.dataset.placement).toBe('bottom');
   expect(tip.style.top).toBe('30px');
+  anchorLeft = 140;
   window.dispatchEvent(new Event('scroll'));
   await flushPromises();
-  expect(tip.style.left).toBe('80px');
+  expect(tip.style.left).toBe('120px');
   w.unmount();
   wrappers.pop();
   expect(document.querySelector('[role="tooltip"]')).toBeNull();
@@ -94,9 +114,10 @@ test('支持 contextmenu、raw content、箭头和自定义样式', async () => 
 test('自定义 z-index 的 Tooltip 仍可通过 Esc 关闭', async () => {
   vi.useFakeTimers();
   const w = mount(Tooltip, {
-    props: { content: '说明', trigger: 'click', zIndex: 3000 },
+    props: { content: '说明', trigger: 'click', zIndex: 3000, transition: { css: false } },
     slots: { default: () => h('button', '帮助') },
-    attachTo: document.body
+    attachTo: document.body,
+    global: { stubs: { transition: false } }
   });
   wrappers.push(w);
   await w.get('button').trigger('click');
@@ -154,9 +175,10 @@ test('支持只提供 getBoundingClientRect 的虚拟触发器', async () => {
 
 test('生命周期事件只在可见状态变化时触发一次', async () => {
   const w = mount(Tooltip, {
-    props: { content: '说明', trigger: 'hover', hideAfter: 0 },
+    props: { content: '说明', trigger: 'hover', hideAfter: 0, transition: { css: false } },
     slots: { default: () => h('button', '帮助') },
-    attachTo: document.body
+    attachTo: document.body,
+    global: { stubs: { transition: false } }
   });
   wrappers.push(w);
   await w.get('.i-tooltip__trigger').trigger('mouseenter');
@@ -210,11 +232,7 @@ test.each([
   ['right-start', 'right', 'start'],
   ['right-end', 'right', 'end']
 ] as const)('支持 %s 对齐方向和箭头位置', async (placement, horizontal, vertical) => {
-  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
-    return this.classList.contains('i-tooltip__trigger')
-      ? { x: 300, y: 300, left: 300, top: 300, right: 360, bottom: 320, width: 60, height: 20, toJSON() {} }
-      : { x: 0, y: 0, left: 0, top: 0, right: 100, bottom: 40, width: 100, height: 40, toJSON() {} };
-  });
+  mockLayout(() => new DOMRect(300, 300, 60, 20));
   const w = mount(Tooltip, {
     props: { content: '说明', placement, showArrow: true, offset: 12 },
     slots: { default: () => h('button', '帮助') },
@@ -232,9 +250,10 @@ test.each([
 
 test('支持数组触发方式，hover 与 click 均可打开', async () => {
   const w = mount(Tooltip, {
-    props: { content: '说明', trigger: ['hover', 'click'], hideAfter: 0 },
+    props: { content: '说明', trigger: ['hover', 'click'], hideAfter: 0, transition: { css: false } },
     slots: { default: () => h('button', '帮助') },
-    attachTo: document.body
+    attachTo: document.body,
+    global: { stubs: { transition: false } }
   });
   wrappers.push(w);
   await w.get('.i-tooltip__trigger').trigger('mouseenter');
@@ -255,14 +274,15 @@ test('persistent 保留隐藏后的浮层节点', async () => {
     attachTo: document.body
   });
   wrappers.push(w);
-  expect(document.querySelector('[role="tooltip"]')).toBeNull();
+  const initial = document.querySelector<HTMLElement>('[role="tooltip"]');
+  expect(initial?.style.display).toBe('none');
   await w.get('button').trigger('click');
   await flushPromises();
   expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
   await w.get('button').trigger('click');
   await flushPromises();
   const tip = document.querySelector<HTMLElement>('[role="tooltip"]')!;
-  expect(tip).not.toBeNull();
+  expect(tip).toBe(initial);
   expect(tip.style.display).toBe('none');
   expect(tip.getAttribute('aria-hidden')).toBe('true');
 });

@@ -271,7 +271,7 @@ const columns = [
 | nativeScrollbar         | 使用原生滚动条，关闭则用细滚动条样式                                          | `boolean`                                                              | `true`               |
 | preserveExpandedContent | 收起时保留展开行内容（隐藏不断载）                                            | `boolean`                                                              | `false`              |
 | tooltipEffect | 溢出提示默认主题，内置 `light` 和 `dark` | `string` | `dark` |
-| tooltipOptions | 表格的溢出提示选项 | `TableOverflowTooltipOptions` | — |
+| tooltipOptions | 表格的溢出提示选项，支持 `appendTo`、`strategy`、`popperOptions` 等 Tooltip 定位配置 | `TableOverflowTooltipOptions` | — |
 
 ### 事件
 

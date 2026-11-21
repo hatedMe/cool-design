@@ -1,6 +1,6 @@
 import { DOMWrapper, mount } from '@vue/test-utils';
 import { defineComponent, h, ref, type Component } from 'vue';
-import { beforeEach, describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 // 下拉面板默认传送到 document.body，测试中用文档级查询访问传送内容。
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -24,7 +24,7 @@ const mountMention = (
           options.slots
         )
     }),
-    { attachTo: document.body }
+    { attachTo: document.body, global: { stubs: { transition: false } } }
   );
   return { wrapper, text, mention: wrapper.findComponent(Mention) };
 };
@@ -55,7 +55,7 @@ describe('test `Mention` component', () => {
     await doc().find('.i-mention__option').trigger('mousedown');
     expect(mention.emitted('select')).toHaveLength(1);
     expect(text.value).toBe('hi @Jeremy ');
-    expect(doc().find('.i-mention__dropdown').exists()).toBe(false);
+    await vi.waitFor(() => expect(doc().find('.i-mention__dropdown').exists()).toBe(false));
   });
 
   test('键盘上下移动高亮，Enter 选中', async () => {

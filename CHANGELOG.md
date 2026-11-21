@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Tooltip 的默认定位从 `fixed` 改为 `absolute`，可显式传入 `strategy="fixed"` 延续旧布局。启用 `persistent` 后，内容从首次渲染起挂载并在关闭时隐藏。实例方法 `hide()` 立即请求关闭，需要保留 `hide-after` 延迟时改用 `onClose()`。
+
 - TreeV2 增加 `setData(data)` 实例方法，默认插槽同时提供 `node` 和 `data`。替换 `data` 属性时，勾选状态按节点键保留。
 
 - Form 增加选择性重置与清除、字段查询、重置初值设置及校验状态。`validate` 和 `validateField` 的失败字段映射改为 `{ message, field, fieldValue }[]`。`validateField` 省略回调时，失败改为拒绝 Promise，依赖失败返回 `false` 的调用可传入回调或捕获拒绝。

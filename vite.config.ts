@@ -40,7 +40,8 @@ export default defineConfig({
     rollupOptions: {
       // 运行时依赖保持外部引用，不打包进产物。
       external: (id: string) =>
-        id === 'vue' || id === 'dayjs' || id.startsWith('dayjs/') || id === 'async-validator' || id === '@ctrl/tinycolor',
+        id === 'vue' || id === 'dayjs' || id.startsWith('dayjs/') || id === 'async-validator' ||
+        id === '@ctrl/tinycolor' || id === '@popperjs/core',
       output: [
         {
           format: 'es',

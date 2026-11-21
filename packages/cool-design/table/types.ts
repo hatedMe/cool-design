@@ -124,10 +124,12 @@ export interface TableCellEditParams {
   oldValue: unknown;
 }
 
-export type TableOverflowTooltipOptions = Partial<Pick<InstanceType<typeof Tooltip>['$props'],
+type TooltipProps = InstanceType<typeof Tooltip>['$props'];
+type OverflowTooltipProp =
   'placement' | 'offset' | 'popperClass' | 'effect' | 'disabled' | 'trigger' | 'showAfter' |
-  'hideAfter' | 'enterable' | 'showArrow' | 'fallbackPlacements' | 'teleported' | 'appendTo' | 'popperStyle' | 'zIndex'
->>;
+  'hideAfter' | 'enterable' | 'showArrow' | 'fallbackPlacements' | 'teleported' | 'appendTo' | 'popperStyle' | 'zIndex' |
+  'strategy' | 'popperOptions' | 'gpuAcceleration' | 'arrowOffset' | 'transition' | 'triggerKeys' | 'persistent';
+export type TableOverflowTooltipOptions = { -readonly [K in OverflowTooltipProp]?: TooltipProps[K] };
 
 export interface TableEditorParams {
   row: object;

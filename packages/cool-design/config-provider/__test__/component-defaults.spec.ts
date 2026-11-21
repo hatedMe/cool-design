@@ -47,9 +47,10 @@ test('Table 分层应用溢出提示，显式关闭优先', async () => {
     props: { table: { showOverflowTooltip: true, tooltipEffect: 'light', tooltipOptions: { popperClass: 'provider-tip' }, tooltipFormatter: () => h('strong', '全局提示') } },
     slots: { default: () => h(Table, {
       data: [{ name: '甲', other: '乙' }],
-      showOverflowTooltip: { popperClass: 'table-tip', offset: 0, showArrow: false },
+      showOverflowTooltip: { popperClass: 'table-tip', offset: 0, showArrow: false, transition: { css: false } },
       columns: [{ key: 'name', showOverflowTooltip: { placement: 'bottom' } }, { key: 'other', showOverflowTooltip: false }]
-    }) }
+    }) },
+    global: { stubs: { transition: false } }
   });
   const cells = wrapper.findAll('tbody td');
   expect(cells[1].find('.i-tooltip__trigger').exists()).toBe(false);

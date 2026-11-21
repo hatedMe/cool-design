@@ -924,8 +924,16 @@ export default defineComponent({
       ];
       for (const layer of layers) {
         if (typeof layer !== 'object') continue;
-        const { popperClass, popperStyle, ...other } = layer;
+        const { popperClass, popperStyle, popperOptions, ...other } = layer;
         Object.assign(options, Object.fromEntries(Object.entries(other).filter(([, value]) => value !== undefined)));
+        if (popperOptions) {
+          const previous = options.popperOptions;
+          options.popperOptions = {
+            ...previous,
+            ...Object.fromEntries(Object.entries(popperOptions).filter(([, value]) => value !== undefined)),
+            modifiers: [...previous?.modifiers ?? [], ...popperOptions.modifiers ?? []]
+          };
+        }
         if (popperClass !== undefined) {
           const previous = options.popperClass;
           options.popperClass = previous && typeof previous === 'object' && !Array.isArray(previous) &&
