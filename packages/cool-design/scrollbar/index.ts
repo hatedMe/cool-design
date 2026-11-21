@@ -1,7 +1,7 @@
 import { withInstall } from '../../../src/utils/with-install';
 import Component from './scrollbar';
 import './index.scss';
-export type { ScrollbarStyle } from './scrollbar';
+export type { ScrollbarDirection, ScrollbarStyle } from './scrollbar';
 export interface ScrollbarInstance {
   handleScroll(): void;
   scrollTo(options: ScrollToOptions): void;

@@ -1,5 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, test } from 'vitest';
+import { h, nextTick, ref } from 'vue';
 import Scrollbar from '..';
 
 const mockMetrics = (
@@ -16,6 +17,74 @@ const mockMetrics = (
 };
 
 describe('test `Scrollbar` component', () => {
+  test('自绘和原生模式均将 tabindex 放在可聚焦的滚动容器上', async () => {
+    const wrapper = mount(Scrollbar, {
+      props: { tabindex: 0 },
+      attachTo: document.body
+    });
+    const wrap = wrapper.get<HTMLElement>('.i-scrollbar__wrap');
+    wrap.element.focus();
+    expect(document.activeElement).toBe(wrap.element);
+    expect(wrapper.attributes('tabindex')).toBeUndefined();
+    await wrapper.setProps({ native: true, tabindex: '-1' });
+    expect(wrap.attributes('tabindex')).toBe('-1');
+    wrapper.unmount();
+  });
+
+  test('到达正阈值时在 scroll 后发出方向，反向离开后可再次触发', async () => {
+    const events: unknown[] = [];
+    const wrapper = mount(Scrollbar, {
+      props: {
+        distance: 30,
+        onScroll: (position: { scrollTop: number; scrollLeft: number }) => events.push(position),
+        onEndReached: (direction: string) => events.push(direction)
+      }
+    });
+    const wrap = wrapper.get<HTMLElement>('.i-scrollbar__wrap');
+    mockMetrics(wrap.element, wrapper.get<HTMLElement>('.i-scrollbar__bar.is-vertical').element);
+
+    for (const top of [269, 270, 271, 200, 300]) {
+      wrap.element.scrollTop = top;
+      await wrap.trigger('scroll');
+    }
+    expect(events).toEqual([
+      { scrollTop: 269, scrollLeft: 0 },
+      { scrollTop: 270, scrollLeft: 0 }, 'bottom',
+      { scrollTop: 271, scrollLeft: 0 },
+      { scrollTop: 200, scrollLeft: 0 },
+      { scrollTop: 300, scrollLeft: 0 }, 'bottom'
+    ]);
+    wrapper.unmount();
+  });
+
+  test.each([false, true])('内容溢出变大后可再次触发右缘事件（native=%s）', async (native) => {
+    const width = ref(500);
+    const wrapper = mount(Scrollbar, {
+      props: { distance: 30, native, viewStyle: { width: '160px' } },
+      slots: { default: () => h('div', { class: 'content', style: { width: `${width.value}px` } }) }
+    });
+    const wrap = wrapper.get<HTMLElement>('.i-scrollbar__wrap');
+    Object.defineProperties(wrap.element, {
+      clientWidth: { value: 160 },
+      scrollWidth: { get: () => parseInt(wrapper.get<HTMLElement>('.content').element.style.width, 10) }
+    });
+    wrapper.vm.update();
+    await nextTick();
+
+    for (const left of [330, 331]) {
+      wrap.element.scrollLeft = left;
+      await wrap.trigger('scroll');
+    }
+    expect(wrapper.emitted('end-reached')).toEqual([['right']]);
+
+    width.value = 560;
+    await nextTick();
+    wrap.element.scrollLeft = 390;
+    await wrap.trigger('scroll');
+    expect(wrapper.emitted('end-reached')).toEqual([['right'], ['right']]);
+    wrapper.unmount();
+  });
+
   test('高度样式作用于滚动容器并暴露滚动方法', async () => {
     const wrapper = mount(Scrollbar, {
       props: { height: '200px', maxHeight: 300 },

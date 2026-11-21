@@ -3,12 +3,24 @@ import {
   h,
   onBeforeUnmount,
   onMounted,
+  onUpdated,
   ref,
   watch,
   type PropType
 } from 'vue';
 
 export type ScrollbarStyle = string | Record<string, string>;
+export type ScrollbarDirection = 'top' | 'bottom' | 'left' | 'right';
+
+const oppositeDirection = {
+  top: 'bottom',
+  bottom: 'top',
+  left: 'right',
+  right: 'left'
+} as const;
+
+// 浏览器计算滚动位置时可能有亚像素误差，与 Element Plus 的边界容差一致。
+const edgeTolerance = 0.03;
 
 export default defineComponent({
   name: 'i-scrollbar',
@@ -23,9 +35,16 @@ export default defineComponent({
     noresize: Boolean,
     tag: { type: String, default: 'div' },
     always: Boolean,
-    minSize: { type: Number, default: 20 }
+    minSize: { type: Number, default: 20 },
+    distance: { type: Number, default: 0 },
+    tabindex: [String, Number]
   },
-  emits: ['scroll'],
+  emits: {
+    scroll: ({ scrollTop, scrollLeft }: { scrollTop: number; scrollLeft: number }) =>
+      typeof scrollTop === 'number' && typeof scrollLeft === 'number',
+    'end-reached': (direction: ScrollbarDirection) =>
+      Object.prototype.hasOwnProperty.call(oppositeDirection, direction)
+  },
   setup(props, { slots, emit, expose }) {
     const wrap = ref<HTMLElement>();
     const view = ref<HTMLElement>();
@@ -35,11 +54,19 @@ export default defineComponent({
     const thumbXStyle = ref<Record<string, string>>({ width: '0px', transform: 'translateX(0px)' });
     let resizeObserver: ResizeObserver | undefined;
     let dragging: { axis: 'x' | 'y'; start: number; origin: number } | null = null;
+    let previousTop = 0;
+    let previousLeft = 0;
+    let direction: ScrollbarDirection | undefined;
+    const reached = { top: false, bottom: false, left: false, right: false };
+    let scrollDimensions: number[] = [];
 
     const toCssSize = (value: string | number | undefined) =>
       typeof value === 'number' ? `${value}px` : value;
 
-    const update = () => {
+    const measureScrollDimensions = (element: HTMLElement) =>
+      [element.clientWidth, element.clientHeight, element.scrollWidth, element.scrollHeight];
+
+    const updateThumbs = () => {
       const element = wrap.value;
       if (!element || props.native) return;
       const clientHeight = element.clientHeight;
@@ -72,11 +99,42 @@ export default defineComponent({
       }
     };
 
+    const update = () => {
+      const element = wrap.value;
+      if (!element) return;
+      scrollDimensions = measureScrollDimensions(element);
+      updateThumbs();
+      if (direction) reached[direction] = false;
+    };
+
     const handleScroll = () => {
       const element = wrap.value;
       if (!element) return;
-      emit('scroll', { scrollTop: element.scrollTop, scrollLeft: element.scrollLeft });
-      update();
+      const { scrollTop, scrollLeft, scrollHeight, scrollWidth, clientHeight, clientWidth } = element;
+      const movedHorizontally = scrollLeft !== previousLeft;
+      const distance = props.distance;
+      const arrived = {
+        top: scrollTop <= distance && previousTop !== 0,
+        bottom: scrollHeight - distance - (clientHeight + scrollTop) <= edgeTolerance,
+        left: scrollLeft <= distance && previousLeft !== 0,
+        right: movedHorizontally && scrollWidth - distance - (clientWidth + scrollLeft) <= edgeTolerance
+      };
+      if (scrollTop !== previousTop) direction = scrollTop > previousTop ? 'bottom' : 'top';
+      if (movedHorizontally) direction = scrollLeft > previousLeft ? 'right' : 'left';
+      previousTop = scrollTop;
+      previousLeft = scrollLeft;
+
+      emit('scroll', { scrollTop, scrollLeft });
+      updateThumbs();
+
+      if (!direction) return;
+      if (distance > 0) {
+        if (reached[direction]) return;
+        const opposite = oppositeDirection[direction];
+        if (!arrived[opposite]) reached[opposite] = false;
+        reached[direction] = arrived[direction];
+      }
+      if (arrived[direction]) emit('end-reached', direction);
     };
 
     const scrollTo: {
@@ -133,15 +191,22 @@ export default defineComponent({
     onMounted(() => {
       update();
       if (!props.noresize && typeof ResizeObserver !== 'undefined') {
-        resizeObserver = new ResizeObserver(() => update());
+        resizeObserver = new ResizeObserver(update);
         if (view.value) resizeObserver.observe(view.value);
+        if (wrap.value) resizeObserver.observe(wrap.value);
       }
+    });
+    onUpdated(() => {
+      const element = wrap.value;
+      if (!element) return;
+      // 插槽可能改变溢出范围，而 ResizeObserver 观察的盒子尺寸保持原样。
+      if (measureScrollDimensions(element).some((size, index) => size !== scrollDimensions[index])) update();
     });
     onBeforeUnmount(() => {
       resizeObserver?.disconnect();
       onDragEnd();
     });
-    watch(() => [props.height, props.maxHeight], () => update());
+    watch(() => [props.height, props.maxHeight, props.distance], update, { flush: 'post' });
 
     expose({ handleScroll, scrollTo, setScrollTop, setScrollLeft, update, wrapRef: wrap });
 
@@ -151,6 +216,7 @@ export default defineComponent({
         <div
           ref={wrap}
           class={['i-scrollbar__wrap', props.wrapClass]}
+          tabindex={props.tabindex}
           style={[
             typeof props.wrapStyle === 'string' ? props.wrapStyle : props.wrapStyle,
             { height: toPx(props.height), maxHeight: toPx(props.maxHeight) }

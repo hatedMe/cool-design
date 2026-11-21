@@ -14,6 +14,18 @@
 </Scrollbar>
 ```
 
+## 到达滚动边缘
+
+监听 `end-reached` 可在滚动到边缘时加载更多内容。`distance` 默认为 `0`，以像素为单位设置提前触发的距离。内容追加后，组件会重新测量尺寸。设置 `noresize` 时，可以在内容渲染后调用实例的 `update()`。
+
+```vue
+<Scrollbar :height="200" :distance="24" :tabindex="0" @end-reached="onEndReached">
+  <p v-for="item in items" :key="item.id">{{ item.name }}</p>
+</Scrollbar>
+```
+
+回调接收单个方向。一次滚动同时改变两个轴的位置时，按横向判断。旧版用 `tabindex` 聚焦外层时，可改用外层包装元素承接焦点。组件自身的 `tabindex` 现在用于实际滚动元素，原生和自绘模式的行为一致。
+
 ## API
 
 ### 属性
@@ -31,12 +43,15 @@
 | `tag`        | 内容视图渲染标签                           | `string`               | `div`  |
 | `always`     | 滚动条常显（默认悬停显示）                 | `boolean`              | `false` |
 | `minSize`    | 滚动条最小长度，单位 px                    | `number`               | `20`   |
+| `distance`   | 到边缘的触发距离，单位 px                  | `number`               | `0`    |
+| `tabindex`   | 实际滚动元素的键盘焦点顺序                 | `string` / `number`    | —      |
 
 ### 事件
 
 | 事件名   | 说明             | 回调参数                             |
 | -------- | ---------------- | ------------------------------------ |
-| `scroll` | 滚动时触发       | `{ scrollTop, scrollLeft }`          |
+| `scroll` | 滚动时触发       | `{ scrollTop: number, scrollLeft: number }` |
+| `end-reached` | 滚动进入对应边缘的触发范围时，在 `scroll` 后发出 | `'top' \| 'bottom' \| 'left' \| 'right'` |
 
 ### 插槽
 
@@ -48,8 +63,14 @@
 
 | 方法                       | 说明                       |
 | -------------------------- | -------------------------- |
-| `scrollTo(options \| x, y)` | 滚动到指定位置             |
-| `setScrollTop(top)`        | 设置垂直滚动位置           |
-| `setScrollLeft(left)`      | 设置水平滚动位置           |
+| `scrollTo(options: ScrollToOptions)` / `scrollTo(x: number, y: number)` | 滚动到指定位置 |
+| `setScrollTop(top: number)`  | 设置垂直滚动位置           |
+| `setScrollLeft(left: number)` | 设置水平滚动位置           |
 | `handleScroll()`           | 手动触发滚动处理           |
 | `update()`                 | 重新计算滚动条尺寸与位置   |
+
+### 实例属性
+
+| 属性 | 说明 | 类型 |
+| --- | --- | --- |
+| `wrapRef` | 读取实际滚动元素 | `HTMLElement \| null \| undefined` |
