@@ -110,13 +110,29 @@ export type { SortChange } from './table';
 export const TableColumn = TableColumnComponent;
 export type TableColumn<T extends object = Record<string, unknown>> = import('./table/types').TableColumn<T>;
 export type {
+  TableV2CellParams,
   TableV2CellProps,
+  TableV2CellRendererParams,
   TableV2Column,
+  TableV2DataGetterParams,
+  TableV2ElementProps,
+  TableV2HeaderCellParams,
+  TableV2HeaderCellRendererParams,
+  TableV2HeaderParams,
+  TableV2HeaderSlotParams,
+  TableV2Key,
   TableV2RowEventHandlers,
   TableV2RowEventParams,
+  TableV2RowExpandParams,
   TableV2RowHeight,
+  TableV2RowParams,
+  TableV2RowsRenderedParams,
+  TableV2ScrollOptions,
+  TableV2ScrollStrategy,
+  TableV2Slots,
   TableV2SortBy,
-  TableV2SortOrder
+  TableV2SortOrder,
+  TableV2SortState
 } from './table-v2';
 export type { SelectRemoteOption, SelectTagType, SelectPropsMapping } from './select/select';
 export type { CascaderFilterMethod, CascaderModelValue, CascaderNode, CascaderOption, CascaderPropsMapping, CascaderSuggestion, CascaderTag } from './cascader';

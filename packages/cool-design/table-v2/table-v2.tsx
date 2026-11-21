@@ -1,108 +1,167 @@
-import { computed, defineComponent, ref, watch, type CSSProperties, type PropType } from 'vue';
+import { computed, defineComponent, mergeProps, onBeforeUnmount, onMounted, ref, watch, type CSSProperties, type PropType } from 'vue';
 import type {
-  TableV2CellProps,
+  TableV2CellParams,
   TableV2Column,
+  TableV2DataGetterParams,
+  TableV2ElementProps,
+  TableV2HeaderCellParams,
+  TableV2HeaderParams,
+  TableV2Key,
   TableV2RowEventHandlers,
+  TableV2RowExpandParams,
   TableV2RowHeight,
+  TableV2RowParams,
+  TableV2RowsRenderedParams,
+  TableV2ScrollOptions,
+  TableV2ScrollStrategy,
   TableV2SortBy,
-  TableV2SortOrder
+  TableV2SortOrder,
+  TableV2SortState
 } from './types';
+
+const columnKey = (column: TableV2Column, index: number) => column.key ?? column.dataKey ?? index;
+const isSortOrder = (order: unknown): order is TableV2SortBy['order'] => order === 'asc' || order === 'desc';
+const resolveProps = <T,>(option: TableV2ElementProps<T> | undefined, context: T) =>
+  typeof option === 'function' ? option(context) : option;
+
+function readCellData(context: TableV2DataGetterParams): unknown {
+  const { column, rowData } = context;
+  if (column.dataGetter) return column.dataGetter(context);
+  const key = column.dataKey;
+  if (key === undefined) return undefined;
+  const row = rowData as Record<TableV2Key, unknown>;
+  if (typeof key !== 'string' || key in row) return row[key];
+  const parts = key.startsWith('.') ? [''] : [];
+  // 点号与方括号路径保留空键，带引号的键可以转义。
+  const tokens = key.matchAll(/[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g);
+  for (const [token, number, quote, text] of tokens) {
+    parts.push(quote ? text.replace(/\\(.)/g, '$1') : number ?? token);
+  }
+  if (!parts.length) return undefined;
+  return parts.reduce<unknown>((value, part) => (value as Record<string, unknown> | undefined)?.[part], row);
+}
+
+const tableV2Emits = {
+  columnSort: ({ order }: { key: TableV2Key; order: TableV2SortOrder }) => order === null || isSortOrder(order),
+  rowExpand: ({ expanded }: TableV2RowExpandParams) => typeof expanded === 'boolean',
+  expandedRowsChange: (keys: TableV2Key[]) => Array.isArray(keys),
+  expandedRowDataChange: (rows: object[], keys: TableV2Key[]) => Array.isArray(rows) && Array.isArray(keys),
+  rowsRendered: ({ rowCacheStart, rowCacheEnd }: TableV2RowsRenderedParams) => rowCacheEnd >= rowCacheStart,
+  endReached: (remainDistance: number) => Number.isFinite(remainDistance)
+};
 
 export default defineComponent({
   name: 'i-table-v2',
   props: {
     columns: { type: Array as PropType<TableV2Column[]>, default: () => [] },
     data: { type: Array as PropType<object[]>, default: () => [] },
+    fixedData: Array as PropType<object[]>,
     width: { type: [String, Number] as PropType<string | number>, default: '100%' },
     height: { type: Number, default: 400 },
-    headerHeight: { type: Number, default: 40 },
+    headerHeight: { type: [Number, Array] as PropType<number | number[]>, default: 40 },
     footerHeight: { type: Number, default: 0 },
     rowHeight: { type: [Number, Function] as PropType<TableV2RowHeight>, default: 40 },
-    rowKey: { type: [String, Function] as PropType<string | ((row: object) => string | number)>, default: 'id' },
-    expandedRowKeys: { type: Array as PropType<Array<string | number>>, default: undefined },
-    expandColumnKey: { type: String, default: undefined },
+    rowKey: { type: [String, Function] as PropType<string | ((row: object) => TableV2Key)>, default: 'id' },
+    expandedRowKeys: Array as PropType<TableV2Key[]>,
+    defaultExpandedRowKeys: { type: Array as PropType<TableV2Key[]>, default: () => [] },
+    expandColumnKey: [String, Number, Symbol] as PropType<TableV2Key>,
     childrenKey: { type: String, default: 'children' },
     sortBy: { type: Object as PropType<TableV2SortBy>, default: undefined },
     filter: { type: Function as PropType<(rowData: object) => boolean>, default: undefined },
     rowEventHandlers: { type: Object as PropType<TableV2RowEventHandlers>, default: undefined },
     overscan: { type: Number, default: 3 },
     cache: { type: Number, default: undefined },
-    sortState: { type: Object as PropType<TableV2SortBy>, default: undefined },
-    rowClass: {
-      type: [String, Function] as PropType<string | ((params: { rowData: object; rowIndex: number }) => string)>,
-      default: undefined
-    },
-    cellProps: {
-      type: Function as PropType<
-        (params: { rowData: object; column: TableV2Column; rowIndex: number }) => TableV2CellProps | undefined
-      >,
-      default: undefined
-    },
+    sortState: Object as PropType<TableV2SortBy | TableV2SortState>,
+    headerClass: [String, Function] as PropType<string | ((params: TableV2HeaderParams) => string)>,
+    rowClass: [String, Function] as PropType<string | ((params: TableV2RowParams) => string)>,
+    headerProps: [Object, Function] as PropType<TableV2ElementProps<TableV2HeaderParams>>,
+    headerCellProps: [Object, Function] as PropType<TableV2ElementProps<TableV2HeaderCellParams>>,
+    rowProps: [Object, Function] as PropType<TableV2ElementProps<TableV2RowParams>>,
+    cellProps: [Object, Function] as PropType<TableV2ElementProps<TableV2CellParams>>,
+    useIsScrolling: Boolean,
     emptyText: { type: String, default: '暂无数据' },
     /** 前（后）N 列自动视为固定列，列级 fixed 声明优先 */
     fixedColumns: { type: Number, default: 0 },
     fixedColumnsMode: { type: String as PropType<'left' | 'right'>, default: 'left' }
   },
-  emits: ['column-sort', 'expanded-rows-change', 'scroll', 'end-reached'],
+  emits: {
+    ...tableV2Emits,
+    'column-sort': tableV2Emits.columnSort,
+    'update:expandedRowKeys': (keys: TableV2Key[]) => Array.isArray(keys),
+    'row-expand': tableV2Emits.rowExpand,
+    'expanded-rows-change': tableV2Emits.expandedRowsChange,
+    'expanded-row-data-change': tableV2Emits.expandedRowDataChange,
+    scroll: ({ scrollLeft, scrollTop }: { scrollLeft: number; scrollTop: number }) =>
+      Number.isFinite(scrollLeft) && Number.isFinite(scrollTop),
+    'rows-rendered': tableV2Emits.rowsRendered,
+    'end-reached': tableV2Emits.endReached
+  },
   setup(props, { emit, slots, expose }) {
     const key = (row: object) =>
       typeof props.rowKey === 'function'
         ? props.rowKey(row)
-        : ((row as Record<string, unknown>)[props.rowKey] as string | number);
+        : (row as Record<string, TableV2Key>)[props.rowKey];
     const toPx = (value: string | number | undefined) =>
       value === undefined ? undefined : typeof value === 'number' ? `${value}px` : value;
     const totalWidth = computed(() => props.columns.reduce((n, c) => n + c.width, 0));
-    const expandKey = computed(() => props.expandColumnKey ?? props.columns[0]?.key);
-
-    // 展开（受控兼容：外部 keys 变化时同步）
-    const expandedKeys = ref<Array<string | number>>([...(props.expandedRowKeys ?? [])]);
-    watch(
-      () => props.expandedRowKeys,
-      (value) => {
-        expandedKeys.value = [...(value ?? [])];
-      },
-      { deep: true }
-    );
+    const expandKey = computed(() => props.expandColumnKey ?? (props.columns.length ? columnKey(props.columns[0], 0) : undefined));
+    const localExpandedKeys = ref<TableV2Key[]>([...props.defaultExpandedRowKeys]);
+    const expandedKeys = computed(() => props.expandedRowKeys ?? localExpandedKeys.value);
     const childRowsOf = (row: object): object[] => {
       const value = (row as Record<string, unknown>)[props.childrenKey];
       return Array.isArray(value) ? (value as object[]) : [];
     };
-    const expandedRowsOf = (rows: object[]): object[] => rows.filter((row) => expandedKeys.value.includes(key(row)));
-    const toggleExpand = (row: object) => {
-      const k = key(row);
-      expandedKeys.value = expandedKeys.value.includes(k)
-        ? expandedKeys.value.filter((id) => id !== k)
-        : [...expandedKeys.value, k];
-      emit('expanded-rows-change', expandedRowsOf(props.data), [...expandedKeys.value]);
+    const toggleExpand = (rowData: object, rowIndex: number) => {
+      const rowKey = key(rowData);
+      const expanded = !expandedKeys.value.includes(rowKey);
+      const keys = expanded ? [...expandedKeys.value, rowKey] : expandedKeys.value.filter((id) => id !== rowKey);
+      if (props.expandedRowKeys === undefined) localExpandedKeys.value = keys;
+      emit('update:expandedRowKeys', keys);
+      emit('row-expand', { expanded, rowData, rowIndex, rowKey });
+      emit('expanded-rows-change', keys);
+      emit('expanded-row-data-change', props.data.filter((row) => keys.includes(key(row))), keys);
     };
 
     // 排序与过滤（作用于根行；sortState 受控优先）
-    const sortState = ref<TableV2SortBy | null>(null);
+    const sortState = ref({ orders: new Map<TableV2Key, TableV2SortBy['order']>(), byPropertyKey: false });
     watch(
       () => props.sortState ?? props.sortBy,
       (value) => {
-        const validOrder = value?.order === 'asc' || value?.order === 'desc';
-        sortState.value = validOrder ? { key: value.key, order: value.order } : null;
+        const orders = new Map<TableV2Key, TableV2SortBy['order']>();
+        let byPropertyKey = false;
+        const keys = value ? Reflect.ownKeys(value) : [];
+        const isSingle = props.sortState === undefined || (keys.length === 2 && keys.includes('key') && keys.includes('order'));
+        if (value && isSingle && 'key' in value && isSortOrder(value.order)) {
+          orders.set((value as TableV2SortBy).key, value.order);
+        } else if (value && props.sortState !== undefined) {
+          byPropertyKey = true;
+          const state = value as TableV2SortState;
+          for (const key of keys) {
+            const order = state[key];
+            if (isSortOrder(order)) orders.set(key, order);
+          }
+        }
+        sortState.value = { orders, byPropertyKey };
       },
       { deep: true, immediate: true }
     );
-    const sortColumn = computed(() => props.columns.find((column) => column.key === sortState.value?.key));
-    watch(
-      [() => sortState.value?.key, () => !!sortColumn.value],
-      ([key, found], [previousKey, wasFound]) => {
-        if (key === previousKey && wasFound && !found) sortState.value = null;
+    // 排序映射沿用对象属性键规则，单列显式排序保留列键的原始类型。
+    const sortKey = (key: TableV2Key) => sortState.value.byPropertyKey && typeof key === 'number' ? String(key) : key;
+    const columnKeys = computed(() => props.columns.map(columnKey));
+    const currentSortKeys = computed(() => columnKeys.value.map(sortKey));
+    watch(columnKeys, (keys, previous) => {
+      const current = keys.map(sortKey);
+      for (const key of previous.map(sortKey)) {
+        if (!current.includes(key)) sortState.value.orders.delete(key);
       }
-    );
-    const cycleSort = (column: TableV2Column) => {
+    });
+    const orderOf = (key: TableV2Key) => sortState.value.orders.get(sortKey(key));
+    const cycleSort = (column: TableV2Column, key: TableV2Key) => {
       if (!column.sortable) return;
-      const next: TableV2SortOrder =
-        sortState.value?.key !== column.key
-          ? 'asc'
-          : sortState.value.order === 'asc'
-            ? 'desc'
-            : null;
-      sortState.value = next === null ? null : { key: column.key, order: next };
-      emit('column-sort', { key: column.key, order: next });
+      const order = orderOf(key);
+      const next: TableV2SortOrder = order === 'asc' ? 'desc' : order === 'desc' ? null : 'asc';
+      sortState.value = { orders: new Map(next === null ? [] : [[key, next]]), byPropertyKey: false };
+      emit('column-sort', { key, order: next });
     };
     const compareValues = (a: unknown, b: unknown): number => {
       const x = a ?? '';
@@ -113,20 +172,23 @@ export default defineComponent({
     };
     const viewRows = computed(() => {
       const rows = props.filter ? props.data.filter(props.filter) : [...props.data];
-      const state = sortState.value;
-      const column = sortColumn.value;
-      if (!state || !column) return rows;
-      const direction = state.order === 'desc' ? -1 : 1;
+      const activeSort = [...sortState.value.orders].find(([key]) => currentSortKeys.value.includes(key));
+      if (!activeSort) return rows;
+      const columnIndex = currentSortKeys.value.indexOf(activeSort[0]);
+      const columns = props.columns;
+      const column = columns[columnIndex];
+      const direction = activeSort[1] === 'desc' ? -1 : 1;
       return rows
-        .map((row, index) => ({ row, index }))
+        .map((rowData, rowIndex) => ({
+          rowData,
+          rowIndex,
+          value: readCellData({ columns, column, columnIndex, rowData, rowIndex })
+        }))
         .sort((a, b) => {
-          const diff = compareValues(
-            (a.row as Record<string, unknown>)[column.dataKey],
-            (b.row as Record<string, unknown>)[column.dataKey]
-          );
-          return diff !== 0 ? diff * direction : a.index - b.index;
+          const diff = compareValues(a.value, b.value);
+          return diff !== 0 ? diff * direction : a.rowIndex - b.rowIndex;
         })
-        .map((item) => item.row);
+        .map((item) => item.rowData);
     });
 
     // 扁平化（含树）
@@ -155,68 +217,136 @@ export default defineComponent({
     const overscan = computed(() => props.cache ?? props.overscan);
     const scrollEl = ref<HTMLDivElement | null>(null);
     const scrollTop = ref(0);
-    const wasAtEnd = ref(false);
+    const headerHeights = computed(() => Array.isArray(props.headerHeight) ? props.headerHeight : [props.headerHeight]);
+    const heightOf = (rowData: object, rowIndex: number) => typeof props.rowHeight === 'function'
+      ? Math.max(1, props.rowHeight({ rowData, rowIndex }))
+      : props.rowHeight;
+    const fixedRows = computed(() => (props.fixedData ?? []).map((rowData, index) => {
+      const rowIndex = -(index + 1);
+      return { rowData, rowIndex, level: 0, height: heightOf(rowData, rowIndex) };
+    }));
+    const pinnedHeight = computed(() => headerHeights.value.reduce((sum, height) => sum + height, 0)
+      + fixedRows.value.reduce((sum, row) => sum + row.height, 0));
+    const scrollHeight = ref(0);
+    const bodyViewportHeight = computed(() => Math.max(0,
+      (scrollHeight.value || props.height) - pinnedHeight.value - Math.max(0, props.footerHeight)
+    ));
+    const syncViewport = () => { scrollHeight.value = scrollEl.value?.clientHeight ?? 0; };
+    let scrollObserver: ResizeObserver | undefined;
+    let scrollTimer: ReturnType<typeof setTimeout> | undefined;
+    const isScrolling = ref(false);
+    let wasAtEnd = false;
     const totalBodyHeight = computed(() => rowTops.value[rowTops.value.length - 1] ?? 0);
     const onScroll = (event: Event) => {
       const el = event.target as HTMLDivElement;
+      syncViewport();
+      const movingDown = el.scrollTop > scrollTop.value;
       scrollTop.value = el.scrollTop;
+      if (props.useIsScrolling) {
+        isScrolling.value = true;
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(() => { isScrolling.value = false; }, 150);
+      }
       emit('scroll', { scrollLeft: el.scrollLeft, scrollTop: el.scrollTop });
-      const atEnd = el.scrollTop + props.height >= props.headerHeight + totalBodyHeight.value - 1;
-      if (atEnd && !wasAtEnd.value) emit('end-reached');
-      wasAtEnd.value = atEnd;
+      const remainDistance = Math.max(0, totalBodyHeight.value - el.scrollTop - bodyViewportHeight.value);
+      if (remainDistance > 1) wasAtEnd = false;
+      else if (movingDown && !wasAtEnd && rowRange.value) {
+        wasAtEnd = true;
+        emit('end-reached', remainDistance);
+      }
     };
-    const rowHeights = computed(() =>
-      flatRows.value.map(({ rowData, rowIndex }) =>
-        typeof props.rowHeight === 'function' ? Math.max(1, props.rowHeight({ rowData, rowIndex })) : props.rowHeight
-      )
-    );
+    const rowHeights = computed(() => flatRows.value.map(({ rowData, rowIndex }) => heightOf(rowData, rowIndex)));
     const rowTops = computed(() => {
       const tops: number[] = [0];
       rowHeights.value.forEach((h) => tops.push(tops[tops.length - 1] + h));
       return tops;
     });
-    const firstVisible = (y: number) => {
+    watch(totalBodyHeight, () => { wasAtEnd = false; });
+    const rowAt = (y: number, includeBoundary = false) => {
       let lo = 0;
       let hi = flatRows.value.length;
       while (lo < hi) {
         const mid = (lo + hi) >> 1;
-        if (rowTops.value[mid + 1] <= y) lo = mid + 1;
+        const bottom = rowTops.value[mid + 1];
+        if (bottom < y || (!includeBoundary && bottom === y)) lo = mid + 1;
         else hi = mid;
       }
       return lo;
     };
+    const rowRange = computed<TableV2RowsRenderedParams | undefined>(() => {
+      const last = flatRows.value.length - 1;
+      if (last < 0 || bodyViewportHeight.value === 0) return;
+      const rowVisibleStart = Math.min(last, rowAt(scrollTop.value));
+      const rowVisibleEnd = Math.min(last, rowAt(scrollTop.value + bodyViewportHeight.value, true));
+      const cache = Math.max(0, Math.floor(overscan.value));
+      return {
+        rowVisibleStart,
+        rowVisibleEnd,
+        rowCacheStart: Math.max(0, rowVisibleStart - cache),
+        rowCacheEnd: Math.min(last, rowVisibleEnd + cache)
+      };
+    });
     const windowRows = computed(() => {
-      const y0 = Math.max(0, scrollTop.value - props.headerHeight);
-      const y1 = scrollTop.value + props.height - props.headerHeight;
-      const start = Math.max(0, firstVisible(y0) - overscan.value);
-      const end = Math.min(flatRows.value.length, firstVisible(y1 - 1) + 1 + overscan.value);
-      return flatRows.value.slice(start, Math.max(start, end)).map((r) => ({
-        ...r,
-        top: rowTops.value[r.rowIndex],
-        height: rowHeights.value[r.rowIndex]
-      }));
+      const range = rowRange.value;
+      return range ? flatRows.value.slice(range.rowCacheStart, range.rowCacheEnd + 1) : [];
+    });
+    let renderedRange: TableV2RowsRenderedParams | undefined;
+    const emitRowsRendered = () => {
+      const range = rowRange.value;
+      if (range && (!renderedRange || renderedRange.rowCacheStart !== range.rowCacheStart ||
+        renderedRange.rowCacheEnd !== range.rowCacheEnd || renderedRange.rowVisibleStart !== range.rowVisibleStart ||
+        renderedRange.rowVisibleEnd !== range.rowVisibleEnd)) emit('rows-rendered', { ...range });
+      renderedRange = range;
+    };
+    watch(rowRange, emitRowsRendered, { flush: 'post' });
+    onMounted(() => {
+      if (scrollEl.value && typeof ResizeObserver !== 'undefined') {
+        scrollObserver = new ResizeObserver(syncViewport);
+        scrollObserver.observe(scrollEl.value);
+      }
+      syncViewport();
+      emitRowsRendered();
+    });
+    onBeforeUnmount(() => {
+      scrollObserver?.disconnect();
+      clearTimeout(scrollTimer);
     });
 
-    const fireRowEvent = (name: keyof TableV2RowEventHandlers) => (rowData: object, rowIndex: number, event: Event) =>
-      props.rowEventHandlers?.[name]?.({ rowData, rowIndex, event });
+    const fireRowEvent = (name: keyof TableV2RowEventHandlers, rowData: object, rowIndex: number, event: Event) =>
+      props.rowEventHandlers?.[name]?.({ rowData, rowIndex, rowKey: key(rowData), event });
 
+    const scrollTo = (options?: TableV2ScrollOptions) => {
+      const el = scrollEl.value;
+      if (!el || !options) return;
+      const top = options.scrollTop ?? options.top;
+      const left = options.scrollLeft ?? options.left;
+      if (top !== undefined) el.scrollTop = top;
+      if (left !== undefined) el.scrollLeft = left;
+    };
     expose({
-      scrollTo: (options?: { top?: number; left?: number }) => {
+      scrollTo,
+      scrollToLeft: (scrollLeft: number) => scrollTo({ scrollLeft }),
+      scrollToTop: (scrollTop: number) => scrollTo({ scrollTop }),
+      scrollToRow: (rowIndex: number, strategy: TableV2ScrollStrategy = 'auto') => {
         const el = scrollEl.value;
-        if (!el || !options) return;
-        if (options.top !== undefined) el.scrollTop = options.top;
-        if (options.left !== undefined) el.scrollLeft = options.left;
-      },
-      scrollToRow: (rowIndex: number, align: 'auto' | 'start' | 'center' | 'end' = 'auto') => {
-        const el = scrollEl.value;
-        if (!el || rowIndex < 0 || rowIndex >= flatRows.value.length) return;
-        const top = props.headerHeight + rowTops.value[rowIndex];
-        const bottom = top + rowHeights.value[rowIndex];
-        const viewTop = el.scrollTop;
-        const viewBottom = el.scrollTop + props.height;
-        if (align === 'start' || (align === 'auto' && top < viewTop)) el.scrollTop = top;
-        else if (align === 'end' || (align === 'auto' && bottom > viewBottom)) el.scrollTop = bottom - props.height;
-        else if (align === 'center') el.scrollTop = top - (props.height - rowHeights.value[rowIndex]) / 2;
+        if (!el || !Number.isInteger(rowIndex) || rowIndex < 0 || rowIndex >= flatRows.value.length) return;
+        syncViewport();
+        const viewport = bodyViewportHeight.value;
+        const current = el.scrollTop;
+        const max = Math.max(0, el.scrollHeight ? el.scrollHeight - el.clientHeight : totalBodyHeight.value - viewport);
+        const rowTop = rowTops.value[rowIndex];
+        const rowBottom = rowTops.value[rowIndex + 1];
+        const start = Math.min(max, rowTop);
+        const end = Math.max(0, rowBottom - viewport);
+        if (strategy === 'smart') strategy = current >= end - viewport && current <= start + viewport ? 'auto' : 'center';
+        if (strategy === 'start') el.scrollTop = start;
+        else if (strategy === 'end') el.scrollTop = end;
+        else if (strategy === 'center') {
+          const centeredTop = Math.round((rowTop + rowBottom - viewport) / 2);
+          el.scrollTop = Math.max(0, Math.min(max, centeredTop));
+        }
+        else if (end > start || current < end) el.scrollTop = end;
+        else if (current > start) el.scrollTop = start;
       }
     });
 
@@ -257,123 +387,156 @@ export default defineComponent({
       return style;
     };
 
+    const renderHeader = (height: number, headerIndex: number) => {
+      const columns = props.columns;
+      const context = { columns, headerIndex };
+      const sortStateMap = Object.fromEntries(sortState.value.orders);
+      const cells = columns.map((column, columnIndex) => {
+        const cellKey = columnKey(column, columnIndex);
+        const order = orderOf(cellKey);
+        const style = { ...cellStyle(column), ...cellFixedStyle(column, columnIndex, true) };
+        const cellContext = { ...context, column, columnIndex };
+        const rendererContext = {
+          ...cellContext,
+          class: 'i-table-v2__header-cell-text',
+          style,
+          sortBy: props.sortBy,
+          sortState: sortStateMap
+        };
+        return (
+          <div {...mergeProps(resolveProps(props.headerCellProps, cellContext) ?? {}, {
+            key: cellKey,
+            class: 'i-table-v2__cell is-header',
+            role: 'columnheader',
+            tabindex: column.sortable ? 0 : undefined,
+            style,
+            'aria-sort': column.sortable ? order === 'asc' ? 'ascending' : order === 'desc' ? 'descending' : 'none' : undefined,
+            onClick: () => cycleSort(column, cellKey),
+            onKeydown: (event: KeyboardEvent) => {
+              if (column.sortable && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault();
+                cycleSort(column, cellKey);
+              }
+            }
+          })}>
+            {column.headerCellRenderer
+              ? column.headerCellRenderer(rendererContext)
+              : slots['header-cell']?.(rendererContext) ?? column.title ?? String(cellKey)}
+            {column.sortable && <span aria-hidden='true'>{order === 'asc' ? '↑' : order === 'desc' ? '↓' : '↕'}</span>}
+          </div>
+        );
+      });
+      return (
+        <div {...mergeProps(resolveProps(props.headerProps, context) ?? {}, {
+          key: headerIndex,
+          class: ['i-table-v2__row', typeof props.headerClass === 'function' ? props.headerClass(context) : props.headerClass],
+          role: 'row',
+          style: { width: toPx(totalWidth.value), height: toPx(height) }
+        })}>
+          {slots.header?.({ ...context, cells }) ?? cells}
+        </div>
+      );
+    };
+
+    const renderRow = ({ rowData, rowIndex, level }: FlatRow, height: number, top?: number) => {
+      const columns = props.columns;
+      const context = { columns, rowData, rowIndex };
+      const rowKey = key(rowData);
+      const isFixed = rowIndex < 0;
+      const expanded = expandedKeys.value.includes(rowKey);
+      const extra = resolveProps(props.rowProps, context);
+      const style: CSSProperties = { width: toPx(totalWidth.value), height: toPx(height) };
+      if (!isFixed) {
+        style.position = 'absolute';
+        style.left = '0px';
+        style.top = toPx(top);
+      }
+      return (
+        <div {...mergeProps(extra ?? {}, {
+          key: rowKey,
+          class: [
+            'i-table-v2__row',
+            isFixed ? 'is-fixed' : 'is-body',
+            typeof props.rowClass === 'function' ? props.rowClass(context) : props.rowClass
+          ],
+          role: 'row',
+          style,
+          onClick: (event: MouseEvent) => fireRowEvent('onClick', rowData, rowIndex, event),
+          onDblclick: (event: MouseEvent) => fireRowEvent('onDblclick', rowData, rowIndex, event),
+          onContextmenu: (event: MouseEvent) => fireRowEvent('onContextmenu', rowData, rowIndex, event),
+          onMouseenter: (event: MouseEvent) => fireRowEvent('onMouseenter', rowData, rowIndex, event),
+          onMouseleave: (event: MouseEvent) => fireRowEvent('onMouseleave', rowData, rowIndex, event)
+        })}>
+          {columns.map((column, columnIndex) => {
+            const cellKey = columnKey(column, columnIndex);
+            const isExpandCell = !isFixed && cellKey === expandKey.value;
+            const showToggle = isExpandCell && childRowsOf(rowData).length > 0;
+            const getterContext = { ...context, column, columnIndex };
+            const cellData = readCellData(getterContext);
+            const cellContext = { ...getterContext, cellData };
+            const rendererContext = {
+              ...cellContext,
+              class: 'i-table-v2__cell-text',
+              isScrolling: props.useIsScrolling ? isScrolling.value : undefined
+            };
+            return (
+              <div {...mergeProps(resolveProps(props.cellProps, cellContext) ?? {}, {
+                key: cellKey,
+                class: 'i-table-v2__cell',
+                role: 'gridcell',
+                style: { ...cellStyle(column), ...cellFixedStyle(column, columnIndex, false) }
+              })}>
+                {isExpandCell && level > 0 && (
+                  <span class='i-table-v2__indent' style={{ width: toPx(level * 16) }} aria-hidden='true' />
+                )}
+                {isExpandCell && (
+                  showToggle ? (
+                    <button
+                      type='button'
+                      class='i-table-v2__expand-toggle'
+                      aria-expanded={expanded}
+                      aria-label={expanded ? '收起子行' : '展开子行'}
+                      onClick={(event: MouseEvent) => {
+                        event.stopPropagation();
+                        toggleExpand(rowData, rowIndex);
+                      }}>
+                      <span class={{ 'i-table-v2__expand-icon': true, 'is-expanded': expanded }} aria-hidden='true'>›</span>
+                    </button>
+                  ) : <span class='i-table-v2__tree-placeholder' aria-hidden='true' />
+                )}
+                {column.cellRenderer ? column.cellRenderer(rendererContext) : slots.cell?.(rendererContext) ?? String(cellData ?? '')}
+              </div>
+            );
+          })}
+        </div>
+      );
+    };
+
     return () => (
       <div
         class='i-table-v2'
-        style={{ width: toPx(props.width), height: `${props.height}px` }}
+        style={{ width: toPx(props.width), height: toPx(props.height) }}
         role='grid'
-        aria-rowcount={flatRows.value.length}
+        aria-rowcount={flatRows.value.length + fixedRows.value.length}
         aria-colcount={props.columns.length}>
         <div class='i-table-v2__scroll' ref={scrollEl} onScroll={onScroll}>
-          <div class='i-table-v2__header' style={{ height: `${props.headerHeight}px` }}>
-            <div class='i-table-v2__row' role='row' style={{ width: `${totalWidth.value}px` }}>
-              {props.columns.map((column, columnIndex) => (
-                <div
-                  key={column.key}
-                  class='i-table-v2__cell is-header'
-                  role='columnheader'
-                  tabindex={column.sortable ? 0 : undefined}
-                  style={{ ...cellStyle(column), ...cellFixedStyle(column, columnIndex, true) }}
-                  aria-sort={
-                    column.sortable
-                      ? sortState.value?.key === column.key
-                        ? sortState.value.order === 'asc'
-                          ? 'ascending'
-                          : 'descending'
-                        : 'none'
-                      : undefined
-                  }
-                  onClick={() => cycleSort(column)}
-                  onKeydown={(event: KeyboardEvent) => {
-                    if (column.sortable && (event.key === 'Enter' || event.key === ' ')) {
-                      event.preventDefault();
-                      cycleSort(column);
-                    }
-                  }}>
-                  {slots['header-cell']?.({ column }) ?? (
-                    <>
-                      {column.title ?? column.key}{' '}
-                      {column.sortable && (
-                        <span aria-hidden='true'>
-                          {sortState.value?.key !== column.key
-                            ? '↕'
-                            : sortState.value.order === 'asc'
-                              ? '↑'
-                              : '↓'}
-                        </span>
-                      )}
-                    </>
-                  )}
-                </div>
-              ))}
-            </div>
+          <div class='i-table-v2__header' role='rowgroup'>
+            {headerHeights.value.map(renderHeader)}
+            {fixedRows.value.map((row) => renderRow(row, row.height))}
           </div>
-          <div class='i-table-v2__body' style={{ height: `${totalBodyHeight.value}px` }}>
-            {windowRows.value.map(({ rowData, rowIndex, level, top, height }) => (
-              <div
-                key={key(rowData)}
-                class={[
-                  'i-table-v2__row is-body',
-                  typeof props.rowClass === 'function' ? props.rowClass({ rowData, rowIndex }) : props.rowClass
-                ]}
-                role='row'
-                style={{ width: `${totalWidth.value}px`, height: `${height}px`, top: `${top}px` }}
-                onClick={(event: MouseEvent) => fireRowEvent('onClick')(rowData, rowIndex, event)}
-                onDblclick={(event: MouseEvent) => fireRowEvent('onDblclick')(rowData, rowIndex, event)}
-                onContextmenu={(event: MouseEvent) => fireRowEvent('onContextmenu')(rowData, rowIndex, event)}
-                onMouseenter={(event: MouseEvent) => fireRowEvent('onMouseenter')(rowData, rowIndex, event)}
-                onMouseleave={(event: MouseEvent) => fireRowEvent('onMouseleave')(rowData, rowIndex, event)}>
-                {props.columns.map((column, columnIndex) => {
-                  const children = childRowsOf(rowData);
-                  const showToggle = column.key === expandKey.value && children.length > 0;
-                  const extra = props.cellProps?.({ rowData, column, rowIndex });
-                  return (
-                    <div
-                      key={column.key}
-                      class={['i-table-v2__cell', extra?.class]}
-                      role='gridcell'
-                      style={{ ...cellStyle(column), ...cellFixedStyle(column, columnIndex, false), ...extra?.style }}>
-                      {column.key === expandKey.value && level > 0 && (
-                        <span class='i-table-v2__indent' style={{ width: `${level * 16}px` }} aria-hidden='true' />
-                      )}
-                      {column.key === expandKey.value &&
-                        (showToggle ? (
-                          <button
-                            type='button'
-                            class='i-table-v2__expand-toggle'
-                            aria-expanded={expandedKeys.value.includes(key(rowData))}
-                            aria-label={expandedKeys.value.includes(key(rowData)) ? '收起子行' : '展开子行'}
-                            onClick={(event: MouseEvent) => {
-                              event.stopPropagation();
-                              toggleExpand(rowData);
-                            }}>
-                            <span
-                              class={{
-                                'i-table-v2__expand-icon': true,
-                                'is-expanded': expandedKeys.value.includes(key(rowData))
-                              }}
-                              aria-hidden='true'>
-                              ›
-                            </span>
-                          </button>
-                        ) : (
-                          <span class='i-table-v2__tree-placeholder' aria-hidden='true' />
-                        ))}
-                      {slots.cell?.({ rowData, column, rowIndex }) ??
-                        String((rowData as Record<string, unknown>)[column.dataKey] ?? '')}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-            {!flatRows.value.length && <div class='i-table-v2__empty'>{slots.empty?.() ?? props.emptyText}</div>}
+          <div class='i-table-v2__body' style={{ height: toPx(totalBodyHeight.value) }}>
+            {windowRows.value.map((row) => renderRow(row, rowHeights.value[row.rowIndex], rowTops.value[row.rowIndex]))}
+            {!flatRows.value.length && !fixedRows.value.length && (
+              <div class='i-table-v2__empty'>{slots.empty?.() ?? props.emptyText}</div>
+            )}
           </div>
           {props.footerHeight > 0 && (
-            <div class='i-table-v2__footer' style={{ height: `${props.footerHeight}px` }}>
+            <div class='i-table-v2__footer' style={{ height: toPx(props.footerHeight) }}>
               {slots.footer?.()}
             </div>
           )}
         </div>
+        {slots.overlay && <div class='i-table-v2__overlay'>{slots.overlay()}</div>}
       </div>
     );
   }

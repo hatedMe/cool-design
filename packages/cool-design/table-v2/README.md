@@ -2,117 +2,168 @@
 
 ### 介绍
 
-大数据量虚拟滚动表格，只渲染可视窗口内的行。提供核心用法：固定行高、虚拟窗口、排序、树形展开、行事件与滚动控制。
+TableV2 按可见范围和缓存渲染正文，适合大数据量。支持固定行列、自定义渲染、树形展开、排序和滚动控制。
 
 ## 基础用法
 
 ```vue
 <script setup lang="ts">
-import { TableV2 } from 'cool-design/table-v2';
-import type { TableV2Column } from 'cool-design/table-v2';
+import { h, ref } from 'vue';
+import { TableV2, type TableV2Column, type TableV2Instance } from 'cool-design/table-v2';
 
+const table = ref<TableV2Instance>();
+const selected = ref('');
 const columns: TableV2Column[] = [
-  { key: 'id', dataKey: 'id', title: '编号', width: 100, sortable: true },
-  { key: 'name', dataKey: 'name', title: '姓名', width: 200 }
+  { key: 'id', dataKey: 'id', title: '编号', width: 100, fixed: 'left' },
+  {
+    key: 'name',
+    dataKey: 'profile.name',
+    width: 200,
+    headerCellRenderer: ({ headerIndex }) => h('span', headerIndex === 0 ? '姓名' : '选择用户'),
+    cellRenderer: ({ cellData, rowIndex }) => rowIndex < 0
+      ? h('strong', String(cellData))
+      : h('button', { onClick: () => { selected.value = String(cellData); } }, String(cellData))
+  }
 ];
-const data = Array.from({ length: 10000 }, (_, i) => ({ id: i + 1, name: `行${i + 1}` }));
+const data = Array.from({ length: 10000 }, (_, i) => ({ id: i + 1, profile: { name: `行${i + 1}` } }));
+const fixedData = [{ id: '汇总', profile: { name: '共 10000 行' } }];
 </script>
 
 <template>
-  <TableV2 :columns="columns" :data="data" :width="600" :height="400" :row-height="40" />
+  <button @click="table?.scrollToRow(199, 'smart')">滚动到第 200 行</button>
+  <span v-if="selected">已选择 {{ selected }}</span>
+  <TableV2 ref="table" :columns="columns" :data="data" :fixed-data="fixedData"
+    :width="300" :height="400" :header-height="[32, 28]" />
 </template>
 ```
 
-## 树形与行事件
+内容渲染优先级为列渲染器、对应 `cell` 或 `header-cell` 插槽、默认内容。表头排序标记和正文树形开关由表格渲染。正文值优先由 `dataGetter` 提供，省略时从 `dataKey` 读取，支持 `profile.name`、`items[0].name`、`profile["a.b"]` 和 `.name` 等路径。与 `dataKey` 完全同名的属性优先。
+
+## 树形展开
+
+含子节点的正文行在首列或 `expandColumnKey` 指定列渲染展开开关。非受控模式可用 `defaultExpandedRowKeys` 设置初始展开。传入 `expandedRowKeys` 后以该值为准，并可用 `v-model:expanded-row-keys` 接收更新。
 
 ```vue
+<script setup lang="ts">
+import { ref } from 'vue';
+import type { TableV2Key } from 'cool-design/table-v2';
+
+const expandedKeys = ref<TableV2Key[]>([]);
+function handleExpandedRows(rows: object[], keys: TableV2Key[]) {
+  console.log(rows, keys);
+}
+</script>
+
 <template>
-  <TableV2
-    :columns="columns"
-    :data="treeData"
-    :width="600"
-    :height="400"
-    :row-event-handlers="{ onClick: ({ rowData }) => {} }"
-    @expanded-rows-change="(rows, keys) => {}" />
+  <TableV2 v-model:expanded-row-keys="expandedKeys" :columns="columns" :data="treeData"
+    @expanded-row-data-change="handleExpandedRows" />
 </template>
 ```
 
-含子节点的行在首列（或 `expandColumnKey` 指定列）渲染展开开关。
+原 `@expanded-rows-change="handleExpandedRows"` 的 `(rows, keys)` 回调请迁移至 `@expanded-row-data-change`。现在 `expanded-rows-change` 接收 `(keys)`，扩展事件中的 `rows` 仍为已展开的根行。
 
 ### 排序
 
-替换 `sortBy` 对象或更新其 `key`、`order` 会同步表头和根行顺序。`sortState` 优先，移除后使用当前 `sortBy`。目标列异步加载后会应用已传入的排序。两项属性均清空或已匹配的排序列被移除时，根行恢复输入顺序，表头清除排序标记。启用 `sortable` 可通过点击表头按 `asc`、`desc`、`null` 循环并触发 `column-sort`。外部排序可作用于所有列。
+`sortState` 接受 `{ key, order }` 或列键到排序方向的映射，并优先于 `sortBy`。当对象仅有 `key`、`order` 两个自有属性且 `order` 为 `asc` 或 `desc` 时，优先使用单列排序语义，并匹配列键的原始类型。映射使用 JavaScript 对象属性键规则，因此 `1` 和 `'1'` 共用一个属性。映射可显示多个表头的排序方向，根行按映射中首个可用列稳定排序。替换排序对象或原地修改会同步排序。异步加载目标列后会应用已传入的排序，移除已生效的排序列会清除此列状态。启用 `sortable` 的列通过点击表头按 `asc`、`desc`、`null` 循环，随后触发 `column-sort`。外部排序可作用于所有列。
 
 ## API
 
 ### 属性
 
-| 参数             | 说明                                    | 类型                                                                      | 默认值     |
-| ---------------- | --------------------------------------- | ------------------------------------------------------------------------- | ---------- |
-| columns          | 列定义                                  | `TableV2Column[]`                                                         | `[]`       |
-| data             | 表格数据                                | `object[]`                                                                | `[]`       |
-| width            | 表格宽度                                | `string \| number`                                                        | `100%`     |
-| height           | 表格固定高度                            | `number`                                                                  | `400`      |
-| headerHeight     | 表头高度                                | `number`                                                                  | `40`       |
-| footerHeight     | 底部栏高度，大于 `0` 时渲染             | `number`                                                                  | `0`        |
-| rowHeight        | 行高，数字或按行计算，虚拟计算依据      | `number \| (({ rowData, rowIndex }) => number)`                           | `40`       |
-| rowKey           | 行唯一键字段名或取键函数                | `string \| ((row: object) => string \| number)`                           | `id`       |
-| expandedRowKeys  | 受控展开行键值                          | `(string \| number)[]`                                                    | —          |
-| expandColumnKey  | 树形开关所在列，默认首列                | `string`                                                                  | —          |
-| childrenKey      | 子节点字段名                            | `string`                                                                  | `children` |
-| sortBy           | 排序列与方向，支持动态更新              | `{ key: string; order: 'asc' \| 'desc' }`                                 | —          |
-| filter           | 根行过滤函数                            | `(rowData: object) => boolean`                                            | —          |
-| rowEventHandlers | 行事件处理器                            | `{ onClick?; onDblclick?; onContextmenu?; onMouseenter?; onMouseleave? }` | —          |
-| overscan         | 可视窗口上下预渲染行数，`cache` 优先    | `number`                                                                  | `3`        |
-| cache            | 预渲染行数，官方别名，优先于 `overscan` | `number`                                                                  | —          |
-| sortState        | 排序扩展，优先于 `sortBy`               | `{ key: string; order: 'asc' \| 'desc' }`                                 | —          |
-| rowClass         | 行类名，字符串或函数                    | `string \| (({ rowData, rowIndex }) => string)`                           | —          |
-| cellProps        | 单元格类名与样式                        | `({ rowData, column, rowIndex }) => { class?; style? }`                   | —          |
-| emptyText        | 空态文字                                | `string`                                                                  | `暂无数据` |
-| fixedColumns     | 自动固定的列数（列级 `fixed` 声明优先）  | `number`                                                                  | `0`        |
-| fixedColumnsMode | 自动固定方向：首列侧或尾列侧            | `'left' \| 'right'`                                                       | `left`     |
+| 参数 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| columns | 列定义 | `TableV2Column[]` | `[]` |
+| data | 正文数据 | `object[]` | `[]` |
+| fixedData | 跨滚动位置保留在表头下方的固定数据，使用 `rowHeight`，索引依次为 `-1`、`-2` | `object[]` | — |
+| width | 表格宽度 | `string \| number` | `100%` |
+| height | 表格固定高度 | `number` | `400` |
+| headerHeight | 表头行高，数组每项定义一行 | `number \| number[]` | `40` |
+| footerHeight | 底部栏高度，大于 `0` 时渲染 | `number` | `0` |
+| rowHeight | 固定行高或按行计算的高度 | `number \| (({ rowData, rowIndex }) => number)` | `40` |
+| rowKey | 行唯一键字段名或取键函数 | `string \| ((row: object) => TableV2Key)` | `id` |
+| expandedRowKeys | 受控展开行键 | `TableV2Key[]` | — |
+| defaultExpandedRowKeys | 非受控的初始展开行键 | `TableV2Key[]` | `[]` |
+| expandColumnKey | 树形开关所在列 | `TableV2Key` | 首列 |
+| childrenKey | 子节点字段名 | `string` | `children` |
+| sortBy | 排序列与方向 | `TableV2SortBy` | — |
+| sortState | 列键映射或单列排序，优先于 `sortBy` | `TableV2SortState \| TableV2SortBy` | — |
+| filter | 根行过滤函数 | `(rowData: object) => boolean` | — |
+| rowEventHandlers | 行事件处理器 | `TableV2RowEventHandlers` | — |
+| overscan | 可视窗口上下预渲染行数 | `number` | `3` |
+| cache | 预渲染行数，优先于 `overscan` | `number` | — |
+| headerClass | 表头行类名 | `string \| ((params: TableV2HeaderParams) => string)` | — |
+| rowClass | 正文及固定行类名 | `string \| ((params: TableV2RowParams) => string)` | — |
+| headerProps | 表头行附加属性 | `TableV2ElementProps<TableV2HeaderParams>` | — |
+| headerCellProps | 表头单元格附加属性 | `TableV2ElementProps<TableV2HeaderCellParams>` | — |
+| rowProps | 正文及固定行附加属性 | `TableV2ElementProps<TableV2RowParams>` | — |
+| cellProps | 正文及固定行单元格附加属性 | `TableV2ElementProps<TableV2CellParams>` | — |
+| useIsScrolling | 向单元格渲染器和插槽提供滚动状态 | `boolean` | `false` |
+| emptyText | 空态文字 | `string` | `暂无数据` |
+| fixedColumns | 自动固定的列数，列级 `fixed` 声明优先 | `number` | `0` |
+| fixedColumnsMode | 自动固定方向 | `'left' \| 'right'` | `left` |
 
-行事件参数为 `{ rowData: object; rowIndex: number; event: Event }`。
+`TableV2Key` 为 `string`、`number` 或 `symbol`。附加属性接受对象或返回对象的函数，可传 `class`、`style`、DOM 属性及监听器，表格维护布局样式和 ARIA 角色。行事件处理器支持 `onClick`、`onDblclick`、`onContextmenu`、`onMouseenter` 和 `onMouseleave`，参数为 `{ event, rowData, rowIndex, rowKey }`。
+
+### 回调作用域
+
+| 类型 | 字段 |
+| --- | --- |
+| `TableV2HeaderParams` | `{ columns, headerIndex }` |
+| `TableV2HeaderCellParams` | `{ columns, column, columnIndex, headerIndex }` |
+| `TableV2RowParams` | `{ columns, rowData, rowIndex }` |
+| `TableV2DataGetterParams` | `{ columns, column, columnIndex, rowData, rowIndex }` |
+| `TableV2CellParams` | 取值器参数及 `cellData` |
+| `TableV2HeaderCellRendererParams` | 表头单元格参数及 `class`、`style`、`sortBy`、`sortState` |
+| `TableV2CellRendererParams` | 单元格参数及 `class`、`isScrolling` |
 
 ### 事件
 
-| 事件名               | 说明                                        | 回调参数                                          |
-| -------------------- | ------------------------------------------- | ------------------------------------------------- |
-| column-sort          | 表头排序变化，按 `asc`、`desc`、`null` 循环 | `{ key: string; order: 'asc' \| 'desc' \| null }` |
-| expanded-rows-change | 树节点展开变化                              | `rows: object[]`、`keys: (string \| number)[]`    |
-| scroll               | 滚动                                        | `{ scrollLeft: number; scrollTop: number }`       |
-| end-reached          | 滚动到底部                                  | —                                                 |
+| 事件 | 说明 | 参数 |
+| --- | --- | --- |
+| column-sort | 表头交互排序变化 | `{ key, order }`，方向为 `'asc' \| 'desc' \| null` |
+| update:expandedRowKeys | 请求更新展开行键 | `keys: TableV2Key[]` |
+| row-expand | 单个树节点的展开操作 | `{ expanded, rowData, rowIndex, rowKey }` |
+| expanded-rows-change | 展开行键变化 | `keys: TableV2Key[]` |
+| expanded-row-data-change | 展开的根行与行键 | `rows: object[]`、`keys: TableV2Key[]` |
+| scroll | 滚动 | `{ scrollLeft, scrollTop }` |
+| rows-rendered | 正文渲染区间变化，可见及缓存区间均包含起止索引 | `{ rowCacheStart, rowCacheEnd, rowVisibleStart, rowVisibleEnd }` |
+| end-reached | 向下滚至底部 | `remainDistance: number`，距底部的像素 |
 
 ### 插槽
 
-| 名称        | 说明                                               |
-| ----------- | -------------------------------------------------- |
-| cell        | 自定义单元格，参数 `{ rowData, column, rowIndex }` |
-| header-cell | 自定义表头，参数 `{ column }`                      |
-| empty       | 替换默认空态                                       |
-| footer      | 底部栏内容，需配合 `footerHeight`                  |
+| 名称 | 说明 | 参数 |
+| --- | --- | --- |
+| header | 自定义每一行表头，可重新组合表头单元格 | `{ cells, columns, headerIndex }` |
+| header-cell | 自定义表头单元格 | `TableV2HeaderCellRendererParams` |
+| cell | 自定义正文与固定数据单元格 | `TableV2CellRendererParams` |
+| empty | 正文与固定数据均为空时显示 | — |
+| footer | 底部栏内容，配合 `footerHeight` | — |
+| overlay | 覆盖表格，可与数据和空态同时显示 | — |
 
 ### 实例方法
 
-| 方法                       | 说明                                             | 返回值 |
-| -------------------------- | ------------------------------------------------ | ------ |
-| scrollTo({ top?, left? })  | 滚动到指定坐标                                   | `void` |
-| scrollToRow(index, align?) | 滚动到指定行，`align` 为 `auto/start/center/end` | `void` |
+| 方法 | 说明 | 返回值 |
+| --- | --- | --- |
+| scrollTo(options) | `{ scrollLeft?, scrollTop? }`，兼容 `{ left?, top? }`，正式坐标优先 | `void` |
+| scrollToLeft(scrollLeft) | 设置横向坐标 | `void` |
+| scrollToTop(scrollTop) | 设置纵向坐标 | `void` |
+| scrollToRow(index, strategy?) | 按正文的从零开始索引滚动，策略为 `auto`、`smart`、`start`、`center` 或 `end`，默认 `auto` | `void` |
+
+`smart` 对邻近的目标行采用最小滚动距离，对远处的目标行采用 `center`。居中基于正文可用视口，靠近首尾时停在最近的可滚动位置。固定行使用负索引，正文区间和滚动定位都从正文的第 `0` 行计算。
 
 ### TableV2Column 列定义
 
-| 字段     | 说明                         | 类型                         |
-| -------- | ---------------------------- | ---------------------------- |
-| key      | 必填，列标识                 | `string`                     |
-| dataKey  | 必填，字段名                 | `string`                     |
-| title    | 表头文字                     | `string`                     |
-| width    | 必填，列宽 px                | `number`                     |
-| align    | 对齐方式                     | `left` / `center` / `right`  |
-| sortable | 是否可排序                   | `boolean`                    |
-| fixed    | 固定列，`true` 等价于 `left` | `boolean` / `left` / `right` |
+| 字段 | 说明 | 类型 |
+| --- | --- | --- |
+| key | 列标识，默认使用 `dataKey` 或列索引 | `TableV2Key` |
+| dataKey | 字段键或路径 | `TableV2Key` |
+| title | 表头文字 | `string` |
+| width | 必填，列宽 px | `number` |
+| align | 对齐方式 | `left` / `center` / `right` |
+| sortable | 是否可排序 | `boolean` |
+| fixed | 固定列，`true` 等价于 `left` | `boolean` / `left` / `right` |
+| dataGetter | 自定义取值 | `(params: TableV2DataGetterParams) => unknown` |
+| cellRenderer | 自定义单元格 | `(params: TableV2CellRendererParams) => VNode` |
+| headerCellRenderer | 自定义表头单元格 | `(params: TableV2HeaderCellRendererParams) => VNode` |
 
-`TableV2`、`TableV2Column`、`TableV2SortBy`、`TableV2RowEventHandlers`、`TableV2RowHeight` 可从 `cool-design/table-v2` 子路径导入，也可从主包公共入口导入（与 `Table` 并列注册）。
-
-## 行为约定
-
-- 排序与过滤作用于根行；固定列通过粘性定位实现；暂不支持懒加载与列宽拖拽。
+`TableV2` 和表格公共类型均可从 `cool-design/table-v2` 或 `cool-design` 导入。
