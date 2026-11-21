@@ -39,6 +39,16 @@ const fixedData = [{ id: '汇总', profile: { name: '共 10000 行' } }];
 
 内容渲染优先级为列渲染器、对应 `cell` 或 `header-cell` 插槽、默认内容。表头排序标记和正文树形开关由表格渲染。正文值优先由 `dataGetter` 提供，省略时从 `dataKey` 读取，支持 `profile.name`、`items[0].name`、`profile["a.b"]` 和 `.name` 等路径。与 `dataKey` 完全同名的属性优先。
 
+## 动态行高
+
+传入正数 `estimated-row-height` 后，正文单元格可以换行。未测量的行先使用估值，挂载后按当行最高单元格的内容测量，异步内容变化会更新尺寸。实际行高可以小于估值。固定数据行始终按 `row-height` 布局。建议用接近常见行高的值作为估值。
+
+```vue
+<TableV2 :columns="columns" :data="data" :estimated-row-height="64" />
+```
+
+表头与正文行默认高度由 `40` 调整为 `50`。原布局可显式设置 `:header-height="40" :row-height="40"`，函数形式的 `row-height` 也继续支持。
+
 ## 树形展开
 
 含子节点的正文行在首列或 `expandColumnKey` 指定列渲染展开开关。非受控模式可用 `defaultExpandedRowKeys` 设置初始展开。传入 `expandedRowKeys` 后以该值为准，并可用 `v-model:expanded-row-keys` 接收更新。
@@ -77,9 +87,10 @@ function handleExpandedRows(rows: object[], keys: TableV2Key[]) {
 | fixedData | 跨滚动位置保留在表头下方的固定数据，使用 `rowHeight`，索引依次为 `-1`、`-2` | `object[]` | — |
 | width | 表格宽度 | `string \| number` | `100%` |
 | height | 表格固定高度 | `number` | `400` |
-| headerHeight | 表头行高，数组每项定义一行 | `number \| number[]` | `40` |
+| headerHeight | 表头行高，数组每项定义一行 | `number \| number[]` | `50` |
 | footerHeight | 底部栏高度，大于 `0` 时渲染 | `number` | `0` |
-| rowHeight | 固定行高或按行计算的高度 | `number \| (({ rowData, rowIndex }) => number)` | `40` |
+| rowHeight | 固定数据行和固定高度模式正文的行高 | `number \| (({ rowData, rowIndex }) => number)` | `50` |
+| estimatedRowHeight | 正文估计行高，传入有限正数启用内容测量 | `number` | — |
 | rowKey | 行唯一键字段名或取键函数 | `string \| ((row: object) => TableV2Key)` | `id` |
 | expandedRowKeys | 受控展开行键 | `TableV2Key[]` | — |
 | defaultExpandedRowKeys | 非受控的初始展开行键 | `TableV2Key[]` | `[]` |

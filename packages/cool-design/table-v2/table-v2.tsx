@@ -1,4 +1,7 @@
-import { computed, defineComponent, mergeProps, onBeforeUnmount, onMounted, ref, watch, type CSSProperties, type PropType } from 'vue';
+import {
+  computed, defineComponent, mergeProps, nextTick, onBeforeUnmount, onMounted, ref, shallowReactive, watch, withDirectives,
+  type CSSProperties, type ObjectDirective, type PropType
+} from 'vue';
 import type {
   TableV2CellParams,
   TableV2Column,
@@ -58,9 +61,10 @@ export default defineComponent({
     fixedData: Array as PropType<object[]>,
     width: { type: [String, Number] as PropType<string | number>, default: '100%' },
     height: { type: Number, default: 400 },
-    headerHeight: { type: [Number, Array] as PropType<number | number[]>, default: 40 },
+    headerHeight: { type: [Number, Array] as PropType<number | number[]>, default: 50 },
     footerHeight: { type: Number, default: 0 },
-    rowHeight: { type: [Number, Function] as PropType<TableV2RowHeight>, default: 40 },
+    rowHeight: { type: [Number, Function] as PropType<TableV2RowHeight>, default: 50 },
+    estimatedRowHeight: Number,
     rowKey: { type: [String, Function] as PropType<string | ((row: object) => TableV2Key)>, default: 'id' },
     expandedRowKeys: Array as PropType<TableV2Key[]>,
     defaultExpandedRowKeys: { type: Array as PropType<TableV2Key[]>, default: () => [] },
@@ -197,13 +201,15 @@ export default defineComponent({
       rowIndex: number;
       level: number;
     }
-    const flatRows = computed<FlatRow[]>(() => {
-      const out: FlatRow[] = [];
+    type BodyRow = FlatRow & { rowKey: TableV2Key };
+    const flatRows = computed<BodyRow[]>(() => {
+      const out: BodyRow[] = [];
       const walk = (rows: object[], level: number) => {
         if (level > 100) return;
         rows.forEach((row) => {
-          out.push({ rowData: row, rowIndex: out.length, level });
-          if (expandedKeys.value.includes(key(row))) {
+          const rowKey = key(row);
+          out.push({ rowData: row, rowIndex: out.length, level, rowKey });
+          if (expandedKeys.value.includes(rowKey)) {
             const children = childRowsOf(row);
             if (children.length) walk(children, level + 1);
           }
@@ -217,6 +223,37 @@ export default defineComponent({
     const overscan = computed(() => props.cache ?? props.overscan);
     const scrollEl = ref<HTMLDivElement | null>(null);
     const scrollTop = ref(0);
+    const scrollWidth = ref(0);
+    const estimatedHeight = computed(() => {
+      const estimate = props.estimatedRowHeight;
+      return estimate !== undefined && Number.isFinite(estimate) && estimate > 0 ? estimate : undefined;
+    });
+    const measurementLayout = computed(() => ({
+      width: props.width,
+      viewportWidth: scrollWidth.value,
+      columns: props.columns.map((column) => ({ ...column })),
+      expandKey: expandKey.value,
+      enabled: estimatedHeight.value !== undefined
+    }));
+    type Measurement = { row: BodyRow; layout: typeof measurementLayout.value; height: number };
+    const measurements = shallowReactive(new Map<TableV2Key, Measurement>());
+    const sameRow = (previous: BodyRow, current: BodyRow) => previous.rowData === current.rowData &&
+      previous.rowIndex === current.rowIndex && previous.level === current.level;
+    const measuredHeight = (row: BodyRow) => {
+      const measurement = measurements.get(row.rowKey);
+      return measurement && measurement.layout === measurementLayout.value && sameRow(measurement.row, row)
+        ? measurement.height : undefined;
+    };
+    watch([flatRows, measurementLayout], ([rows, layout], [, previousLayout]) => {
+      if (layout !== previousLayout) measurements.clear();
+      else if (measurements.size) {
+        const currentRows = new Map(rows.map((row) => [row.rowKey, row]));
+        for (const [key, measurement] of measurements) {
+          const row = currentRows.get(key);
+          if (!row || !sameRow(measurement.row, row)) measurements.delete(key);
+        }
+      }
+    });
     const headerHeights = computed(() => Array.isArray(props.headerHeight) ? props.headerHeight : [props.headerHeight]);
     const heightOf = (rowData: object, rowIndex: number) => typeof props.rowHeight === 'function'
       ? Math.max(1, props.rowHeight({ rowData, rowIndex }))
@@ -231,17 +268,23 @@ export default defineComponent({
     const bodyViewportHeight = computed(() => Math.max(0,
       (scrollHeight.value || props.height) - pinnedHeight.value - Math.max(0, props.footerHeight)
     ));
-    const syncViewport = () => { scrollHeight.value = scrollEl.value?.clientHeight ?? 0; };
+    const syncViewport = () => {
+      scrollHeight.value = scrollEl.value?.clientHeight ?? 0;
+      if (estimatedHeight.value !== undefined) scrollWidth.value = scrollEl.value?.clientWidth ?? 0;
+    };
     let scrollObserver: ResizeObserver | undefined;
     let scrollTimer: ReturnType<typeof setTimeout> | undefined;
     const isScrolling = ref(false);
+    // 窗口坐标可能先于原生 scroll 事件更新，单独保存方向基准。
+    let scrollDirectionTop = 0;
     let wasAtEnd = false;
     const totalBodyHeight = computed(() => rowTops.value[rowTops.value.length - 1] ?? 0);
     const onScroll = (event: Event) => {
       const el = event.target as HTMLDivElement;
       syncViewport();
-      const movingDown = el.scrollTop > scrollTop.value;
-      scrollTop.value = el.scrollTop;
+      const movingDown = el.scrollTop > scrollDirectionTop;
+      scrollDirectionTop = el.scrollTop;
+      scrollTop.value = scrollDirectionTop;
       if (props.useIsScrolling) {
         isScrolling.value = true;
         clearTimeout(scrollTimer);
@@ -255,24 +298,57 @@ export default defineComponent({
         emit('end-reached', remainDistance);
       }
     };
-    const rowHeights = computed(() => flatRows.value.map(({ rowData, rowIndex }) => heightOf(rowData, rowIndex)));
+    const rowHeights = computed(() => {
+      const estimate = estimatedHeight.value;
+      return flatRows.value.map((row) => estimate === undefined
+        ? heightOf(row.rowData, row.rowIndex)
+        : measuredHeight(row) ?? estimate);
+    });
     const rowTops = computed(() => {
       const tops: number[] = [0];
       rowHeights.value.forEach((h) => tops.push(tops[tops.length - 1] + h));
       return tops;
     });
     watch(totalBodyHeight, () => { wasAtEnd = false; });
-    const rowAt = (y: number, includeBoundary = false) => {
+    const rowAt = (y: number, includeBoundary = false, tops = rowTops.value) => {
       let lo = 0;
-      let hi = flatRows.value.length;
+      let hi = tops.length - 1;
       while (lo < hi) {
         const mid = (lo + hi) >> 1;
-        const bottom = rowTops.value[mid + 1];
+        const bottom = tops[mid + 1];
         if (bottom < y || (!includeBoundary && bottom === y)) lo = mid + 1;
         else hi = mid;
       }
       return lo;
     };
+    let pendingAnchorTop: number | undefined;
+    watch([rowTops, flatRows], ([tops, rows], [previousTops, previousRows]) => {
+      const el = scrollEl.value;
+      if (estimatedHeight.value === undefined || !el || !previousRows.length || !rows.length) return;
+      // 同一 Vue 更新可能产生多个前缀和版本，后续版本以待提交的坐标为准。
+      const current = pendingAnchorTop ?? el.scrollTop;
+      if (current === 0) return;
+      const previousIndex = Math.min(previousRows.length - 1, rowAt(current, false, previousTops));
+      const index = rows === previousRows ? previousIndex : rows.findIndex((row) => row.rowKey === previousRows[previousIndex].rowKey);
+      const nextIndex = index >= 0 ? index : Math.min(previousIndex, rows.length - 1);
+      const offset = Math.min(current - previousTops[previousIndex], Math.max(0, tops[nextIndex + 1] - tops[nextIndex] - 1));
+      const top = Math.max(0, Math.min(tops[nextIndex] + offset, tops[rows.length] - bodyViewportHeight.value));
+      if (top === current) return;
+      if (pendingAnchorTop === undefined) {
+        void nextTick(() => {
+          const target = pendingAnchorTop;
+          pendingAnchorTop = undefined;
+          if (target === undefined || scrollEl.value !== el) return;
+          const before = el.scrollTop;
+          el.scrollTop = target;
+          scrollTop.value = el.scrollTop;
+          // 仅扣除自动补偿的位移，保留尚未派发的主动滚动。
+          scrollDirectionTop += el.scrollTop - before;
+        });
+      }
+      pendingAnchorTop = top;
+      scrollTop.value = top;
+    });
     const rowRange = computed<TableV2RowsRenderedParams | undefined>(() => {
       const last = flatRows.value.length - 1;
       if (last < 0 || bodyViewportHeight.value === 0) return;
@@ -290,6 +366,79 @@ export default defineComponent({
       const range = rowRange.value;
       return range ? flatRows.value.slice(range.rowCacheStart, range.rowCacheEnd + 1) : [];
     });
+    const observedRows = new Map<HTMLElement, { row: BodyRow; contents: HTMLElement[] }>();
+    const observedContents = new Map<Element, HTMLElement>();
+    const pendingMeasurements = new Set<HTMLElement>();
+    let rowObserver: ResizeObserver | undefined;
+    const blockSpacing = (element: HTMLElement) => {
+      const style = getComputedStyle(element);
+      return [style.paddingTop, style.paddingBottom, style.borderTopWidth, style.borderBottomWidth]
+        .reduce((sum, value) => sum + (parseFloat(value) || 0), 0);
+    };
+    const measureRows = (elements: Iterable<HTMLElement>) => {
+      for (const element of elements) {
+        const observed = observedRows.get(element);
+        const row = observed?.row;
+        // 虚拟窗口切换后，观察器仍可能传来旧节点的通知。
+        if (!observed || !row || flatRows.value[row.rowIndex] !== row || !rowObserver || !element.getClientRects().length) continue;
+        const contentHeight = Math.max(0, ...observed.contents.map((content) =>
+          (parseFloat(getComputedStyle(content).height) || 0) + (content.parentElement ? blockSpacing(content.parentElement) : 0)
+        ));
+        const height = contentHeight + blockSpacing(element);
+        if (height > 0 && height !== measuredHeight(row)) {
+          measurements.set(row.rowKey, { row, height, layout: measurementLayout.value });
+        }
+      }
+    };
+    const unobserveRow = (element: HTMLElement) => {
+      for (const content of observedRows.get(element)?.contents ?? []) {
+        rowObserver?.unobserve(content);
+        observedContents.delete(content);
+      }
+      observedRows.delete(element);
+      pendingMeasurements.delete(element);
+    };
+    const syncRowObservation = (element: HTMLElement, { value: row }: { value?: BodyRow }) => {
+      if (!row) {
+        unobserveRow(element);
+        return;
+      }
+      if (typeof ResizeObserver === 'undefined') return;
+      rowObserver ??= new ResizeObserver((entries) => {
+        const rows = new Set<HTMLElement>();
+        for (const { target } of entries) {
+          const element = observedContents.get(target);
+          if (element) rows.add(element);
+        }
+        measureRows(rows);
+      });
+      const previous = observedRows.get(element)?.contents ?? [];
+      const contents = [...element.querySelectorAll<HTMLElement>(':scope > .i-table-v2__cell > .i-table-v2__measure')];
+      for (const content of previous) {
+        if (!contents.includes(content)) {
+          rowObserver.unobserve(content);
+          observedContents.delete(content);
+        }
+      }
+      for (const content of contents) {
+        if (!observedContents.has(content)) {
+          observedContents.set(content, element);
+          rowObserver.observe(content, { box: 'border-box' });
+        }
+      }
+      observedRows.set(element, { row, contents });
+      // 行与单元格的内边距和边框可以改变，而测量包装层保持原高。
+      if (!pendingMeasurements.size) queueMicrotask(() => {
+        measureRows(pendingMeasurements);
+        pendingMeasurements.clear();
+      });
+      pendingMeasurements.add(element);
+    };
+    const measureRow: ObjectDirective<HTMLElement, BodyRow | undefined> = {
+      mounted: syncRowObservation,
+      updated: syncRowObservation,
+      beforeUnmount: unobserveRow
+    };
     let renderedRange: TableV2RowsRenderedParams | undefined;
     const emitRowsRendered = () => {
       const range = rowRange.value;
@@ -309,6 +458,8 @@ export default defineComponent({
     });
     onBeforeUnmount(() => {
       scrollObserver?.disconnect();
+      rowObserver?.disconnect();
+      rowObserver = undefined;
       clearTimeout(scrollTimer);
     });
 
@@ -320,7 +471,13 @@ export default defineComponent({
       if (!el || !options) return;
       const top = options.scrollTop ?? options.top;
       const left = options.scrollLeft ?? options.left;
-      if (top !== undefined) el.scrollTop = top;
+      if (top !== undefined) {
+        el.scrollTop = top;
+        if (pendingAnchorTop !== undefined) {
+          pendingAnchorTop = undefined;
+          scrollTop.value = el.scrollTop;
+        }
+      }
       if (left !== undefined) el.scrollLeft = left;
     };
     expose({
@@ -339,14 +496,16 @@ export default defineComponent({
         const start = Math.min(max, rowTop);
         const end = Math.max(0, rowBottom - viewport);
         if (strategy === 'smart') strategy = current >= end - viewport && current <= start + viewport ? 'auto' : 'center';
-        if (strategy === 'start') el.scrollTop = start;
-        else if (strategy === 'end') el.scrollTop = end;
+        let top = current;
+        if (strategy === 'start') top = start;
+        else if (strategy === 'end') top = end;
         else if (strategy === 'center') {
           const centeredTop = Math.round((rowTop + rowBottom - viewport) / 2);
-          el.scrollTop = Math.max(0, Math.min(max, centeredTop));
+          top = Math.max(0, Math.min(max, centeredTop));
         }
-        else if (end > start || current < end) el.scrollTop = end;
-        else if (current > start) el.scrollTop = start;
+        else if (end > start || current < end) top = end;
+        else if (current > start) top = start;
+        scrollTo({ scrollTop: top });
       }
     });
 
@@ -438,11 +597,13 @@ export default defineComponent({
       );
     };
 
-    const renderRow = ({ rowData, rowIndex, level }: FlatRow, height: number, top?: number) => {
+    const renderRow = (row: FlatRow | BodyRow, height: number, top?: number) => {
+      const { rowData, rowIndex, level } = row;
       const columns = props.columns;
       const context = { columns, rowData, rowIndex };
-      const rowKey = key(rowData);
+      const rowKey = 'rowKey' in row ? row.rowKey : key(rowData);
       const isFixed = rowIndex < 0;
+      const dynamic = !isFixed && estimatedHeight.value !== undefined;
       const expanded = expandedKeys.value.includes(rowKey);
       const extra = resolveProps(props.rowProps, context);
       const style: CSSProperties = { width: toPx(totalWidth.value), height: toPx(height) };
@@ -451,7 +612,7 @@ export default defineComponent({
         style.left = '0px';
         style.top = toPx(top);
       }
-      return (
+      const node = (
         <div {...mergeProps(extra ?? {}, {
           key: rowKey,
           class: [
@@ -479,13 +640,8 @@ export default defineComponent({
               class: 'i-table-v2__cell-text',
               isScrolling: props.useIsScrolling ? isScrolling.value : undefined
             };
-            return (
-              <div {...mergeProps(resolveProps(props.cellProps, cellContext) ?? {}, {
-                key: cellKey,
-                class: 'i-table-v2__cell',
-                role: 'gridcell',
-                style: { ...cellStyle(column), ...cellFixedStyle(column, columnIndex, false) }
-              })}>
+            const treeControls = (
+              <>
                 {isExpandCell && level > 0 && (
                   <span class='i-table-v2__indent' style={{ width: toPx(level * 16) }} aria-hidden='true' />
                 )}
@@ -504,12 +660,25 @@ export default defineComponent({
                     </button>
                   ) : <span class='i-table-v2__tree-placeholder' aria-hidden='true' />
                 )}
-                {column.cellRenderer ? column.cellRenderer(rendererContext) : slots.cell?.(rendererContext) ?? String(cellData ?? '')}
+              </>
+            );
+            const content = column.cellRenderer ? column.cellRenderer(rendererContext) : slots.cell?.(rendererContext) ?? String(cellData ?? '');
+            return (
+              <div {...mergeProps(resolveProps(props.cellProps, cellContext) ?? {}, {
+                key: cellKey,
+                class: 'i-table-v2__cell',
+                role: 'gridcell',
+                style: { ...cellStyle(column), ...cellFixedStyle(column, columnIndex, false) }
+              })}>
+                {dynamic
+                  ? <div class='i-table-v2__measure'>{treeControls}<div class='i-table-v2__measure-content'>{content}</div></div>
+                  : <>{treeControls}{content}</>}
               </div>
             );
           })}
         </div>
       );
+      return 'rowKey' in row ? withDirectives(node, [[measureRow, dynamic ? row : undefined]]) : node;
     };
 
     return () => (
@@ -519,7 +688,7 @@ export default defineComponent({
         role='grid'
         aria-rowcount={flatRows.value.length + fixedRows.value.length}
         aria-colcount={props.columns.length}>
-        <div class='i-table-v2__scroll' ref={scrollEl} onScroll={onScroll}>
+        <div class={['i-table-v2__scroll', { 'is-dynamic': estimatedHeight.value !== undefined }]} ref={scrollEl} onScroll={onScroll}>
           <div class='i-table-v2__header' role='rowgroup'>
             {headerHeights.value.map(renderHeader)}
             {fixedRows.value.map((row) => renderRow(row, row.height))}

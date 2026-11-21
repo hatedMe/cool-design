@@ -9,6 +9,9 @@
   height: 100%;
   overflow: auto;
 }
+.i-table-v2__scroll.is-dynamic {
+  overflow-anchor: none;
+}
 .i-table-v2__header {
   position: sticky;
   top: 0;
@@ -51,6 +54,19 @@
 }
 .i-table-v2__cell.is-header[aria-sort] {
   cursor: pointer;
+}
+.i-table-v2__measure {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.i-table-v2__measure-content {
+  display: flow-root;
+  min-width: 0;
+  flex: 1;
 }
 .i-table-v2__body {
   position: relative;

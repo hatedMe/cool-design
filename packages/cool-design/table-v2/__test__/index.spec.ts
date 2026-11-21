@@ -9,6 +9,28 @@ const columns = [
 ];
 const rows = (n: number) => Array.from({ length: n }, (_, i) => ({ id: i + 1, name: `行${i + 1}` }));
 
+test('默认表头和正文行均为 50px，显式 40px 保持旧尺寸', async () => {
+  const w = mount(TableV2, { props: { columns, data: rows(2), fixedData: [{ id: 0 }] } });
+  const heights = () => w.findAll<HTMLElement>('.i-table-v2__row').map((row) => row.element.style.height);
+  expect(heights()).toEqual(['50px', '50px', '50px', '50px']);
+  await w.setProps({ headerHeight: 40, rowHeight: 40 });
+  expect(heights()).toEqual(['40px', '40px', '40px', '40px']);
+});
+
+test('动态正文行使用估值，固定行仍使用 rowHeight 函数', async () => {
+  const w = mount(TableV2, {
+    props: {
+      columns, data: rows(10), fixedData: [{ id: 0 }], headerHeight: 0,
+      rowHeight: ({ rowIndex }) => rowIndex === 1 ? 80 : 30, estimatedRowHeight: 56
+    }
+  });
+  const body = w.get<HTMLElement>('.i-table-v2__body');
+  expect(body.element.style.height).toBe('560px');
+  expect(w.get<HTMLElement>('.is-fixed').element.style.height).toBe('30px');
+  await w.setProps({ estimatedRowHeight: 0 });
+  expect(body.element.style.height).toBe('350px');
+});
+
 test('虚拟窗口只渲染可见行，滚动后窗口移动', async () => {
   const w = mount(TableV2, {
     props: { columns, data: rows(1000), width: 400, height: 400, headerHeight: 40, rowHeight: 40, overscan: 3 }

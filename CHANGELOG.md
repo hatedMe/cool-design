@@ -26,6 +26,7 @@
 | --- | --- | --- |
 | `Tree` / `TreeV2` | `check-on-click-leaf` 默认值由 `false` 改为 `true`，显示复选框时点击叶节点默认切换勾选 | 依赖原默认行为的页面请显式传 `:check-on-click-leaf="false"` |
 | `Table` | `maxHeight` 默认值 `440` → 不设默认：未显式传入时不再限制滚动区高度 | 依赖默认 4px 高度上限的页面请显式传 `:max-height="440"` |
+| `TableV2` | `headerHeight` 和 `rowHeight` 默认值由 40px 改为 50px | 原布局可显式传 `:header-height="40" :row-height="40"` |
 | `Rate` | `texts` 默认文案由英文改为中文：`['极差', '失望', '一般', '满意', '惊喜']` | 依赖英文文案的场景请显式传 `:texts` |
 | `Space` | `wrap` 默认值 `true` → `false`；内置尺寸 4/8/12px → 8/12/16px；数组 `size` 语义改为 `[列间距, 行间距]`；每个子项包装在 `.i-space__item` 中 | 依赖默认换行的布局请显式传 `wrap`；依赖旧间距像素的样式需复查；自定义子项选择器改用 `.i-space__item` |
 | `Popconfirm` | `hide-after` 语义反转：现在表示「确认后延迟自动关闭」（原为「打开后自动取消」） | 依赖自动取消行为的用法请改为显式处理 `cancel` |
