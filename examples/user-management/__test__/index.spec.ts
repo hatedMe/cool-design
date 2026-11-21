@@ -1,4 +1,4 @@
-import { flushPromises, mount } from '@vue/test-utils';
+import { DOMWrapper, flushPromises, mount } from '@vue/test-utils';
 import { afterEach, expect, test, vi } from 'vitest';
 import UserManagement from '../index.vue';
 import type { User, UserService } from '../types';
@@ -42,7 +42,10 @@ test('查询、重置和分页各请求一次，查询条件按提交值保持',
   await flushPromises();
   expect(api.listUsers).toHaveBeenLastCalledWith(expect.objectContaining({ name: '', page: 1 }));
   expect(api.listUsers).toHaveBeenCalledTimes(4);
-  await w.get('[aria-label="每页条数"]').setValue('20');
+  await w.get('[role="combobox"][aria-label="每页条数"]').trigger('click');
+  await new DOMWrapper(document.body)
+    .get('[role="listbox"]:not([aria-hidden="true"]) [role="option"][data-value="20"]')
+    .trigger('click');
   await flushPromises();
   expect(api.listUsers).toHaveBeenCalledTimes(5);
   expect(api.listUsers).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, pageSize: 20 }));
