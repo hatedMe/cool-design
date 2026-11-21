@@ -443,7 +443,6 @@ export type { TimelineItemPlacement, TimelineItemSize, TimelineItemType } from '
 export type { DividerBorderStyle, DividerContentPosition, DividerDirection } from './divider/divider';
 export type { ImageFit, ImageLoading, ImageReferrerPolicy } from './image';
 export type { ImageViewerToolbarActions } from './image';
-export type { DrawerBeforeClose, DrawerDirection, DrawerResizableOptions, DrawerResizePayload } from './drawer/drawer';
 export type {
   CalendarCellData,
   CalendarCellType,
@@ -829,7 +828,7 @@ export type { AnchorInstance } from './anchor';
 export type { CarouselInstance } from './carousel';
 export type { CollapseInstance, CollapseItemInstance } from './collapse';
 export type { DialogBeforeClose, DialogContentInstance, DialogHeaderScope, DialogInstance, DialogModalClass, DialogSlots } from './dialog';
-export type { DrawerInstance } from './drawer';
+export type { DrawerBeforeClose, DrawerDirection, DrawerInstance, DrawerResizableOptions, DrawerResizePayload } from './drawer';
 export type {
   DropdownCommand, DropdownInstance, DropdownItemInstance, DropdownItemOption, DropdownPlacement, DropdownProps,
   DropdownSize, DropdownTrigger, DropdownType

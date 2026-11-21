@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Drawer 修复响应式关闭图标触发的 Vue 组件代理警告。`opened` 和 `closed` 在动画完成后发出，`close` 改为实际离场开始时发出，`update:modelValue(false)` 延后至离场结束。若离场结束时重新打开仍在等待 `open-delay`，则保留新的 `true` 并跳过模型更新事件。依赖关闭请求时机的页面可在 `before-close` 中处理。显式非 `body` 挂载目标优先，省略目标时使用 ConfigProvider 浮层宿主或就地渲染。旧版依赖自动挂到 `body` 或单独使用 `append-to="body"` 的页面可改用 `append-to-body`。
+
 - Dialog 增加打开与关闭延时、可穿透的无遮罩模式、自定义遮罩类与标题等级，支持 `append-to-body` 和自定义挂载目标。`close` 改为实际离场开始时触发，`update:modelValue(false)` 在离场完成后触发。依赖旧关闭请求时机的页面可在 `before-close` 回调中处理。默认使用 `dialog-fade`，可以通过 `:transition="{ css: false }"` 禁用 CSS 动画。原无遮罩穿透和允许拖动越界的用法可分别加上 `modal-penetrable` 和 `overflow`。传给组件的 `class` 应用于面板，外层样式使用 `modal-class`。
   单独设置 `append-to="body"` 时改为就地渲染，旧版使用该写法挂载到 `document.body` 的页面可改用 `append-to-body`。
 

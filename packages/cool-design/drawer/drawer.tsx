@@ -9,6 +9,7 @@ import {
   onBeforeUnmount,
   onMounted,
   ref,
+  toRaw,
   vShow,
   watch,
   withDirectives,
@@ -20,7 +21,7 @@ import { useZIndex } from '../../hooks/use-z-index';
 import { isTopDialog, isTopFocusDialog, lockDialog, unlockDialog } from '../dialog/stack';
 
 export type DrawerDirection = 'rtl' | 'ltr' | 'ttb' | 'btt';
-export type DrawerBeforeClose = (done: () => void) => void;
+export type DrawerBeforeClose = (done: (cancel?: boolean) => void) => void;
 export interface DrawerResizableOptions {
   minSize?: string | number;
   maxSize?: string | number;
@@ -105,8 +106,8 @@ export default defineComponent({
     let active = false;
     let maskGestureAllowed = true;
     let previous: HTMLElement | null = null;
-    let openTimer: ReturnType<typeof setTimeout> | undefined;
-    let closeTimer: ReturnType<typeof setTimeout> | undefined;
+    let modelCycle = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     let dragMove: ((event: MouseEvent) => void) | null = null;
     let dragUp: (() => void) | null = null;
 
@@ -115,17 +116,18 @@ export default defineComponent({
     };
 
     const target = computed(() => {
-      if (props.appendToBody) return document.body;
+      if (typeof document === 'undefined') return undefined;
       const value = props.appendTo;
-      if (value instanceof HTMLElement) return value;
-      if (typeof value === 'string') {
+      if (value && typeof value !== 'string') return value;
+      if (value && value !== 'body') {
         try {
-          return document.querySelector(value) || document.body;
+          return document.querySelector(value) ?? undefined;
         } catch {
-          return document.body;
+          return undefined;
         }
       }
-      return host?.value || document.body;
+      if (props.appendToBody) return document.body;
+      return value === undefined ? host?.value : undefined;
     });
 
     const isHorizontal = computed(() => props.direction === 'rtl' || props.direction === 'ltr');
@@ -248,24 +250,40 @@ export default defineComponent({
         ) || []
       );
     const focusFirst = () => (focusable()[0] || root.value)?.focus();
-    const doClose = () => emit('update:modelValue', false);
-    const handleClose = () => {
-      if (!active) return;
-      emit('close');
-      if (props.beforeClose) props.beforeClose(doClose);
-      else doClose();
+    const clearTimer = () => {
+      clearTimeout(timer);
+      timer = undefined;
     };
-
-    const clearTimers = () => {
-      if (openTimer) clearTimeout(openTimer);
-      if (closeTimer) clearTimeout(closeTimer);
-      openTimer = undefined;
-      closeTimer = undefined;
+    const schedule = (callback: () => void, delay: number) => {
+      clearTimer();
+      if (delay > 0) {
+        timer = setTimeout(() => {
+          timer = undefined;
+          callback();
+        }, delay);
+      } else callback();
+    };
+    const doClose = () => { visible.value = false; };
+    const handleClose = () => {
+      if (!visible.value || !props.modelValue) return;
+      if (!props.beforeClose) {
+        if (timer === undefined) schedule(doClose, props.closeDelay);
+        return;
+      }
+      const cycle = modelCycle;
+      let settled = false;
+      props.beforeClose((cancel) => {
+        if (settled) return;
+        settled = true;
+        if (cancel || cycle !== modelCycle || !visible.value) return;
+        clearTimer();
+        doClose();
+      });
     };
 
     const cleanup = () => {
       if (!active) return;
-      const wasTop = isTopDialog(token);
+      const wasTop = isTopFocusDialog(token);
       active = false;
       unlockDialog(token);
       document.removeEventListener('keydown', onKeydown);
@@ -285,7 +303,7 @@ export default defineComponent({
       if (!active) return;
       if (event.key === 'Escape' && !isTopDialog(token)) return;
       if (event.key === 'Tab' && !isTopFocusDialog(token)) return;
-      if (event.key === 'Escape' && props.closeOnPressEscape) {
+      if (event.key === 'Escape' && visible.value && props.closeOnPressEscape) {
         event.preventDefault();
         handleClose();
       }
@@ -305,53 +323,49 @@ export default defineComponent({
       }
     };
 
-    const doOpen = async () => {
-      if (active) return;
-      emit('open');
+    const doOpen = () => {
       rendered.value = true;
-      previous = document.activeElement as HTMLElement;
-      active = true;
+      if (!active) {
+        previous = document.activeElement as HTMLElement;
+        active = true;
+        const stackZIndex = Math.max(lockDialog(token, props.lockScroll), nextZIndex());
+        zIndex.value = props.zIndex ?? stackZIndex;
+        document.addEventListener('keydown', onKeydown);
+        document.addEventListener('focusin', onFocus);
+        document.addEventListener('pointerdown', onPointerdown, true);
+      }
       visible.value = true;
-      const stackZIndex = Math.max(lockDialog(token, props.lockScroll), nextZIndex());
-      zIndex.value = props.zIndex ?? stackZIndex;
-      document.addEventListener('keydown', onKeydown);
-      document.addEventListener('focusin', onFocus);
-      document.addEventListener('pointerdown', onPointerdown, true);
-      await nextTick();
-      if (!active) return;
-      focusFirst();
-      emit('open-auto-focus');
-      emit('opened');
+      nextTick(() => {
+        if (!visible.value || !isTopFocusDialog(token)) return;
+        focusFirst();
+        emit('open-auto-focus');
+      });
     };
 
-    const doClosed = () => {
-      if (!active) return;
+    const afterLeave = () => {
+      if (!active || visible.value) return;
+      stopDrag();
       cleanup();
-      visible.value = false;
       emit('closed');
+      if (!props.modelValue || timer === undefined) emit('update:modelValue', false);
+      if (props.destroyOnClose) rendered.value = false;
     };
 
     onMounted(() => {
       watch(
         () => props.modelValue,
         (open) => {
-          clearTimers();
-          if (!open) {
-            if (!active) return;
-            const delay = Math.max(props.closeDelay, 0);
-            if (delay <= 0) doClosed();
-            else closeTimer = setTimeout(doClosed, delay);
-            return;
-          }
-          const delay = Math.max(props.openDelay, 0);
-          if (delay <= 0) void doOpen();
-          else openTimer = setTimeout(() => void doOpen(), delay);
+          modelCycle++;
+          clearTimer();
+          if (open && !visible.value) schedule(doOpen, props.openDelay);
+          else if (!open && visible.value) schedule(doClose, props.closeDelay);
         },
         { immediate: true }
       );
     });
     onBeforeUnmount(() => {
-      clearTimers();
+      modelCycle++;
+      clearTimer();
       stopDrag();
       cleanup();
     });
@@ -399,7 +413,7 @@ export default defineComponent({
                       {typeof props.closeIcon === 'string'
                         ? props.closeIcon
                         : props.closeIcon
-                          ? h(props.closeIcon as Component)
+                          ? h(toRaw(props.closeIcon))
                           : '×'}
                     </button>
                   )}
@@ -428,11 +442,19 @@ export default defineComponent({
     );
 
     return () => {
-      if (!rendered.value) return null;
-      if (!visible.value && props.destroyOnClose) return null;
-      const node = withDirectives(content(), [[vShow, visible.value]]);
-      const animated = <Transition name='i-drawer-fade'>{node}</Transition>;
-      return target.value ? <Teleport to={target.value}>{animated}</Teleport> : animated;
+      const node = rendered.value ? withDirectives(content(), [[vShow, visible.value]]) : null;
+      const animated = (
+        <Transition
+          name='i-drawer-fade'
+          persisted
+          onBeforeEnter={() => emit('open')}
+          onAfterEnter={() => { if (visible.value) emit('opened'); }}
+          onBeforeLeave={() => emit('close')}
+          onAfterLeave={afterLeave}>
+          {node}
+        </Transition>
+      );
+      return <Teleport to={target.value ?? 'body'} disabled={!target.value}>{animated}</Teleport>;
     };
   }
 });
