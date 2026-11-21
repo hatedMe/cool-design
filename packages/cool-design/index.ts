@@ -838,7 +838,7 @@ export type { TourInstance } from './tour';
 export type { TabsInstance } from './tabs';
 export type { CascaderInstance } from './cascader';
 export type { CascaderPanelInstance } from './cascader-panel';
-export type { MenuInstance } from './menu';
+export type { MenuInstance, MenuItemClicked, MenuPopperClass, MenuRoute, MenuRouterResult, SubMenuInstance } from './menu';
 export type { PopoverInstance, PopoverProps, PopoverVirtualRef } from './popover';
 export type { PopconfirmActions, PopconfirmInstance, PopconfirmProps } from './popconfirm';
 export type { RateInstance } from './rate';

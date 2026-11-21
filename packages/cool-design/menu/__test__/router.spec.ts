@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { describe, expect, test, vi } from 'vitest';
 import Menu from '..';
 
@@ -9,6 +9,31 @@ const useRouter = () => {
 };
 
 describe('Menu router 集成', () => {
+  test('select 返回导航结果，拒绝导航时保留原激活项', async () => {
+    const router = useRouter();
+    const failure = new Error('导航被取消');
+    router.push.mockResolvedValueOnce(failure).mockResolvedValueOnce(undefined);
+    const wrapper = mount(Menu, {
+      props: {
+        router: true,
+        defaultActive: 'home',
+        items: [{ index: 'home', label: '首页' }, { index: 'next', label: '下一页', to: '/next' }]
+      },
+      global: { config: { globalProperties: { $router: router.instance } } }
+    });
+    const next = wrapper.findAll('button')[1];
+    await next.trigger('click');
+    const event = wrapper.emitted('select')?.[0];
+    expect(event?.slice(0, 3)).toEqual(['next', ['next'], { index: 'next', indexPath: ['next'], route: '/next', to: '/next' }]);
+    expect(event?.[3]).toBeInstanceOf(Promise);
+    await expect(event?.[3]).resolves.toBe(failure);
+    await flushPromises();
+    expect(wrapper.get('[aria-current]').text()).toBe('首页');
+    await next.trigger('click');
+    await flushPromises();
+    expect(wrapper.get('[aria-current]').text()).toBe('下一页');
+  });
+
   test('router=true 时点击菜单项导航到 route，缺省回退 index', async () => {
     const router = useRouter();
     const wrapper = mount(Menu, {

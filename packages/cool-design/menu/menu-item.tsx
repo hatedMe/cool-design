@@ -1,5 +1,5 @@
-import { computed, defineComponent, inject, type PropType } from 'vue';
-import { menuKey, menuPathKey } from './context';
+import { computed, defineComponent, inject, normalizeClass, normalizeStyle, type PropType } from 'vue';
+import { menuKey, menuPathKey, type MenuRoute } from './context';
 import Tooltip from '../tooltip';
 
 export default defineComponent({
@@ -7,39 +7,38 @@ export default defineComponent({
   props: {
     index: { type: String, required: true },
     disabled: Boolean,
-    route: { type: [String, Object] as PropType<string | Record<string, unknown>>, default: undefined },
-    to: { type: [String, Object] as PropType<string | Record<string, unknown>>, default: undefined }
+    route: { type: [String, Object] as PropType<MenuRoute>, default: undefined },
+    to: { type: [String, Object] as PropType<MenuRoute>, default: undefined }
   },
-  emits: ['click'],
+  emits: { click: (event: MouseEvent) => event instanceof MouseEvent },
   setup(props, { slots, emit }) {
     const menu = inject(menuKey, undefined);
-    const parentPath = inject(menuPathKey, []);
-    const indexPath = computed(() => [...parentPath, props.index]);
+    const parentPath = inject(menuPathKey, undefined);
+    const indexPath = computed(() => [...(parentPath?.value ?? []), props.index]);
     const active = computed(() => menu?.isActive(props.index) ?? false);
     // 折叠模式下的一级菜单项通过 Tooltip 展示完整标题
     const collapsedTooltip = computed(
-      () => !!menu?.collapse && menu.mode === 'vertical' && parentPath.length === 0
+      () => !!menu?.collapse && menu.mode === 'vertical' && !parentPath
     );
+
+    const select = () => menu?.handleSelect({
+      index: props.index,
+      indexPath: indexPath.value,
+      route: props.route,
+      to: props.to
+    });
 
     const handleClick = (event: MouseEvent) => {
       emit('click', event);
       if (props.disabled) return;
-      menu?.handleSelect(props.index, indexPath.value, {
-        index: props.index,
-        route: props.route,
-        to: props.to
-      });
+      select();
     };
 
     const handleKeydown = (event: KeyboardEvent) => {
       if (props.disabled) return;
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        menu?.handleSelect(props.index, indexPath.value, {
-          index: props.index,
-          route: props.route,
-          to: props.to
-        });
+        select();
       }
     };
 
@@ -62,7 +61,14 @@ export default defineComponent({
           role='menuitem'
           aria-disabled={props.disabled || undefined}>
           {collapsedTooltip.value ? (
-            <Tooltip placement='right' offset={6} disabled={props.disabled}>
+            <Tooltip
+              placement='right'
+              offset={menu?.popperProps.offset}
+              effect={menu?.popperProps.effect}
+              popperClass={normalizeClass(menu?.popperProps.popperClass)}
+              popperStyle={normalizeStyle([menu?.themeStyle, menu?.popperProps.popperStyle])}
+              teleported={menu?.popperProps.teleported}
+              disabled={props.disabled}>
               {{
                 default: () => button,
                 content: () => slots.default?.() ?? slots.title?.()

@@ -1,6 +1,6 @@
 import { h } from 'vue';
-import { DOMWrapper, mount } from '@vue/test-utils';
-import { beforeEach, describe, expect, test } from 'vitest';
+import { DOMWrapper, enableAutoUnmount, mount } from '@vue/test-utils';
+import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import Menu from '../index';
 import MenuItem from '../menu-item';
 import SubMenu from '../sub-menu';
@@ -10,6 +10,7 @@ import MenuItemGroup from '../menu-item-group';
 beforeEach(() => {
   document.body.innerHTML = '';
 });
+enableAutoUnmount(afterEach);
 const doc = () => new DOMWrapper(document.body);
 
 describe('Menu', () => {
@@ -123,7 +124,7 @@ describe('Menu', () => {
     // 弹层内点击叶子项触发 select 并自动收起
     await popup.findAll('.i-menu-item__button')[0].trigger('click');
     expect(wrapper.emitted('select')?.[0]?.[0]).toBe('1-1');
-    expect(doc().find('.i-sub-menu__popup').exists()).toBe(false);
+    expect(doc().find('.i-sub-menu__popup').isVisible()).toBe(false);
   });
 
   test('折叠模式：一级菜单项显示 Tooltip 提示', async () => {
@@ -142,13 +143,12 @@ describe('Menu', () => {
     expect(item.find('.i-tooltip__trigger').exists()).toBe(true);
     await item.find('.i-tooltip__trigger').trigger('mouseenter');
     await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(document.querySelector('.i-tooltip')?.textContent).toBe('首页');
+    expect(document.querySelector('.i-tooltip:not([aria-hidden])')?.textContent).toBe('首页');
     // 子菜单内的菜单项不包 Tooltip
     await wrapper.findAll('.i-sub-menu')[0].trigger('mouseenter');
     await new Promise((resolve) => setTimeout(resolve, 350));
     const popupItem = doc().find('.i-sub-menu__popup .i-menu-item');
     expect(popupItem.find('.i-tooltip__trigger').exists()).toBe(false);
-    wrapper.unmount();
   });
 
   test('折叠模式：键盘 Enter 切换弹层', async () => {
@@ -161,7 +161,7 @@ describe('Menu', () => {
     await wrapper.find('.i-sub-menu__title').trigger('keydown', { key: 'Enter' });
     expect(doc().find('.i-sub-menu__popup').exists()).toBe(true);
     await wrapper.find('.i-sub-menu__title').trigger('keydown', { key: 'Escape' });
-    expect(doc().find('.i-sub-menu__popup').exists()).toBe(false);
+    expect(doc().find('.i-sub-menu__popup').isVisible()).toBe(false);
   });
 
   test('折叠弹层支持菜单级偏移、主题与类名配置', async () => {
@@ -183,7 +183,6 @@ describe('Menu', () => {
     const popup = doc().find('.menu-scope');
     expect(popup.exists()).toBe(true);
     expect(popup.classes()).toContain('i-sub-menu__popup--dark');
-    wrapper.unmount();
 
     // teleported=false 时弹层保留在组件内部
     const inline = mount(Menu, {

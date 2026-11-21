@@ -1,224 +1,221 @@
-import { Teleport, computed, defineComponent, inject, onBeforeUnmount, provide, ref, watch } from 'vue';
-import { menuKey, menuPathKey } from './context';
-import { useFloating } from '../../../src/utils/use-floating';
+import {
+  computed, defineComponent, getCurrentInstance, h, inject, nextTick, normalizeClass, normalizeStyle,
+  onBeforeUnmount, provide, shallowRef, vShow, watch, withDirectives, type Component, type PropType
+} from 'vue';
+import Tooltip, { type TooltipInstance } from '../tooltip';
+import { menuBranchKey, menuKey, menuPathKey, menuPopperProps } from './context';
+
+const iconType = [String, Object, Function] as PropType<string | Component>;
+const bottomPlacements = ['bottom-start', 'bottom-end', 'top-start', 'top-end', 'right-start', 'left-start'] as const;
+const sidePlacements = ['right-start', 'right', 'right-end', 'left-start', 'bottom-start', 'bottom-end', 'top-start', 'top-end'] as const;
 
 export default defineComponent({
   name: 'i-sub-menu',
   props: {
     index: { type: String, required: true },
     disabled: Boolean,
-    showTimeout: { type: Number, default: undefined },
-    hideTimeout: { type: Number, default: undefined }
+    ...menuPopperProps,
+    popperOffset: Number,
+    teleported: { type: Boolean, default: undefined },
+    showTimeout: Number,
+    hideTimeout: Number,
+    expandCloseIcon: iconType,
+    expandOpenIcon: iconType,
+    collapseCloseIcon: iconType,
+    collapseOpenIcon: iconType
   },
-  setup(props, { slots }) {
+  setup(props, { slots, expose }) {
+    const owner = getCurrentInstance();
     const menu = inject(menuKey, undefined);
-    const parentPath = inject(menuPathKey, []);
-    const indexPath = computed(() => [...parentPath, props.index]);
-    provide(menuPathKey, indexPath.value);
+    const parentPath = inject(menuPathKey, undefined);
+    const parentBranch = inject(menuBranchKey, undefined);
+    const indexPath = computed(() => [...(parentPath?.value ?? []), props.index]);
+    const unregisterPath = menu?.registerPath(indexPath);
+    provide(menuPathKey, indexPath);
 
+    const firstLevel = !parentPath;
+    const horizontal = computed(() => menu?.mode === 'horizontal');
+    const popupMode = computed(() => horizontal.value || menu?.collapse === true);
+    const bottomPopup = computed(() => horizontal.value && firstLevel);
+    const expandIcons = computed(() => bottomPopup.value || !popupMode.value);
+    const hover = computed(() => popupMode.value && menu?.menuTrigger === 'hover' && !props.disabled);
     const opened = computed(() => menu?.isOpened(props.index) ?? false);
-    const isFirstLevel = parentPath.length === 0;
-    // 折叠模式下，一级子菜单通过浮层弹层展示
-    const popupMode = computed(() => !!menu?.collapse && menu.mode === 'vertical' && isFirstLevel);
+    const expanded = computed(() => opened.value && (parentBranch?.expanded.value ?? true));
+    const popper = computed(() => menu?.popperProps);
+    const teleported = computed(() => props.teleported ?? popper.value?.teleported ?? firstLevel);
+    const icon = computed(() => {
+      const close = expandIcons.value ? props.expandCloseIcon : props.collapseCloseIcon;
+      const open = expandIcons.value ? props.expandOpenIcon : props.collapseOpenIcon;
+      if (!close || !open) return;
+      const value = opened.value ? open : close;
+      return typeof value === 'string' ? owner?.appContext.components[value] : value;
+    });
 
-    const titleRef = ref<HTMLElement>();
-    const popupRef = ref<HTMLElement>();
-    const popupOpen = ref(false);
+    const title = shallowRef<HTMLButtonElement>();
+    const row = shallowRef<HTMLLIElement>();
+    const panel = shallowRef<TooltipInstance>();
+    const inline = shallowRef<HTMLUListElement>();
     let showTimer: ReturnType<typeof setTimeout> | undefined;
-    let hideTimer: ReturnType<typeof setTimeout> | undefined;
     const clearTimers = () => {
-      if (showTimer) clearTimeout(showTimer);
-      if (hideTimer) clearTimeout(hideTimer);
-      showTimer = undefined;
-      hideTimer = undefined;
+      clearTimeout(showTimer);
+      menu?.cancelClose(props.index);
     };
-    // 展开延时依次回退：子菜单自身 → 菜单级配置 → 默认值
-    const showTimeout = () => props.showTimeout ?? menu?.popperProps.showTimeout ?? 300;
-    const hideTimeout = () => props.hideTimeout ?? menu?.popperProps.hideTimeout ?? 300;
-
-    const floating = useFloating({
-      open: popupOpen,
-      reference: titleRef,
-      floating: popupRef,
-      placement: () => 'right-start',
-      offset: () => menu?.popperProps.offset ?? 4,
-      close: () => {
-        popupOpen.value = false;
-      }
-    });
-
-    const openPopup = () => {
-      if (props.disabled) return;
-      if (hideTimer) {
-        clearTimeout(hideTimer);
-        hideTimer = undefined;
-      }
-      if (popupOpen.value) return;
-      const delay = showTimeout();
-      showTimer = setTimeout(() => {
-        popupOpen.value = true;
-      }, delay);
+    const open = () => {
+      if (!props.disabled) menu?.handleOpen(props.index, indexPath.value);
     };
-    const closePopup = (immediate = false) => {
-      if (showTimer) {
-        clearTimeout(showTimer);
-        showTimer = undefined;
-      }
-      if (!popupOpen.value) return;
-      if (immediate) {
-        clearTimers();
-        popupOpen.value = false;
-        return;
-      }
-      hideTimer = setTimeout(() => {
-        popupOpen.value = false;
-      }, hideTimeout());
-    };
-    const keepPopup = () => {
-      if (hideTimer) {
-        clearTimeout(hideTimer);
-        hideTimer = undefined;
-      }
-    };
-    const togglePopup = () => {
+    const close = () => menu?.handleClose(props.index, indexPath.value);
+    const toggle = () => {
       clearTimers();
-      popupOpen.value = !popupOpen.value;
+      if (opened.value) close();
+      else open();
     };
 
-    watch(popupMode, (mode) => {
-      if (!mode) {
-        clearTimers();
-        popupOpen.value = false;
+    const hold = () => {
+      clearTimers();
+      parentBranch?.hold();
+    };
+    const leave = (event: MouseEvent) => {
+      const target = event.relatedTarget;
+      if (target instanceof Node && (row.value?.contains(target) || panel.value?.popperRef.contentRef?.contains(target))) {
+        return;
       }
+      if (hover.value) {
+        clearTimers();
+        if (opened.value) menu?.scheduleClose(props.index, indexPath.value, props.hideTimeout ?? popper.value?.hideTimeout ?? 300);
+      }
+      parentBranch?.leave(event);
+    };
+    provide(menuBranchKey, { expanded, hold, leave });
+
+    const onMouseenter = () => {
+      if (!hover.value) return;
+      hold();
+      if (!opened.value) showTimer = setTimeout(open, props.showTimeout ?? popper.value?.showTimeout ?? 300);
+    };
+    watch(() => panel.value?.popperRef.contentRef, (element, _, onCleanup) => {
+      if (!element) return;
+      element.addEventListener('mouseenter', hold);
+      element.addEventListener('mouseleave', leave);
+      onCleanup(() => {
+        element.removeEventListener('mouseenter', hold);
+        element.removeEventListener('mouseleave', leave);
+      });
+    }, { flush: 'post' });
+    watch([hover, opened, () => props.index], clearTimers);
+    watch(() => parentBranch?.expanded.value, (visible) => {
+      // 父级隐藏后取消无效的展开请求，子级已安排的关闭仍需更新展开状态。
+      if (visible === false) clearTimeout(showTimer);
     });
 
-    const toggleInline = () => {
-      if (props.disabled || !menu) return;
-      if (opened.value) menu.handleClose(props.index, indexPath.value);
-      else menu.handleOpen(props.index, indexPath.value);
+    const dismiss = (event: Event) => {
+      clearTimers();
+      close();
+      if (event instanceof KeyboardEvent) title.value?.focus({ preventScroll: true });
     };
-
-    const handleTitleClick = () => {
-      if (!menu) return;
-      if (popupMode.value) {
-        togglePopup();
-        return;
-      }
-      // 垂直模式始终点击展开；水平模式遵循 menuTrigger
-      if (menu.mode === 'vertical' || menu.menuTrigger === 'click' || menu.collapse) toggleInline();
-    };
-
-    const handleMouseEnter = () => {
-      if (!menu || props.disabled) return;
-      if (popupMode.value) {
-        if (menu.menuTrigger === 'hover') openPopup();
-        return;
-      }
-      if (menu.mode === 'horizontal' && menu.menuTrigger === 'hover' && !menu.collapse) {
-        menu.handleOpen(props.index, indexPath.value);
-      }
-    };
-
-    const handleMouseLeave = () => {
-      if (!menu || props.disabled) return;
-      if (popupMode.value) {
-        if (menu.menuTrigger === 'hover') closePopup();
-        return;
-      }
-      if (menu.mode === 'horizontal' && menu.menuTrigger === 'hover' && !menu.collapse) {
-        menu.handleClose(props.index, indexPath.value);
-      }
-    };
-
     const handleKeydown = (event: KeyboardEvent) => {
-      if (props.disabled) return;
-      if (popupMode.value) {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          togglePopup();
-        } else if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
-          event.preventDefault();
-          clearTimers();
-          popupOpen.value = true;
-        } else if (event.key === 'Escape') {
-          closePopup(true);
-        }
-        return;
-      }
+      if (props.disabled || event.isComposing) return;
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        toggleInline();
-      } else if (event.key === 'ArrowDown') {
+        toggle();
+      } else if (event.key === 'ArrowDown' || (popupMode.value && event.key === 'ArrowRight')) {
         event.preventDefault();
-        if (!opened.value) toggleInline();
-      } else if (event.key === 'Escape') {
-        if (opened.value) toggleInline();
+        clearTimers();
+        open();
+        void nextTick(async () => {
+          await panel.value?.updatePopper();
+          await nextTick();
+          const children = panel.value?.popperRef.contentRef ?? inline.value;
+          if (expanded.value) children?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus({ preventScroll: true });
+        });
+      } else if (event.key === 'Escape' && opened.value) {
+        event.preventDefault();
+        dismiss(event);
       }
     };
+    onBeforeUnmount(() => {
+      clearTimeout(showTimer);
+      // 父浮层离场销毁内容后，根菜单仍需要完成已预约的逻辑关闭。
+      if (popper.value?.persistent !== false || parentBranch?.expanded.value !== false || !popupMode.value) {
+        menu?.cancelClose(props.index);
+      }
+      unregisterPath?.();
+    });
+    expose({ opened });
 
-    // 弹层内点击叶子菜单项后自动收起
-    const handlePopupClick = (event: Event) => {
-      const target = event.target as HTMLElement;
-      if (target.closest('.i-menu-item')) closePopup(true);
-    };
-
-    onBeforeUnmount(clearTimers);
-
-    return () => (
-      <li
-        class={{
-          'i-sub-menu': true,
-          'is-opened': opened.value || (popupMode.value && popupOpen.value),
-          'is-disabled': props.disabled
-        }}
-        role='none'
-        onMouseenter={handleMouseEnter}
-        onMouseleave={handleMouseLeave}>
+    return () => {
+      const button = (
         <button
           type='button'
           class='i-sub-menu__title'
-          ref={titleRef}
+          ref={title}
           disabled={props.disabled}
           tabindex={props.disabled ? -1 : 0}
-          aria-expanded={popupMode.value ? popupOpen.value : opened.value}
+          aria-expanded={expanded.value}
           aria-haspopup='true'
-          onClick={handleTitleClick}
+          onClick={() => {
+            if (!props.disabled && (!horizontal.value || menu?.menuTrigger === 'click')) toggle();
+          }}
           onKeydown={handleKeydown}>
           <span class='i-sub-menu__label'>{slots.title?.()}</span>
-          <span class='i-sub-menu__arrow' aria-hidden='true'>
-            ‹
+          <span
+            class={['i-sub-menu__arrow', { 'is-side': !expandIcons.value, 'is-custom': icon.value }]}
+            aria-hidden='true'>
+            {icon.value ? h(icon.value) : '‹'}
           </span>
         </button>
-        {popupMode.value
-          ? popupOpen.value && (() => {
-              const popper = menu?.popperProps;
-              const panel = (
-                <div
-                  ref={popupRef}
-                  class={[
-                    'i-sub-menu__popup',
-                    `i-sub-menu__popup--${popper?.effect ?? 'light'}`,
-                    popper?.popperClass
-                  ]}
-                  role='menu'
-                  style={floating.style.value}
-                  onClick={handlePopupClick}
-                  onMouseenter={keepPopup}
-                  onMouseleave={() => closePopup()}>
-                  <div class='i-sub-menu__popup-title'>{slots.title?.()}</div>
-                  <ul class='i-sub-menu__children' role='menu'>
-                    {slots.default?.()}
-                  </ul>
-                </div>
-              );
-              return popper?.teleported ? <Teleport to={floating.target.value}>{panel}</Teleport> : panel;
-            })()
-          : opened.value && (
-              <ul class='i-sub-menu__children' role='menu'>
-                {slots.default?.()}
-              </ul>
-            )}
-      </li>
-    );
+      );
+      return (
+        <li
+          ref={row}
+          class={['i-sub-menu', { 'is-opened': expanded.value, 'is-disabled': props.disabled }]}
+          role='none'
+          onMouseenter={onMouseenter}
+          onMouseleave={leave}>
+          {popupMode.value ? (
+            <Tooltip
+              ref={panel}
+              visible={expanded.value}
+              onUpdate:visible={() => undefined}
+              onDismiss={dismiss}
+              trigger={[]}
+              triggerKeys={[]}
+              closeOnOutside
+              contentRole='menu'
+              persistent={popper.value?.persistent}
+              effect={popper.value?.effect}
+              popperClass={normalizeClass([
+                'i-sub-menu__popup',
+                `i-sub-menu__popup--${popper.value?.effect ?? 'light'}`,
+                props.popperClass ?? popper.value?.popperClass
+              ])}
+              popperStyle={normalizeStyle([menu?.themeStyle, props.popperStyle ?? popper.value?.popperStyle])}
+              offset={props.popperOffset ?? popper.value?.offset}
+              placement={bottomPopup.value ? 'bottom-start' : 'right-start'}
+              fallbackPlacements={[...(bottomPopup.value ? bottomPlacements : sidePlacements)]}
+              teleported={teleported.value}
+              showArrow={false}
+              gpuAcceleration={false}>
+              {{
+                default: () => button,
+                content: () => (
+                  <>
+                    {!horizontal.value && firstLevel && <div class='i-sub-menu__popup-title'>{slots.title?.()}</div>}
+                    <ul class='i-sub-menu__children' role='menu'>{slots.default?.()}</ul>
+                  </>
+                )
+              }}
+            </Tooltip>
+          ) : (
+            <>
+              {button}
+              {withDirectives(
+                <ul ref={inline} class='i-sub-menu__children' role='menu'>{slots.default?.()}</ul>,
+                [[vShow, expanded.value]]
+              )}
+            </>
+          )}
+        </li>
+      );
+    };
   }
 });

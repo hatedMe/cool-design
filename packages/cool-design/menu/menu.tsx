@@ -1,10 +1,17 @@
-import { computed, defineComponent, getCurrentInstance, provide, ref, watch, type PropType } from 'vue';
-import { menuKey, menuPathKey, type MenuItemData, type MenuMode, type MenuTrigger } from './context';
+import { computed, defineComponent, getCurrentInstance, onBeforeUnmount, provide, ref, watch, type CSSProperties, type PropType, type Ref } from 'vue';
+import {
+  menuKey, menuPopperProps,
+  type MenuItemClicked, type MenuItemData, type MenuMode, type MenuRoute, type MenuRouterResult, type MenuTrigger
+} from './context';
 import IMenuItem from './menu-item';
 import ISubMenu from './sub-menu';
 
 export type { MenuItemData, MenuMode, MenuTrigger };
 export type MenuItem = MenuItemData;
+
+const isIndexPath = (path: string[]) => Array.isArray(path) && path.every((entry) => typeof entry === 'string');
+const isMenuEvent = (index: string, path: string[]) => typeof index === 'string' && isIndexPath(path);
+const samePath = (a: string[], b: string[]) => a.length === b.length && a.every((entry, index) => entry === b[index]);
 
 export default defineComponent({
   name: 'i-menu',
@@ -23,18 +30,33 @@ export default defineComponent({
     activeTextColor: { type: String, default: '' },
     router: Boolean,
     ellipsis: { type: Boolean, default: true },
-    popperOffset: { type: Number, default: undefined },
-    popperEffect: { type: String as PropType<'light' | 'dark'>, default: 'light' },
-    popperClass: { type: String, default: '' },
-    teleported: { type: Boolean, default: true },
+    ...menuPopperProps,
+    popperOffset: { type: Number, default: 6 },
+    popperEffect: { type: String, default: 'light' },
+    teleported: { type: Boolean, default: undefined },
+    persistent: { type: Boolean, default: true },
     showTimeout: { type: Number, default: 300 },
     hideTimeout: { type: Number, default: 300 }
   },
-  emits: ['update:modelValue', 'select', 'open', 'close'],
+  emits: {
+    'update:modelValue': (index: string) => typeof index === 'string',
+    select: (index: string, path: string[], item: MenuItemClicked, routerResult?: MenuRouterResult) =>
+      isMenuEvent(index, path) && !!item && (routerResult === undefined || routerResult instanceof Promise),
+    open: isMenuEvent,
+    close: isMenuEvent
+  },
   setup(props, { emit, slots, expose }) {
     const instance = getCurrentInstance();
     const internalActive = ref(props.modelValue ?? props.defaultActive ?? '');
-    const opened = ref<string[]>([...(props.defaultOpeneds ?? [])]);
+    const opened = ref<string[]>(props.collapse && props.mode === 'vertical' ? [] : [...props.defaultOpeneds]);
+    const paths = new Set<Ref<string[]>>();
+    const pendingCloses = new Map<string, { path: string[]; timer: ReturnType<typeof setTimeout> }>();
+
+    const cancelClose = (index: string) => {
+      clearTimeout(pendingCloses.get(index)?.timer);
+      pendingCloses.delete(index);
+    };
+    onBeforeUnmount(() => pendingCloses.forEach((_, index) => cancelClose(index)));
 
     watch(
       () => props.modelValue,
@@ -55,8 +77,16 @@ export default defineComponent({
       },
       { deep: true }
     );
+    watch(() => props.collapse && props.mode === 'vertical', (collapsed) => {
+      opened.value = collapsed ? [] : [...props.defaultOpeneds];
+    });
 
     const activeIndex = computed(() => props.modelValue ?? internalActive.value);
+    const themeStyle = computed<CSSProperties>(() => ({
+      backgroundColor: props.backgroundColor || undefined,
+      color: props.textColor || undefined,
+      '--i-menu-active-color': props.activeTextColor || undefined
+    }));
 
     const isActive = (index: string) => activeIndex.value === index;
     const isOpened = (index: string) => opened.value.includes(index);
@@ -73,19 +103,35 @@ export default defineComponent({
       return null;
     };
 
-    const handleSelect = (index: string, indexPath: string[], item?: unknown) => {
+    let selection = 0;
+    const activate = (index: string) => {
       internalActive.value = index;
       emit('update:modelValue', index);
-      emit('select', index, indexPath, item);
+    };
+    const handleSelect = (item: MenuItemClicked) => {
+      const currentSelection = ++selection;
+      const { index, indexPath } = item;
+      if (props.mode === 'horizontal' || props.collapse) opened.value = [];
       if (props.router) {
-        const router = instance?.appContext.config.globalProperties.$router;
-        const meta = item as { route?: unknown; to?: unknown } | undefined;
-        const target = meta?.route ?? meta?.to ?? index;
-        if (router && typeof router.push === 'function') void router.push(target);
+        const router = instance?.appContext.config.globalProperties.$router as {
+          push?: (target: MenuRoute) => void | Error | MenuRouterResult;
+        } | undefined;
+        if (typeof router?.push === 'function') {
+          const route = item.route ?? item.to ?? index;
+          const result = Promise.resolve(router.push(route)).then((failure) => {
+            if (!failure && currentSelection === selection) activate(index);
+            return failure;
+          });
+          emit('select', index, indexPath, { ...item, route }, result);
+          return;
+        }
       }
+      activate(index);
+      emit('select', index, indexPath, item);
     };
 
     const handleOpen = (index: string, indexPath: string[]) => {
+      cancelClose(index);
       if (opened.value.includes(index)) return;
       if (props.uniqueOpened) {
         const ancestors = new Set(indexPath.slice(0, -1));
@@ -97,18 +143,26 @@ export default defineComponent({
     };
 
     const handleClose = (index: string, indexPath: string[]) => {
+      cancelClose(index);
       if (!opened.value.includes(index)) return;
       opened.value = opened.value.filter((key) => key !== index);
       emit('close', index, indexPath);
     };
 
+    const scheduleClose = (index: string, indexPath: string[], delay: number) => {
+      cancelClose(index);
+      const timer = setTimeout(() => handleClose(index, indexPath), delay);
+      pendingCloses.set(index, { path: indexPath, timer });
+    };
+
+    const getPath = (index: string) => [...paths].find((path) => path.value[path.value.length - 1] === index)?.value ??
+      findPath(props.items, index) ?? [index];
     const open = (index: string) => {
-      const path = findPath(props.items, index) ?? [index];
-      handleOpen(index, path);
+      const path = getPath(index);
+      path.forEach((entry, i) => handleOpen(entry, path.slice(0, i + 1)));
     };
     const close = (index: string) => {
-      const path = findPath(props.items, index) ?? [index];
-      handleClose(index, path);
+      handleClose(index, getPath(index));
     };
     const updateActiveIndex = (index?: string) => {
       if (index !== undefined) {
@@ -139,12 +193,17 @@ export default defineComponent({
       get menuTrigger() {
         return props.menuTrigger;
       },
+      get themeStyle() {
+        return themeStyle.value;
+      },
       get popperProps() {
         return {
           offset: props.popperOffset,
           effect: props.popperEffect,
           popperClass: props.popperClass,
+          popperStyle: props.popperStyle,
           teleported: props.teleported,
+          persistent: props.persistent,
           showTimeout: props.showTimeout,
           hideTimeout: props.hideTimeout
         };
@@ -153,9 +212,27 @@ export default defineComponent({
       isOpened,
       handleSelect,
       handleOpen,
-      handleClose
+      handleClose,
+      scheduleClose,
+      cancelClose,
+      registerPath(path) {
+        const index = path.value[path.value.length - 1];
+        const pending = pendingCloses.get(index);
+        if (pending && !samePath(pending.path, path.value)) cancelClose(index);
+        paths.add(path);
+        const stop = watch(path, (current, previous) => {
+          if (samePath(current, previous)) return;
+          const oldIndex = previous[previous.length - 1];
+          pendingCloses.forEach(({ path: pendingPath }, index) => {
+            if (pendingPath.includes(oldIndex)) cancelClose(index);
+          });
+        }, { flush: 'sync' });
+        return () => {
+          stop();
+          paths.delete(path);
+        };
+      }
     });
-    provide(menuPathKey, []);
 
     const renderItems = (items: MenuItemData[]) =>
       items.map((item) => {
@@ -186,15 +263,7 @@ export default defineComponent({
             'is-collapse': props.collapse,
             'is-ellipsis': props.ellipsis
           }}
-          style={
-            props.backgroundColor || props.textColor || props.activeTextColor
-              ? {
-                  backgroundColor: props.backgroundColor || undefined,
-                  color: props.textColor || undefined,
-                  '--i-menu-active-color': props.activeTextColor || undefined
-                }
-              : undefined
-          }>
+          style={themeStyle.value}>
           <ul
             class={{ 'i-menu__list': true, 'no-transition': !props.collapseTransition }}
             role='menubar'
