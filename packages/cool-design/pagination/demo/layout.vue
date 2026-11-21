@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { h, ref } from 'vue';
 import { Pagination, Space } from '../../index';
 const page = ref(5);
 const pageCount = ref(20);
 const smallPage = ref(2);
+const sizes = [10, 20, 50];
+const previousIcon = () => h('span', '‹');
+const nextIcon = () => h('span', '›');
 </script>
 
 <template>
@@ -16,5 +19,17 @@ const smallPage = ref(2);
       prev-text="上一页"
       next-text="下一页" />
     <Pagination v-model:current-page="smallPage" :total="120" small layout="prev, pager, next" />
+    <div id="pagination-layout-sizes"></div>
+    <Pagination
+      :total="120"
+      :page-sizes="sizes"
+      :prev-icon="previousIcon"
+      :next-icon="nextIcon"
+      append-size-to="#pagination-layout-sizes"
+      popper-class="pagination-layout-options"
+      :popper-style="{ minWidth: '114px' }"
+      layout="prev, pager, next, ->, sizes, slot">
+      <span>条数设置</span>
+    </Pagination>
   </Space>
 </template>

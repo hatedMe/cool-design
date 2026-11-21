@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Pagination 的条数选择改用 Select，可用 `append-size-to`、`popper-class` 和 `popper-style` 定位并设置下拉样式。下拉默认传送，设置 `:teleported="false"` 可在分页内部显示。`change(currentPage, pageSize)` 在渲染更新后为实际页码或条数变化合并触发，翻页按钮同步报告当时的绑定页码。依赖请求值时可改用 `update:current-page` 或 `update:page-size`。保留 `page-size-change` 兼容事件，新增 `size` 及上下页自定义图标，显式按钮文字优先。
+
 - Menu 的水平和折叠子菜单复用共享浮层，支持 `popper-style`、子菜单独立配置、展开和折叠图标对。浮层默认保留内容，需要在离场后销毁时可设 `:persistent="false"`。默认间距从 `4` 调整为 `6`，默认挂载规则为一级传送、嵌套就地渲染。水平悬停使用默认 `300` 毫秒展开和收起延时，可设为 `0` 恢复即时响应。子菜单浮层触发 `open` 和 `close`，`select` 补充菜单项路径与可选路由 Promise，成功导航后才更新激活项。
 
 - Drawer 修复响应式关闭图标触发的 Vue 组件代理警告。`opened` 和 `closed` 在动画完成后发出，`close` 改为实际离场开始时发出，`update:modelValue(false)` 延后至离场结束。若离场结束时重新打开仍在等待 `open-delay`，则保留新的 `true` 并跳过模型更新事件。依赖关闭请求时机的页面可在 `before-close` 中处理。显式非 `body` 挂载目标优先，省略目标时使用 ConfigProvider 浮层宿主或就地渲染。旧版依赖自动挂到 `body` 或单独使用 `append-to="body"` 的页面可改用 `append-to-body`。

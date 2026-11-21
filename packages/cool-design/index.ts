@@ -828,6 +828,7 @@ export type { AnchorInstance } from './anchor';
 export type { CarouselInstance } from './carousel';
 export type { CollapseInstance, CollapseItemInstance } from './collapse';
 export type { DialogBeforeClose, DialogContentInstance, DialogHeaderScope, DialogInstance, DialogModalClass, DialogSlots } from './dialog';
+export type { PaginationInstance, PaginationLayoutItem, PaginationPopperClass, PaginationPopperStyle, PaginationProps, PaginationSlots } from './pagination';
 export type { DrawerBeforeClose, DrawerDirection, DrawerInstance, DrawerResizableOptions, DrawerResizePayload } from './drawer';
 export type {
   DropdownCommand, DropdownInstance, DropdownItemInstance, DropdownItemOption, DropdownPlacement, DropdownProps,

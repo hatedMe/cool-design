@@ -8,6 +8,22 @@ import ConfigProvider, { en, zhCn } from '../../config-provider';
 beforeEach(() => { document.body.innerHTML = ''; });
 const doc = () => new DOMWrapper(document.body);
 
+test.each([
+  [false, '清空', 'Enter'],
+  [false, '清空', ' '],
+  [true, '移除 二十', 'Enter'],
+  [true, '移除 二十', ' ']
+])('原生按钮保留键盘默认动作（multiple=%s，%s，%s）', (multiple, label, key) => {
+  const wrapper = mount(Select, {
+    props: { multiple, clearable: !multiple, modelValue: multiple ? [20] : 20, options: [{ value: 20, label: '二十' }] }
+  });
+  const button = wrapper.get(`button[aria-label="${label}"]`);
+  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+  expect(button.element.dispatchEvent(event)).toBe(true);
+  expect(wrapper.emitted('visible-change')).toBeUndefined();
+  wrapper.unmount();
+});
+
 test('原版远程回调返回 void 时使用外部响应式插槽选项', async () => {
   const options = ref<string[]>([]);
   const wrapper = mount(Select, {

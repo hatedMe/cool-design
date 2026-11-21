@@ -282,6 +282,7 @@ export default defineComponent({
         });
       }
     };
+    watch(isDisabled, (disabled) => { if (disabled) setOpen(false); });
     const update = (value: unknown, normalizeEmpty = true) => {
       const isEmptyCleared =
         !props.multiple && (props.emptyValues ?? config.value.emptyValues ?? []).some((item) => item === value);
@@ -351,6 +352,11 @@ export default defineComponent({
     const onKeydown = (event: KeyboardEvent) => {
       if (isDisabled() || event.isComposing) return;
       if (event.key === 'Escape') return setOpen(false);
+      if (event.target === event.currentTarget && !open.value && !props.filterable && !props.remote &&
+        (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        return setOpen(true);
+      }
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
         const wasOpen = open.value;
@@ -453,6 +459,7 @@ export default defineComponent({
                 'is-disabled': item.disabled
               }
             ]}
+            onMousedown={(event: MouseEvent) => event.preventDefault()}
             onClick={() => choose(item)}>
             {item.label}
           </div>
@@ -498,6 +505,8 @@ export default defineComponent({
           <select
             ref={select}
             class='i-select__native'
+            tabindex={-1}
+            aria-hidden='true'
             name={props.name}
             value={
               props.multiple
