@@ -1,34 +1,36 @@
 import { defineComponent, getCurrentInstance, inject, type Component, type PropType } from 'vue';
 import Icon from '../icon';
 import { dropdownKey, type DropdownCommand } from './context';
+import type { WithSlots } from './slots';
 
-export default defineComponent({
+const dropdownItemProps = {
+  command: { type: [String, Number, Object] as PropType<DropdownCommand>, default: '' },
+  disabled: Boolean,
+  divided: Boolean,
+  icon: { type: [String, Object, Function] as PropType<string | Component>, default: '' }
+};
+const DropdownItem = defineComponent({
   name: 'i-dropdown-item',
-  props: {
-    command: { type: [String, Number, Object] as PropType<DropdownCommand>, default: '' },
-    disabled: Boolean,
-    divided: Boolean,
-    icon: { type: [String, Object] as PropType<string | Component>, default: '' }
-  },
-  emits: ['click'],
+  props: dropdownItemProps,
+  emits: { click: (originalEvent: MouseEvent | KeyboardEvent) =>
+    originalEvent.type === 'click' || originalEvent.type === 'keydown' },
   setup(props, { slots, emit }) {
     const parent = inject(dropdownKey, undefined);
-    const instance = getCurrentInstance()?.proxy;
+    const instance = getCurrentInstance()!.proxy as DropdownItemInstance;
 
-    const handleClick = (event: MouseEvent) => {
+    const activate = (event: MouseEvent | KeyboardEvent) => {
       if (props.disabled || parent?.disabled) return;
       emit('click', event);
-      parent?.handleCommand(props.command, instance);
+      if (event.type === 'click' && event.defaultPrevented) return;
+      parent?.handleCommand(props.command, instance, event);
     };
 
     const handleKeydown = (event: KeyboardEvent) => {
-      if (props.disabled) return;
-      if (event.key === 'Enter' || event.key === ' ') {
+      if (props.disabled || parent?.disabled || event.defaultPrevented || event.isComposing) return;
+      const key = event.code && event.code !== 'Unidentified' ? event.code : event.key;
+      if (key === 'Enter' || key === 'NumpadEnter' || key === 'Space' || key === ' ') {
         event.preventDefault();
-        parent?.handleCommand(props.command, instance);
-      } else if (event.key === 'Escape') {
-        event.preventDefault();
-        parent?.close('escape');
+        activate(event);
       }
     };
 
@@ -43,7 +45,7 @@ export default defineComponent({
           disabled={props.disabled}
           tabindex={props.disabled ? -1 : 0}
           aria-disabled={props.disabled || undefined}
-          onClick={handleClick}
+          onClick={activate}
           onKeydown={handleKeydown}>
           {(slots.icon?.() || props.icon) && (
             <span class='i-dropdown__item-icon' aria-hidden='true'>
@@ -56,3 +58,7 @@ export default defineComponent({
     );
   }
 });
+
+const Item = DropdownItem as WithSlots<typeof DropdownItem, 'default' | 'icon'>;
+export type DropdownItemInstance = InstanceType<typeof Item>;
+export default Item;

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- DropdownItem 的 `click` 也会在按键激活时触发，回调类型扩展为 `MouseEvent | KeyboardEvent`。鼠标点击监听器调用 `preventDefault()` 后会取消命令，菜单保持打开。
+
+- Dropdown 默认保留隐藏的菜单节点，并使用 Popper 的 `absolute` 定位。可设置 `:persistent="false"` 在离场后销毁，设置 `:max-height="172"` 恢复旧的滚动区上限，或用 `popper-options.strategy` 恢复 `fixed` 定位。默认按键为 `Enter`、`Space`、`ArrowDown`、`NumpadEnter`，兼容旧键名。只有单独使用 `hover` 时应用默认 `150` 毫秒延时。`command` 在命令和菜单项实例之后补充原始事件。新增虚拟锚点、挂载宿主、箭头与 Popper 配置。
+
 - Popover 默认宽度为 `150`，定位策略为 `absolute`，并从首次渲染起保留浮层节点。旧布局可显式设置 `width="auto"` 或 `strategy="fixed"`，关闭后需要销毁时设置 `:persistent="false"`。默认插槽提供立即请求关闭的 `hide()`，离场完成时会再次发送 `update:visible(false)`。虚拟 `click` 或 `contextmenu` 触发模式现在会在点击外部时请求关闭。
 
 - Tooltip 的默认定位从 `fixed` 改为 `absolute`，可显式传入 `strategy="fixed"` 延续旧布局。启用 `persistent` 后，内容从首次渲染起挂载并在关闭时隐藏。实例方法 `hide()` 立即请求关闭，需要保留 `hide-after` 延迟时改用 `onClose()`。

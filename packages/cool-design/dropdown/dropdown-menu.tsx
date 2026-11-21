@@ -6,7 +6,7 @@ export default defineComponent({
   setup(_, { slots }) {
     const parent = inject(dropdownKey, undefined);
     return () => (
-      <ul class='i-dropdown__menu' role={parent?.role ?? 'menu'}>
+      <ul class='i-dropdown__menu' role={parent?.role ?? 'menu'} aria-labelledby={parent?.id}>
         {slots.default?.()}
       </ul>
     );

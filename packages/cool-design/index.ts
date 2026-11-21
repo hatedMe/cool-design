@@ -830,7 +830,10 @@ export type { CarouselInstance } from './carousel';
 export type { CollapseInstance, CollapseItemInstance } from './collapse';
 export type { DialogInstance } from './dialog';
 export type { DrawerInstance } from './drawer';
-export type { DropdownInstance } from './dropdown';
+export type {
+  DropdownCommand, DropdownInstance, DropdownItemInstance, DropdownItemOption, DropdownPlacement, DropdownProps,
+  DropdownSize, DropdownTrigger, DropdownType
+} from './dropdown';
 export type { ImageInstance, ImageViewerInstance } from './image';
 export type { TourInstance } from './tour';
 export type { TabsInstance } from './tabs';

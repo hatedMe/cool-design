@@ -1,6 +1,6 @@
 import { h } from 'vue';
 import { mount } from '@vue/test-utils';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import Dropdown from '../index';
 import DropdownMenu from '../dropdown-menu';
 import DropdownItem from '../dropdown-item';
@@ -16,12 +16,102 @@ const mountDropdown = (
 const mountDropdownBase = mount;
 
 describe('Dropdown', () => {
+  test('鼠标取消默认操作时保留菜单，键盘激活依次触发 Item click 与命令', async () => {
+    const events: Array<[string, Event]> = [];
+    const command = { value: 'edit' };
+    const wrapper = mountDropdown({
+      props: {
+        trigger: 'click',
+        onCommand: (value: unknown, item: { $props: { command: unknown } }, event: Event) => {
+          expect(value).toBe(command);
+          expect(item.$props.command).toBe(command);
+          events.push(['command', event]);
+        }
+      },
+      slots: {
+        dropdown: () => h(DropdownMenu, null, () => h(DropdownItem, {
+          command,
+          onClick(event: Event) {
+            events.push(['item', event]);
+            if (event.type === 'click') event.preventDefault();
+          }
+        }, () => '编辑'))
+      }
+    });
+    await wrapper.get('.i-dropdown__trigger').trigger('click');
+    const item = wrapper.get('.i-dropdown__item-button');
+    const mouse = new MouseEvent('click', { bubbles: true, cancelable: true });
+    item.element.dispatchEvent(mouse);
+    await wrapper.vm.$nextTick();
+    const mouseEvents = events.splice(0);
+    const visibleAfterMouse = wrapper.emitted('visible-change')?.slice();
+    const enter = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, code: 'Enter' });
+    item.element.dispatchEvent(enter);
+    await wrapper.vm.$nextTick();
+    expect.soft(mouseEvents).toEqual([['item', mouse]]);
+    expect.soft(visibleAfterMouse).toEqual([[true]]);
+    expect.soft(events).toEqual([['item', enter], ['command', enter]]);
+    expect(enter.defaultPrevented).toBe(true);
+    wrapper.unmount();
+  });
+
+  test('使用默认键盘 code 并将原始命令事件传给监听方', async () => {
+    const wrapper = mountDropdown({
+      props: { trigger: 'click', items: [{ command: 'a', label: 'A' }] },
+      attachTo: document.body
+    });
+    const trigger = wrapper.get('.i-dropdown__trigger');
+    for (const code of ['Enter', 'Space', 'ArrowDown', 'NumpadEnter']) {
+      await trigger.trigger('keydown', { code, key: 'Unidentified' });
+      expect(wrapper.emitted('visible-change')?.at(-1)).toEqual([true]);
+      const click = new MouseEvent('click', { bubbles: true });
+      wrapper.get('.i-dropdown__item-button').element.dispatchEvent(click);
+      const command = wrapper.emitted('command')?.at(-1);
+      expect(command?.[0]).toBe('a');
+      expect(command?.[1]).toBeTruthy();
+      expect(command?.[2]).toBe(click);
+      await wrapper.vm.$nextTick();
+      expect(wrapper.emitted('visible-change')?.at(-1)).toEqual([false]);
+    }
+    wrapper.unmount();
+  });
+
+  test('悬停默认 150 ms，反向离开取消打开，数组触发即时显示', async () => {
+    vi.useFakeTimers();
+    const wrapper = mount(Dropdown, { props: { teleported: false } });
+    try {
+      const trigger = wrapper.get('.i-tooltip__trigger');
+      await trigger.trigger('mouseenter');
+      await vi.advanceTimersByTimeAsync(149);
+      expect(wrapper.emitted('visible-change')).toBeUndefined();
+      await trigger.trigger('mouseleave');
+      await vi.advanceTimersByTimeAsync(150);
+      expect(wrapper.emitted('visible-change')).toBeUndefined();
+      await trigger.trigger('mouseenter');
+      await vi.advanceTimersByTimeAsync(150);
+      expect(wrapper.emitted('visible-change')).toEqual([[true]]);
+      await trigger.trigger('mouseleave');
+      await vi.advanceTimersByTimeAsync(149);
+      expect(wrapper.emitted('visible-change')).toEqual([[true]]);
+      await trigger.trigger('mouseenter');
+      await vi.advanceTimersByTimeAsync(150);
+      expect(wrapper.emitted('visible-change')).toEqual([[true]]);
+      wrapper.vm.handleClose();
+      await vi.advanceTimersByTimeAsync(150);
+      await wrapper.setProps({ trigger: ['hover', 'click'] });
+      await trigger.trigger('mouseenter');
+      expect(wrapper.emitted('visible-change')).toEqual([[true], [false], [true]]);
+    } finally {
+      wrapper.unmount();
+      vi.useRealTimers();
+    }
+  });
   test('click 触发打开与命令', async () => {
     const wrapper = mountDropdown({
       props: { trigger: 'click', items: [{ command: 'edit', label: '编辑' }, { command: 'del', label: '删除', disabled: true }] },
       slots: { default: () => '触发器' }
     });
-    expect(wrapper.find('.i-dropdown__menu').exists()).toBe(false);
+    expect(wrapper.find('.i-dropdown__popper').attributes('aria-hidden')).toBe('true');
     await wrapper.find('.i-dropdown__trigger').trigger('click');
     expect(wrapper.find('.i-dropdown__menu').exists()).toBe(true);
     expect(wrapper.emitted('visible-change')?.[0]).toEqual([true]);
@@ -33,7 +123,7 @@ describe('Dropdown', () => {
     // 第二参数为 DropdownItem 组件实例
     expect(command?.[1]).toBeTruthy();
     // hideOnClick 默认关闭
-    expect(wrapper.find('.i-dropdown__menu').exists()).toBe(false);
+    expect(wrapper.find('.i-dropdown__popper').attributes('aria-hidden')).toBe('true');
   });
 
   test('hover 触发', async () => {
@@ -41,10 +131,10 @@ describe('Dropdown', () => {
       props: { items: [{ command: 'a', label: 'A' }] },
       slots: { default: () => '触发器' }
     });
-    await wrapper.find('.i-dropdown').trigger('mouseenter');
-    expect(wrapper.find('.i-dropdown__menu').exists()).toBe(true);
-    await wrapper.find('.i-dropdown').trigger('mouseleave');
-    expect(wrapper.find('.i-dropdown__menu').exists()).toBe(false);
+    await wrapper.find('.i-tooltip__trigger').trigger('mouseenter');
+    expect(wrapper.find('.i-dropdown__popper').attributes('aria-hidden')).toBeUndefined();
+    await wrapper.find('.i-tooltip__trigger').trigger('mouseleave');
+    expect(wrapper.find('.i-dropdown__popper').attributes('aria-hidden')).toBe('true');
   });
 
   test('contextmenu 触发', async () => {
@@ -83,7 +173,7 @@ describe('Dropdown', () => {
     });
     await wrapper.find('.i-dropdown__button').trigger('click');
     expect(wrapper.emitted('click')).toHaveLength(1);
-    expect(wrapper.find('.i-dropdown__menu').exists()).toBe(false);
+    expect(wrapper.find('.i-dropdown__popper').attributes('aria-hidden')).toBe('true');
     await wrapper.find('.i-dropdown__trigger').trigger('click');
     expect(wrapper.find('.i-dropdown__menu').exists()).toBe(true);
   });
@@ -146,7 +236,7 @@ describe('Dropdown', () => {
       slots: { default: () => '触发器' }
     });
     await wrapper.find('.i-dropdown__trigger').trigger('keydown', { key: ' ' });
-    expect(wrapper.find('.i-dropdown__menu').exists()).toBe(false);
+    expect(wrapper.find('.i-dropdown__popper').attributes('aria-hidden')).toBe('true');
     await wrapper.find('.i-dropdown__trigger').trigger('keydown', { key: 'Enter' });
     expect(wrapper.find('.i-dropdown__menu').exists()).toBe(true);
   });

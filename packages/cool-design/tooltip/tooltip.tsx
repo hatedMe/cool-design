@@ -30,8 +30,8 @@ type AppendTo = string | HTMLElement;
 export type TooltipVirtualRef = FloatingReference;
 
 const normalizeTriggerKey = (key: string) => {
-  if (key === 'enter') return 'Enter';
-  if (key === ' ' || key === 'space' || key === 'Spacebar') return 'Space';
+  if (key.toLowerCase() === 'enter') return 'Enter';
+  if (key === ' ' || key.toLowerCase() === 'space' || key === 'Spacebar') return 'Space';
   return key;
 };
 
@@ -67,6 +67,7 @@ export const tooltipProps = {
   hideAfter: { type: Number, default: 200 },
   autoClose: { type: Number, default: 0 },
   enterable: { type: Boolean, default: true },
+  hoverOnFocus: { type: Boolean, default: true },
   showArrow: { type: Boolean, default: true },
   arrowOffset: { type: Number, default: 5 },
   effect: { type: String, default: 'dark' },
@@ -196,10 +197,11 @@ export default defineComponent({
     const onMouseleave = (event: MouseEvent) => {
       if (!triggers.value.includes('hover')) return;
       hovered = false;
+      if (props.enterable && event.relatedTarget instanceof Node && floating.value?.contains(event.relatedTarget)) return;
       if (!focused) onClose(event);
     };
     const onFocusin = (event: FocusEvent) => {
-      if (restoringFocus || (!triggers.value.includes('focus') && !triggers.value.includes('hover'))) return;
+      if (restoringFocus || (!triggers.value.includes('focus') && !(props.hoverOnFocus && triggers.value.includes('hover')))) return;
       focused = true;
       onOpen(event);
     };
@@ -226,15 +228,17 @@ export default defineComponent({
       event.preventDefault();
       toggle(event);
     };
-    const onPanelEnter = () => {
+    const onPanelEnter = (event: MouseEvent) => {
       if (triggers.value.includes('hover') && props.enterable) {
-        clearTimer();
         hovered = true;
+        if (open.value || hideReason?.type === 'mouseleave') onOpen(event);
       }
     };
     const onPanelLeave = (event: MouseEvent) => {
       if (triggers.value.includes('hover') && props.enterable) {
         hovered = false;
+        const anchor = triggerWrapper.value ?? reference.value;
+        if (anchor instanceof HTMLElement && event.relatedTarget instanceof Node && anchor.contains(event.relatedTarget)) return;
         onClose(event);
       }
     };

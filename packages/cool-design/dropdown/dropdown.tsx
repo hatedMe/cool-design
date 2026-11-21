@@ -1,10 +1,11 @@
-import { Teleport, computed, defineComponent, onBeforeUnmount, provide, ref, type PropType } from 'vue';
+import { cloneVNode, defineComponent, provide, ref, shallowRef, type ExtractPropTypes, type PropType } from 'vue';
 import { dropdownKey, type DropdownCommand, type DropdownTrigger } from './context';
 import IDropdownMenu from './dropdown-menu';
-import IDropdownItem from './dropdown-item';
+import IDropdownItem, { type DropdownItemInstance } from './dropdown-item';
 import Button from '../button/button';
 import ButtonGroup from '../button/group';
-import { useFloating, type Placement } from '../../../src/utils/use-floating';
+import { Tooltip, type TooltipInstance } from '../tooltip';
+import { tooltipProps } from '../tooltip/tooltip';
 
 export interface DropdownItem {
   command: DropdownCommand;
@@ -15,286 +16,213 @@ export interface DropdownItem {
 }
 
 export type DropdownSize = '' | 'large' | 'default' | 'small';
-export type DropdownPlacement = string;
-export type DropdownType = 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'default';
+export type DropdownPlacement = NonNullable<ExtractPropTypes<typeof tooltipProps>['placement']>;
+export type DropdownType = '' | 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'default' | 'text';
+
+const dropdownProps = {
+  items: { type: Array as PropType<DropdownItem[]>, default: () => [] },
+  trigger: {
+    type: [String, Array] as PropType<DropdownTrigger | DropdownTrigger[]>,
+    default: 'hover'
+  },
+  hideOnClick: { type: Boolean, default: true },
+  placement: tooltipProps.placement,
+  disabled: Boolean,
+  splitButton: Boolean,
+  type: String as PropType<DropdownType>,
+  buttonProps: Object as PropType<Record<string, unknown>>,
+  size: { type: String as PropType<DropdownSize>, default: '' },
+  showTimeout: { type: Number, default: 150 },
+  hideTimeout: { type: Number, default: 150 },
+  maxHeight: { type: [String, Number], default: '' },
+  teleported: tooltipProps.teleported,
+  appendTo: tooltipProps.appendTo,
+  popperClass: tooltipProps.popperClass,
+  popperStyle: tooltipProps.popperStyle,
+  popperOptions: tooltipProps.popperOptions,
+  showArrow: tooltipProps.showArrow,
+  persistent: { type: Boolean, default: true },
+  virtualTriggering: tooltipProps.virtualTriggering,
+  virtualRef: tooltipProps.virtualRef,
+  effect: { type: String, default: 'light' },
+  role: { type: String, default: 'menu' },
+  id: String,
+  loop: { type: Boolean, default: true },
+  tabindex: { type: [String, Number], default: 0 },
+  triggerKeys: { type: Array as PropType<string[]>, default: () => ['Enter', 'Space', 'ArrowDown', 'NumpadEnter'] }
+};
 
 export default defineComponent({
   name: 'i-dropdown',
-  props: {
-    items: { type: Array as PropType<DropdownItem[]>, default: () => [] },
-    trigger: {
-      type: [String, Array] as PropType<DropdownTrigger | DropdownTrigger[]>,
-      default: 'hover'
-    },
-    hideOnClick: { type: Boolean, default: true },
-    placement: { type: String as PropType<DropdownPlacement>, default: 'bottom' },
-    disabled: Boolean,
-    splitButton: Boolean,
-    type: { type: String as PropType<DropdownType>, default: 'default' },
-    buttonProps: { type: Object as PropType<Record<string, unknown>>, default: () => ({}) },
-    size: { type: String as PropType<DropdownSize>, default: '' },
-    showTimeout: { type: Number, default: 150 },
-    hideTimeout: { type: Number, default: 150 },
-    maxHeight: { type: [String, Number], default: 172 },
-    teleported: { type: Boolean, default: true },
-    popperClass: String,
-    effect: { type: String as PropType<'light' | 'dark'>, default: 'light' },
-    role: { type: String, default: 'menu' },
-    tabindex: { type: [String, Number], default: 0 },
-    triggerKeys: { type: Array as PropType<string[]>, default: () => ['enter', 'space'] }
+  props: dropdownProps,
+  emits: {
+    click: (mouseEvent: MouseEvent) => mouseEvent.type === 'click',
+    command: (...args: [command: DropdownCommand, item: DropdownItemInstance, originalEvent: MouseEvent | KeyboardEvent]) =>
+      args.length === 3,
+    'visible-change': (visible: boolean) => typeof visible === 'boolean'
   },
-  emits: ['click', 'command', 'visible-change'],
   setup(props, { slots, emit, expose }) {
     const open = ref(false);
-    const rootRef = ref<HTMLElement | null>(null);
-    const reference = ref<HTMLElement>();
-    const floating = ref<HTMLElement>();
-    let hoverTimer: ReturnType<typeof setTimeout> | undefined;
+    const tooltip = shallowRef<TooltipInstance>();
+    const splitReference = shallowRef<HTMLElement>();
+    const menu = ref<HTMLElement>();
 
-    const triggers = computed<DropdownTrigger[]>(() =>
-      Array.isArray(props.trigger) ? props.trigger : [props.trigger]
-    );
-    const useHover = computed(() => triggers.value.includes('hover'));
-    const useClick = computed(() => triggers.value.includes('click'));
-    const useContextmenu = computed(() => triggers.value.includes('contextmenu'));
-
-    const setVisible = (visible: boolean) => {
-      if (props.disabled) return;
-      if (open.value === visible) return;
-      open.value = visible;
-      emit('visible-change', visible);
-    };
-
-    const scheduleOpen = () => {
-      if (hoverTimer) clearTimeout(hoverTimer);
-      if (props.showTimeout > 0) hoverTimer = setTimeout(() => setVisible(true), props.showTimeout);
-      else setVisible(true);
-    };
-    const scheduleClose = () => {
-      if (hoverTimer) clearTimeout(hoverTimer);
-      if (props.hideTimeout > 0) hoverTimer = setTimeout(() => setVisible(false), props.hideTimeout);
-      else setVisible(false);
-    };
-    const clearTimer = () => {
-      if (hoverTimer) clearTimeout(hoverTimer);
-      hoverTimer = undefined;
-    };
-
-    const position = useFloating({
-      open,
-      reference,
-      floating,
-      placement: () => props.placement as Placement,
-      close: () => setVisible(false)
-    });
-
-    const handleOpen = () => setVisible(true);
-    const handleClose = () => setVisible(false);
-    const toggle = () => setVisible(!open.value);
-
-    onBeforeUnmount(clearTimer);
-
-    const handleCommand = (command: DropdownCommand, instance?: unknown) => {
-      emit('command', command, instance);
-      if (props.hideOnClick) setVisible(false);
-    };
-
-    const focusTrigger = () => {
-      const trigger = rootRef.value?.querySelector<HTMLElement>('.i-dropdown__trigger');
-      trigger?.focus();
-    };
-
-    const close = (reason?: string) => {
-      setVisible(false);
-      if (reason === 'escape') focusTrigger();
-    };
-
-    provide(dropdownKey, {
-      get hideOnClick() {
-        return props.hideOnClick;
-      },
-      get disabled() {
-        return props.disabled;
-      },
-      get role() {
-        return props.role;
-      },
-      handleCommand,
-      close
-    });
-
+    const handleOpen = () => tooltip.value?.onOpen();
+    const handleClose = () => tooltip.value?.onClose();
     expose({ handleOpen, handleClose });
 
-    const handleSplitClick = (event: MouseEvent) => {
-      if (props.disabled) return;
-      emit('click', event);
-    };
-
-    const menuScope = () => floating.value ?? rootRef.value;
-
-    const focusFirstItem = () => {
-      requestAnimationFrame(() => {
-        const first = menuScope()?.querySelector<HTMLElement>('.i-dropdown__menu button:not([disabled])');
-        first?.focus();
-      });
-    };
-
-    const handleTriggerKeydown = (event: KeyboardEvent) => {
-      if (props.disabled) return;
-      const keys = props.triggerKeys.map((key) => key.toLowerCase());
-      if (keys.includes(event.key.toLowerCase())) {
-        event.preventDefault();
-        if (!open.value) {
-          setVisible(true);
-          focusFirstItem();
-        } else {
-          setVisible(false);
-        }
-      } else if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        if (!open.value) setVisible(true);
-        focusFirstItem();
-      } else if (event.key === 'Escape') {
-        if (open.value) setVisible(false);
+    provide(dropdownKey, {
+      get disabled() { return props.disabled; },
+      get role() { return props.role; },
+      get id() { return props.id; },
+      handleCommand(command, instance, event) {
+        if (props.hideOnClick) tooltip.value?.hide(event);
+        emit('command', command, instance, event);
       }
+    });
+
+    const menuItems = () => Array.from(
+      menu.value?.querySelectorAll<HTMLElement>('.i-dropdown__menu button:not([disabled])') ?? []
+    );
+
+    const handleShow = (event?: Event) => {
+      if (event?.type === 'keydown' && open.value) (menuItems()[0] ?? menu.value)?.focus();
+    };
+
+    const handleBeforeHide = (event?: Event) => {
+      if (event?.type !== 'keydown' || (event as KeyboardEvent).key !== 'Escape') return;
+      const reference = tooltip.value?.popperRef.triggerRef;
+      if (reference instanceof HTMLElement) reference.focus();
     };
 
     const handleMenuKeydown = (event: KeyboardEvent) => {
-      if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
-      const buttons = Array.from(
-        menuScope()?.querySelectorAll<HTMLElement>('.i-dropdown__menu button:not([disabled])') ?? []
-      );
-      if (buttons.length === 0) return;
+      if (event.defaultPrevented || event.isComposing) return;
+      const key = event.code || event.key;
+      if (key !== 'ArrowDown' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+      const items = menuItems();
+      if (!items.length) return;
       event.preventDefault();
-      const currentIndex = buttons.indexOf(document.activeElement as HTMLElement);
-      let nextIndex: number;
-      if (event.key === 'ArrowDown') {
-        nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % buttons.length;
-      } else {
-        nextIndex = currentIndex < 0 ? buttons.length - 1 : (currentIndex - 1 + buttons.length) % buttons.length;
-      }
-      buttons[nextIndex]?.focus();
+      const active = menu.value?.ownerDocument.activeElement;
+      const current = items.findIndex((item) => item === active);
+      const last = items.length - 1;
+      let index = key === 'ArrowDown' ? current + 1 : current - 1;
+      if (key === 'Home' || (key === 'ArrowDown' && index > last && props.loop)) index = 0;
+      if (key === 'End' || (key === 'ArrowUp' && (current < 0 || (index < 0 && props.loop)))) index = last;
+      items[index]?.focus();
     };
 
-    const renderMenuContent = () => {
-      if (slots.dropdown) return slots.dropdown?.();
-      return (
-        <IDropdownMenu>
-          {{
-            default: () =>
-              props.items.map((item) => (
-                <IDropdownItem
-                  key={String(typeof item.command === 'object' ? JSON.stringify(item.command) : item.command)}
-                  command={item.command}
-                  disabled={item.disabled}
-                  divided={item.divided}
-                  icon={item.icon}>
-                  {{ default: () => item.label }}
-                </IDropdownItem>
-              ))
-          }}
-        </IDropdownMenu>
-      );
-    };
+    const renderMenu = () => (
+      <div
+        ref={menu}
+        class='i-dropdown__scroll'
+        tabindex={-1}
+        style={{ maxHeight: typeof props.maxHeight === 'number' || /^\d+(\.\d+)?$/.test(props.maxHeight)
+          ? `${props.maxHeight}px` : props.maxHeight }}
+        onKeydown={handleMenuKeydown}>
+        {slots.dropdown?.() ?? (
+          <IDropdownMenu>
+            {props.items.map((item, index) => (
+              <IDropdownItem key={index} command={item.command} disabled={item.disabled} divided={item.divided} icon={item.icon}>
+                {item.label}
+              </IDropdownItem>
+            ))}
+          </IDropdownMenu>
+        )}
+      </div>
+    );
 
     return () => {
-      const menu = open.value && (
-        <div
-          ref={floating}
-          class={[
-            'i-dropdown__popper',
-            `is-${props.placement}`,
-            `i-dropdown__popper--${props.effect}`,
-            props.popperClass
-          ]}
-          data-placement={props.placement}
-          style={[
-            position.style.value,
-            { maxHeight: typeof props.maxHeight === 'number' ? `${props.maxHeight}px` : props.maxHeight, overflow: 'auto' }
-          ]}
-          onMouseenter={() => useHover.value && scheduleOpen()}
-          onMouseleave={() => useHover.value && scheduleClose()}
-          onKeydown={handleMenuKeydown}>
-          {renderMenuContent()}
-        </div>
-      );
-      const renderedMenu =
-        menu && (props.teleported ? <Teleport to={position.target.value}>{menu}</Teleport> : menu);
-
-      if (props.splitButton) {
-        return (
-          <div
-            ref={rootRef}
-            class={{
-              'i-dropdown': true,
-              'is-split-button': true,
-              [`i-dropdown--${props.size}`]: !!props.size,
-              'is-disabled': props.disabled
-            }}
-            onMouseenter={() => useHover.value && scheduleOpen()}
-            onMouseleave={() => useHover.value && scheduleClose()}>
-            <ButtonGroup>
-              <Button
-                type={props.type}
-                size={props.size || undefined}
-                disabled={props.disabled}
-                class='i-dropdown__button'
-                {...(props.buttonProps as Record<string, unknown>)}
-                onClick={handleSplitClick}>
-                {slots.default?.() ?? '更多'}
-              </Button>
-              <button
-                ref={reference}
-                type='button'
-                class='i-dropdown__trigger'
-                disabled={props.disabled}
-                aria-haspopup='menu'
-                aria-expanded={open.value}
-                onClick={toggle}
-                onContextmenu={(event) => {
-                  if (useContextmenu.value) {
-                    event.preventDefault();
-                    toggle();
-                  }
-                }}
-                onKeydown={handleTriggerKeydown}>
-                <span aria-hidden='true'>▾</span>
-              </button>
-            </ButtonGroup>
-            {renderedMenu}
-          </div>
-        );
-      }
+      const triggerAttrs = {
+        class: 'i-dropdown__trigger',
+        ...(props.id ? { id: props.id } : {}),
+        role: 'button',
+        tabindex: props.disabled ? -1 : props.tabindex,
+        'aria-haspopup': 'menu',
+        'aria-expanded': open.value,
+        'aria-disabled': props.disabled || undefined
+      } as const;
+      const renderTrigger = () => {
+        const children = slots.default?.();
+        const child = children?.[0];
+        return children?.length === 1 && child && typeof child.type !== 'symbol'
+          ? cloneVNode(child, triggerAttrs)
+          : <span {...triggerAttrs}>{children ?? '更多'}</span>;
+      };
+      const isVirtual = props.virtualTriggering || props.splitButton;
+      const buttonType = props.type || undefined;
+      const virtualRef = isVirtual ? props.virtualRef ?? splitReference.value : undefined;
 
       return (
-        <span
-          ref={rootRef}
-          class={{
-            'i-dropdown': true,
-            [`i-dropdown--${props.size}`]: !!props.size,
-            'is-disabled': props.disabled
-          }}
-          onMouseenter={() => useHover.value && scheduleOpen()}
-          onMouseleave={() => useHover.value && scheduleClose()}>
-          <span
-            ref={reference}
-            class='i-dropdown__trigger'
-            tabindex={props.disabled ? -1 : props.tabindex}
-            role='button'
-            aria-haspopup='menu'
-            aria-expanded={open.value}
-            aria-disabled={props.disabled || undefined}
-            onClick={() => useClick.value && toggle()}
-            onContextmenu={(event) => {
-              if (useContextmenu.value) {
-                event.preventDefault();
-                toggle();
+        <span class={['i-dropdown', props.size && `i-dropdown--${props.size}`, {
+          'is-split-button': props.splitButton, 'is-disabled': props.disabled
+        }]}>
+          <Tooltip
+            ref={tooltip}
+            contentRole='presentation'
+            effect={props.effect}
+            fallbackPlacements={['bottom', 'top']}
+            gpuAcceleration={false}
+            placement={props.placement}
+            popperOptions={props.popperOptions}
+            popperClass={['i-dropdown__popper', `i-dropdown__popper--${props.effect}`, props.popperClass].flat()}
+            popperStyle={props.popperStyle}
+            trigger={props.trigger}
+            triggerKeys={props.triggerKeys}
+            showArrow={props.showArrow}
+            hoverOnFocus={false}
+            showAfter={props.trigger === 'hover' ? props.showTimeout : 0}
+            hideAfter={props.trigger === 'hover' ? props.hideTimeout : 0}
+            virtualRef={virtualRef}
+            virtualTriggering={isVirtual}
+            closeOnOutside
+            disabled={props.disabled}
+            transition='el-zoom-in-top'
+            teleported={props.teleported}
+            appendTo={props.appendTo}
+            persistent={props.persistent}
+            onShow={handleShow}
+            {...{
+              'onBefore-hide': handleBeforeHide,
+              'onVisible-change': (visible: boolean) => {
+                open.value = visible;
+                emit('visible-change', visible);
               }
-            }}
-            onKeydown={handleTriggerKeydown}>
-            {slots.default?.() ?? '更多'}
-          </span>
-          {renderedMenu}
+            }}>
+            {{ default: renderTrigger, content: renderMenu }}
+          </Tooltip>
+          {props.splitButton && (
+            <ButtonGroup>
+              <Button
+                {...props.buttonProps}
+                {...{ tabindex: props.tabindex }}
+                type={buttonType}
+                size={props.size || undefined}
+                disabled={props.disabled || props.buttonProps?.disabled === true}
+                class='i-dropdown__button'
+                onClick={(event: MouseEvent) => emit('click', event)}>
+                {slots.default?.() ?? '更多'}
+              </Button>
+              <Button
+                {...props.buttonProps}
+                {...triggerAttrs}
+                ref={(button) => {
+                  const element = button && '$el' in button ? button.$el : undefined;
+                  splitReference.value = element instanceof HTMLElement ? element : undefined;
+                }}
+                type={buttonType}
+                size={props.size || undefined}
+                disabled={props.disabled || props.buttonProps?.disabled === true}
+                aria-label='展开下拉菜单'
+                onClick={() => {
+                  // 保留 hover 模式中点击分裂箭头的旧用法。
+                  if (props.virtualRef || !props.trigger.includes('hover') || props.trigger.includes('click')) return;
+                  if (open.value) tooltip.value?.hide();
+                  else tooltip.value?.show();
+                }}>
+                <span aria-hidden='true'>▾</span>
+              </Button>
+            </ButtonGroup>
+          )}
         </span>
       );
     };
