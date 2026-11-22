@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import {
   Text,
   computed,
@@ -45,6 +46,7 @@ export default defineComponent({
   },
   emits: ['click'],
   setup(props, { slots, emit, attrs, expose }) {
+    const ns = useNamespace('button');
     const config = useConfig();
     const group = inject(buttonGroupKey, undefined);
     const form = inject(formKey, undefined);
@@ -91,12 +93,12 @@ export default defineComponent({
       const disabled = resolvedDisabled.value;
       const isText = text || resolvedType.value === 'text';
       const customStyle = props.color
-        ? buttonCustomStyle(props.color, { dark: props.dark, plain, text: isText, link: props.link })
+        ? ns.cssVarBlock(buttonCustomStyle(props.color, { dark: props.dark, plain, text: isText, link: props.link }))
         : undefined;
       const classes = [
-        'i-button',
-        `i-button--${resolvedSize.value}`,
-        `i-button--${resolvedType.value}`,
+        ns.b(),
+        ns.m(resolvedSize.value),
+        ns.m(resolvedType.value),
         disabled && 'is-disabled',
         props.loading && 'is-loading',
         plain && 'is-plain',
@@ -119,13 +121,13 @@ export default defineComponent({
         props.loading &&
           h(
             'span',
-            { class: 'i-button__loading', 'aria-hidden': 'true' },
+            { class: ns.e('loading'), 'aria-hidden': 'true' },
             slots.loading?.() ??
-              h(Icon, { icon: props.loadingIcon || 'icon-refresh', class: ['i-button__icon', 'is-loading'] })
+              h(Icon, { icon: props.loadingIcon || 'icon-refresh', class: [ns.e('icon'), 'is-loading'] })
           ),
         !props.loading &&
           (slots.icon?.() ??
-            (props.icon && h(Icon, { icon: props.icon, class: 'i-button__icon', 'aria-hidden': 'true' }))),
+            (props.icon && h(Icon, { icon: props.icon, class: ns.e('icon'), 'aria-hidden': 'true' }))),
         content
       ];
       return h(

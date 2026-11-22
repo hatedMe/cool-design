@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, provide, type InjectionKey, type PropType } from 'vue';
 import type { ButtonSize, ButtonType, ButtonGroupDirection } from './types';
 export type { ButtonGroupDirection } from './types';
@@ -16,9 +17,10 @@ export default defineComponent({
     direction: { type: String as PropType<ButtonGroupDirection>, default: 'horizontal' }
   },
   setup(props, { slots }) {
+    const ns = useNamespace('button-group');
     provide(buttonGroupKey, props);
     return () => (
-      <div class={['i-button-group', `i-button-group--${props.direction}`]} role='group'>
+      <div class={[ns.b(), ns.m(props.direction)]} role='group'>
         {slots.default?.()}
       </div>
     );

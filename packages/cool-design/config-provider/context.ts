@@ -4,6 +4,7 @@ import type { ButtonType } from '../button/types';
 import type { LinkType, LinkUnderline } from '../link/link';
 import type { MessagePlacement } from '../message/service';
 import type { TableOverflowTooltipOptions, TableTooltipFormatter } from '../table/types';
+import { defaultNamespace } from '../../hooks/use-namespace';
 import zhCn from './locale/zh-cn';
 export { default as zhCn } from './locale/zh-cn';
 export { default as en } from './locale/en';
@@ -47,6 +48,7 @@ export interface TableConfigContext {
   tooltipFormatter?: TableTooltipFormatter;
 }
 export interface Config {
+  namespace?: string;
   button?: ButtonConfigContext;
   link?: LinkConfigContext;
   dialog?: DialogConfigContext;
@@ -60,7 +62,7 @@ export interface Config {
   valueOnClear?: ValueOnClear;
   locale?: Language;
 }
-export const defaultConfig: Config = { size: 'default', theme: 'light', themeVars: {}, zIndex: 2000, locale: zhCn };
+export const defaultConfig: Config = { namespace: defaultNamespace, size: 'default', theme: 'light', themeVars: {}, zIndex: 2000, locale: zhCn };
 const appConfigs = new WeakMap<AppContext, Set<ComputedRef<Config>>>();
 
 export function registerAppConfig(context: AppContext, config: ComputedRef<Config>) {

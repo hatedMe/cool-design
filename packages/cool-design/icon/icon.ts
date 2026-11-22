@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, h, toRaw, type Component, type PropType } from 'vue';
 import { useConfig } from '../config-provider/context';
 export default defineComponent({
@@ -11,6 +12,7 @@ export default defineComponent({
     label: String
   },
   setup(props, { slots, attrs }) {
+    const ns = useNamespace('icon');
     const config = useConfig();
     return () => {
       const ariaLabel = props.label || (attrs['aria-label'] as string | undefined);
@@ -30,9 +32,9 @@ export default defineComponent({
           class: [
             customClass,
             !slots.default && !iconComponent && 'iconfont',
-            'i-icon',
+            ns.b(),
             !slots.default && iconClass,
-            `i-icon--${config.value.size}`
+            ns.m(config.value.size)
           ],
           role: ariaLabel ? 'img' : externalRole,
           'aria-label': ariaLabel || undefined,

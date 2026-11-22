@@ -1,4 +1,4 @@
-@import 'config.scss';
+@use 'config' as *;
 
 @mixin res($key, $map: $breakpoints) {
   @if map-has-key($map, $key) {

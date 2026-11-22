@@ -1,5 +1,7 @@
+@use '../style/mixins/config';
+
 @import './iconfont.scss';
-.i-icon {
+.#{config.$namespace}-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -12,20 +14,20 @@
   color: inherit;
   fill: currentColor;
 }
-.i-icon--small {
+.#{config.$namespace}-icon--small {
   font-size: 14px;
 }
-.i-icon--large {
+.#{config.$namespace}-icon--large {
   font-size: 20px;
 }
-.i-icon svg {
+.#{config.$namespace}-icon svg {
   width: 1em;
   height: 1em;
 }
-.i-icon.is-loading {
-  animation: i-icon-rotate 2s linear infinite;
+.#{config.$namespace}-icon.is-loading {
+  animation: #{config.$namespace}-icon-rotate 2s linear infinite;
 }
-@keyframes i-icon-rotate {
+@keyframes #{config.$namespace}-icon-rotate {
   to {
     transform: rotate(360deg);
   }

@@ -26,8 +26,12 @@ export default defineComponent({
   },
   setup(props, { slots }) {
     const parent = useConfig();
-    const { namespace } = useNamespace('config-provider');
+    const { namespace: inheritedNamespace } = useNamespace('config-provider');
+    const namespace = computed(() => props.namespace || inheritedNamespace.value);
+    const ns = useNamespace('config-provider', namespace);
+    const overlay = useNamespace('overlay-host', namespace);
     const config = computed(() => ({
+      namespace: namespace.value,
       theme: props.theme ?? parent.value.theme,
       size: props.size ?? parent.value.size,
       themeVars: { ...parent.value.themeVars, ...props.themeVars },
@@ -45,10 +49,7 @@ export default defineComponent({
     const instance = getCurrentInstance();
     if (instance && !inject(configKey, undefined)) onBeforeUnmount(registerAppConfig(instance.appContext, config));
     provide(configKey, config);
-    provide(
-      namespaceKey,
-      computed(() => props.namespace || namespace.value)
-    );
+    provide(namespaceKey, namespace);
     provide(
       sizeKey,
       computed(() => config.value.size)
@@ -57,14 +58,14 @@ export default defineComponent({
     provide(overlayKey, host);
     return () => (
       <div
-        class='i-config-provider'
+        class={ns.b()}
         data-theme={config.value.theme}
         style={{
-          '--i-control-height': { small: '28px', default: '32px', large: '40px' }[config.value.size],
+          [ns.cssVarName('control-height')]: { small: '28px', default: '32px', large: '40px' }[config.value.size],
           ...config.value.themeVars
         }}>
         {slots.default?.()}
-        <div ref={host} class='i-overlay-host' />
+        <div ref={host} class={overlay.b()} />
       </div>
     );
   }

@@ -59,35 +59,35 @@ export function buttonCustomStyle(
   { dark = false, plain = false, text = false, link = false }: ButtonCustomStyleOptions = {}
 ): Record<string, string> {
   if (!color) return {};
-  const vars: Record<string, string> = { '--i-button-color': color };
+  const vars: Record<string, string> = { 'color': color };
   const activeBgColor = dark ? tint(color, 20) : darken(color, 20);
   if (text || link) {
-    vars['--i-button-text-color'] = color;
-    vars['--i-button-hover-text-color'] = dark ? darken(color, 30) : tint(color, 30);
-    vars['--i-button-active-text-color'] = activeBgColor;
+    vars['text-color'] = color;
+    vars['hover-text-color'] = dark ? darken(color, 30) : tint(color, 30);
+    vars['active-text-color'] = activeBgColor;
     return vars;
   }
   if (plain) {
-    vars['--i-button-bg-color'] = dark ? darken(color, 90) : tint(color, 90);
-    vars['--i-button-text-color'] = color;
-    vars['--i-button-border-color'] = dark ? darken(color, 50) : tint(color, 50);
-    vars['--i-button-hover-bg-color'] = color;
-    vars['--i-button-hover-text-color'] = '#fff';
-    vars['--i-button-hover-border-color'] = color;
-    vars['--i-button-active-bg-color'] = activeBgColor;
-    vars['--i-button-active-border-color'] = activeBgColor;
+    vars['bg-color'] = dark ? darken(color, 90) : tint(color, 90);
+    vars['text-color'] = color;
+    vars['border-color'] = dark ? darken(color, 50) : tint(color, 50);
+    vars['hover-bg-color'] = color;
+    vars['hover-text-color'] = '#fff';
+    vars['hover-border-color'] = color;
+    vars['active-bg-color'] = activeBgColor;
+    vars['active-border-color'] = activeBgColor;
     return vars;
   }
   const hoverBgColor = dark ? darken(color, 30) : tint(color, 30);
   const luminance = relativeLuminance(color);
   const textColor = luminance === null || luminance < 0.5 ? '#fff' : '#000';
-  vars['--i-button-bg-color'] = color;
-  vars['--i-button-text-color'] = textColor;
-  vars['--i-button-border-color'] = color;
-  vars['--i-button-hover-bg-color'] = hoverBgColor;
-  vars['--i-button-hover-text-color'] = textColor;
-  vars['--i-button-hover-border-color'] = hoverBgColor;
-  vars['--i-button-active-bg-color'] = activeBgColor;
-  vars['--i-button-active-border-color'] = activeBgColor;
+  vars['bg-color'] = color;
+  vars['text-color'] = textColor;
+  vars['border-color'] = color;
+  vars['hover-bg-color'] = hoverBgColor;
+  vars['hover-text-color'] = textColor;
+  vars['hover-border-color'] = hoverBgColor;
+  vars['active-bg-color'] = activeBgColor;
+  vars['active-border-color'] = activeBgColor;
   return vars;
 }

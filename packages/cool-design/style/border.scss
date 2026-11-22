@@ -1,36 +1,38 @@
+@use './mixins/config';
+
 :root,
-.i-config-provider {
-  --i-border-width: 1px;
-  --i-border-style: solid;
-  --i-border-color: var(--i-border);
-  --i-border-color-light: #e8edf4;
-  --i-border-color-lighter: #f0f3f8;
-  --i-border-color-strong: #b6c3d5;
-  --i-border-base: var(--i-border-width) var(--i-border-style) var(--i-border-color);
-  --i-radius-none: 0;
-  --i-radius-small: 4px;
-  --i-radius-base: var(--i-radius);
-  --i-radius-large: 10px;
-  --i-radius-round: 20px;
-  --i-radius-circle: 50%;
-  --i-shadow-color: rgb(26 43 68 / 16%);
-  --i-shadow-small: 0 2px 8px var(--i-shadow-color);
-  --i-shadow-base: var(--i-shadow);
-  --i-shadow-large: 0 20px 56px var(--i-shadow-color);
-  --i-shadow-inset: inset 0 1px 3px var(--i-shadow-color);
+.#{config.$namespace}-config-provider {
+  --#{config.$namespace}-border-width: 1px;
+  --#{config.$namespace}-border-style: solid;
+  --#{config.$namespace}-border-color: var(--#{config.$namespace}-border);
+  --#{config.$namespace}-border-color-light: #e8edf4;
+  --#{config.$namespace}-border-color-lighter: #f0f3f8;
+  --#{config.$namespace}-border-color-strong: #b6c3d5;
+  --#{config.$namespace}-border-base: var(--#{config.$namespace}-border-width) var(--#{config.$namespace}-border-style) var(--#{config.$namespace}-border-color);
+  --#{config.$namespace}-radius-none: 0;
+  --#{config.$namespace}-radius-small: 4px;
+  --#{config.$namespace}-radius-base: var(--#{config.$namespace}-radius);
+  --#{config.$namespace}-radius-large: 10px;
+  --#{config.$namespace}-radius-round: 20px;
+  --#{config.$namespace}-radius-circle: 50%;
+  --#{config.$namespace}-shadow-color: rgb(26 43 68 / 16%);
+  --#{config.$namespace}-shadow-small: 0 2px 8px var(--#{config.$namespace}-shadow-color);
+  --#{config.$namespace}-shadow-base: var(--#{config.$namespace}-shadow);
+  --#{config.$namespace}-shadow-large: 0 20px 56px var(--#{config.$namespace}-shadow-color);
+  --#{config.$namespace}-shadow-inset: inset 0 1px 3px var(--#{config.$namespace}-shadow-color);
 }
-.i-config-provider[data-theme='dark'] {
-  --i-border-color-light: #2c3a4e;
-  --i-border-color-lighter: #263347;
-  --i-border-color-strong: #586a82;
-  --i-shadow-color: rgb(0 0 0 / 48%);
+.#{config.$namespace}-config-provider[data-theme='dark'] {
+  --#{config.$namespace}-border-color-light: #2c3a4e;
+  --#{config.$namespace}-border-color-lighter: #263347;
+  --#{config.$namespace}-border-color-strong: #586a82;
+  --#{config.$namespace}-shadow-color: rgb(0 0 0 / 48%);
 }
 @supports (color: color-mix(in srgb, red, blue)) {
   :root,
-  .i-config-provider,
-  .i-config-provider[data-theme] {
-    --i-border-color-light: color-mix(in srgb, var(--i-border), var(--i-bg) 40%);
-    --i-border-color-lighter: color-mix(in srgb, var(--i-border), var(--i-bg) 70%);
-    --i-border-color-strong: color-mix(in srgb, var(--i-border), var(--i-text) 20%);
+  .#{config.$namespace}-config-provider,
+  .#{config.$namespace}-config-provider[data-theme] {
+    --#{config.$namespace}-border-color-light: color-mix(in srgb, var(--#{config.$namespace}-border), var(--#{config.$namespace}-bg) 40%);
+    --#{config.$namespace}-border-color-lighter: color-mix(in srgb, var(--#{config.$namespace}-border), var(--#{config.$namespace}-bg) 70%);
+    --#{config.$namespace}-border-color-strong: color-mix(in srgb, var(--#{config.$namespace}-border), var(--#{config.$namespace}-text) 20%);
   }
 }

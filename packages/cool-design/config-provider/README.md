@@ -76,13 +76,22 @@ import { ConfigProvider, en } from 'cool-design/config-provider';
 
 属性：`theme?: 'light' | 'dark'`、`size?: 'small' | 'default' | 'large'`、`themeVars?: Record<string, string>`。省略时继承父配置，根默认为 light/default。变量使用完整名称，例如 `{'--i-primary': '#2463eb', '--i-on-primary': '#fff'}`。
 
-默认插槽放内容。容器生成 `.i-overlay-host`，Dialog 在其中渲染。嵌套合并父级自定义变量，子级同名变量优先。
+默认插槽放内容。Dialog 在容器生成的浮层宿主中渲染。默认宿主类名为 `.i-overlay-host`，设置 `namespace="acme"` 时为 `.acme-overlay-host`。嵌套合并父级自定义变量，子级同名变量优先。
 
 ### 语言与支持范围
 
 从 `cool-design/config-provider` 可导入 `zhCn`、`en` 和 `useLocale`。内置语言对象仅包含 Select、Table、ColorPicker、Empty 的基础文案；也可以直接传入 Element Plus 的语言对象。`useLocale().t('el.select.placeholder', '请选择')` 按路径读取字符串，缺失路径使用后备文案。具体组件须调用该工具才会响应语言切换。
 
-`namespace` 当前仅提供 Hook 层配置和嵌套继承。现有组件与 SCSS 中仍存在固定的 `i-` 前缀，尚不支持全库切换命名空间。
+ConfigProvider、Button、ButtonGroup 和 Icon 支持自定义 CSS 前缀。子级继承最近 Provider 的前缀，也可显式覆盖。组件注册名仍使用 `i-*`、`I*` 和 `El*`。
+
+从源码构建时，先配置 Sass，再加载样式。下例路径相对于仓库根目录。
+
+```scss
+@use 'packages/cool-design/style/mixins/config' with ($namespace: 'acme');
+@use 'packages/cool-design/style/index';
+```
+
+在模板中使用 `<i-config-provider namespace="acme" :theme-vars="{ '--acme-primary': '#057a55' }">`。`theme-vars` 保留原始键，自定义变量前缀须与所用 CSS 匹配。在页面中同时使用或动态切换 `i` 和 `acme` 时，分别编译并预加载两套样式。其余组件和浮层服务的前缀仍待迁移，当前 npm 包随附默认 `i` 样式。
 
 `zIndex` 作用于使用 `useZIndex` 的锚定浮层以及 Dialog、Drawer；组件自身的 `zIndex` 属性优先。Message、Notification 服务默认从所属应用的层级递增，服务选项中显式传入的 `zIndex` 优先。空值配置由 `useEmptyValues` 读取，具体组件是否支持以组件 API 为准。
 

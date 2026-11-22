@@ -13,8 +13,10 @@ export function useNamespace(block: string, override?: Ref<string | undefined>) 
     if (modifier) value += `--${modifier}`;
     return value;
   };
+  const cssVarName = (name: string) => `--${namespace.value}-${name}`;
   return {
     namespace,
+    cssVarName,
     b: (suffix = '') => bem(suffix),
     e: (element = '') => (element ? bem('', element) : ''),
     m: (modifier = '') => (modifier ? bem('', '', modifier) : ''),
@@ -23,8 +25,8 @@ export function useNamespace(block: string, override?: Ref<string | undefined>) 
     bm: (suffix = '', modifier = '') => (suffix && modifier ? bem(suffix, '', modifier) : ''),
     is: (name: string, state = true) => (name && state ? `is-${name}` : ''),
     cssVar: (values: Record<string, string>) =>
-      Object.fromEntries(Object.entries(values).map(([k, v]) => [`--${namespace.value}-${k}`, v])),
+      Object.fromEntries(Object.entries(values).map(([k, v]) => [cssVarName(k), v])),
     cssVarBlock: (values: Record<string, string>) =>
-      Object.fromEntries(Object.entries(values).map(([k, v]) => [`--${namespace.value}-${block}-${k}`, v]))
+      Object.fromEntries(Object.entries(values).map(([k, v]) => [cssVarName(`${block}-${k}`), v]))
   };
 }
