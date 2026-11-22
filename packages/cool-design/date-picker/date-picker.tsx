@@ -1,4 +1,6 @@
 import { Teleport, computed, defineComponent, h, inject, markRaw, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch, type Component, type PropType, type StyleValue } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
+import { createBEM } from '../../../src/utils/create';
 import dayjs from 'dayjs';
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useConfig, type Size } from '../config-provider/context';
@@ -6,7 +8,7 @@ import { formKey, useField } from '../form/context';
 import { emitValue, formatDate, getWeekStart, parseFormattedDate, parseTimeParts, toDate, type DateModelValue, type DateValue, type TimeParts } from './date';
 import DatePickerPanel, { type DatePanelType } from './date-picker-panel';
 import TimePickerPanel, { type TimeUnit } from './time-picker-panel';
-import { useFloating, type Placement, type FloatingOptions } from '../../../src/utils/use-floating';
+import { useFloating, useFloatingTheme, type Placement, type FloatingOptions } from '../../../src/utils/use-floating';
 import type { DatePickerPanelTimeRules } from '../date-picker-panel/date-picker-panel';
 
 export type DatePickerType = DatePanelType | 'months' | 'years' | 'quarter' | 'quarters' | 'quarterrange' | 'datetime' | 'daterange' | 'datetimerange' | 'monthrange' | 'yearrange';
@@ -71,6 +73,10 @@ const createDatePicker = (inline: boolean) => defineComponent({
   },
   emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear', 'visible-change', 'calendar-change', 'panel-change', 'inline-panel-change'],
   setup(props, { attrs, emit, expose, slots }) {
+    const ns = useNamespace('date-picker');
+    const bem = createBEM(ns.b);
+    const controlNs = useNamespace('control');
+    const panelNs = useNamespace('date-picker-panel');
     const config = useConfig();
     const field = useField();
     const form = inject(formKey, undefined);
@@ -121,6 +127,7 @@ const createDatePicker = (inline: boolean) => defineComponent({
       return `${hour}${minute}${second}` || 'HH:mm:ss';
     });
     const position = useFloating({ open: computed(() => open.value && !inline), reference, floating, placement: () => props.placement, fallbackPlacements: () => props.fallbackPlacements, options: () => props.popperOptions, close: () => close(), closeOnOutside: () => true });
+    const panelTheme = useFloatingTheme(position.target, () => !inline && props.teleported);
     const currentValues = (): Array<DateValue | null> => Array.isArray(model.value) ? model.value : [model.value];
     const output = (date: Date): DateValue => inline ? date : emitValue(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`, props.valueFormat, props.type === 'datetime' || props.type === 'datetimerange') as DateValue;
     const hasTime = computed(() => props.type === 'datetime' || props.type === 'datetimerange');
@@ -414,8 +421,8 @@ const createDatePicker = (inline: boolean) => defineComponent({
     };
     const renderInput = (value: DateValue | null | undefined, index?: number) => (
       <>
-        {index === 0 && props.prefixIcon && <span class='i-date-picker__prefix-icon'>{renderIcon(props.prefixIcon as string | Component, 'i-date-picker__icon')}</span>}
-        <input {...attrs} ref={index === 0 || index == null ? inputRef : undefined} class='i-date-picker__input' type='text' value={value != null ? formatDate(value, formatValue.value) : ''} placeholder={index === 0 ? props.startPlaceholder || props.placeholder : props.endPlaceholder || props.placeholder} disabled={disabledOf()} id={Array.isArray(props.id) ? props.id[index ?? 0] : props.id ?? (index == null ? field?.id : undefined)} name={props.name} readonly={props.readonly || !props.editable} role='combobox' aria-haspopup='dialog' aria-expanded={open.value} aria-controls={panelId} aria-disabled={disabledOf() || undefined} onClick={() => { if (index != null) activeIndex.value = index; setOpen(true); }} onInput={(event: Event) => updateInput(index, (event.target as HTMLInputElement).value)} onChange={() => commitInput(index)} onFocus={(event: FocusEvent) => emit('focus', event)} onBlur={(event: FocusEvent) => { commitInput(index); emit('blur', event); validate('blur'); }} onKeydown={(event: KeyboardEvent) => { if (event.key === 'Escape') close(); if (event.key === 'Enter') setOpen(!open.value); }} />
+        {index === 0 && props.prefixIcon && <span class={bem('prefix-icon')}>{renderIcon(props.prefixIcon as string | Component, bem('icon'))}</span>}
+        <input {...attrs} ref={index === 0 || index == null ? inputRef : undefined} class={bem('input')} type='text' value={value != null ? formatDate(value, formatValue.value) : ''} placeholder={index === 0 ? props.startPlaceholder || props.placeholder : props.endPlaceholder || props.placeholder} disabled={disabledOf()} id={Array.isArray(props.id) ? props.id[index ?? 0] : props.id ?? (index == null ? field?.id : undefined)} name={props.name} readonly={props.readonly || !props.editable} role='combobox' aria-haspopup='dialog' aria-expanded={open.value} aria-controls={panelId} aria-disabled={disabledOf() || undefined} onClick={() => { if (index != null) activeIndex.value = index; setOpen(true); }} onInput={(event: Event) => updateInput(index, (event.target as HTMLInputElement).value)} onChange={() => commitInput(index)} onFocus={(event: FocusEvent) => emit('focus', event)} onBlur={(event: FocusEvent) => { commitInput(index); emit('blur', event); validate('blur'); }} onKeydown={(event: KeyboardEvent) => { if (event.key === 'Escape') close(); if (event.key === 'Enter') setOpen(!open.value); }} />
       </>
     );
     const clear = clearValue;
@@ -470,7 +477,7 @@ const createDatePicker = (inline: boolean) => defineComponent({
     const renderInlineTime = (index: number) => {
       const current = rangeDraft.value[index];
       const prefix = isRange.value ? (index === 0 ? '开始' : '结束') : '';
-      return <div class='i-date-picker-panel__time'>
+      return <div class={panelNs.e('time')}>
         <input aria-label={prefix + '日期'} value={formatDate(current, props.dateFormat || 'YYYY-MM-DD')} readonly={!props.editable} disabled={disabledOf()} onChange={(event: Event) => updateInlineInput(index, (event.target as HTMLInputElement).value, 'date')} />
         <input aria-label={prefix + '时间'} value={formatDate(current, timePanelFormat.value)} readonly={!props.editable} disabled={disabledOf()} onChange={(event: Event) => updateInlineInput(index, (event.target as HTMLInputElement).value, 'time')} />
         <TimePickerPanel
@@ -491,7 +498,7 @@ const createDatePicker = (inline: boolean) => defineComponent({
       const showConfirm = props.showConfirm && (!inline || isMultiple.value || hasTime.value);
       if (inline && !showNow && !showClear && !showConfirm) return null;
       const incomplete = inline && isRange.value && rangeDraft.value.some((item) => item == null);
-      return <div class='i-date-picker__footer'>
+      return <div class={bem('footer')}>
         {showNow && <button type='button' aria-label='现在' disabled={inline && disabledOf()} onClick={chooseNow}>现在</button>}
         {!inline && renderShortcuts()}
         {showClear && <button type='button' aria-label='清空' disabled={disabledOf()} onClick={clear}>清空</button>}
@@ -515,11 +522,11 @@ const createDatePicker = (inline: boolean) => defineComponent({
     expose({ focus: () => inputRef.value?.focus(), blur: () => inputRef.value?.blur(), handleOpen: () => { manualOpen.value = true; setOpen(true); }, handleClose: close });
     return () => {
       const value = model.value;
-      const panel = open.value ? <div {...inline ? attrs : { id: panelId }} ref={floating} class={[inline ? 'i-date-picker-panel' : 'i-date-picker__dropdown', props.popperClass, inline && attrs.class, inline && disabledOf() && 'is-disabled']} style={[inline ? attrs.style as StyleValue : position.style.value, props.popperStyle]} aria-disabled={inline && disabledOf() || undefined}>
-        {inline && props.shortcuts?.length ? <div class='i-date-picker-panel__shortcuts'>{renderShortcuts()}</div> : null}
-        <div class='i-date-picker__datetime-panel'>
-          {inline && hasTime.value && <div class='i-date-picker-panel__times'>{renderInlineTime(0)}{isRange.value && renderInlineTime(1)}</div>}
-          {isRange.value && !props.singlePanel ? <div class='i-date-picker__range-panels'>{renderCalendar(0)}{renderCalendar(1)}</div> : renderCalendar(0)}
+      const panel = open.value ? <div {...inline ? attrs : { id: panelId }} ref={floating} class={[inline ? panelNs.b() : bem('dropdown'), panelTheme.value.scopeClass, props.popperClass, inline && attrs.class, inline && disabledOf() && 'is-disabled']} data-theme={inline ? attrs['data-theme'] : panelTheme.value.theme} style={[panelTheme.value.style, inline ? attrs.style as StyleValue : position.style.value, props.popperStyle]} aria-disabled={inline && disabledOf() || undefined}>
+        {inline && props.shortcuts?.length ? <div class={panelNs.e('shortcuts')}>{renderShortcuts()}</div> : null}
+        <div class={bem('datetime-panel')}>
+          {inline && hasTime.value && <div class={panelNs.e('times')}>{renderInlineTime(0)}{isRange.value && renderInlineTime(1)}</div>}
+          {isRange.value && !props.singlePanel ? <div class={bem('range-panels')}>{renderCalendar(0)}{renderCalendar(1)}</div> : renderCalendar(0)}
           {!inline && hasTime.value && <TimePickerPanel value={timeDraft.value} format={timePanelFormat.value} disabledHours={props.disabledHours} disabledMinutes={props.disabledMinutes} disabledSeconds={props.disabledSeconds} onSelect={chooseTime} />}
         </div>
         {renderFooter()}
@@ -527,7 +534,7 @@ const createDatePicker = (inline: boolean) => defineComponent({
       if (inline) return panel;
 
       const content = props.teleported && panel ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
-      return <span ref={root} class={['i-date-picker', `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`, isRange.value && 'is-range']}><div ref={reference}>{isRange.value ? <>{renderInput(Array.isArray(value) ? value[0] : null, 0)}<span class='i-date-picker__separator'>{props.rangeSeparator}</span>{renderInput(Array.isArray(value) ? value[1] : null, 1)}</> : renderInput(value as DateValue | null)}</div>{props.clearable && (Array.isArray(value) ? value.some((item) => item != null && !isEmptyValue(item)) : value != null) && <button type='button' class='i-date-picker__clear' aria-label='清空' disabled={disabledOf() || props.readonly} onClick={clear}>{props.clearIcon ? <span class='i-date-picker__clear-icon'>{renderIcon(props.clearIcon as string | Component, 'i-date-picker__icon')}</span> : '×'}</button>}{content}</span>;
+      return <span ref={root} class={[bem(), controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size), isRange.value && 'is-range']}><div ref={reference}>{isRange.value ? <>{renderInput(Array.isArray(value) ? value[0] : null, 0)}<span class={bem('separator')}>{props.rangeSeparator}</span>{renderInput(Array.isArray(value) ? value[1] : null, 1)}</> : renderInput(value as DateValue | null)}</div>{props.clearable && (Array.isArray(value) ? value.some((item) => item != null && !isEmptyValue(item)) : value != null) && <button type='button' class={bem('clear')} aria-label='清空' disabled={disabledOf() || props.readonly} onClick={clear}>{props.clearIcon ? <span class={bem('clear-icon')}>{renderIcon(props.clearIcon as string | Component, bem('icon'))}</span> : '×'}</button>}{content}</span>;
     };
   }
 });

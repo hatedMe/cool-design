@@ -1,14 +1,15 @@
+@use '../style/mixins/config';
 @use '../date-picker/index.scss';
 
-.i-date-picker-panel {
+.#{config.$namespace}-date-picker-panel {
   display: inline-block;
   max-width: 100%;
   min-width: 280px;
   padding: 12px;
   overflow-x: auto;
-  border: 1px solid var(--i-border-color, #dcdfe6);
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
   border-radius: 4px;
-  background: var(--i-bg-color, #fff);
+  background: var(--#{config.$namespace}-bg-color, #fff);
 
   &.is-borderless {
     border-color: transparent;
@@ -20,7 +21,7 @@
 
   &__shortcuts,
   &__times,
-  .i-date-picker__footer {
+  .#{config.$namespace}-date-picker__footer {
     display: flex;
     gap: 8px;
     margin-block: 8px;
@@ -39,14 +40,14 @@
       width: 50%;
       min-width: 0;
       padding: 4px;
-      border: 1px solid var(--i-border-color, #dcdfe6);
+      border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
       border-radius: 4px;
       color: inherit;
       background: transparent;
     }
   }
 
-  .i-date-picker__footer {
+  .#{config.$namespace}-date-picker__footer {
     justify-content: flex-end;
   }
 }

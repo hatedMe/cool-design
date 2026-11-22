@@ -1,4 +1,6 @@
 import { computed, defineComponent, ref, watch, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
+import { createBEM } from '../../../src/utils/create';
 import { formatDate, monthLabel, pad, sameDay, toDate, type DateValue } from './date';
 
 export type CalendarSelectDateType = 'prev-month' | 'next-month' | 'prev-year' | 'next-year' | 'today';
@@ -36,6 +38,8 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'input', 'select', 'change', 'panel-change'],
   setup(props, { emit, slots, expose }) {
+    const ns = useNamespace('calendar');
+    const bem = createBEM(ns.b);
     const firstDow = computed(() => {
       const value = Math.floor(props.firstDayOfWeek);
       return value >= 0 && value <= 6 ? value : 0;
@@ -223,20 +227,20 @@ export default defineComponent({
     return () => {
       const renderHeader = () => {
         if (slots.header) {
-          return <div class='i-calendar__header'>{slots.header({ date: headerDate.value })}</div>;
+          return <div class={bem('header')}>{slots.header({ date: headerDate.value })}</div>;
         }
         if (isRangeMode.value) {
           return (
-            <div class='i-calendar__header'>
-              <strong class='i-calendar__title'>{headerLabel.value}</strong>
+            <div class={bem('header')}>
+              <strong class={bem('title')}>{headerLabel.value}</strong>
             </div>
           );
         }
         if (props.controllerType === 'select') {
           return (
-            <div class='i-calendar__header'>
-              <strong class='i-calendar__title'>{headerLabel.value}</strong>
-              <div class='i-calendar__controls'>
+            <div class={bem('header')}>
+              <strong class={bem('title')}>{headerLabel.value}</strong>
+              <div class={bem('controls')}>
                 <select aria-label='选择年份' value={cursor.value.getFullYear()} onChange={onYearChange}>
                   {yearOptions.value.map((year) => (
                     <option key={year} value={year}>
@@ -259,9 +263,9 @@ export default defineComponent({
           );
         }
         return (
-          <div class='i-calendar__header'>
-            <strong class='i-calendar__title'>{headerLabel.value}</strong>
-            <div class='i-calendar__controls'>
+          <div class={bem('header')}>
+            <strong class={bem('title')}>{headerLabel.value}</strong>
+            <div class={bem('controls')}>
               <button type='button' aria-label='上一年' onClick={() => selectDate('prev-year')}>
                 «
               </button>
@@ -311,7 +315,7 @@ export default defineComponent({
         );
       };
       const renderWeekRow = () => (
-        <div class='i-calendar__week' role='row'>
+        <div class={bem('week')} role='row'>
           {weekNames.value.map((day, index) => (
             <span key={`${day}-${index}`} role='columnheader'>
               {day}
@@ -322,13 +326,13 @@ export default defineComponent({
       if (isRangeMode.value) {
         // 范围模式：起始月与下一月并排双面板。
         return (
-          <div class={['i-calendar', { 'is-range': isRangeMode.value }]}>
+          <div class={[bem(), { 'is-range': isRangeMode.value }]}>
             {renderHeader()}
-            <div class='i-calendar__range-panels'>
+            <div class={bem('range-panels')}>
               {monthPanels.value.map((panel) => (
-                <div class='i-calendar__panel' key={formatDate(panel.anchor, 'YYYY-MM')}>
+                <div class={bem('panel')} key={formatDate(panel.anchor, 'YYYY-MM')}>
                   {renderWeekRow()}
-                  <div class='i-calendar__grid' role='grid'>
+                  <div class={bem('grid')} role='grid'>
                     {panel.days.map(renderCell)}
                   </div>
                 </div>
@@ -338,10 +342,10 @@ export default defineComponent({
         );
       }
       return (
-        <div class={['i-calendar', { 'is-range': isRangeMode.value }]}>
+        <div class={[bem(), { 'is-range': isRangeMode.value }]}>
           {renderHeader()}
           {renderWeekRow()}
-          <div class='i-calendar__grid' role='grid'>
+          <div class={bem('grid')} role='grid'>
             {days.value.map(renderCell)}
           </div>
         </div>

@@ -1,8 +1,10 @@
 import { Teleport, computed, defineComponent, h, inject, markRaw, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch, type Component, type ComponentPublicInstance, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
+import { createBEM } from '../../../src/utils/create';
 import { useConfig, type Size } from '../config-provider/context';
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { formKey, useField } from '../form/context';
-import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
+import { useFloating, useFloatingTheme, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 import { emitValue, formatTimeParts, parseTimeParts, timeInputValue, type DateModelValue, type DateValue, type TimeParts } from './date';
 import TimePickerPanel, { type TimeDisabledRule, type TimeUnit } from './time-picker-panel';
 
@@ -47,6 +49,9 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear', 'visible-change'],
   setup(props, { attrs, emit, expose }) {
+    const ns = useNamespace('time-picker');
+    const bem = createBEM(ns.b);
+    const controlNs = useNamespace('control');
     const config = useConfig();
     const field = useField();
     const form = inject(formKey, undefined);
@@ -85,6 +90,7 @@ export default defineComponent({
       close: () => close(),
       closeOnOutside: () => true
     });
+    const panelTheme = useFloatingTheme(position.target, () => props.teleported);
     const disabledFor = (unit: TimeUnit, value: number, context = draft.value) => {
       if (unit === 'hour') return props.disabledHours?.()?.includes(value) || false;
       if (unit === 'minute') return props.disabledMinutes?.(context.hour)?.includes(value) || false;
@@ -209,7 +215,7 @@ export default defineComponent({
         aria-label={props.ariaLabel}
         name={props.name}
         tabindex={props.tabindex}
-        class='i-time-picker__input'
+        class={bem('input')}
         type='text'
         value={displayValue(value)}
         placeholder={index === 0 ? props.startPlaceholder || props.placeholder : props.endPlaceholder || props.placeholder}
@@ -251,20 +257,20 @@ export default defineComponent({
     expose({ focus: () => inputRefs.value[activeIndex.value]?.focus(), blur: () => inputRefs.value[activeIndex.value]?.blur(), handleOpen: () => setOpen(true), handleClose: close });
     return () => {
       const panel = open.value ? (
-        <div ref={floating} class={['i-time-picker__dropdown', props.popperClass]} style={[position.style.value, props.popperStyle as Record<string, string>]}>
-          {props.arrowControl && <div class='i-time-picker__arrows'>
+        <div ref={floating} class={[bem('dropdown'), panelTheme.value.scopeClass, props.popperClass]} data-theme={panelTheme.value.theme} style={[panelTheme.value.style, position.style.value, props.popperStyle as Record<string, string>]}>
+          {props.arrowControl && <div class={bem('arrows')}>
             {(['hour', 'minute', 'second'] as TimeUnit[]).filter((unit) => props.format.includes(unit === 'hour' ? 'HH' : unit === 'minute' ? 'mm' : 'ss')).map((unit) => <><button type='button' aria-label={`增加${unit === 'hour' ? '小时' : unit === 'minute' ? '分钟' : '秒'}`} onClick={() => choose(unit, Math.min(unit === 'hour' ? 23 : 59, draft.value[unit] + 1))}>↑</button><button type='button' aria-label={`减少${unit === 'hour' ? '小时' : unit === 'minute' ? '分钟' : '秒'}`} onClick={() => choose(unit, Math.max(0, draft.value[unit] - 1))}>↓</button></>)}
           </div>}
           <TimePickerPanel value={draft.value} format={props.format} disabledHours={props.disabledHours} disabledMinutes={props.disabledMinutes} disabledSeconds={props.disabledSeconds} onSelect={choose} />
-          {props.showConfirm && <div class='i-time-picker__footer'><button type='button' aria-label='确认' onClick={confirm}>确认</button><button type='button' aria-label='取消' onClick={cancel}>取消</button></div>}
+          {props.showConfirm && <div class={bem('footer')}><button type='button' aria-label='确认' onClick={confirm}>确认</button><button type='button' aria-label='取消' onClick={cancel}>取消</button></div>}
         </div>
       ) : null;
       const content = props.teleported && panel ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
       const value = model.value;
       return (
-        <span ref={root} class={['i-time-picker', `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`, range.value && 'is-range']}>
-          {range.value ? <><div ref={reference}>{props.prefixIcon && <span class='i-time-picker__prefix-icon'>{renderIcon(props.prefixIcon as string | Component, 'i-time-picker__icon')}</span>}{renderInput(Array.isArray(value) ? value[0] : null, 0)}</div><span class='i-time-picker__separator'>{props.rangeSeparator}</span><div>{renderInput(Array.isArray(value) ? value[1] : null, 1)}</div></> : <div ref={reference}>{props.prefixIcon && <span class='i-time-picker__prefix-icon'>{renderIcon(props.prefixIcon as string | Component, 'i-time-picker__icon')}</span>}{renderInput(value as DateValue | null)}</div>}
-          {props.clearable && (range.value ? Array.isArray(value) && value.some((item) => item != null && !isEmptyValue(item)) : value != null) && <button type='button' class='i-time-picker__clear' disabled={disabledOf() || props.readonly} aria-label='清空' onClick={() => clear()}>{props.clearIcon ? <span class='i-time-picker__clear-icon'>{renderIcon(props.clearIcon as string | Component, 'i-time-picker__icon')}</span> : '×'}</button>}
+        <span ref={root} class={[bem(), controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size), range.value && 'is-range']}>
+          {range.value ? <><div ref={reference}>{props.prefixIcon && <span class={bem('prefix-icon')}>{renderIcon(props.prefixIcon as string | Component, bem('icon'))}</span>}{renderInput(Array.isArray(value) ? value[0] : null, 0)}</div><span class={bem('separator')}>{props.rangeSeparator}</span><div>{renderInput(Array.isArray(value) ? value[1] : null, 1)}</div></> : <div ref={reference}>{props.prefixIcon && <span class={bem('prefix-icon')}>{renderIcon(props.prefixIcon as string | Component, bem('icon'))}</span>}{renderInput(value as DateValue | null)}</div>}
+          {props.clearable && (range.value ? Array.isArray(value) && value.some((item) => item != null && !isEmptyValue(item)) : value != null) && <button type='button' class={bem('clear')} disabled={disabledOf() || props.readonly} aria-label='清空' onClick={() => clear()}>{props.clearIcon ? <span class={bem('clear-icon')}>{renderIcon(props.clearIcon as string | Component, bem('icon'))}</span> : '×'}</button>}
           {content}
         </span>
       );

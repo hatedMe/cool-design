@@ -1,4 +1,6 @@
 import { computed, defineComponent, ref, watch, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
+import { createBEM } from '../../../src/utils/create';
 import dayjs, { type Dayjs } from 'dayjs';
 import { getWeekNumber, getWeekStart, monthLabel, sameDay, toDate, type DateModelValue, type DateValue } from './date';
 
@@ -40,6 +42,8 @@ export default defineComponent({
   },
   emits: ['select', 'panel-change', 'hover'],
   setup(props, { emit, slots }) {
+    const ns = useNamespace('date-picker');
+    const bem = createBEM(ns.b);
     const cursor = ref(toDate(props.cursorValue) || toDate(Array.isArray(props.modelValue) ? props.modelValue[0] : props.modelValue) || toDate(Array.isArray(props.defaultValue) ? props.defaultValue[0] : props.defaultValue) || new Date());
     watch(() => props.cursorValue, (value) => { if (value != null) cursor.value = toDate(value) || cursor.value; });
     const days = computed(() => {
@@ -63,7 +67,7 @@ export default defineComponent({
       <button type='button' aria-label={label} disabled={props.disabled} onClick={() => move(amount, mode)}>
         {slots[slot]?.() ?? (amount < 0 ? '‹' : '›')}
       </button>;
-    const renderCalendarHeader = () => <header class={['i-date-picker__panel-header', props.standalone && 'has-year-navigation']}>
+    const renderCalendarHeader = () => <header class={[bem('panel-header'), props.standalone && 'has-year-navigation']}>
       {props.standalone && navigation('prev-year', '上一年', -1, 'year')}
       {navigation('prev-month', '上个月', -1, 'month')}
       <strong>{monthLabel(cursor.value)}</strong>
@@ -151,7 +155,7 @@ export default defineComponent({
         isSelected, selected: matching && isSelected ? dayjs(matching) : undefined, inRange, start, end
       };
       return <>
-        {props.showWeekNumber && index % 7 === 0 && <span class='i-date-picker__week-number-row'>{getWeekNumber(date, props.firstDayOfWeek)}</span>}
+        {props.showWeekNumber && index % 7 === 0 && <span class={bem('week-number-row')}>{getWeekNumber(date, props.firstDayOfWeek)}</span>}
         <button key={value} type='button' role='gridcell' data-value={value} class={[customClass, {
           'is-other-month': otherMonth, 'is-selected': matching, 'is-in-week': selectedWeek,
           'is-in-range': inRange || hovered, 'is-start-date': start, 'is-end-date': end, 'is-today': today
@@ -164,22 +168,22 @@ export default defineComponent({
       if (!isCalendar.value) {
         const { label, step, dates } = unitView.value;
         return <>
-          <header class='i-date-picker__panel-header'>
+          <header class={bem('panel-header')}>
             {navigation('prev-year', props.type === 'year' ? '上一组年份' : '上一年', -step, 'year')}
             <strong>{label}</strong>
             {navigation('next-year', props.type === 'year' ? '下一组年份' : '下一年', step, 'year')}
           </header>
-          <div class='i-date-picker__panel' role='grid' data-view={props.type} onMouseleave={() => props.standalone && props.rangeSelection && emit('hover', null)}>{dates.map(renderUnit)}</div>
+          <div class={bem('panel')} role='grid' data-view={props.type} onMouseleave={() => props.standalone && props.rangeSelection && emit('hover', null)}>{dates.map(renderUnit)}</div>
         </>;
       }
       return (
-        <div class='i-date-picker__calendar-panel' role='dialog'>
+        <div class={bem('calendar-panel')} role='dialog'>
           {renderCalendarHeader()}
-          <div class='i-date-picker__week'>
-            {props.showWeekNumber && <span class='i-date-picker__week-number'>周</span>}
+          <div class={bem('week')}>
+            {props.showWeekNumber && <span class={bem('week-number')}>周</span>}
             {Array.from({ length: 7 }, (_, index) => ['日', '一', '二', '三', '四', '五', '六'][(index + props.firstDayOfWeek) % 7]).map((day) => <span key={day}>{day}</span>)}
           </div>
-          <div class={['i-date-picker__grid', props.showWeekNumber && 'has-week-number']} onMouseleave={() => emit('hover', null)}>{days.value.map(renderDay)}</div>
+          <div class={[bem('grid'), props.showWeekNumber && 'has-week-number']} onMouseleave={() => emit('hover', null)}>{days.value.map(renderDay)}</div>
         </div>
       );
     };

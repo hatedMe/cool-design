@@ -1,4 +1,6 @@
 import { computed, defineComponent, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
+import { createBEM } from '../../../src/utils/create';
 import type { TimeParts } from './date';
 
 export type TimeUnit = 'hour' | 'minute' | 'second';
@@ -17,6 +19,8 @@ export default defineComponent({
   },
   emits: ['select'],
   setup(props, { emit }) {
+    const ns = useNamespace('time-picker');
+    const bem = createBEM(ns.b);
     const units = computed<TimeUnit[]>(() => {
       // 列粒度跟随 format：无 mm 不渲染分列，无 ss 不渲染秒列。
       const result: TimeUnit[] = ['hour'];
@@ -34,26 +38,26 @@ export default defineComponent({
     const selected = (unit: TimeUnit) => unit === 'hour' && (props.format.includes('hh') || props.format.includes('h')) ? ((props.value.hour % 12) || 12) : props.value[unit];
     const label = { hour: '小时', minute: '分钟', second: '秒' };
     return () => (
-      <div class='i-time-picker__panel' role='dialog'>
+      <div class={bem('panel')} role='dialog'>
         {props.arrowControl && units.value.map((unit) => {
           const options = values(unit);
           const previous = options.filter((value) => value < selected(unit) && !disabled(unit, value)).pop();
           const next = options.find((value) => value > selected(unit) && !disabled(unit, value));
-          return <div key={unit} class='i-time-picker__column'>
+          return <div key={unit} class={bem('column')}>
             <button type='button' aria-label={`增加${label[unit]}`} disabled={next == null} onClick={() => next != null && emit('select', unit, next)}>↑</button>
             <span>{String(selected(unit)).padStart(2, '0')}</span>
             <button type='button' aria-label={`减少${label[unit]}`} disabled={previous == null} onClick={() => previous != null && emit('select', unit, previous)}>↓</button>
           </div>;
         })}
         {!props.arrowControl && units.value.map((unit) => (
-          <div class='i-time-picker__column' role='listbox' data-unit={unit} aria-label={unit} key={unit}>
+          <div class={bem('column')} role='listbox' data-unit={unit} aria-label={unit} key={unit}>
             {values(unit).map((value) => {
               const isDisabled = disabled(unit, value);
               return (
                 <button
                   type='button'
                   role='option'
-                  class={['i-time-picker__option', { 'is-selected': selected(unit) === value, 'is-disabled': isDisabled }]}
+                  class={[bem('option'), { 'is-selected': selected(unit) === value, 'is-disabled': isDisabled }]}
                   data-unit={unit}
                   data-value={String(value).padStart(2, '0')}
                   aria-selected={selected(unit) === value}
