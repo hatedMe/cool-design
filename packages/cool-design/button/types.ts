@@ -1,4 +1,4 @@
-import type { Component } from 'vue';
+import type { Component, ComponentPublicInstance } from 'vue';
 
 export type ButtonType = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'text';
 export type ButtonSize = 'small' | 'default' | 'normal' | 'large';
@@ -27,3 +27,11 @@ export interface IButtonProps {
   onClick?: (event: MouseEvent) => void;
 }
 export type IconProp = string | Component;
+
+export interface ButtonExposed {
+  readonly ref: Element | ComponentPublicInstance | undefined;
+  readonly size: ButtonSize;
+  readonly type: ButtonType;
+  readonly disabled: boolean;
+  readonly shouldAddSpace: boolean;
+}

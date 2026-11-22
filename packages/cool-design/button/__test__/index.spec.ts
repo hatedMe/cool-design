@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { defineComponent, h, markRaw } from 'vue';
+import { createTextVNode, defineComponent, h, markRaw, nextTick, ref, watch } from 'vue';
 import { describe, expect, test, vi } from 'vitest';
 
 import Button from '..';
@@ -152,6 +152,42 @@ describe('test `Button` component', () => {
       slots: { default: () => h('span', ' 保存 ') }
     });
     expect(padded.find('span').element.textContent).toBe(' 保存 ');
+  });
+  test('响应默认插槽变化并且每次渲染只求值一次', async () => {
+    const label = ref(' 𠮷野 ');
+    const slot = vi.fn(() => createTextVNode(label.value));
+    const wrapper = mount(Button, { props: { autoInsertSpace: true }, slots: { default: slot } });
+    const changes: boolean[] = [];
+    const stop = watch(() => wrapper.vm.shouldAddSpace, (spaced) => changes.push(spaced));
+    try {
+      expect(wrapper.vm.shouldAddSpace).toBe(true);
+      expect(wrapper.element.textContent).toBe(' 𠮷 野 ');
+      expect(slot).toHaveBeenCalledTimes(1);
+
+      label.value = '𠮷A';
+      await nextTick();
+      expect(wrapper.vm.shouldAddSpace).toBe(false);
+      expect(wrapper.text()).toBe('𠮷A');
+      expect(changes).toEqual([false]);
+      expect(slot).toHaveBeenCalledTimes(2);
+    } finally {
+      stop();
+      wrapper.unmount();
+    }
+  });
+  test('排版保留元素和多节点内容', () => {
+    const element = mount(Button, {
+      props: { autoInsertSpace: true },
+      slots: { default: () => h('strong', '保存') }
+    });
+    const nodes = mount(Button, {
+      props: { autoInsertSpace: true },
+      slots: { default: () => [createTextVNode('保'), createTextVNode('存')] }
+    });
+    expect(element.find('strong').text()).toBe('保存');
+    expect(element.vm.shouldAddSpace).toBe(false);
+    expect(nodes.vm.shouldAddSpace).toBe(false);
+    expect(nodes.text()).toBe('保存');
   });
   test('非 button 标签在禁用或加载时阻止冒泡且不触发点击', async () => {
     const parent = vi.fn();

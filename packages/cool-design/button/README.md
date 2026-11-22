@@ -52,7 +52,9 @@ Button 用于触发提交、保存、删除、跳转等操作。组件的属性�
 
 ## 自动插入中文空格
 
-设置 `autoInsertSpace` 后，两个中文字符之间会自动增加视觉间距。
+设置 `auto-insert-space` 后，默认插槽只有一个文本节点且去除首尾空白后恰好包含两个 Unicode 统一汉字时，按钮会在两字之间插入一个空格，并保留传入的首尾空白。扩展区字符也参与匹配。该规则适用于带图标、禁用或加载中的按钮，元素、组件和多个节点的内容按原样渲染。
+
+可通过 ConfigProvider 的 `button.autoInsertSpace` 设置默认值。单个按钮传入 `:auto-insert-space="false"` 可关闭自动排版。如果旧版页面依赖元素子节点被替换后的空格，或需要固定的复制文本，可以显式传入所需空格，并关闭自动排版。
 
 ## API
 
@@ -75,10 +77,12 @@ Button 用于触发提交、保存、删除、跳转等操作。组件的属性�
 | `autofocus`       | 是否自动获取焦点             | `boolean`             | `false`        |
 | `icon`            | 图标                         | `string \| Component` | —              |
 | `nativeType`      | 原生按钮类型                 | `ButtonNativeType`    | `button`       |
-| `autoInsertSpace` | 两个中文字符之间自动插入空格 | `boolean`             | `false`        |
+| `autoInsertSpace` | 按单文本节点规则插入空格     | `boolean`             | 继承全局配置，缺省为 `false` |
 | `color`           | 自定义按钮颜色               | `string`              | —              |
 | `dark`            | 自定义颜色的暗色模式         | `boolean`             | `false`        |
 | `tag`             | 自定义渲染标签或组件         | `string \| Component` | `button`       |
+
+`ButtonType` 支持 `default` / `primary` / `success` / `warning` / `danger` / `info` / `text`。`ButtonSize` 支持 `small` / `default` / `large` / `normal`。`ButtonNativeType` 支持 `button` / `submit` / `reset`。
 
 ### Button 事件
 
@@ -96,6 +100,18 @@ Button 用于触发提交、保存、删除、跳转等操作。组件的属性�
 | `icon`    | 自定义图标                           |
 | `loading` | 自定义加载内容，优先于 `loadingIcon` |
 
+### Button 实例
+
+使用 `ref<ButtonInstance>()` 获取按钮实例。`size`、`type`、`disabled` 和 `shouldAddSpace` 是只读响应式值。可通过 `$props` 读取传入的属性。
+
+| 名称             | 说明                                     | 类型                                                    |
+| ---------------- | ---------------------------------------- | ------------------------------------------------------- |
+| `ref`            | 根元素或自定义 `tag` 对应的组件实例      | `Element \| ComponentPublicInstance \| undefined`        |
+| `size`           | 当前按钮尺寸                             | `ButtonSize`                                            |
+| `type`           | 当前按钮类型                             | `ButtonType`                                            |
+| `disabled`       | 当前是否禁用，包含加载和表单禁用状态     | `boolean`                                               |
+| `shouldAddSpace` | 当前默认插槽是否应用自动排版，渲染后更新 | `boolean`                                               |
+
 ### ButtonGroup 属性
 
 | 参数        | 说明             | 类型                   | 默认值       |
@@ -103,6 +119,8 @@ Button 用于触发提交、保存、删除、跳转等操作。组件的属性�
 | `type`      | 统一设置按钮类型 | `ButtonType`           | —            |
 | `size`      | 统一设置按钮尺寸 | `ButtonSize`           | 继承全局尺寸 |
 | `direction` | 按钮排列方向     | `ButtonGroupDirection` | `horizontal` |
+
+`ButtonGroupDirection` 支持 `horizontal` / `vertical`。
 
 ### ButtonGroup 插槽
 

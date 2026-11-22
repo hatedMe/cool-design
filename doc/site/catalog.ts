@@ -112,6 +112,7 @@ export const pages: Page[] = [
     ['states', '禁用状态', '禁用按钮不会触发点击事件。'],
     ['native', '原生标签与表单', '使用 nativeType 提交表单，也可以渲染为链接标签。'],
     ['colors', '自定义颜色', '使用 color 设置按钮颜色，并与 plain、text 和 disabled 组合。'],
+    ['spacing', '自动排版', '切换文字，查看按钮实例的排版状态。'],
     ['events', '点击事件', '点击按钮，查看事件触发结果。']
   ]),
   component(

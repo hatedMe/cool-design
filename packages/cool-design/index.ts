@@ -825,6 +825,7 @@ export type { TimeSelectInstance } from './time-select';
 export type { CalendarInstance, DatePickerInstance, DateTimePickerInstance, TimePickerInstance } from './date-picker';
 export type { AffixInstance, AffixPosition, AffixProps, AffixScrollEvent, AffixTargetContainer } from './affix';
 export type { TextInstance, TextProps, TextSize, TextType } from './text';
+export type { ButtonInstance } from './button';
 export type { SpaceProps } from './space';
 export type { AnchorInstance } from './anchor';
 export type { CarouselInstance } from './carousel';

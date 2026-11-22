@@ -1,4 +1,18 @@
-import { defineComponent, h, inject, type Component, type PropType } from 'vue';
+import {
+  Text,
+  computed,
+  defineComponent,
+  h,
+  inject,
+  onMounted,
+  onUpdated,
+  ref,
+  shallowRef,
+  toRefs,
+  type Component,
+  type ComponentPublicInstance,
+  type PropType
+} from 'vue';
 import { useConfig } from '../config-provider/context';
 import { formKey } from '../form/context';
 import type { ButtonType, ButtonSize, ButtonNativeType, IconProp } from './types';
@@ -30,29 +44,60 @@ export default defineComponent({
     autoInsertSpace: { type: Boolean, default: undefined }
   },
   emits: ['click'],
-  setup(props, { slots, emit, attrs }) {
+  setup(props, { slots, emit, attrs, expose }) {
     const config = useConfig();
     const group = inject(buttonGroupKey, undefined);
     const form = inject(formKey, undefined);
+    const element = shallowRef<Element | ComponentPublicInstance>();
+    const resolvedType = computed(() => props.type ?? group?.type ?? config.value.button?.type ?? 'default');
+    const resolvedSize = computed(() =>
+      props.size === 'normal' ? 'default' : props.size ?? group?.size ?? config.value.size
+    );
+    const resolvedDisabled = computed(() => !!(props.disabled || props.loading || form?.disabled?.()));
+    const shouldAddSpace = ref(false);
+    let renderedShouldAddSpace = false;
+    const syncSpacing = () => {
+      shouldAddSpace.value = renderedShouldAddSpace;
+    };
+    // The slot is evaluated by the render function. Publish its result after the render.
+    onMounted(syncSpacing);
+    onUpdated(syncSpacing);
+    expose({
+      ...toRefs(props),
+      get ref() {
+        return element.value ?? undefined;
+      },
+      get size() {
+        return resolvedSize.value;
+      },
+      get type() {
+        return resolvedType.value;
+      },
+      get disabled() {
+        return resolvedDisabled.value;
+      },
+      get shouldAddSpace() {
+        return shouldAddSpace.value;
+      }
+    });
+
     return () => {
       const defaults = config.value.button;
-      const resolvedType = props.type ?? group?.type ?? defaults?.type ?? 'default';
       const plain = props.plain ?? defaults?.plain;
       const text = props.text ?? defaults?.text;
       const round = props.round ?? defaults?.round;
       const dashed = props.dashed ?? defaults?.dashed;
       const autoInsertSpace = props.autoInsertSpace ?? defaults?.autoInsertSpace;
-      const resolvedSize = props.size === 'normal' ? 'default' : props.size ?? group?.size ?? config.value.size;
-      const resolvedDisabled = !!(props.disabled || props.loading || form?.disabled?.());
-      const isText = text || resolvedType === 'text';
+      const disabled = resolvedDisabled.value;
+      const isText = text || resolvedType.value === 'text';
       const customStyle = props.color
         ? buttonCustomStyle(props.color, { dark: props.dark, plain, text: isText, link: props.link })
         : undefined;
       const classes = [
         'i-button',
-        `i-button--${resolvedSize}`,
-        `i-button--${resolvedType}`,
-        resolvedDisabled && 'is-disabled',
+        `i-button--${resolvedSize.value}`,
+        `i-button--${resolvedType.value}`,
+        disabled && 'is-disabled',
         props.loading && 'is-loading',
         plain && 'is-plain',
         isText && 'is-text',
@@ -62,15 +107,14 @@ export default defineComponent({
         props.circle && 'is-circle',
         dashed && 'is-dashed'
       ];
-      const content =
-        autoInsertSpace &&
-        !props.icon &&
-        !props.loading &&
-        slots.default?.()?.length === 1 &&
-        typeof slots.default?.()[0]?.children === 'string' &&
-        /^[\u4e00-\u9fff]{2}$/.test(String(slots.default?.()[0]?.children))
-          ? [String(slots.default?.()[0]?.children).slice(0, 1), ' ', String(slots.default?.()[0]?.children).slice(1)]
-          : slots.default?.();
+      const defaultSlot = slots.default?.();
+      const textNode = defaultSlot?.[0];
+      const spacedText =
+        autoInsertSpace && defaultSlot?.length === 1 && textNode?.type === Text && typeof textNode.children === 'string'
+          ? /^(\s*\p{Unified_Ideograph})(\p{Unified_Ideograph}\s*)$/u.exec(textNode.children)
+          : null;
+      renderedShouldAddSpace = spacedText !== null;
+      const content = spacedText ? [spacedText[1], ' ', spacedText[2]] : defaultSlot;
       const children = [
         props.loading &&
           h(
@@ -88,15 +132,16 @@ export default defineComponent({
         props.tag,
         {
           ...attrs,
+          ref: element,
           class: [attrs.class, classes],
           style: [attrs.style, customStyle],
           type: props.tag === 'button' ? props.nativeType : undefined,
           autofocus: props.autofocus || undefined,
-          disabled: props.tag === 'button' ? resolvedDisabled : undefined,
-          'aria-disabled': props.tag !== 'button' && resolvedDisabled ? 'true' : undefined,
+          disabled: props.tag === 'button' ? disabled : undefined,
+          'aria-disabled': props.tag !== 'button' && disabled ? 'true' : undefined,
           'aria-busy': props.loading || undefined,
           onClick: (event: MouseEvent) => {
-            if (resolvedDisabled) {
+            if (disabled) {
               event.stopPropagation();
               return;
             }

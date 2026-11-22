@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Button 暴露只读响应式 `shouldAddSpace`。`auto-insert-space` 对单文本节点的两个统一汉字插入空格，支持首尾空白、扩展汉字及图标和加载状态。默认插槽中的元素会保留。依赖旧版文本结果的页面可将 `auto-insert-space` 设为 `false`，并按需提供字面空格。
+
 - Space 支持以 `prefix-cls` 自定义子项包装类名，省略该属性或传空字符串时使用 `i-space__item`。
 
 - Text 公开只读响应式 `isTruncated`，文本实际截断时自动设置原生 `title`。依赖旧版悬停行为的页面可用 `title=""` 关闭自动标题，也可直接设置自定义标题。
