@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Text 公开只读响应式 `isTruncated`，文本实际截断时自动设置原生 `title`。依赖旧版悬停行为的页面可用 `title=""` 关闭自动标题，也可直接设置自定义标题。
+
 - Affix 默认跟随最近的纵向滚动祖先，`target` 现在约束固定内容的可见边界。依赖旧容器边缘阈值的页面可用 `offset` 设置视口偏移，`target-container` 仍可指定滚动宿主。新增固定时的 `teleported` 和 `append-to`，内容尺寸改变后可等待 `updateRoot()` 重新测量。
 
 - Tabs 公开响应式 `currentName` 和 `tabNavRef`，并支持条件插槽与动态页签重排。声明式页签省略初始值时使用字符串 `"0"`，具名页签需要默认选中时可传入 `default-value`。`before-leave` 拒绝 Promise 时会阻止切换。
