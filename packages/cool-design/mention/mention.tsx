@@ -14,6 +14,7 @@ import Tooltip, { type TooltipInstance } from '../tooltip';
 import type { FloatingOptions, Placement } from '../../../src/utils/use-floating';
 import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
+import { useNamespace } from '../../hooks/use-namespace';
 import { useComposition } from '../../hooks/index.ts';
 
 export interface MentionOption {
@@ -64,6 +65,8 @@ export default defineComponent({
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
+    const ns = useNamespace('mention');
+    const controlNs = useNamespace('control');
     const { isComposing, handleCompositionStart, handleCompositionEnd } = useComposition();
     const inputRef = ref<HTMLInputElement | HTMLTextAreaElement>();
     const tooltip = ref<TooltipInstance>();
@@ -227,7 +230,7 @@ export default defineComponent({
       const list = filtered.value;
       const shared: Record<string, unknown> = {
         ref: inputRef,
-        class: 'i-mention__input',
+        class: ns.e('input'),
         type: props.type === 'textarea' ? undefined : 'text',
         value: props.modelValue,
         placeholder: props.placeholder,
@@ -255,13 +258,13 @@ export default defineComponent({
       return (
         <div
           class={[
-            'i-mention',
-            `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`,
+            ns.b(),
+            controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size),
             { 'is-disabled': isDisabled() }
           ]}>
           {h(props.type === 'textarea' ? 'textarea' : 'input', shared)}
           {props.clearable && props.modelValue && !isDisabled() && (
-            <button type='button' class='i-mention__clear' aria-label='清空' onClick={clear}>
+            <button type='button' class={ns.e('clear')} aria-label='清空' onClick={clear}>
               ×
             </button>
           )}
@@ -269,16 +272,16 @@ export default defineComponent({
             trigger={[]} hideAfter={0} closeOnOutside persistent={props.persistent} eager contentRole='listbox' teleported={props.teleported}
             placement={props.popperOptions?.placement ?? props.placement} fallbackPlacements={props.fallbackPlacements}
             effect={props.effect} offset={props.popperOptions?.offset ?? props.offset}
-            popperClass={normalizeClass(['i-mention__dropdown', `i-mention__dropdown--${props.effect}`, props.popperClass])}
-            popperStyle={props.popperStyle} showArrow={props.showArrow} arrowClass='i-mention__arrow'
+            popperClass={normalizeClass([ns.e('dropdown'), ns.em('dropdown', props.effect), props.popperClass])}
+            popperStyle={props.popperStyle} showArrow={props.showArrow} arrowClass={ns.e('arrow')}
             onUpdate:visible={(value: boolean) => { if (!value) setOpen(false); }}>
             {{ content: () => (
-              <div class='i-mention__list'>
+              <div class={ns.e('list')}>
                 {slots.header?.()}
                 {props.loading && (
-                  <div class='i-mention__loading'>{slots.loading?.() ?? '加载中…'}</div>
+                  <div class={ns.e('loading')}>{slots.loading?.() ?? '加载中…'}</div>
                 )}
-                {!props.loading && !list.length && <div class='i-mention__empty'>暂无数据</div>}
+                {!props.loading && !list.length && <div class={ns.e('empty')}>暂无数据</div>}
                 {!props.loading &&
                   list.map((option, index) => (
                     <div
@@ -287,7 +290,7 @@ export default defineComponent({
                       aria-selected={index === highlighted.value}
                       aria-disabled={Boolean(option[disabledKey.value]) || undefined}
                       class={[
-                        'i-mention__option',
+                        ns.e('option'),
                         {
                           'is-highlighted': index === highlighted.value,
                           'is-disabled': Boolean(option[disabledKey.value])

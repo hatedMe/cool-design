@@ -18,7 +18,8 @@ import { Teleport } from 'vue';
 import { inject } from 'vue';
 import { formKey, useField } from '../form/context';
 import { useConfig, useLocale, type Size } from '../config-provider/context';
-import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
+import { useNamespace } from '../../hooks/use-namespace';
+import { useFloating, useFloatingTheme, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 
 export interface SelectRemoteOption {
   value: string | number | boolean;
@@ -119,6 +120,8 @@ export default defineComponent({
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
+    const ns = useNamespace('select');
+    const controlNs = useNamespace('control');
     const { t } = useLocale();
     const placeholder = computed(() => props.placeholder ?? t('el.select.placeholder', '请选择'));
     const noDataText = computed(() => props.noDataText ?? t('el.select.noData', '暂无数据'));
@@ -171,6 +174,7 @@ export default defineComponent({
       appendTo: () => props.appendTo,
       close: () => setOpen(false)
     });
+    const panelTheme = useFloatingTheme(position.target, () => props.teleported);
 
     const isDisabled = () => props.disabled || (field?.disabled?.() ?? form?.disabled?.());
     const keyOf = (value: unknown): unknown =>
@@ -406,7 +410,7 @@ export default defineComponent({
     });
     watch(highlightedIndex, () => {
       nextTick(() => {
-        dropdown.value?.querySelector('.i-select__option.is-highlighted')?.scrollIntoView?.({ block: 'nearest' });
+        dropdown.value?.querySelector(`.${ns.e('option')}.is-highlighted`)?.scrollIntoView?.({ block: 'nearest' });
       });
     });
     const selectedLabel = computed(() => {
@@ -452,7 +456,7 @@ export default defineComponent({
             aria-disabled={item.disabled || undefined}
             id={`i-select-option-${index + virtualOffset.value}`}
             class={[
-              'i-select__option',
+              ns.e('option'),
               {
                 'is-selected': isSelected,
                 'is-highlighted': index + virtualOffset.value === highlightedIndex.value,
@@ -466,7 +470,7 @@ export default defineComponent({
         );
       };
       return (
-        <span ref={root} class={['i-select', `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`, { 'is-disabled': isDisabled(), 'is-open': open.value }]}>
+        <span ref={root} class={[ns.b(), controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size), { 'is-disabled': isDisabled(), 'is-open': open.value }]}>
           {slots.control ? slots.control({ open: open.value, toggle: () => setOpen(!open.value) }) : <div
             {...attrs}
             id={(attrs.id as string) || field?.id}
@@ -484,15 +488,15 @@ export default defineComponent({
             onBlur={(event: FocusEvent) => emit('blur', event)}
             onKeydown={onKeydown}>
             {slots.prefix?.()}
-            {loading.value && <span class='i-select__loading'>{loadingText.value}</span>}
+            {loading.value && <span class={ns.e('loading')}>{loadingText.value}</span>}
             {props.multiple ? displayRecords.map((item) => (
-              <span class={['i-select__tag', props.tagType && `i-select__tag--${props.tagType}`, `i-select__tag--${props.tagEffect}`]} key={String(keyOf(item.value))}>
+              <span class={[ns.e('tag'), props.tagType && ns.em('tag', props.tagType), ns.em('tag', props.tagEffect)]} key={String(keyOf(item.value))}>
                 {slots.tag ? slots.tag({ data: item }) : item.label}
                 <button type='button' aria-label={`移除 ${item.label}`} onClick={(event) => { event.stopPropagation(); removeTag(item.value); }}>×</button>
               </span>
             )) : !props.filterable && !props.remote && comboboxValue}
             {props.multiple && props.collapseTags && selectedRecords.value.length > displayRecords.length && <span
-              class={['i-select__more', 'i-select__tag', props.tagType && `i-select__tag--${props.tagType}`, `i-select__tag--${props.tagEffect}`]}
+              class={[ns.e('more'), ns.e('tag'), props.tagType && ns.em('tag', props.tagType), ns.em('tag', props.tagEffect)]}
               title={props.collapseTagsTooltip ? selectedRecords.value.map((item) => item.label).join('、') : undefined}>
               +{selectedRecords.value.length - displayRecords.length}
             </span>}
@@ -500,11 +504,11 @@ export default defineComponent({
               if (!isDisabled() && !(event as InputEvent).isComposing) loadRemote((event.target as HTMLInputElement).value);
             }} onCompositionend={(event: CompositionEvent) => { if (!isDisabled()) loadRemote((event.target as HTMLInputElement).value); }} onFocus={() => setOpen(true)} />}
             {props.clearable && selectedValues.value.length > 0 && <button type='button' aria-label='清空' onClick={(event) => { event.stopPropagation(); clear(); }}><Icon icon={props.clearIcon} aria-hidden='true' /></button>}
-            {slots.suffix?.() ?? ((!props.remote || !props.filterable || props.remoteShowSuffix) && (props.suffixIcon ? <Icon icon={props.suffixIcon} aria-hidden='true' /> : <span class='i-select__suffix-caret' aria-hidden='true' />))}
+            {slots.suffix?.() ?? ((!props.remote || !props.filterable || props.remoteShowSuffix) && (props.suffixIcon ? <Icon icon={props.suffixIcon} aria-hidden='true' /> : <span class={ns.e('suffix-caret')} aria-hidden='true' />))}
           </div>}
           <select
             ref={select}
-            class='i-select__native'
+            class={ns.e('native')}
             tabindex={-1}
             aria-hidden='true'
             name={props.name}
@@ -534,20 +538,21 @@ export default defineComponent({
             const panel = (
               <div
                 ref={dropdown}
-                class={['i-select__dropdown', `i-select__dropdown--${props.effect}`, props.popperClass]}
+                class={[ns.e('dropdown'), ns.em('dropdown', props.effect), panelTheme.value.scopeClass, props.popperClass]}
                 role='listbox'
                 aria-hidden={kept ? 'true' : undefined}
+                data-theme={panelTheme.value.theme}
                 data-placement={position.placement.value}
-                style={[position.style.value, dropdownMinWidth.value ? { minWidth: dropdownMinWidth.value } : undefined, props.popperStyle, kept ? { display: 'none' } : undefined]}
+                style={[panelTheme.value.style, position.style.value, dropdownMinWidth.value ? { minWidth: dropdownMinWidth.value } : undefined, props.popperStyle, kept ? { display: 'none' } : undefined]}
                 onScroll={onPopupScroll}
                 onMousedown={(event) => event.stopPropagation()}>
                 {slots.header?.()}
                 {slots.dropdown ? slots.dropdown() : <>
-                {loading.value && <div class='i-select__empty'>{slots.empty ? slots.empty() : loadingText.value}</div>}
-                {!loading.value && !visibleRecords.length && <div class='i-select__empty'>{slots.empty ? slots.empty() : (query.value ? noMatchText.value : noDataText.value)}</div>}
+                {loading.value && <div class={ns.e('empty')}>{slots.empty ? slots.empty() : loadingText.value}</div>}
+                {!loading.value && !visibleRecords.length && <div class={ns.e('empty')}>{slots.empty ? slots.empty() : (query.value ? noMatchText.value : noDataText.value)}</div>}
                 {!loading.value && props.virtualized && visibleRecords.map((item, index) => renderOption(item, index))}
                 {!loading.value && !props.virtualized && groupBy(filteredRecords.value).map((group) => [
-                  group.label !== undefined && <div class='i-select__group' role='presentation'>{group.label}</div>,
+                  group.label !== undefined && <div class={ns.e('group')} role='presentation'>{group.label}</div>,
                   group.items.map((item) => renderOption(item, filteredRecords.value.indexOf(item)))
                 ])}
                 </>}

@@ -12,8 +12,9 @@ import {
   type ComputedRef
 } from 'vue';
 import { createPopper, type Instance, type Options, type Placement as PopperPlacement, type State, type VirtualElement } from '@popperjs/core';
-import { overlayKey } from '../../packages/cool-design/config-provider/context';
+import { configKey, getThemeStyle, overlayKey } from '../../packages/cool-design/config-provider/context';
 import { isTopOverlay, isTopFocusOverlay, pushOverlay, removeOverlay } from './overlay-stack';
+import { useNamespace } from '../../packages/hooks/use-namespace';
 import { useZIndex } from '../../packages/hooks/use-z-index';
 
 export type Placement =
@@ -45,6 +46,20 @@ interface FloatingController {
   instance: Ref<Instance | undefined>;
   restoreFocus: () => void;
   update: () => Promise<Partial<State>> | void;
+}
+
+export function useFloatingTheme(target: FloatingController['target'], teleported: () => boolean) {
+  const provider = inject(configKey, undefined);
+  const host = inject(overlayKey, undefined);
+  const ns = useNamespace('theme-scope');
+  return computed(() => {
+    const config = teleported() && target.value !== host?.value ? provider?.value : undefined;
+    return {
+      scopeClass: config && ns.b(),
+      theme: config?.theme,
+      style: config && getThemeStyle(config, ns.cssVarName)
+    };
+  });
 }
 
 const placementParts = (value: Placement): [BasePlacement, 'start' | 'end' | undefined] => {

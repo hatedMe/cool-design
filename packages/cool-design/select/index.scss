@@ -1,31 +1,33 @@
-.i-select {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-select {
   position: relative;
   display: inline-block;
   min-width: 220px;
-  color: var(--i-text-color, #303133);
+  color: var(--#{config.$namespace}-text-color, #303133);
   font-size: 14px;
 }
 
-.i-select > [role='combobox'] {
+.#{config.$namespace}-select > [role='combobox'] {
   position: relative;
   display: flex;
   align-items: center;
   gap: 4px;
   min-height: 32px;
   padding: 4px 8px;
-  border: 1px solid var(--i-border-color, #dcdfe6);
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
   border-radius: 4px;
-  background: var(--i-bg-color, #fff);
+  background: var(--#{config.$namespace}-bg-color, #fff);
   cursor: pointer;
   outline: none;
 }
 
-.i-select > [role='combobox']:focus,
-.i-select.is-open > [role='combobox'] {
-  border-color: var(--i-color-primary, #409eff);
+.#{config.$namespace}-select > [role='combobox']:focus,
+.#{config.$namespace}-select.is-open > [role='combobox'] {
+  border-color: var(--#{config.$namespace}-color-primary, #409eff);
 }
 
-.i-select [role='combobox'] input {
+.#{config.$namespace}-select [role='combobox'] input {
   min-width: 24px;
   flex: 1;
   border: 0;
@@ -33,42 +35,42 @@
   background: transparent;
 }
 
-.i-select__tag {
+.#{config.$namespace}-select__tag {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 2px 6px;
   border-radius: 3px;
-  --i-select-tag-color: var(--i-info, #909399);
-  background: color-mix(in srgb, var(--i-select-tag-color) 15%, transparent);
+  --#{config.$namespace}-select-tag-color: var(--#{config.$namespace}-info, #909399);
+  background: color-mix(in srgb, var(--#{config.$namespace}-select-tag-color) 15%, transparent);
 }
-.i-select__tag--primary { --i-select-tag-color: var(--i-primary, #409eff); }
-.i-select__tag--success { --i-select-tag-color: var(--i-success, #67c23a); }
-.i-select__tag--warning { --i-select-tag-color: var(--i-warning, #e6a23c); }
-.i-select__tag--danger { --i-select-tag-color: var(--i-danger, #f56c6c); }
-.i-select__tag--dark {
-  background: var(--i-select-tag-color);
+.#{config.$namespace}-select__tag--primary { --#{config.$namespace}-select-tag-color: var(--#{config.$namespace}-primary, #409eff); }
+.#{config.$namespace}-select__tag--success { --#{config.$namespace}-select-tag-color: var(--#{config.$namespace}-success, #67c23a); }
+.#{config.$namespace}-select__tag--warning { --#{config.$namespace}-select-tag-color: var(--#{config.$namespace}-warning, #e6a23c); }
+.#{config.$namespace}-select__tag--danger { --#{config.$namespace}-select-tag-color: var(--#{config.$namespace}-danger, #f56c6c); }
+.#{config.$namespace}-select__tag--dark {
+  background: var(--#{config.$namespace}-select-tag-color);
   color: #fff;
 }
-.i-select__tag--plain {
-  border: 1px solid var(--i-select-tag-color);
+.#{config.$namespace}-select__tag--plain {
+  border: 1px solid var(--#{config.$namespace}-select-tag-color);
   background: transparent;
 }
-.i-select__group {
+.#{config.$namespace}-select__group {
   padding: 6px 12px 2px;
-  color: var(--i-text-secondary, #909399);
+  color: var(--#{config.$namespace}-text-secondary, #909399);
   font-size: 12px;
   font-weight: 500;
 }
 
-.i-select__tag button,
-.i-select [role='combobox'] > button {
+.#{config.$namespace}-select__tag button,
+.#{config.$namespace}-select [role='combobox'] > button {
   border: 0;
   background: transparent;
   cursor: pointer;
 }
 
-.i-select__native {
+.#{config.$namespace}-select__native {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -76,58 +78,58 @@
   clip: rect(0 0 0 0);
 }
 
-.i-select__dropdown {
+.#{config.$namespace}-select__dropdown {
   position: fixed;
   z-index: 2000;
   max-height: 280px;
   overflow: auto;
   padding: 4px 0;
-  border: 1px solid var(--i-border-color, #dcdfe6);
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
   border-radius: 4px;
-  background: var(--i-bg, #fff);
-  box-shadow: var(--i-shadow-small);
+  background: var(--#{config.$namespace}-bg, #fff);
+  box-shadow: var(--#{config.$namespace}-shadow-small);
 }
 
-.i-select__dropdown--dark {
+.#{config.$namespace}-select__dropdown--dark {
   background: #303133;
   border-color: #303133;
   color: #fff;
 
-  .i-select__option.is-highlighted,
-  .i-select__option:hover {
+  .#{config.$namespace}-select__option.is-highlighted,
+  .#{config.$namespace}-select__option:hover {
     background: rgb(255 255 255 / 12%);
   }
 }
 
-.i-select__option {
+.#{config.$namespace}-select__option {
   padding: 8px 12px;
   cursor: pointer;
 }
 
-.i-select__option.is-highlighted,
-.i-select__option:hover {
+.#{config.$namespace}-select__option.is-highlighted,
+.#{config.$namespace}-select__option:hover {
   background: #f5f7fa;
 }
 
-.i-select__option.is-selected {
-  color: var(--i-color-primary, #409eff);
+.#{config.$namespace}-select__option.is-selected {
+  color: var(--#{config.$namespace}-color-primary, #409eff);
   font-weight: 600;
 }
 
-.i-select__option.is-disabled {
+.#{config.$namespace}-select__option.is-disabled {
   color: #c0c4cc;
   cursor: not-allowed;
 }
 
-.i-select__empty {
+.#{config.$namespace}-select__empty {
   padding: 10px 12px;
   color: #909399;
   text-align: center;
 }
 
-.i-select.is-disabled {
+.#{config.$namespace}-select.is-disabled {
   opacity: 0.6;
   pointer-events: none;
 }
 
-.i-select__suffix-caret::before { content: '⌄'; }
+.#{config.$namespace}-select__suffix-caret::before { content: '⌄'; }

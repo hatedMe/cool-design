@@ -2,6 +2,7 @@ import Tooltip from '../tooltip';
 import { computed, defineComponent, inject, nextTick, ref, watch, type PropType } from 'vue';
 import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
+import { useNamespace } from '../../hooks/use-namespace';
 import Icon from '../icon';
 
 export type InputTagTrigger = 'Enter' | 'Space';
@@ -42,6 +43,8 @@ export default defineComponent({
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
+    const ns = useNamespace('input-tag');
+    const controlNs = useNamespace('control');
     const input = ref<HTMLInputElement>();
     const draft = ref('');
     const dragIndex = ref<number>();
@@ -158,8 +161,8 @@ export default defineComponent({
       return (
         <div
           class={[
-            'i-input-tag',
-            `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`,
+            ns.b(),
+            controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size),
             { 'is-disabled': isDisabled(), 'is-readonly': isReadonly() }
           ]}
           id={props.id ?? field?.id}
@@ -169,7 +172,7 @@ export default defineComponent({
           {shown.map((value, index) => (
             <span
               key={`${value}-${index}`}
-              class={['i-input-tag__tag', `is-${props.tagType}`, `is-${props.tagEffect}`]}
+              class={[ns.e('tag'), `is-${props.tagType}`, `is-${props.tagEffect}`]}
               draggable={props.draggable && !isDisabled() && !isReadonly()}
               onDragstart={onDragStart(index)}
               onDragover={(event: DragEvent) => event.preventDefault()}
@@ -178,7 +181,7 @@ export default defineComponent({
               {!isDisabled() && !isReadonly() && (
                 <button
                   type='button'
-                  class='i-input-tag__remove'
+                  class={ns.e('remove')}
                   aria-label={`移除 ${value}`}
                   onClick={() => removeTag(index)}>
                   ×
@@ -189,23 +192,23 @@ export default defineComponent({
           {rest > 0 && (props.collapseTagsTooltip ? (
             <Tooltip effect={props.effect}>
               {{
-                default: () => <span class='i-input-tag__more'>+{rest}</span>,
+                default: () => <span class={ns.e('more')}>+{rest}</span>,
                 content: () => tags.value.slice(shown.length).map((value, offset) => {
                   const index = shown.length + offset;
-                  return <span key={index} class={['i-input-tag__tag', `is-${props.tagType}`, `is-${props.tagEffect}`]}>
+                  return <span key={index} class={[ns.e('tag'), `is-${props.tagType}`, `is-${props.tagEffect}`]}>
                     {slots.tag?.({ value, index }) ?? value}
                     {!isDisabled() && !isReadonly() && (
-                      <button type='button' class='i-input-tag__remove' aria-label={`移除 ${value}`}
+                      <button type='button' class={ns.e('remove')} aria-label={`移除 ${value}`}
                         onClick={() => removeTag(index)}>×</button>
                     )}
                   </span>;
                 })
               }}
             </Tooltip>
-          ) : <span class='i-input-tag__more'>+{rest}</span>)}
+          ) : <span class={ns.e('more')}>+{rest}</span>)}
           <input
             ref={input}
-            class='i-input-tag__input'
+            class={ns.e('input')}
             value={draft.value}
             placeholder={props.placeholder}
             disabled={isDisabled()}
@@ -222,7 +225,7 @@ export default defineComponent({
           />
           {slots.suffix?.()}
           {props.clearable && tags.value.length > 0 && !isDisabled() && !isReadonly() && (
-            <button type='button' class='i-input-tag__clear' aria-label='清空' onClick={clear}>
+            <button type='button' class={ns.e('clear')} aria-label='清空' onClick={clear}>
               {props.clearIcon ? <Icon icon={props.clearIcon} aria-hidden='true' /> : '×'}
             </button>
           )}

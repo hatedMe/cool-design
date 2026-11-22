@@ -1,10 +1,12 @@
+@use '../style/mixins/config';
+
 // 从已删除的聚合样式目录迁移而来，保持选择器与规则不变。
-.i-autocomplete {
+.#{config.$namespace}-autocomplete {
   position: relative;
   display: inline-flex;
   align-items: center;
 }
-.i-autocomplete input {
+.#{config.$namespace}-autocomplete input {
   min-width: 220px;
   height: 32px;
   border: 1px solid #dcdfe6;
@@ -12,12 +14,12 @@
   padding: 0 10px;
   background: #fff;
 }
-.i-tooltip.i-autocomplete__popper {
+.#{config.$namespace}-tooltip.#{config.$namespace}-autocomplete__popper {
   max-width: calc(100vw - 16px);
   overflow: visible;
   padding: 0;
 }
-.i-autocomplete__list {
+.#{config.$namespace}-autocomplete__list {
   box-sizing: border-box;
   max-width: calc(100vw - 18px);
   max-height: 280px;
@@ -26,37 +28,37 @@
   padding: 4px 0;
   list-style: none;
 }
-.i-autocomplete__list li {
+.#{config.$namespace}-autocomplete__list li {
   padding: 6px 10px;
   cursor: pointer;
 }
-.i-autocomplete__list li:hover,
-.i-autocomplete__list li.is-highlighted {
+.#{config.$namespace}-autocomplete__list li:hover,
+.#{config.$namespace}-autocomplete__list li.is-highlighted {
   background: #f5f7fa;
 }
-.i-autocomplete__control {
+.#{config.$namespace}-autocomplete__control {
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
-.i-autocomplete__icon {
+.#{config.$namespace}-autocomplete__icon {
   color: #909399;
   font-size: 14px;
 }
-.i-autocomplete__clear {
+.#{config.$namespace}-autocomplete__clear {
   border: 0;
   background: transparent;
   cursor: pointer;
 }
-.i-autocomplete__loading {
+.#{config.$namespace}-autocomplete__loading {
   color: #909399;
   cursor: default;
 }
 
-.i-autocomplete.i-control--small input {
+.#{config.$namespace}-autocomplete.#{config.$namespace}-control--small input {
   height: 28px;
 }
 
-.i-autocomplete.i-control--large input {
+.#{config.$namespace}-autocomplete.#{config.$namespace}-control--large input {
   height: 40px;
 }

@@ -9,7 +9,8 @@ import type { Component } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
-import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
+import { useNamespace } from '../../hooks/use-namespace';
+import { useFloating, useFloatingTheme, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 
 dayjs.extend(utc);
 
@@ -57,6 +58,8 @@ export default defineComponent({
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
+    const ns = useNamespace('time-select');
+    const controlNs = useNamespace('control');
     const { getValueOnClear, isEmptyValue } = useEmptyValues({
       emptyValues: computed(() => props.emptyValues),
       valueOnClear: computed(() => props.valueOnClear)
@@ -80,6 +83,7 @@ export default defineComponent({
       offset: () => props.popperOptions?.offset ?? 4,
       close: () => setOpen(false)
     });
+    const panelTheme = useFloatingTheme(position.target, () => props.teleported);
 
     const options = computed(() => {
       const start = parseTime(props.start) ?? 540;
@@ -165,15 +169,15 @@ export default defineComponent({
       <span
         ref={root}
         class={[
-          'i-time-select',
-          `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`,
+          ns.b(),
+          controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size),
           { 'is-open': open.value, 'is-disabled': isDisabled() }
         ]}>
-        {props.prefixIcon && <Icon class='i-time-select__prefix' icon={props.prefixIcon} aria-hidden='true' />}
+        {props.prefixIcon && <Icon class={ns.e('prefix')} icon={props.prefixIcon} aria-hidden='true' />}
         <input
           ref={control}
           type='text'
-          class='i-time-select__control'
+          class={ns.e('control')}
           role='combobox'
           disabled={isDisabled()}
           readonly={!props.editable}
@@ -203,7 +207,7 @@ export default defineComponent({
         {props.clearable && hasValue.value && !isDisabled() && (
           <button
             type='button'
-            class='i-time-select__clear'
+            class={ns.e('clear')}
             aria-label='清空'
             onMousedown={(event: MouseEvent) => event.preventDefault()}
             onClick={(event: MouseEvent) => {
@@ -220,12 +224,13 @@ export default defineComponent({
           const panel = (
             <div
               ref={dropdown}
-              class={['i-time-select__dropdown', `i-time-select__dropdown--${props.effect}`, props.popperClass]}
+              class={[ns.e('dropdown'), ns.em('dropdown', props.effect), panelTheme.value.scopeClass, props.popperClass]}
               id={listId.value}
               role='listbox'
               aria-hidden={kept ? 'true' : undefined}
+              data-theme={panelTheme.value.theme}
               data-placement={position.placement.value}
-              style={[position.style.value, props.popperStyle, kept ? { display: 'none' } : undefined]}>
+              style={[panelTheme.value.style, position.style.value, props.popperStyle, kept ? { display: 'none' } : undefined]}>
               {visibleOptions.value.map((option, index) => (
                 <div
                   key={option.time}
@@ -234,7 +239,7 @@ export default defineComponent({
                   aria-selected={option.value === props.modelValue}
                   aria-disabled={option.disabled || undefined}
                   class={[
-                    'i-time-select__option',
+                    ns.e('option'),
                     { 'is-selected': option.value === props.modelValue, 'is-disabled': option.disabled, 'is-highlighted': index === highlightedIndex.value }
                   ]}
                   onMousedown={(event: MouseEvent) => event.preventDefault()}

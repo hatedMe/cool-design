@@ -1,6 +1,7 @@
 import { computed, defineComponent, inject, nextTick, onBeforeUnmount, ref, watch, type CSSProperties, type PropType, type Component } from 'vue';
 import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
+import { useNamespace } from '../../hooks/use-namespace';
 import Icon from '../icon';
 import { useComposition } from '../../hooks/use-composition';
 import Input, { type InputInstance } from '../input';
@@ -56,6 +57,8 @@ export default defineComponent({
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
+    const ns = useNamespace('autocomplete');
+    const controlNs = useNamespace('control');
     const input = ref<InputInstance>();
     const anchor = ref<HTMLElement>();
     const popperRef = ref<TooltipInstance>();
@@ -175,11 +178,11 @@ export default defineComponent({
       activated: focused, loading, suggestions: items, inputRef: input, popperRef
     });
     return () => (
-      <span class={['i-autocomplete', `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`]}>
+      <span class={[ns.b(), controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size)]}>
         {slots.prepend?.()}
-        <span class='i-autocomplete__control' ref={anchor}>
+        <span class={ns.e('control')} ref={anchor}>
           {slots.prefix?.()}
-          {props.prefixIcon && <Icon class='i-autocomplete__icon i-autocomplete__icon--prefix' icon={props.prefixIcon} aria-hidden='true' />}
+          {props.prefixIcon && <Icon class={[ns.e('icon'), ns.em('icon', 'prefix')]} icon={props.prefixIcon} aria-hidden='true' />}
           <Input
             ref={input}
             modelValue={props.modelValue}
@@ -211,7 +214,7 @@ export default defineComponent({
           {props.clearable && props.modelValue && !isDisabled() && (
             <button
               type='button'
-              class='i-autocomplete__clear'
+              class={ns.e('clear')}
               aria-label='清空'
               onMousedown={(event: MouseEvent) => event.preventDefault()}
               onClick={() => {
@@ -222,17 +225,17 @@ export default defineComponent({
               ×
             </button>
           )}
-          {props.suffixIcon && <Icon class='i-autocomplete__icon i-autocomplete__icon--suffix' icon={props.suffixIcon} aria-hidden='true' />}
+          {props.suffixIcon && <Icon class={[ns.e('icon'), ns.em('icon', 'suffix')]} icon={props.suffixIcon} aria-hidden='true' />}
           {slots.suffix?.()}
         </span>
         {slots.append?.()}
         {(() => {
           const width = anchor.value?.getBoundingClientRect().width;
-          const dropdown = <ul ref={panel} class='i-autocomplete__list' role='listbox'
+          const dropdown = <ul ref={panel} class={ns.e('list')} role='listbox'
             style={width ? { [props.fitInputWidth ? 'width' : 'minWidth']: `${width}px` } : undefined}>
             {slots.header && <li role='presentation'>{slots.header()}</li>}
             {loading.value && !props.hideLoading && (
-              <li class='i-autocomplete__loading' role='presentation'>
+              <li class={ns.e('loading')} role='presentation'>
                 {slots.loading?.() ?? '加载中…'}
               </li>
             )}
@@ -241,7 +244,7 @@ export default defineComponent({
                 key={index}
                 role='option'
                 aria-selected={index === highlightedIndex.value}
-                class={['i-autocomplete__item', { 'is-highlighted': index === highlightedIndex.value }]}
+                class={[ns.e('item'), { 'is-highlighted': index === highlightedIndex.value }]}
                 onMousedown={(event: MouseEvent) => event.preventDefault()}
                 onClick={() => handleSelect(item)}>
                 {slots.default?.({ item }) ?? String(item[props.valueKey] ?? '')}
@@ -252,7 +255,7 @@ export default defineComponent({
           return <Tooltip ref={popperRef} virtualTriggering trigger={[]} hideAfter={0} virtualRef={anchor.value} visible={visible.value}
             teleported={props.teleported} appendTo={props.appendTo} showArrow={props.showArrow}
             effect='light' placement={props.popperOptions?.placement ?? props.placement}
-            offset={props.popperOptions?.offset} popperClass={['i-autocomplete__popper', props.popperClass]} popperStyle={props.popperStyle}
+            offset={props.popperOptions?.offset} popperClass={[ns.e('popper'), props.popperClass]} popperStyle={props.popperStyle}
             onUpdate:visible={(value: boolean) => { if (!value) close(); }}>
             {{ content: () => dropdown }}
           </Tooltip>;

@@ -4,8 +4,9 @@ import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useComposition } from '../../hooks/use-composition';
 import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
+import { useNamespace } from '../../hooks/use-namespace';
 import Tooltip from '../tooltip';
-import { useFloating, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
+import { useFloating, useFloatingTheme, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 import type { SelectV2TagTooltipOptions, SelectV2FilterMethod, SelectV2OptionFilterMethod, SelectV2RemoteMethod, SelectV2Option, SelectV2PropsMapping, SelectV2Value } from './types';
 
 type FlatRow =
@@ -71,6 +72,8 @@ export default defineComponent({
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
+    const ns = useNamespace('select-v2');
+    const controlNs = useNamespace('control');
     const { getValueOnClear, isEmptyValue } = useEmptyValues({
       emptyValues: computed(() => props.emptyValues),
       valueOnClear: computed(() => props.valueOnClear)
@@ -109,6 +112,7 @@ export default defineComponent({
       appendTo: () => props.appendTo,
       close: () => setOpen(false)
     });
+    const panelTheme = useFloatingTheme(position.target, () => props.teleported);
 
     const labelKey = computed(() => props.props?.label || 'label');
     const valueKey = computed(() => props.props?.value || 'value');
@@ -401,8 +405,8 @@ export default defineComponent({
         <span
           ref={root}
           class={[
-            'i-select-v2',
-            `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`,
+            ns.b(),
+            controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size),
             { 'is-open': open.value, 'is-disabled': isDisabled() }
           ]}>
           <div
@@ -411,7 +415,7 @@ export default defineComponent({
             tabindex={isDisabled() ? -1 : 0}
             aria-expanded={open.value}
             aria-haspopup='listbox'
-            class='i-select-v2__control'
+            class={ns.e('control')}
             onClick={() => setOpen(!open.value)}
             onFocus={(event: FocusEvent) => {
               emit('focus', event);
@@ -426,7 +430,7 @@ export default defineComponent({
               ? slots.tag({ data: selectedOptions.value.map((option, index) => option ?? { [valueKey.value]: selectedValues.value[index], [labelKey.value]: selectedLabels.value[index] }), deleteTag, selectDisabled: isDisabled() })
               : shown.map((option, index) =>
               option ? (
-                <span class={['i-select-v2__tag', props.multiple && [`is-${props.tagType}`, `is-${props.tagEffect}`]]} key={index}>
+                <span class={[ns.e('tag'), props.multiple && [`is-${props.tagType}`, `is-${props.tagEffect}`]]} key={index}>
                   {slots.label?.({ index: optionIndex(option), label: optionLabel(option), value: option[valueKey.value] }) ?? optionLabel(option)}
                   {props.multiple && !isDisabled() && (
                     <button
@@ -441,7 +445,7 @@ export default defineComponent({
                   )}
                 </span>
               ) : (
-                <span class='i-select-v2__tag' key={index}>
+                <span class={ns.e('tag')} key={index}>
                   {slots.label?.({ index: -1, label: selectedLabels.value[index], value: selectedValues.value[index] }) ?? selectedLabels.value[index]}
                 </span>
               )
@@ -462,18 +466,18 @@ export default defineComponent({
                   hideAfter={props.tagTooltip?.hideAfter}
                   autoClose={props.tagTooltip?.autoClose}>
                   {{
-                    default: () => <span class='i-select-v2__more'>+{rest}</span>,
+                    default: () => <span class={ns.e('more')}>+{rest}</span>,
                     content: () => selectedLabels.value.slice(shown.length).map((label, offset) => {
                       const index = shown.length + offset;
                       return <span key={index}>{slots.label?.({ index: selectedOptions.value[index] ? optionIndex(selectedOptions.value[index]!) : -1, label, value: selectedValues.value[index] }) ?? label}</span>;
                     })
                   }}
                 </Tooltip>
-              ) : <span class='i-select-v2__more'>+{rest}</span>
+              ) : <span class={ns.e('more')}>+{rest}</span>
             )}
             <input
               ref={input}
-              class='i-select-v2__input'
+              class={ns.e('input')}
               value={query.value}
               placeholder={selectedOptions.value.length ? '' : props.placeholder}
               readonly={!props.filterable}
@@ -503,7 +507,7 @@ export default defineComponent({
               </button>
             )}
             {!props.clearable || !selectedValues.value.length ? (!props.remote || !props.filterable || props.remoteShowSuffix) && (
-              <span class='i-select-v2__suffix' aria-hidden='true'>{renderIcon(props.suffixIcon, '⌄')}</span>
+              <span class={ns.e('suffix')} aria-hidden='true'>{renderIcon(props.suffixIcon, '⌄')}</span>
             ) : null}
           </div>
           {props.name && (
@@ -519,29 +523,30 @@ export default defineComponent({
             const panel = (
               <div
                 ref={dropdown}
-                class={['i-select-v2__dropdown', `i-select-v2__dropdown--${props.effect}`, props.popperClass]}
+                class={[ns.e('dropdown'), ns.em('dropdown', props.effect), panelTheme.value.scopeClass, props.popperClass]}
                 role='listbox'
                 aria-hidden={kept ? 'true' : undefined}
+                data-theme={panelTheme.value.theme}
                 data-placement={position.placement.value}
-                style={[position.style.value, { maxHeight: `${props.height}px` }, props.popperStyle, kept ? { display: 'none' } : undefined]}
+                style={[panelTheme.value.style, position.style.value, { maxHeight: `${props.height}px` }, props.popperStyle, kept ? { display: 'none' } : undefined]}
                 onScroll={onScroll}>
-                {props.showArrow && <span class='i-select-v2__arrow' style={position.arrowStyle.value} aria-hidden='true' />}
+                {props.showArrow && <span class={ns.e('arrow')} style={position.arrowStyle.value} aria-hidden='true' />}
                 {slots.header && <div onClick={(event: MouseEvent) => event.stopPropagation()}>{slots.header()}</div>}
-                {props.loading && <div class='i-select-v2__empty'>{slots.loading?.() ?? slots.empty?.() ?? (props.loadingText || '加载中…')}</div>}
+                {props.loading && <div class={ns.e('empty')}>{slots.loading?.() ?? slots.empty?.() ?? (props.loadingText || '加载中…')}</div>}
                 {!props.loading && !visibleRows.value.length && (
-                  <div class='i-select-v2__empty'>{slots.empty?.() ?? (query.value && rows.value.length ? props.noMatchText : props.noDataText)}</div>
+                  <div class={ns.e('empty')}>{slots.empty?.() ?? (query.value && rows.value.length ? props.noMatchText : props.noDataText)}</div>
                 )}
                 {!props.loading && visibleRows.value.length > 0 && (
                   <div
                     ref={listRef}
-                    class='i-select-v2__list'
+                    class={ns.e('list')}
                     style={{ height: `${visibleRows.value.length * props.itemHeight}px`, position: 'relative' }}>
                     <div style={{ transform: `translateY(${windowRows.value.start * props.itemHeight}px)` }}>
                       {windowRows.value.items.map((row, index) => {
                         const rowIndex = windowRows.value.start + index;
                         if (row.type === 'group') {
                           return (
-                            <div class='i-select-v2__group' key={`group-${rowIndex}`} style={{ height: `${props.itemHeight}px` }}>
+                            <div class={ns.e('group')} key={`group-${rowIndex}`} style={{ height: `${props.itemHeight}px` }}>
                               {row.label}
                             </div>
                           );
@@ -556,7 +561,7 @@ export default defineComponent({
                             aria-disabled={Boolean(option[disabledKey.value]) || undefined}
                             style={{ height: `${props.itemHeight}px` }}
                             class={[
-                              'i-select-v2__option',
+                              ns.e('option'),
                               {
                                 'is-selected': selected,
                                 'is-highlighted': rowIndex === highlighted.value,
