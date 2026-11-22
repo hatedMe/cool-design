@@ -1,4 +1,5 @@
 import { computed, defineComponent, inject, nextTick, onBeforeUnmount, ref, watch, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import type { CascaderLazyLoad, CascaderItemValue, CascaderModelValue, CascaderNode, CascaderNodeValue, CascaderOption, CascaderPropsMapping } from '../cascader/types';
 import { embeddedCascaderPanelKey, useCascaderNodes } from '../cascader/node';
 
@@ -30,6 +31,7 @@ export default defineComponent({
     const emitPath = computed(() => props.emitPath ?? props.props?.emitPath ?? true);
     const embeddedContext = inject(embeddedCascaderPanelKey, undefined);
     const embedded = props.embedded ? embeddedContext : undefined;
+    const ns = useNamespace(embedded ? 'cascader' : 'cascader-panel');
     const activeValues = ref<CascaderNodeValue[]>([]);
 
     const nodes = embedded?.nodes ?? useCascaderNodes({
@@ -208,7 +210,7 @@ export default defineComponent({
     expose({ getCheckedNodes, clearCheckedNodes, getFlattedNodes, scrollToExpandingNode, handleKeyDown, loadLazyRootNodes: nodes.loadLazyRootNodes });
 
     return () => (
-      <div class={[embedded ? 'i-cascader__menus' : 'i-cascader-panel', props.border && 'has-border']}
+      <div class={[embedded ? ns.e('menus') : ns.b(), props.border && 'has-border']}
         tabindex={embedded ? undefined : 0} onKeydown={handleKeyDown}>
         {columns.value.map((column, columnIndex) => {
           const start = props.virtualScroll ? Math.max(0, Math.floor((scrollOffsets.value[columnIndex] ?? 0) / rowHeight.value) - 2) : 0;
@@ -222,7 +224,7 @@ export default defineComponent({
             return (
               <div key={String(node.value)} data-index={index} tabindex={-1}
                 style={props.virtualScroll ? { height: `${rowHeight.value}px`, boxSizing: 'border-box' } : undefined}
-                class={[embedded ? 'i-cascader__node' : 'i-cascader-panel__node', {
+                class={[ns.e('node'), {
                   'is-active': active, 'is-disabled': disabled,
                   'is-checked': state === 'checked' || singleSelected, 'is-loading': node.loading
                 }]}
@@ -235,7 +237,7 @@ export default defineComponent({
                 onMousemove={(event: MouseEvent) => trackHover(event, node, columnIndex)}
                 onMouseenter={(event: MouseEvent) => { if (expandTrigger.value === 'hover') hoverNode(event, node, columnIndex); }}>
                 {props.props?.showPrefix !== false && (multiple.value || checkStrictly.value) && (
-                  <input class={embedded ? 'i-cascader__checkbox' : 'i-cascader-panel__checkbox'}
+                  <input class={ns.e('checkbox')}
                     type={multiple.value ? 'checkbox' : 'radio'}
                     checked={multiple.value ? state === 'checked' : singleSelected}
                     indeterminate={state === 'indeterminate'}
@@ -249,11 +251,11 @@ export default defineComponent({
                       else update(nodeValue(node));
                     }} />
                 )}
-                <span class={embedded ? 'i-cascader__label' : 'i-cascader-panel__label'}>
+                <span class={ns.e('label')}>
                   {slots.default?.({ node, data: node.data }) ?? node.label}
                 </span>
                 {!node.leaf && (
-                  <span class={embedded ? 'i-cascader__expand' : 'i-cascader-panel__arrow'} aria-hidden='true'
+                  <span class={ns.e(embedded ? 'expand' : 'arrow')} aria-hidden='true'
                     onClick={(event: MouseEvent) => {
                       event.stopPropagation();
                       if (!disabled) { stopHover(); expand(node); }
@@ -266,7 +268,7 @@ export default defineComponent({
           });
           return <div key={columnIndex} role={embedded ? 'listbox' : 'menu'}
             ref={(element) => { menuList.value[columnIndex] = element as HTMLElement; }}
-            class={embedded ? 'i-cascader__menu' : 'i-cascader-panel__column'}
+            class={ns.e(embedded ? 'menu' : 'column')}
             style={props.virtualScroll ? { maxHeight: `${windowHeight.value}px`, overflowY: 'auto' } : undefined}
             onMouseenter={stopHover}
             onScroll={props.virtualScroll ? (event: Event) => {

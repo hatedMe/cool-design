@@ -91,6 +91,7 @@ import { ConfigProvider, en } from 'cool-design/config-provider';
 - Badge、Tag、CheckTag、Avatar、AvatarGroup、Card、Descriptions、DescriptionsItem、Empty、Result、Statistic、Countdown、Skeleton 和 SkeletonItem。
 - Form、FormItem、Input、InputNumber、InputOtp、Checkbox、CheckboxButton、CheckboxGroup、Radio、RadioButton、RadioGroup、Switch、Slider、Rate 和 Segmented。
 - Select（含 SelectOption、SelectOptionGroup）、SelectV2、Autocomplete、Mention、InputTag 和 TimeSelect。
+- Cascader 和 CascaderPanel，包含级联选择器的内嵌面板、标签和折叠标签提示。
 - Tree、TreeSelect 和 TreeV2。
 
 从源码构建时，先配置 Sass，再加载样式。下例路径相对于仓库根目录。

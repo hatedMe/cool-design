@@ -12,10 +12,11 @@ import {
   type PropType
 } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
+import { useNamespace } from '../../hooks/use-namespace';
 import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
-import { useFloating, type Placement, type FloatingOptions } from '../../../src/utils/use-floating';
-import { createNamespace } from '../../../src/utils/create';
+import { useFloating, useFloatingTheme, type Placement, type FloatingOptions } from '../../../src/utils/use-floating';
+import { createBEM, createNamespace } from '../../../src/utils/create';
 import Tooltip from '../tooltip';
 import type { TagType } from '../tag/tag';
 import { embeddedCascaderPanelKey, useCascaderNodes } from './node';
@@ -32,7 +33,7 @@ import type {
   CascaderPropsMapping
 } from './types';
 
-const [name, bem] = createNamespace('cascader');
+const [name] = createNamespace('cascader');
 
 export default defineComponent({
   name,
@@ -88,6 +89,9 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change', 'expand-change', 'visible-change', 'remove-tag', 'clear', 'focus', 'blur'],
   setup(props, { attrs, emit, expose, slots }) {
+    const ns = useNamespace('cascader');
+    const controlNs = useNamespace('control');
+    const bem = createBEM(ns.b);
     const expandTrigger = computed(() => props.expandTrigger ?? props.props?.expandTrigger ?? 'click');
     const lazy = computed(() => props.lazy ?? props.props?.lazy ?? false);
     const lazyLoad = computed(() => props.lazyLoad ?? props.props?.lazyLoad);
@@ -272,6 +276,7 @@ export default defineComponent({
       close: () => setOpen(false),
       closeOnOutside: () => true
     });
+    const panelTheme = useFloatingTheme(position.target, () => props.teleported);
 
     const setOpen = (value: boolean) => {
       if (open.value === value || (value && isDisabled())) return;
@@ -406,10 +411,11 @@ export default defineComponent({
         <div
           id={panelId}
           ref={floating}
-          class={[bem('dropdown'), bem('dropdown', { [props.effect]: true }), props.popperClass]}
+          class={[bem('dropdown'), bem('dropdown', { [props.effect]: true }), panelTheme.value.scopeClass, props.popperClass]}
+          data-theme={panelTheme.value.theme}
           data-placement={position.placement.value}
           aria-hidden={!open.value || undefined}
-          style={[position.style.value, props.popperStyle, !open.value ? { display: 'none' } : undefined]}>
+          style={[panelTheme.value.style, position.style.value, props.popperStyle, !open.value ? { display: 'none' } : undefined]}>
           {slots.header?.()}
           {isFiltering.value ? (
             suggestionNodes.value.length ? (
@@ -457,7 +463,7 @@ export default defineComponent({
           ref={root}
           class={[
             bem(),
-            `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`,
+            controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size),
             { 'is-disabled': isDisabled(), 'is-open': open.value }
           ]}>
           <div
