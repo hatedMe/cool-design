@@ -823,7 +823,7 @@ export type { SelectV2Instance } from './select-v2';
 export type { TreeSelectInstance } from './tree-select';
 export type { TimeSelectInstance } from './time-select';
 export type { CalendarInstance, DatePickerInstance, DateTimePickerInstance, TimePickerInstance } from './date-picker';
-export type { AffixInstance } from './affix';
+export type { AffixInstance, AffixPosition, AffixProps, AffixScrollEvent, AffixTargetContainer } from './affix';
 export type { AnchorInstance } from './anchor';
 export type { CarouselInstance } from './carousel';
 export type { CollapseInstance, CollapseItemInstance } from './collapse';

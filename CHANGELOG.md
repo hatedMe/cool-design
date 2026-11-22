@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Affix 默认跟随最近的纵向滚动祖先，`target` 现在约束固定内容的可见边界。依赖旧容器边缘阈值的页面可用 `offset` 设置视口偏移，`target-container` 仍可指定滚动宿主。新增固定时的 `teleported` 和 `append-to`，内容尺寸改变后可等待 `updateRoot()` 重新测量。
+
 - Tabs 公开响应式 `currentName` 和 `tabNavRef`，并支持条件插槽与动态页签重排。声明式页签省略初始值时使用字符串 `"0"`，具名页签需要默认选中时可传入 `default-value`。`before-leave` 拒绝 Promise 时会阻止切换。
 
 - Scrollbar 增加四向 `end-reached` 事件与默认 `0` 像素的 `distance` 触发距离。`tabindex` 现在作用于实际滚动元素，依赖外层聚焦的页面可在 Scrollbar 外添加可聚焦的包装元素。

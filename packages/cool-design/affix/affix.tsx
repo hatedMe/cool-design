@@ -1,144 +1,209 @@
 import {
+  Teleport,
+  computed,
   defineComponent,
   nextTick,
+  onActivated,
   onBeforeUnmount,
+  onDeactivated,
   onMounted,
   ref,
+  shallowRef,
   watch,
+  type CSSProperties,
   type PropType
 } from 'vue';
 
 export type AffixPosition = 'top' | 'bottom';
 export type AffixTargetContainer = string | HTMLElement;
 
+export interface AffixScrollEvent {
+  scrollTop: number;
+  fixed: boolean;
+}
+
 export default defineComponent({
   name: 'i-affix',
   props: {
-    /** 偏移距离，适用于 top/bottom 两种 position */
-    offset: { type: Number, default: undefined },
-    /** 兼容别名：position=top 时的偏移，offset 优先 */
+    offset: Number,
     offsetTop: { type: Number, default: 0 },
-    /** 兼容别名：position=bottom 时的偏移，offset 优先 */
-    offsetBottom: { type: Number, default: undefined },
-    position: { type: String as PropType<AffixPosition>, default: 'top' },
-    /** 固定判定边界容器的选择器 */
-    target: String,
-    /** 监听滚动的容器，默认 window */
+    offsetBottom: Number,
+    position: {
+      type: String as PropType<AffixPosition>,
+      default: 'top',
+      validator: (value: string) => value === 'top' || value === 'bottom'
+    },
+    target: { type: String, default: '' },
     targetContainer: [String, Object] as PropType<AffixTargetContainer>,
-    zIndex: { type: Number, default: 100 }
+    zIndex: { type: [Number, String], default: 100 },
+    teleported: Boolean,
+    appendTo: { type: [String, Object] as PropType<string | HTMLElement>, default: 'body' }
   },
-  emits: ['change', 'scroll'],
+  emits: {
+    change: (fixed: boolean) => typeof fixed === 'boolean',
+    scroll: (value: AffixScrollEvent) =>
+      typeof value.scrollTop === 'number' && typeof value.fixed === 'boolean'
+  },
   setup(props, { slots, emit, expose }) {
-    const placeholder = ref<HTMLElement>();
-    const content = ref<HTMLElement>();
+    const root = ref<HTMLElement>();
     const fixed = ref(false);
-    const fixedStyle = ref<Record<string, string>>();
-    const placeholderHeight = ref<string>();
+    const measuring = ref(false);
+    const geometry = shallowRef<{ rect: DOMRect; translation: number }>();
+    const positioned = computed(() => fixed.value && !measuring.value);
+    // 保留未传 offset 与显式传入 0 的区别，兼容旧偏移属性。
+    const offset = computed(
+      () => props.offset ?? (props.position === 'bottom' ? props.offsetBottom : props.offsetTop) ?? 0
+    );
+    const rootStyle = computed<CSSProperties>(() => {
+      const rect = geometry.value?.rect;
+      return positioned.value && rect ? { width: `${rect.width}px`, height: `${rect.height}px` } : {};
+    });
+    const fixedStyle = computed<CSSProperties>(() => {
+      if (!positioned.value || !geometry.value) return {};
+      const { rect, translation } = geometry.value;
+      return {
+        ...rootStyle.value,
+        position: 'fixed',
+        left: `${rect.left}px`,
+        [props.position]: `${offset.value}px`,
+        transform: translation ? `translateY(${translation}px)` : undefined,
+        zIndex: props.zIndex
+      };
+    });
 
-    const resolveTarget = () => {
-      if (!props.target) return undefined;
-      return document.querySelector<HTMLElement>(props.target) ?? undefined;
-    };
+    let scrollContainer: HTMLElement | Window | undefined;
+    let pendingUpdate: Promise<void> | undefined;
 
     const resolveScrollContainer = (): HTMLElement | Window => {
-      const value = props.targetContainer;
-      if (value instanceof HTMLElement) return value;
-      if (typeof value === 'string') return document.querySelector<HTMLElement>(value) ?? window;
+      const override = props.targetContainer;
+      if (typeof override === 'string') return document.querySelector<HTMLElement>(override) ?? window;
+      if (override) return override;
+
+      let parent = root.value?.parentElement;
+      while (parent && parent !== document.body && parent !== document.documentElement) {
+        if (/auto|scroll|overlay/.test(window.getComputedStyle(parent).overflowY)) return parent;
+        parent = parent.parentElement;
+      }
       return window;
     };
 
-    const resolvedOffset = () =>
-      props.offset ?? (props.position === 'bottom' ? props.offsetBottom : props.offsetTop) ?? 0;
+    const setFixed = (value: boolean) => {
+      if (fixed.value === value) return;
+      fixed.value = value;
+      emit('change', value);
+    };
 
     const update = () => {
-      const ph = placeholder.value;
-      const ct = content.value;
-      if (!ph || !ct) return;
-      const target = resolveTarget();
-      const boundary = target
-        ? target.getBoundingClientRect()
-        : { top: 0, bottom: window.innerHeight };
-      const rect = ph.getBoundingClientRect();
-      const offset = resolvedOffset();
-      const shouldFix =
-        props.position === 'bottom'
-          ? rect.bottom > boundary.bottom - offset
-          : rect.top < boundary.top + offset;
-      if (shouldFix !== fixed.value) {
-        fixed.value = shouldFix;
-        emit('change', shouldFix);
-      }
-      if (shouldFix) {
-        placeholderHeight.value = `${ct.getBoundingClientRect().height}px`;
-        fixedStyle.value = {
-          position: 'fixed',
-          left: `${rect.left}px`,
-          width: `${rect.width}px`,
-          zIndex: `${props.zIndex}`,
-          ...(props.position === 'bottom' ? { bottom: `${offset}px` } : { top: `${offset}px` })
-        };
+      if (!scrollContainer || !root.value || measuring.value) return;
+      const rect = root.value.getBoundingClientRect();
+      const boundary = props.target ? document.querySelector(props.target)?.getBoundingClientRect() : undefined;
+      const distance = offset.value;
+      const height = window.innerHeight;
+      let shouldFix: boolean;
+      let translation = 0;
+
+      if (props.position === 'bottom') {
+        shouldFix = rect.bottom > height - distance && (!boundary || boundary.top < height);
+        if (boundary) translation = Math.max(0, boundary.top - (height - distance - rect.height));
       } else {
-        fixedStyle.value = undefined;
-        placeholderHeight.value = undefined;
+        shouldFix = rect.top < distance && (!boundary || boundary.bottom > 0);
+        if (boundary) translation = Math.min(0, boundary.bottom - distance - rect.height);
       }
+
+      if (shouldFix) geometry.value = { rect, translation };
+      setFixed(shouldFix);
     };
 
-    const scrollTopOf = (container: HTMLElement | Window) =>
-      container === window
-        ? window.scrollY || document.documentElement.scrollTop || 0
-        : (container as HTMLElement).scrollTop;
+    const updateRoot = (): Promise<void> => {
+      if (!scrollContainer) return Promise.resolve();
+      if (pendingUpdate) return pendingUpdate;
+      measuring.value = true;
+      const refresh: Promise<void> = nextTick().then(async () => {
+        if (pendingUpdate !== refresh) return;
+        pendingUpdate = undefined;
+        measuring.value = false;
+        update();
+        await nextTick();
+      });
+      pendingUpdate = refresh;
+      return refresh;
+    };
 
-    let scrollContainer: HTMLElement | Window = window;
     const onScroll = () => {
+      const container = scrollContainer;
+      if (!container) return;
       update();
-      emit('scroll', { scrollTop: scrollTopOf(scrollContainer), fixed: fixed.value });
+      if (scrollContainer !== container) return;
+      const scrollTop = container instanceof HTMLElement
+        ? container.scrollTop
+        : window.scrollY || document.documentElement.scrollTop || 0;
+      emit('scroll', { scrollTop, fixed: fixed.value });
     };
-    const onResize = () => update();
+    const onResize = () => {
+      void updateRoot();
+    };
     const bindScrollContainer = () => {
-      scrollContainer.removeEventListener('scroll', onScroll);
+      scrollContainer?.removeEventListener('scroll', onScroll);
       scrollContainer = resolveScrollContainer();
       scrollContainer.addEventListener('scroll', onScroll, { passive: true });
-      // 滚动容器不是 window 时，window 滚动同样会改变元素位置，仍需监听
-      if (scrollContainer !== window) window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('scroll', onScroll, { passive: true });
     };
-    const unbindAll = () => {
-      scrollContainer.removeEventListener('scroll', onScroll);
-      if (scrollContainer !== window) window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
-    };
-    onMounted(() => {
+    const start = () => {
+      if (scrollContainer) return;
       bindScrollContainer();
       window.addEventListener('resize', onResize);
-      nextTick(() => update());
+      update();
+    };
+    const stop = () => {
+      scrollContainer?.removeEventListener('scroll', onScroll);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onResize);
+      scrollContainer = undefined;
+      pendingUpdate = undefined;
+      measuring.value = false;
+    };
+    onMounted(start);
+    onActivated(start);
+    onDeactivated(() => {
+      if (!scrollContainer) return;
+      stop();
+      setFixed(false);
     });
-    onBeforeUnmount(unbindAll);
+    onBeforeUnmount(stop);
+
     watch(
-      () => [
-        props.offset,
-        props.offsetTop,
-        props.offsetBottom,
-        props.position,
-        props.target,
-        props.targetContainer,
-        props.zIndex
-      ],
+      () => props.targetContainer,
       () => {
-        bindScrollContainer();
-        nextTick(() => update());
+        if (scrollContainer) bindScrollContainer();
+      },
+      { flush: 'post' }
+    );
+    watch(
+      () => [props.targetContainer, props.target, props.position, offset.value],
+      update,
+      { flush: 'post' }
+    );
+
+    expose({ update, updateRoot });
+
+    return () => {
+      let target: Element | null | undefined;
+      if (props.teleported && positioned.value) {
+        const { appendTo } = props;
+        target = typeof appendTo === 'string' ? root.value?.ownerDocument.querySelector(appendTo) : appendTo;
       }
-    );
-
-    expose({ update });
-
-    return () => (
-      <div ref={placeholder} class='i-affix' style={{ height: placeholderHeight.value }}>
-        <div
-          ref={content}
-          class={['i-affix__content', fixed.value && 'is-fixed']}
-          style={fixedStyle.value}>
-          {slots.default?.()}
+      // 原位渲染时使用稳定的宿主，固定后再解析同批挂载的选择器。
+      return (
+        <div ref={root} class='i-affix' style={rootStyle.value}>
+          <Teleport to={target ?? 'body'} disabled={!target}>
+            <div
+              class={['i-affix__content', positioned.value && 'is-fixed']}
+              style={fixedStyle.value}>
+              {slots.default?.()}
+            </div>
+          </Teleport>
         </div>
-      </div>
-    );
+      );
+    };
   }
 });

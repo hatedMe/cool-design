@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
-import { nextTick } from 'vue';
+import { h, KeepAlive, nextTick, ref } from 'vue';
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import Affix from '..';
+import Affix, { type AffixInstance } from '..';
 
 const fakeRect = (top: number, left = 0, width = 120, height = 40) =>
   ({
@@ -17,14 +17,16 @@ const fakeRect = (top: number, left = 0, width = 120, height = 40) =>
   }) as DOMRect;
 
 let phTop = 200;
-const phHeight = 40;
+let phHeight = 40;
 let spy: ReturnType<typeof vi.spyOn> | undefined;
 
 const mockRects = () => {
   spy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
     this: HTMLElement
   ) {
-    if (this.classList.contains('i-affix')) return fakeRect(phTop, 10, 120, phHeight);
+    if (this.classList.contains('i-affix')) {
+      return fakeRect(phTop, 10, 120, Number.parseFloat(this.style.height) || phHeight);
+    }
     return fakeRect(phTop, 10, 120, 40);
   });
 };
@@ -37,6 +39,8 @@ const scroll = async () => {
 afterEach(() => {
   spy?.mockRestore();
   spy = undefined;
+  phTop = 200;
+  phHeight = 40;
   document.body.innerHTML = '';
 });
 
@@ -94,12 +98,92 @@ describe('test `Affix` component', () => {
     expect(wrapper.find('.is-fixed').exists()).toBe(false);
     expect(wrapper.emitted('change')).toEqual([[true], [false]]);
 
-    const api = wrapper.vm as unknown as { update: () => void };
     phTop = -5;
-    api.update();
+    wrapper.vm.update();
     await nextTick();
     expect(wrapper.find('.is-fixed').exists()).toBe(true);
     wrapper.unmount();
+  });
+
+  test('异步恢复自然布局并以新高度和位置更新固定状态', async () => {
+    mockRects();
+    phTop = -10;
+    const wrapper = mount(Affix, { attachTo: document.body });
+    await nextTick();
+    await nextTick();
+    const root = wrapper.element as HTMLElement;
+    expect(root.style.height).toBe('40px');
+    phHeight = 64;
+    await wrapper.vm.updateRoot();
+    expect(root.style.height).toBe('64px');
+    expect(wrapper.emitted('change')).toEqual([[true]]);
+    phTop = 100;
+    await wrapper.vm.updateRoot();
+    expect(root.style.height).toBe('');
+    expect(wrapper.emitted('change')).toEqual([[true], [false]]);
+    wrapper.unmount();
+  });
+
+  test('同批声明的后置传送宿主在固定时接收原内容节点', async () => {
+    mockRects();
+    const mounted = vi.fn();
+    const errorHandler = vi.fn();
+    const wrapper = mount({
+      setup: () => () => h('main', [
+        h(Affix, { teleported: true, appendTo: '#late-affix-host' }, () =>
+          h('button', { id: 'late-affix-content', onVnodeMounted: mounted }, '固钉')
+        ),
+        h('div', { id: 'late-affix-host' })
+      ])
+    }, { attachTo: document.body, global: { config: { errorHandler } } });
+    const node = wrapper.get('#late-affix-content').element;
+    phTop = -10;
+    await scroll();
+    expect(wrapper.get('#late-affix-host').element.contains(node)).toBe(true);
+    expect(mounted).toHaveBeenCalledTimes(1);
+    expect(errorHandler).not.toHaveBeenCalled();
+    wrapper.unmount();
+  });
+
+  test('原位开始异步测量时同步 update 不会锁定旧布局', async () => {
+    mockRects();
+    const labelHeight = ref(30);
+    const wrapper = mount(Affix, {
+      attachTo: document.body,
+      slots: { default: () => h('div', { style: { height: `${labelHeight.value}px` } }) }
+    });
+    const root = wrapper.element as HTMLElement;
+    vi.spyOn(root, 'getBoundingClientRect').mockImplementation(() => {
+      const slot = root.querySelector<HTMLElement>('.i-affix__content > div');
+      return fakeRect(phTop, 10, 120, Number.parseFloat(root.style.height || slot?.style.height || '0'));
+    });
+    phTop = -10;
+    labelHeight.value = 64;
+    const pending = wrapper.vm.updateRoot();
+    wrapper.vm.update();
+    await pending;
+    expect(root.style.height).toBe('64px');
+    expect(wrapper.emitted('change')).toEqual([[true]]);
+    wrapper.unmount();
+  });
+
+  test('卸载活动的 KeepAlive 时不触发固定状态事件', async () => {
+    mockRects();
+    phTop = -10;
+    const change = vi.fn();
+    const affix = ref<AffixInstance>();
+    const wrapper = mount({
+      setup: () => () => h(KeepAlive, null, {
+        default: () => h(Affix, { ref: affix, onChange: change })
+      })
+    }, { attachTo: document.body });
+    await nextTick();
+    expect(change).toHaveBeenCalledWith(true);
+    change.mockClear();
+    const pending = affix.value!.updateRoot();
+    wrapper.unmount();
+    await pending;
+    expect(change).not.toHaveBeenCalled();
   });
 
   test('offset 属性对 top/bottom 均生效', async () => {
