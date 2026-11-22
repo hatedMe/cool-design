@@ -14,6 +14,7 @@
 | direction   | 排列方向：`horizontal` / `vertical`                      | `string`                           | `horizontal` |
 | alignment   | 对齐：`normal` / `start` / `end` / `center` / `baseline` / `stretch` | `string`                   | `center`     |
 | align       | 兼容别名，`alignment` 优先                               | `string`                           | —            |
+| prefix-cls  | 子项包装类名前缀                                         | `string`                           | —            |
 | wrap        | 是否允许换行                                             | `boolean`                          | `false`      |
 | fill        | 子项是否撑满容器（自动换行）                             | `boolean`                          | `false`      |
 | fillRatio   | `fill` 时每个子项的最小宽度百分比                        | `number`                           | `100`        |
@@ -25,7 +26,11 @@
 
 | 名称    | 说明                                     |
 | ------- | ---------------------------------------- |
-| default | 排列的元素，每一项包装在 `i-space__item` 中 |
+| default | 要排列的内容。每个顶层子项占一个包装元素，顶层 Fragment 中的元素共用一个包装元素。 |
+
+### 事件与实例方法
+
+Space 无专用事件或公开实例方法。
 
 ## 使用说明
 
@@ -35,4 +40,6 @@
 - `wrap`：默认 `false`，需要换行的布局请显式传 `wrap`。
 - `fill`：开启后子项按 `fillRatio` 撑满容器并自动换行。
 
-未指定 `size` 时依次回退 ConfigProvider 的全局尺寸，最终回退 `small`。默认插槽中的每个子项都会包装在 `.i-space__item` 元素中；自定义子项选择器请改用该类名。
+未指定 `size` 时继承 ConfigProvider 的全局尺寸，组件在全局尺寸也为空时回退 `small`。
+
+通过 `prefix-cls="toolbar"` 将子项包装类名设为 `toolbar__item`，便于编写子项样式。省略前缀或传空字符串时使用 `i-space__item`。根容器使用 `i-space` 和相应方向类，文本分隔符使用 `i-space__spacer`。

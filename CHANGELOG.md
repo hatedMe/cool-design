@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Space 支持以 `prefix-cls` 自定义子项包装类名，省略该属性或传空字符串时使用 `i-space__item`。
+
 - Text 公开只读响应式 `isTruncated`，文本实际截断时自动设置原生 `title`。依赖旧版悬停行为的页面可用 `title=""` 关闭自动标题，也可直接设置自定义标题。
 
 - Affix 默认跟随最近的纵向滚动祖先，`target` 现在约束固定内容的可见边界。依赖旧容器边缘阈值的页面可用 `offset` 设置视口偏移，`target-container` 仍可指定滚动宿主。新增固定时的 `teleported` 和 `append-to`，内容尺寸改变后可等待 `updateRoot()` 重新测量。

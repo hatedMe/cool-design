@@ -4,7 +4,7 @@ import { Button, Space } from '../../index';
 
 <template>
   <Space direction="vertical" :size="24" align="stretch">
-    <Space :size="12">
+    <Space :size="12" prefix-cls="toolbar">
       <Button type="primary">新增用户</Button>
       <Button>导出数据</Button>
       <Button>刷新</Button>
@@ -15,3 +15,9 @@ import { Button, Space } from '../../index';
     </Space>
   </Space>
 </template>
+
+<style scoped>
+:deep(.toolbar__item) {
+  padding: 2px;
+}
+</style>

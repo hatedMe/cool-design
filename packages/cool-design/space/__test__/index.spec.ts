@@ -1,8 +1,41 @@
 import { mount } from '@vue/test-utils';
-import { h } from 'vue';
+import { Fragment, h } from 'vue';
 import { expect, test } from 'vitest';
 import Space from '..';
 import ConfigProvider from '../../config-provider';
+
+test('prefixCls 更新实际子项类名，保留 Fragment、嵌套 Space 和分隔符', async () => {
+  const wrapper = mount(Space, {
+    props: { prefixCls: 'toolbar', spacer: '|' },
+    attrs: { class: 'custom-root' },
+    slots: {
+      default: () => [
+        h(Fragment, [h('button', '一'), h('button', '二')]),
+        h(Space, {}, () => h('span', '三'))
+      ]
+    }
+  });
+  const root = wrapper.element;
+  const firstButton = wrapper.get('button').element;
+  expect(wrapper.classes()).toEqual(['i-space', 'i-space--horizontal', 'custom-root']);
+  expect(Array.from(root.children, (child) => child.className)).toEqual([
+    'toolbar__item',
+    'i-space__spacer',
+    'toolbar__item'
+  ]);
+  expect(wrapper.attributes('prefixcls')).toBeUndefined();
+  expect(wrapper.findAll('.toolbar__item')[0].findAll('button')).toHaveLength(2);
+  expect(wrapper.get('.toolbar__item .i-space__item').text()).toBe('三');
+
+  await wrapper.setProps({ prefixCls: 'actions' });
+  expect(wrapper.findAll('.actions__item')).toHaveLength(2);
+  expect(wrapper.find('.toolbar__item').exists()).toBe(false);
+  expect(wrapper.get('button').element).toBe(firstButton);
+
+  await wrapper.setProps({ prefixCls: '' });
+  expect(wrapper.findAll('.i-space__item')).toHaveLength(3);
+  expect(wrapper.get('button').element).toBe(firstButton);
+});
 
 test('内置尺寸（8/12/16px），继承配置尺寸', () => {
   const w = mount(ConfigProvider, {

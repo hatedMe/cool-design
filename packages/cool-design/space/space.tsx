@@ -11,6 +11,7 @@ export default defineComponent({
     alignment: String as PropType<SpaceAlignment>,
     /** 兼容别名（项目早期属性名） */
     align: String as PropType<SpaceAlignment>,
+    prefixCls: String,
     wrap: { type: Boolean, default: false },
     fill: Boolean,
     fillRatio: { type: Number, default: 100 },
@@ -39,6 +40,7 @@ export default defineComponent({
         }
       }
       const children = (slots.default?.() ?? []).filter((child) => child.type !== Comment);
+      const itemClass = `${props.prefixCls || 'i-space'}__item`;
       const itemStyle = props.fill ? { flexGrow: 1, minWidth: `${props.fillRatio}%` } : undefined;
       const rendered: unknown[] = [];
       children.forEach((child, index) => {
@@ -49,7 +51,7 @@ export default defineComponent({
               : h('span', { class: 'i-space__spacer' }, String(props.spacer))
           );
         }
-        rendered.push(h('div', { class: 'i-space__item', style: itemStyle }, [child]));
+        rendered.push(h('div', { class: itemClass, style: itemStyle }, [child]));
       });
       return (
         <div
