@@ -32,6 +32,7 @@ export default defineConfig({
         'packages/cool-design/calendar/index': 'packages/cool-design/calendar/index.ts',
         'packages/cool-design/time-picker/index': 'packages/cool-design/time-picker/index.ts',
         'packages/cool-design/date-time-picker/index': 'packages/cool-design/date-time-picker/index.ts',
+        'packages/cool-design/avatar-group/index': 'packages/cool-design/avatar-group/index.ts',
         // 以下入口未被主入口引用图覆盖，单独注册以保证子路径可用。
         'packages/cool-design/checkbox-button/index': 'packages/cool-design/checkbox-button/index.ts',
         'packages/cool-design/table-v2/index': 'packages/cool-design/table-v2/index.ts'

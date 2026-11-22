@@ -35,7 +35,7 @@
 | src-set | 响应式图片地址 | `string` | — |
 | alt | 图片替代文本 | `string` | `''` |
 | shape | 形状：`circle` / `square` | `string` | `circle` |
-| size | 尺寸：`large` / `default` / `medium` / `small` / 数字（px），`medium` 为兼容别名 | `string` / `number` | `default` |
+| size | 尺寸，数字单位为像素，`medium` 为兼容别名 | `'' \| 'large' \| 'default' \| 'medium' \| 'small'` / `number` | `default` |
 | fit | 图片适配方式：`fill` / `contain` / `cover` / `none` / `scale-down` | `string` | `cover` |
 | icon | 图标类名或图标组件 | `string` / `Component` | — |
 
@@ -54,6 +54,9 @@
 
 ### 使用说明
 
+- Avatar 位于 AvatarGroup 中时，未设置的 `size` 和 `shape` 继承组内配置。单独使用时默认为 `default` 和 `circle`。
+- 显式传入 `size=""` 会使用 32px 的默认尺寸，并覆盖组尺寸。依赖旧版空字符串渲染为 50px 的页面可改用 `:size="50"`。
+- `Avatar.AvatarGroup` 指向同一个头像组组件。`app.use(Avatar)` 会同时注册 AvatarGroup。
 - 图片地址变化后自动清除失败状态并重新加载。
 - 失败时优先显示 `fallback` 插槽，其次显示 `icon`，最后显示默认插槽。
 - 装饰性头像可省略 `alt`，表达含义的头像请提供 `alt`。

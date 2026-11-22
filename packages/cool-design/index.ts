@@ -49,6 +49,7 @@ import InputOtp from './input-otp';
 import SelectV2 from './select-v2';
 import TreeV2 from './tree-v2';
 import Avatar from './avatar';
+import AvatarGroup from './avatar-group';
 import Badge from './badge';
 import Radio from './radio';
 import RadioGroup from './radio-group';
@@ -190,6 +191,7 @@ export {
   SelectV2,
   TreeV2,
   Avatar,
+  AvatarGroup,
   Badge,
   Radio,
   RadioGroup,
@@ -498,6 +500,7 @@ export {
   SelectV2 as ElSelectV2,
   TreeV2 as ElTreeV2,
   Avatar as ElAvatar,
+  AvatarGroup as ElAvatarGroup,
   Badge as ElBadge,
   Radio as ElRadio,
   RadioGroup as ElRadioGroup,
@@ -620,6 +623,7 @@ declare module 'vue' {
     ElSelectV2: typeof import('./index')['ElSelectV2'];
     ElTreeV2: typeof import('./index')['ElTreeV2'];
     ElAvatar: typeof import('./index')['ElAvatar'];
+    ElAvatarGroup: typeof import('./index')['ElAvatarGroup'];
     ElBadge: typeof import('./index')['ElBadge'];
     ElRadio: typeof import('./index')['ElRadio'];
     ElRadioGroup: typeof import('./index')['ElRadioGroup'];
@@ -728,6 +732,7 @@ declare module 'vue' {
     ISelectV2: typeof SelectV2;
     ITreeV2: typeof TreeV2;
     IAvatar: typeof Avatar;
+    IAvatarGroup: typeof AvatarGroup;
     IBadge: typeof Badge;
     IRadio: typeof Radio;
     IRadioGroup: typeof RadioGroup;
@@ -857,5 +862,6 @@ export type { UploadInstance } from './upload';
 export type { TableInstance } from './table';
 
 export type { AutoResizerSize } from './auto-resizer';
+export type { AvatarGroupInstance, AvatarGroupProps, AvatarGroupSlots } from './avatar-group';
 
 export type { ColorPickerPanelInstance } from './color-picker-panel';

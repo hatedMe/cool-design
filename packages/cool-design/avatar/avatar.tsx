@@ -1,49 +1,57 @@
-import { PropType, computed, defineComponent, h, ref, watch, type Component } from 'vue';
+import {
+  PropType, computed, defineComponent, h, inject, ref, watch, type Component, type ComponentOptionsMixin,
+  type DefineComponent
+} from 'vue';
 import { createNamespace } from '../../../src/utils/create';
 import Icon from '../icon';
+import { avatarGroupKey } from './group-context';
 const [name, bem] = createNamespace('avatar');
 
 export type AvatarShape = 'circle' | 'square';
-export type AvatarSize = 'large' | 'default' | 'medium' | 'small' | number;
+export type AvatarSize = '' | 'large' | 'default' | 'medium' | 'small' | number;
 export type AvatarFit = 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
 
-const isNumber = (value: unknown): boolean => typeof value === 'number';
-
-export default defineComponent({
-  name,
-  props: {
-    /** 兼容别名，等价于 `src` */
-    url: {
-      type: String,
-      default: ''
-    },
-    src: {
-      type: String,
-      default: ''
-    },
-    srcSet: String,
-    alt: { type: String, default: '' },
-    /**
-     * @description 形状
-     * - `circle` 圆形
-     * - `square` 方形
-     */
-    shape: {
-      type: String as PropType<AvatarShape>,
-      default: 'circle'
-    },
-    size: {
-      type: [String, Number] as PropType<AvatarSize>,
-      default: 'default'
-    },
-    icon: [String, Object, Function] as PropType<string | Component>,
-    fit: {
-      type: String as PropType<AvatarFit>,
-      default: 'cover'
-    }
+const avatarProps = {
+  /** 兼容别名，等价于 `src` */
+  url: {
+    type: String,
+    default: ''
   },
+  src: {
+    type: String,
+    default: ''
+  },
+  srcSet: String,
+  alt: { type: String, default: '' },
+  /**
+   * @description 形状
+   * - `circle` 圆形
+   * - `square` 方形
+   */
+  shape: String as PropType<AvatarShape>,
+  size: [String, Number] as PropType<AvatarSize>,
+  icon: [String, Object, Function] as PropType<string | Component>,
+  fit: {
+    type: String as PropType<AvatarFit>,
+    default: 'cover'
+  }
+};
+
+// 公开声明使用 Vue 3.2 和 3.4 共有的构造泛型。
+type EmptyOptions = Record<never, never>;
+type AvatarComponent = DefineComponent<typeof avatarProps, EmptyOptions, EmptyOptions, EmptyOptions, EmptyOptions,
+  ComponentOptionsMixin, ComponentOptionsMixin, 'error'[], 'error'>;
+const Avatar: AvatarComponent = defineComponent({
+  name,
+  props: avatarProps,
   emits: ['error'],
   setup(props, { slots, emit }) {
+    const group = inject(avatarGroupKey, undefined);
+    const size = computed(() => {
+      const value = props.size ?? group?.size ?? '';
+      return value === '' ? 'default' : value;
+    });
+    const shape = computed(() => props.shape ?? group?.shape ?? 'circle');
     const imageError = ref(false);
     const src = computed(() => props.src || props.url);
 
@@ -52,10 +60,10 @@ export default defineComponent({
     });
 
     const style = computed(() => {
-      if (isNumber(props.size)) {
+      if (typeof size.value === 'number') {
         return {
-          width: `${props.size}px`,
-          height: `${props.size}px`
+          width: `${size.value}px`,
+          height: `${size.value}px`
         };
       }
       return undefined;
@@ -63,8 +71,8 @@ export default defineComponent({
 
     const classLists = computed(() =>
       bem({
-        [props.shape]: true,
-        [props.size]: !isNumber(props.size)
+        [shape.value]: true,
+        [size.value]: typeof size.value === 'string'
       })
     );
 
@@ -99,3 +107,5 @@ export default defineComponent({
     };
   }
 });
+
+export default Avatar;

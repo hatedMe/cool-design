@@ -47,6 +47,7 @@ const aliases = [
   'ElSelectV2',
   'ElTreeV2',
   'ElAvatar',
+  'ElAvatarGroup',
   'ElBadge',
   'ElRadio',
   'ElRadioGroup',

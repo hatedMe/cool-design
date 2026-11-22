@@ -128,6 +128,9 @@ export const pages: Page[] = [
     ['fallback', '回退行为', '图片加载失败后显示 fallback 内容并触发 error 事件。'],
     ['fit', '适应容器', '对照不同 fit 值下图片在头像容器中的展示方式。']
   ]),
+  component('avatar-group', 'AvatarGroup 头像组', '数据展示', [
+    ['basic', '折叠头像', '头像继承组的大小与形状，超出数量上限时可展开提示查看。']
+  ]),
   component('badge', 'Badge 徽标', '数据展示', [
     ['basic', '数量与状态', '展示数量上限、状态颜色和圆点徽标。'],
     ['options', '隐藏、零值与偏移', '控制徽标隐藏、零值显示、自定义颜色和位置。'],
@@ -894,7 +897,7 @@ const componentNavigation: { title: string; ids: string[] }[] = [
   {
     title: '数据展示',
     ids: [
-      'avatar', 'badge', 'calendar', 'card', 'carousel', 'collapse', 'descriptions', 'empty', 'image',
+      'avatar', 'avatar-group', 'badge', 'calendar', 'card', 'carousel', 'collapse', 'descriptions', 'empty', 'image',
       'pagination', 'progress', 'result', 'skeleton', 'table', 'table-v2', 'auto-resizer', 'tag', 'check-tag', 'timeline', 'tour',
       'tree', 'tree-v2', 'statistic', 'segmented'
     ]
