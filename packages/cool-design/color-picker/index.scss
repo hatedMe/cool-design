@@ -1,32 +1,33 @@
-// 从已删除的聚合样式目录迁移而来，保持选择器与规则不变。
-.i-color-picker {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-color-picker {
   position: relative;
   display: inline-flex;
 }
-.i-color-picker__trigger {
+.#{config.$namespace}-color-picker__trigger {
   width: 32px;
   height: 32px;
-  border: 1px solid var(--i-border-color, #dcdfe6);
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
   border-radius: 4px;
   cursor: pointer;
 }
-.i-color-picker--small .i-color-picker__trigger {
+.#{config.$namespace}-color-picker--small .#{config.$namespace}-color-picker__trigger {
   width: 24px;
   height: 24px;
 }
-.i-color-picker--large .i-color-picker__trigger {
+.#{config.$namespace}-color-picker--large .#{config.$namespace}-color-picker__trigger {
   width: 40px;
   height: 40px;
 }
-.i-color-picker__trigger:focus-visible {
-  outline: 2px solid var(--i-primary);
+.#{config.$namespace}-color-picker__trigger:focus-visible {
+  outline: 2px solid var(--#{config.$namespace}-primary);
   outline-offset: 1px;
 }
-.i-color-picker__trigger:disabled {
+.#{config.$namespace}-color-picker__trigger:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
-.i-color-picker__panel {
+.#{config.$namespace}-color-picker__panel {
   position: absolute;
   z-index: 10;
   top: calc(100% + 6px);
@@ -35,27 +36,27 @@
   gap: 8px;
   min-width: 160px;
   padding: 12px;
-  background: var(--i-bg, #fff);
-  border: 1px solid var(--i-border-color, #ebeef5);
+  background: var(--#{config.$namespace}-bg, #fff);
+  border: 1px solid var(--#{config.$namespace}-border-color, #ebeef5);
   border-radius: 4px;
   box-shadow: 0 4px 12px #0001;
 }
-.i-color-picker__panel input[type='range'] {
+.#{config.$namespace}-color-picker__panel input[type='range'] {
   width: 100%;
 }
-.i-color-picker__presets {
+.#{config.$namespace}-color-picker__presets {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
-.i-color-picker__presets button {
+.#{config.$namespace}-color-picker__presets button {
   width: 20px;
   height: 20px;
-  border: 1px solid var(--i-border-color, #ddd);
+  border: 1px solid var(--#{config.$namespace}-border-color, #ddd);
   border-radius: 2px;
   cursor: pointer;
 }
-.i-color-picker__presets button:disabled {
+.#{config.$namespace}-color-picker__presets button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }

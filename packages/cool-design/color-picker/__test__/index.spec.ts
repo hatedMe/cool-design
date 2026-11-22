@@ -309,3 +309,44 @@ test('ignores invalid text and accepts repeated text after a native color edit',
   await wrapper.get('.i-color-picker__confirm').trigger('click');
   expect(wrapper.emitted('update:modelValue')).toEqual([['#00ff00']]);
 });
+
+test('外置浮层应用最近 Provider 的主题，切换前缀后原编辑输入仍可提交', async () => {
+  const target = document.createElement('div');
+  document.body.appendChild(target);
+  const state = reactive({ namespace: 'acme' });
+  const wrapper = mount(CoolDesign.ConfigProvider, {
+    props: { theme: 'light', size: 'large' },
+    slots: { default: () => h(CoolDesign.ConfigProvider, {
+      namespace: state.namespace,
+      theme: 'dark',
+      size: 'small',
+      themeVars: { '--probe': 'nested' }
+    }, () => h(ColorPicker, {
+      appendTo: target,
+      modelValue: '#ff0000',
+      popperClass: 'custom-panel',
+      popperStyle: { colorScheme: 'light' }
+    })) }
+  });
+  try {
+    const picker = wrapper.getComponent(ColorPicker);
+    await picker.get('button').trigger('click');
+    const dialog = new DOMWrapper(target).get<HTMLElement>('[role="dialog"]');
+    const input = dialog.get<HTMLInputElement>('input[aria-label="颜色文本"]');
+    expect(picker.classes()).toContain('acme-color-picker--small');
+    expect(dialog.classes()).toEqual(expect.arrayContaining(['acme-color-picker__panel', 'acme-theme-scope', 'custom-panel']));
+    expect(dialog.attributes('data-theme')).toBe('dark');
+    expect(dialog.element.style.getPropertyValue('--probe')).toBe('nested');
+    expect(dialog.element.style.colorScheme).toBe('light');
+    state.namespace = 'i';
+    await flushPromises();
+    expect(dialog.classes()).toContain('i-color-picker__panel');
+    expect(dialog.get('input[aria-label="颜色文本"]').element).toBe(input.element);
+    await input.setValue('#00ff00');
+    await dialog.get('.i-color-picker__confirm').trigger('click');
+    expect(picker.emitted('update:modelValue')).toEqual([['#00ff00']]);
+  } finally {
+    wrapper.unmount();
+    target.remove();
+  }
+});

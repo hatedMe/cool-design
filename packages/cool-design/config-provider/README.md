@@ -93,6 +93,7 @@ import { ConfigProvider, en } from 'cool-design/config-provider';
 - Select（含 SelectOption、SelectOptionGroup）、SelectV2、Autocomplete、Mention、InputTag 和 TimeSelect。
 - Cascader 和 CascaderPanel，包含级联选择器的内嵌面板、标签和折叠标签提示。
 - DatePicker、DatePickerPanel、TimePicker、DateTimePicker 和 Calendar，包含日期网格、时间列与独立日期面板。
+- ColorPicker 和 ColorPickerPanel，包含独立面板、预设色和外置浮层。
 - Tree、TreeSelect 和 TreeV2。
 
 从源码构建时，先配置 Sass，再加载样式。下例路径相对于仓库根目录。

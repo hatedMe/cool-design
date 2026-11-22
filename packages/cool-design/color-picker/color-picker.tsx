@@ -1,8 +1,10 @@
 import { computed, defineComponent, getCurrentInstance, inject, nextTick, ref, watch, Teleport, type PropType, type CSSProperties } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
+import { useNamespace } from '../../hooks/use-namespace';
 import { useConfig, type Size } from '../config-provider/context';
 import { formKey, useField } from '../form/context';
-import { useFloating } from '../../../src/utils/use-floating';
+import { createBEM } from '../../../src/utils/create';
+import { useFloating, useFloatingTheme } from '../../../src/utils/use-floating';
 
 import ColorPickerPanel from '../color-picker-panel';
 import { parseColor, formatColor, type ColorFormat } from './color';
@@ -33,6 +35,8 @@ export default defineComponent({
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
+    const ns = useNamespace('color-picker');
+    const bem = createBEM(ns.b);
     const size = computed(() => props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size);
     const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
     const { getValueOnClear, isEmptyValue } = useEmptyValues({
@@ -60,6 +64,7 @@ export default defineComponent({
       appendTo: () => props.appendTo,
       close: () => close()
     });
+    const panelTheme = useFloatingTheme(position.target, () => props.teleported);
     const reset = () => {
       currentColor.value = modelColor() || '#409eff';
       alpha.value = parseColor(currentColor.value).alpha * 100;
@@ -108,14 +113,14 @@ export default defineComponent({
     return () => (
       <span
         {...rootAttrs}
-        class={['i-color-picker', `i-color-picker--${size.value}`, { 'is-disabled': isDisabled() }]}
+        class={[bem(), ns.m(size.value), ns.is('disabled', isDisabled())]}
         aria-disabled={isDisabled() ? 'true' : undefined}
         onKeydown={onKeydown}
       >
         <button
           ref={trigger}
           type='button'
-          class='i-color-picker__trigger'
+          class={bem('trigger')}
           id={(attrs.id as string) || field?.id}
           disabled={isDisabled()}
           tabindex={props.tabindex}
@@ -131,15 +136,16 @@ export default defineComponent({
         </button>
         {(open.value || (shown.value && props.persistent)) && (
           <Teleport to={position.target.value} disabled={!props.teleported}>
-          <div ref={panel} class={['i-color-picker__panel', props.popperClass]}
-            style={[position.style.value, props.popperStyle, !open.value ? { display: 'none' } : undefined]}
+          <div ref={panel} class={[bem('panel'), panelTheme.value.scopeClass, props.popperClass]}
+            data-theme={panelTheme.value.theme}
+            style={[panelTheme.value.style, position.style.value, props.popperStyle, !open.value ? { display: 'none' } : undefined]}
             aria-hidden={!open.value || undefined} role='dialog'>
             <ColorPickerPanel popupEditor modelValue={currentColor.value} border={false} disabled={isDisabled()}
               showAlpha={props.showAlpha} colorFormat={props.colorFormat} predefine={props.predefine}
               validateEvent={false} onUpdate:modelValue={update} />
-            <div class='i-color-picker__actions'>
-              {props.clearable && <button type='button' class='i-color-picker__clear' onClick={() => commit(null)}>清空</button>}
-              <button type='button' class='i-color-picker__confirm' onClick={() => commit(currentColor.value)}>确定</button>
+            <div class={bem('actions')}>
+              {props.clearable && <button type='button' class={bem('clear')} onClick={() => commit(null)}>清空</button>}
+              <button type='button' class={bem('confirm')} onClick={() => commit(currentColor.value)}>确定</button>
             </div>
           </div>
           </Teleport>

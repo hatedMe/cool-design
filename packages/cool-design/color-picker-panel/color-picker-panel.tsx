@@ -1,6 +1,8 @@
 import Input, { type InputInstance } from '../input';
 import { TinyColor } from '@ctrl/tinycolor';
 import { computed, defineComponent, inject, nextTick, ref, watch, type CSSProperties, type PropType, type ExtractPropTypes } from 'vue';
+import { createBEM } from '../../../src/utils/create';
+import { useNamespace } from '../../hooks/use-namespace';
 import { formKey, useField } from '../form/context';
 import { nativeColor, type ColorFormat } from '../color-picker/color';
 
@@ -25,6 +27,9 @@ export default defineComponent({
   props: colorPickerPanelProps,
   emits: colorPickerPanelEmits,
   setup(props, { emit, slots, expose }) {
+    const ns = useNamespace('color-picker-editor');
+    const bem = createBEM(ns.b);
+    const pickerNs = useNamespace('color-picker');
     const field = useField();
     const form = inject(formKey, undefined);
     const disabled = computed(() => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.()));
@@ -105,10 +110,10 @@ export default defineComponent({
     };
     expose({ color, inputRef, update });
     return () => (
-      <section class={['i-color-picker-editor', props.border && 'has-border']} onFocusout={(event: FocusEvent) => {
+      <section class={[bem(), props.border && 'has-border']} onFocusout={(event: FocusEvent) => {
         if (props.validateEvent && !(event.currentTarget as HTMLElement).contains(event.relatedTarget as Node)) field?.validate('blur');
       }}>
-        <div class='i-color-picker-editor__plane' role='slider' tabindex={disabled.value ? -1 : 0}
+        <div class={bem('plane')} role='slider' tabindex={disabled.value ? -1 : 0}
           aria-label='饱和度与亮度' aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(saturation.value)}
           aria-valuetext={`饱和度 ${Math.round(saturation.value)}%，亮度 ${Math.round(brightness.value)}%`}
           onKeydown={(event: KeyboardEvent) => {
@@ -130,7 +135,7 @@ export default defineComponent({
           <span style={{ left: `${saturation.value}%`, top: `${100 - brightness.value}%` }} />
         </div>
         <input type='range' min='0' max='360' value={hue.value} aria-label='色相' disabled={disabled.value}
-          class={['i-color-picker-editor__hue', props.hueSliderClass]} style={props.hueSliderStyle}
+          class={[bem('hue'), props.hueSliderClass]} style={props.hueSliderStyle}
           onInput={(event: Event) => { hue.value = Number((event.target as HTMLInputElement).value); changeChannels(); }} />
         <input type='color' value={nativeColor(text.value || '#409eff')} aria-label='颜色' disabled={disabled.value}
           onInput={(event: Event) => {
@@ -140,7 +145,7 @@ export default defineComponent({
           }} />
         {props.showAlpha && <input type='range' min='0' max='100' value={alpha.value * 100} aria-label='透明度' disabled={disabled.value}
           onInput={(event: Event) => { alpha.value = Number((event.target as HTMLInputElement).value) / 100; changeChannels(); }} />}
-        <div class='i-color-picker-editor__presets i-color-picker__presets'>
+        <div class={[bem('presets'), pickerNs.e('presets')]}>
           {props.predefine.map((value) => <button type='button' key={value} aria-label={value}
             disabled={disabled.value} style={{ backgroundColor: value }} onClick={() => choose(value)} />)}
         </div>
