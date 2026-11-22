@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, h, inject, markRaw, nextTick, onMounted, ref, toRaw, watch, type Component, type PropType } from 'vue';
 import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
@@ -48,6 +49,8 @@ export default defineComponent({
     'compositionend'
   ],
   setup(props, { attrs, emit, expose, slots }) {
+    const ns = useNamespace('input');
+    const controlNs = useNamespace('control');
     const field = useField();
     const form = inject(formKey, undefined);
     const disabled = computed(() => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.()));
@@ -79,7 +82,7 @@ export default defineComponent({
       return Number.isFinite(numeric) ? numeric : undefined;
     };
     const renderIcon = (icon: string | Component | undefined, fallback?: string) =>
-      typeof icon === 'string' ? <i class={['i-input__icon', icon]} aria-hidden='true' /> : icon ? h(markRaw(toRaw(icon))) : fallback;
+      typeof icon === 'string' ? <i class={[ns.e('icon'), icon]} aria-hidden='true' /> : icon ? h(markRaw(toRaw(icon))) : fallback;
     const resizeTextarea = () => {
       if (props.type !== 'textarea' || !props.autosize || !input.value || !(input.value instanceof HTMLTextAreaElement))
         return;
@@ -259,14 +262,14 @@ export default defineComponent({
         </button>
       );
       // 设置了 maxlength 才显示字数统计
-      const countNode = props.showWordLimit && maxLength !== undefined && <span class='i-input__count'>{count}</span>;
+      const countNode = props.showWordLimit && maxLength !== undefined && <span class={ns.e('count')}>{count}</span>;
       const loadingNode = props.loading && (
-        <span class='i-input__loading' aria-hidden='true'>
-          {props.loadingIcon ? renderIcon(props.loadingIcon) : <span class='i-input__loading-spinner' />}
+        <span class={ns.e('loading')} aria-hidden='true'>
+          {props.loadingIcon ? renderIcon(props.loadingIcon) : <span class={ns.e('loading-spinner')} />}
         </span>
       );
       const wrapper = (
-        <span class={['i-input', `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`, isTextarea && 'is-textarea']}>
+        <span class={[ns.b(), controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size), isTextarea && 'is-textarea']}>
           {slots.prefix?.() ?? renderIcon(props.prefixIcon)}
           {control}
           {props.wordLimitPosition === 'inside' && countNode}
@@ -285,17 +288,17 @@ export default defineComponent({
         </span>
       );
       return props.wordLimitPosition === 'outside' && countNode ? (
-        <span class={['i-input__outside', outerClass]} style={outerStyle as string}>
-          {slots.prepend?.() && <span class='i-input__prepend'>{slots.prepend()}</span>}
+        <span class={[ns.e('outside'), outerClass]} style={outerStyle as string}>
+          {slots.prepend?.() && <span class={ns.e('prepend')}>{slots.prepend()}</span>}
           {wrapper}
-          {slots.append?.() && <span class='i-input__append'>{slots.append()}</span>}
+          {slots.append?.() && <span class={ns.e('append')}>{slots.append()}</span>}
           {countNode}
         </span>
       ) : (
-        <span class={['i-input__outside', outerClass]} style={outerStyle as string}>
-          {slots.prepend?.() && <span class='i-input__prepend'>{slots.prepend()}</span>}
+        <span class={[ns.e('outside'), outerClass]} style={outerStyle as string}>
+          {slots.prepend?.() && <span class={ns.e('prepend')}>{slots.prepend()}</span>}
           {wrapper}
-          {slots.append?.() && <span class='i-input__append'>{slots.append()}</span>}
+          {slots.append?.() && <span class={ns.e('append')}>{slots.append()}</span>}
         </span>
       );
     };

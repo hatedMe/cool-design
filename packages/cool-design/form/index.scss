@@ -1,3 +1,5 @@
-.i-form {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-form {
   margin: 0;
 }

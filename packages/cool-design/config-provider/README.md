@@ -89,6 +89,7 @@ import { ConfigProvider, en } from 'cool-design/config-provider';
 - ConfigProvider、Button、ButtonGroup、Icon、Tooltip、Popover、Popconfirm 和 `v-popover`。
 - Container、Header、Aside、Main、Footer、Row、Col、Divider、Space、Text 和 Link。
 - Badge、Tag、CheckTag、Avatar、AvatarGroup、Card、Descriptions、DescriptionsItem、Empty、Result、Statistic、Countdown、Skeleton 和 SkeletonItem。
+- Form、FormItem、Input、InputNumber、InputOtp、Checkbox、CheckboxButton、CheckboxGroup、Radio、RadioButton、RadioGroup、Switch、Slider、Rate 和 Segmented。
 
 从源码构建时，先配置 Sass，再加载样式。下例路径相对于仓库根目录。
 

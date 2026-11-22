@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, inject, nextTick, provide, type InjectionKey, type PropType } from 'vue';
 import Radio, { type RadioValue } from './radio';
 import RadioButton from '../radio-button/radio-button';
@@ -15,6 +16,9 @@ export interface RadioGroupContext {
   name?: string;
   disabled: boolean;
   size?: string;
+  namespace: string;
+  fill?: string;
+  textColor?: string;
   update: (value: RadioValue) => void;
   register: (item: RadioItem) => void;
   unregister: (uid: number) => void;
@@ -38,6 +42,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { emit, slots }) {
+    const ns = useNamespace('radio-group');
     const field = useField();
     const form = inject(formKey, undefined);
     const items: RadioItem[] = [];
@@ -94,6 +99,15 @@ export default defineComponent({
       get size() {
         return props.size;
       },
+      get namespace() {
+        return ns.namespace.value;
+      },
+      get fill() {
+        return props.fill;
+      },
+      get textColor() {
+        return props.textColor;
+      },
       update,
       register,
       unregister,
@@ -101,12 +115,12 @@ export default defineComponent({
     });
     return () => (
       <div
-        class='i-radio-group'
+        class={ns.b()}
         role='radiogroup'
         onKeydown={onKeydown}
         style={{
-          '--i-radio-button-checked-bg-color': props.fill,
-          '--i-radio-button-checked-text-color': props.textColor
+          [ns.cssVarName('radio-button-checked-bg-color')]: props.fill,
+          [ns.cssVarName('radio-button-checked-text-color')]: props.textColor
         }}>
         {slots.default ? slots.default() : props.options?.map((option, index) => {
           const { value = 'value', label = 'label', disabled = 'disabled' } = props.props ?? {};

@@ -1,6 +1,8 @@
+@use '../style/mixins/config';
+
 @import '../style/base.scss';
 
-.i-input-number {
+.#{config.$namespace}-input-number {
   display: inline-flex;
   align-items: stretch;
   height: 32px;
@@ -45,8 +47,8 @@
     flex-direction: column;
     width: 24px;
 
-    .i-input-number__increase,
-    .i-input-number__decrease {
+    .#{config.$namespace}-input-number__increase,
+    .#{config.$namespace}-input-number__decrease {
       width: 24px;
       height: 16px;
       line-height: 16px;
@@ -65,11 +67,11 @@
     background: transparent;
   }
 
-  &.i-control--large {
+  &.#{config.$namespace}-control--large {
     height: 40px;
   }
 
-  &.i-control--small {
+  &.#{config.$namespace}-control--small {
     height: 24px;
   }
 }

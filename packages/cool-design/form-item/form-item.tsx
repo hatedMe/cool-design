@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import {
   computed,
   defineComponent,
@@ -71,6 +72,7 @@ export default defineComponent({
     size: String as PropType<'small' | 'default' | 'large'>
   },
   setup(props, { slots, expose }) {
+    const ns = useNamespace('form-item');
     const form = inject(formKey);
     const id = nextFieldId();
     const labelId = computed(() => (props.label || slots.label ? `${id}-label` : undefined));
@@ -233,7 +235,7 @@ export default defineComponent({
       const hideAsterisk = !!form?.hideRequiredAsterisk?.();
       const asteriskPosition = form?.requireAsteriskPosition?.() ?? 'left';
       const asterisk = props.required && !hideAsterisk && (
-        <span aria-hidden='true' class='i-form-item__required'>
+        <span aria-hidden='true' class={ns.e('required')}>
           *
         </span>
       );
@@ -243,33 +245,33 @@ export default defineComponent({
         <div
           ref={root}
           class={[
-            'i-form-item',
-            `i-form-item--label-${labelPosition}`,
-            { 'i-form-item--error': !!displayError.value || validateState.value === 'error' },
+            ns.b(),
+            ns.m(`label-${labelPosition}`),
+            { [ns.m('error')]: !!displayError.value || validateState.value === 'error' },
             validateState.value && `is-${validateState.value}`
           ]}
           style={{
-            '--i-form-item-label-width': typeof labelWidth === 'number' ? `${labelWidth}px` : labelWidth
+            [ns.cssVarName('form-item-label-width')]: typeof labelWidth === 'number' ? `${labelWidth}px` : labelWidth
           }}>
           {(props.label || slots.label) && (
-            <label id={labelId.value} class='i-form-item__label' for={id}>
+            <label id={labelId.value} class={ns.e('label')} for={id}>
               {asteriskPosition === 'left' && asterisk}
               {slots.label?.() ?? props.label}
               {asteriskPosition === 'right' && asterisk}
               {form?.labelSuffix?.()}
             </label>
           )}
-          <div class='i-form-item__content'>
+          <div class={ns.e('content')}>
             {slots.default?.()}
             {statusIcon && (displayError.value || validateState.value === 'error' || validateState.value === 'success') && (
               <span
                 aria-hidden='true'
-                class={['i-form-item__status-icon', displayError.value || validateState.value === 'error' ? 'is-error' : 'is-success']}>
+                class={[ns.e('status-icon'), displayError.value || validateState.value === 'error' ? 'is-error' : 'is-success']}>
                 {displayError.value || validateState.value === 'error' ? '✗' : '✓'}
               </span>
             )}
             {displayError.value && props.showMessage && (
-              <div class={['i-form-item__error', inlineMessage && 'is-inline-message']} id={errorId} role='alert'>
+              <div class={[ns.e('error'), inlineMessage && 'is-inline-message']} id={errorId} role='alert'>
                 {slots.error?.({ error: displayError.value }) ?? displayError.value}
               </div>
             )}

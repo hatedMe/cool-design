@@ -1,9 +1,10 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, getCurrentInstance, inject, nextTick, onBeforeUnmount, ref, type PropType } from 'vue';
-import { createNamespace } from '../../../src/utils/create';
+import { createBEM, createNamespace } from '../../../src/utils/create';
 import { useField, formKey } from '../form/context';
 import { useConfig } from '../config-provider/context';
 import { radioGroupKey } from './group';
-const [name, bem] = createNamespace('radio');
+const [name] = createNamespace('radio');
 export type RadioValue = string | number | boolean;
 
 export default defineComponent({
@@ -20,6 +21,8 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, slots }) {
+    const ns = useNamespace('radio');
+    const bem = createBEM(ns.b);
     const field = useField();
     const config = useConfig();
     const form = inject(formKey, undefined);
@@ -46,7 +49,7 @@ export default defineComponent({
       const disabled = isDisabled();
       const size = props.size ?? group?.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size;
       return (
-      <label class={[bem({ 'is-disabled': disabled, 'is-bordered': props.border }), size && size !== 'default' ? `i-radio--${size}` : undefined]}>
+      <label class={[bem({ 'is-disabled': disabled, 'is-bordered': props.border }), size && size !== 'default' ? ns.m(size) : undefined]}>
         <input
           {...attrs}
           id={(attrs.id as string) || field?.id}

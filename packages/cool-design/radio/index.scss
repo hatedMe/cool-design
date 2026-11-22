@@ -1,35 +1,37 @@
-.i-radio {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-radio {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
 }
-.i-radio:not(:last-child) {
+.#{config.$namespace}-radio:not(:last-child) {
   margin-right: 18px;
 }
-.i-radio input {
+.#{config.$namespace}-radio input {
   width: 15px;
   height: 15px;
   margin: 0;
-  accent-color: var(--i-primary, #2463eb);
+  accent-color: var(--#{config.$namespace}-primary, #2463eb);
 }
-.i-radio--is-disabled {
+.#{config.$namespace}-radio--is-disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
-.i-radio--is-bordered {
+.#{config.$namespace}-radio--is-bordered {
   padding: 6px 10px;
-  border: 1px solid var(--i-border, #dce3ed);
-  border-radius: var(--i-radius, 6px);
+  border: 1px solid var(--#{config.$namespace}-border, #dce3ed);
+  border-radius: var(--#{config.$namespace}-radius, 6px);
 }
-.i-radio-group {
+.#{config.$namespace}-radio-group {
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
 }
-.i-radio--small {
+.#{config.$namespace}-radio--small {
   font-size: 12px;
 }
-.i-radio--large {
+.#{config.$namespace}-radio--large {
   font-size: 16px;
 }

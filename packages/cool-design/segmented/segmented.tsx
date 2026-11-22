@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { Comment, Fragment, Text, computed, defineComponent, inject, nextTick, ref, type PropType, type VNode } from 'vue';
 import { useConfig } from '../config-provider/context';
 import { formKey, useField } from '../form/context';
@@ -36,6 +37,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { emit, slots }) {
+    const ns = useNamespace('segmented');
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
@@ -101,10 +103,10 @@ export default defineComponent({
     return () => (
       <div
         class={[
-          'i-segmented',
-          props.block && 'i-segmented--block',
-          size.value && `i-segmented--${size.value}`,
-          props.direction === 'vertical' && 'i-segmented--vertical',
+          ns.b(),
+          props.block && ns.m('block'),
+          size.value && ns.m(size.value),
+          props.direction === 'vertical' && ns.m('vertical'),
           disabled.value && 'is-disabled'
         ]}
         role='radiogroup'
@@ -122,7 +124,7 @@ export default defineComponent({
               role='radio'
               aria-checked={selected}
               tabindex={selected || (props.modelValue === undefined && focusedValue.value === option.value) ? 0 : -1}
-              class={['i-segmented__item', { 'is-selected': selected, 'is-disabled': option.disabled }]}
+              class={[ns.e('item'), { 'is-selected': selected, 'is-disabled': option.disabled }]}
               disabled={disabled.value || option.disabled}
               onClick={() => {
                 focusedValue.value = option.value;

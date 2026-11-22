@@ -1,14 +1,16 @@
-import { defineComponent, getCurrentInstance, inject, onBeforeUnmount, ref, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
+import { defineComponent, getCurrentInstance, inject, normalizeStyle, onBeforeUnmount, ref, type CSSProperties, type PropType, type StyleValue } from 'vue';
 import { useConfig } from '../config-provider/context';
 import { formKey, useField } from '../form/context';
 import { radioGroupKey } from '../radio/group';
 import type { RadioValue } from '../radio/radio';
-import { createNamespace } from '../../../src/utils/create';
+import { createBEM, createNamespace } from '../../../src/utils/create';
 
-const [name, bem] = createNamespace('radio-button');
+const [name] = createNamespace('radio-button');
 
 export default defineComponent({
   name,
+  inheritAttrs: false,
   props: {
     modelValue: [String, Number, Boolean] as PropType<RadioValue>,
     value: { type: [String, Number, Boolean] as PropType<RadioValue>, default: undefined },
@@ -18,7 +20,9 @@ export default defineComponent({
     size: String
   },
   emits: ['update:modelValue', 'change'],
-  setup(props, { emit, slots }) {
+  setup(props, { attrs, emit, slots }) {
+    const ns = useNamespace('radio-button');
+    const bem = createBEM(ns.b);
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
@@ -44,8 +48,26 @@ export default defineComponent({
       const checked = (group?.modelValue ?? props.modelValue) === value;
       const disabled = isDisabled();
       const size = props.size ?? group?.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size;
+      const { class: labelClass, style: labelStyle, ...labelAttrs } = attrs;
+      let style = labelStyle as StyleValue;
+      if (group && group.namespace !== ns.namespace.value && (group.fill || group.textColor)) {
+        const groupColors = [
+          ['radio-button-checked-bg-color', group.fill],
+          ['radio-button-checked-text-color', group.textColor]
+        ] as const;
+        const styles = normalizeStyle([style]) as CSSProperties;
+        for (const [name, color] of groupColors) {
+          const key = ns.cssVarName(name) as `--${string}`;
+          if (color && (styles[key] == null || styles[key] === '')) {
+            styles[key] = `var(--${group.namespace}-${name})`;
+          }
+        }
+        style = styles;
+      }
       return (
-        <label class={[bem({ 'is-checked': checked, 'is-disabled': disabled }), size ? `i-radio-button--${size}` : undefined]}>
+        <label {...labelAttrs}
+          class={[bem({ 'is-checked': checked, 'is-disabled': disabled }), size ? ns.m(size) : undefined, labelClass]}
+          style={style}>
           <input
             ref={input}
             type='radio'

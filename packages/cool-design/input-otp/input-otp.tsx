@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, inject, nextTick, ref, watch, type PropType, type VNode } from 'vue';
 import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
@@ -24,6 +25,8 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change', 'finish', 'focus', 'blur'],
   setup(props, { emit, slots, expose }) {
+    const ns = useNamespace('input-otp');
+    const controlNs = useNamespace('control');
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
@@ -156,9 +159,9 @@ export default defineComponent({
       <div
         ref={root}
         class={[
-          'i-input-otp',
-          `i-input-otp--${props.type}`,
-          `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`,
+          ns.b(),
+          ns.m(props.type),
+          controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size),
           { 'is-disabled': isDisabled() }
         ]}
         id={props.id ?? field?.id}
@@ -167,7 +170,7 @@ export default defineComponent({
         aria-describedby={field?.invalid() ? field.errorId : undefined}>
         {chars.value.map((char, index) => [
           index > 0 && (
-            <span class='i-input-otp__separator' key={`separator-${index}`} aria-hidden='true'>
+            <span class={ns.e('separator')} key={`separator-${index}`} aria-hidden='true'>
               {slots.separator?.() ??
                 (typeof props.separator === 'function'
                   ? props.separator(index - 1)
@@ -180,7 +183,7 @@ export default defineComponent({
               if (element) inputs.value[index] = element as HTMLInputElement;
               else delete inputs.value[index];
             }}
-            class='i-input-otp__field'
+            class={ns.e('field')}
             type={props.mask ? 'password' : 'text'}
             value={displayChar(char)}
 

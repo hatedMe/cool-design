@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, inject, nextTick, type PropType } from 'vue';
 import { formKey, useField } from '../form/context';
 import { useConfig } from '../config-provider/context';
@@ -22,6 +23,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, slots }) {
+    const ns = useNamespace('checkbox');
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
@@ -45,7 +47,7 @@ export default defineComponent({
         ? groupChecked
         : isModelChecked || (props.modelValue === undefined && props.checked);
       return (
-        <label class={['i-checkbox', props.border && 'is-bordered', disabled && 'is-disabled', size !== 'default' && size ? `is-${size}` : undefined]}>
+        <label class={[ns.b(), props.border && 'is-bordered', disabled && 'is-disabled', size !== 'default' && size ? `is-${size}` : undefined]}>
           <input
             {...attrs}
             id={(attrs.id as string) || field?.id}

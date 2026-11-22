@@ -1,11 +1,12 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, inject, ref, watch, type PropType } from 'vue';
 import { fieldKey, formKey } from '../form/context';
 import { useConfig } from '../config-provider/context';
-import { createNamespace } from '../../../src/utils/create';
+import { createBEM, createNamespace } from '../../../src/utils/create';
 import { Icon } from '../icon';
 import type { RateColor, RateIcon, RateIconMap, RateSize, RateThresholdValue } from './types';
 
-const [name, bem] = createNamespace('rate');
+const [name] = createNamespace('rate');
 
 const props = {
   modelValue: { type: Number, default: 0 },
@@ -49,6 +50,8 @@ export default defineComponent({
   props,
   emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, expose }) {
+    const ns = useNamespace('rate');
+    const bem = createBEM(ns.b);
     const form = inject(formKey, undefined);
     const field = inject(fieldKey, undefined);
     const config = useConfig();
@@ -132,7 +135,7 @@ export default defineComponent({
       <div
         {...attrs}
         id={props.id || field?.id}
-        class={[bem(), `i-rate--${effectiveSize.value === 'default' ? 'default' : effectiveSize.value}`, isDisabled.value && bem('', { disabled: true })]}
+        class={[bem(), ns.m(String(effectiveSize.value)), isDisabled.value && bem('', { disabled: true })]}
         role='slider'
         aria-label={(typeof attrs['aria-label'] === 'string' ? attrs['aria-label'] : undefined) || props.ariaLabel || props.label || (field?.getLabelId?.() ? undefined : 'rating')}
         aria-labelledby={(typeof attrs['aria-labelledby'] === 'string' ? attrs['aria-labelledby'] : undefined) || (!props.ariaLabel && !props.label ? field?.getLabelId?.() : undefined)}
@@ -173,7 +176,21 @@ export default defineComponent({
                 currentValue.value = normalizeValue(props.modelValue, props.max);
               }}
               onKeydown={() => undefined}>
-              <Icon class={bem('icon', { filled: filled || selected, half: half || partial, partial: partial && !half })} icon={getIcon(filled || selected, half || partial)} color={props.colors ? getColor(filled || selected || half || partial) : undefined} size={effectiveSize.value} aria-hidden='true' style={{ '--i-rate-fill-percent': `${partialPercent}%`, '--i-rate-active-color': props.colors ? getColor(true) : undefined, '--i-rate-fill-color': props.colors ? getColor(true) : 'var(--el-rate-fill-color, var(--i-rate-active-color, $warning))', '--i-rate-void-color': isDisabled.value ? (props.disabledVoidColor || 'var(--el-rate-disabled-void-color, var(--el-fill-color, #c0c4cc))') : props.voidColor, '--i-rate-disabled-void-color': props.disabledVoidColor || 'var(--el-rate-disabled-void-color, var(--el-fill-color, #c0c4cc))', '--i-rate-text-color': props.textColor } as Record<string, string | undefined>} />
+              <Icon
+                class={bem('icon', { filled: filled || selected, half: half || partial, partial: partial && !half })}
+                icon={getIcon(filled || selected, half || partial)}
+                color={props.colors ? getColor(filled || selected || half || partial) : undefined}
+                size={effectiveSize.value}
+                aria-hidden='true'
+                style={{
+                  [ns.cssVarName('rate-fill-percent')]: `${partialPercent}%`,
+                  [ns.cssVarName('rate-active-color')]: props.colors ? getColor(true) : undefined,
+                  [ns.cssVarName('rate-fill-color')]: props.colors ? getColor(true) : `var(--el-rate-fill-color, var(${ns.cssVarName('rate-active-color')}, $warning))`,
+                  [ns.cssVarName('rate-void-color')]: isDisabled.value ? (props.disabledVoidColor || 'var(--el-rate-disabled-void-color, var(--el-fill-color, #c0c4cc))') : props.voidColor,
+                  [ns.cssVarName('rate-disabled-void-color')]: props.disabledVoidColor || 'var(--el-rate-disabled-void-color, var(--el-fill-color, #c0c4cc))',
+                  [ns.cssVarName('rate-text-color')]: props.textColor
+                } as Record<string, string | undefined>}
+              />
             </span>
           );
         })}

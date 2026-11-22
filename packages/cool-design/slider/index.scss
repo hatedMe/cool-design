@@ -1,6 +1,8 @@
-.i-slider {
-  --i-slider-color: var(--i-color-primary, #409eff);
-  --i-slider-track-color: var(--i-border-color, #dcdfe6);
+@use '../style/mixins/config';
+
+.#{config.$namespace}-slider {
+  --#{config.$namespace}-slider-color: var(--#{config.$namespace}-color-primary, #409eff);
+  --#{config.$namespace}-slider-track-color: var(--#{config.$namespace}-border-color, #dcdfe6);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -17,7 +19,7 @@
     position: relative;
     height: 6px;
     border-radius: 3px;
-    background: var(--i-slider-track-color);
+    background: var(--#{config.$namespace}-slider-track-color);
     cursor: pointer;
   }
 
@@ -25,7 +27,7 @@
     position: absolute;
     height: 100%;
     border-radius: inherit;
-    background: var(--i-slider-color);
+    background: var(--#{config.$namespace}-slider-color);
   }
 
   &__handle {
@@ -33,7 +35,7 @@
     top: 50%;
     width: 16px;
     height: 16px;
-    border: 2px solid var(--i-slider-color);
+    border: 2px solid var(--#{config.$namespace}-slider-color);
     border-radius: 50%;
     background: #fff;
     box-sizing: border-box;
@@ -79,7 +81,7 @@
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background: var(--i-slider-track-color);
+    background: var(--#{config.$namespace}-slider-track-color);
     transform: translate(-50%, -50%);
   }
 
@@ -116,9 +118,9 @@
     opacity: 0.6;
     cursor: not-allowed;
 
-    .i-slider__track,
-    .i-slider__handle,
-    .i-slider__input-wrap button {
+    .#{config.$namespace}-slider__track,
+    .#{config.$namespace}-slider__handle,
+    .#{config.$namespace}-slider__input-wrap button {
       cursor: not-allowed;
     }
   }
@@ -128,29 +130,29 @@
     min-height: 120px;
     flex-direction: column;
 
-    .i-slider__body {
+    .#{config.$namespace}-slider__body {
       width: 6px;
       height: 100%;
       padding: 0 10px;
     }
 
-    .i-slider__track {
+    .#{config.$namespace}-slider__track {
       width: 6px;
       height: 100%;
     }
 
-    .i-slider__bar {
+    .#{config.$namespace}-slider__bar {
       bottom: 0;
       width: 100%;
     }
 
-    .i-slider__handle {
+    .#{config.$namespace}-slider__handle {
       left: 50% !important;
       transform: translate(-50%, 50%);
     }
 
-    .i-slider__stop,
-    .i-slider__mark {
+    .#{config.$namespace}-slider__stop,
+    .#{config.$namespace}-slider__mark {
       left: 50%;
       transform: translate(-50%, 50%);
     }

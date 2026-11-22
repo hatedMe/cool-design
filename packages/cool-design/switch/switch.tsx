@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, nextTick, ref, watch, type PropType, type StyleValue } from 'vue';
 import Icon from '../icon/icon';
 import type { IconProp } from '../icon';
@@ -31,6 +32,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change', 'input'],
   setup(props, { attrs, emit, slots, expose }) {
+    const ns = useNamespace('switch');
     const field = useField();
     const form = inject(formKey, undefined);
     const disabledOf = () => props.disabled || (field?.disabled?.() ?? form?.disabled?.()) || props.loading;
@@ -66,24 +68,24 @@ export default defineComponent({
       const actionIcon = active ? props.activeActionIcon : props.inactiveActionIcon;
       const stateSlot = active ? slots.active : slots.inactive;
       const actionSlot = active ? slots['active-action'] : slots['inactive-action'];
-      const promptContent = props.inlinePrompt ? stateSlot?.() ?? (icon ? <Icon icon={icon} class='i-switch__icon' /> : text?.slice(0, 1)) : undefined;
-      const stateContent = stateSlot ? stateSlot() : icon ? <Icon icon={icon} class='i-switch__icon' /> : text;
-      const activeContent = slots.active?.() ?? (active ? stateContent : props.activeIcon ? <Icon icon={props.activeIcon} class='i-switch__icon' /> : props.activeText);
-      const inactiveContent = slots.inactive?.() ?? (!active ? stateContent : props.inactiveIcon ? <Icon icon={props.inactiveIcon} class='i-switch__icon' /> : props.inactiveText);
+      const promptContent = props.inlinePrompt ? stateSlot?.() ?? (icon ? <Icon icon={icon} class={ns.e('icon')} /> : text?.slice(0, 1)) : undefined;
+      const stateContent = stateSlot ? stateSlot() : icon ? <Icon icon={icon} class={ns.e('icon')} /> : text;
+      const activeContent = slots.active?.() ?? (active ? stateContent : props.activeIcon ? <Icon icon={props.activeIcon} class={ns.e('icon')} /> : props.activeText);
+      const inactiveContent = slots.inactive?.() ?? (!active ? stateContent : props.inactiveIcon ? <Icon icon={props.inactiveIcon} class={ns.e('icon')} /> : props.inactiveText);
       const inputAttrs = Object.fromEntries(Object.entries(attrs).filter(([name]) => name !== 'class' && name !== 'style'));
       return (
         <label
-          class={['i-switch', componentClass, normalizedSize && `i-switch--${normalizedSize}`, disabled && 'is-disabled', props.loading && 'is-loading']}
+          class={[ns.b(), componentClass, normalizedSize && ns.m(normalizedSize), disabled && 'is-disabled', props.loading && 'is-loading']}
           style={[
             componentStyle,
             {
             ...(props.width !== undefined ? {
               width: typeof props.width === 'number' ? `${props.width}px` : props.width,
-              '--i-switch-width': typeof props.width === 'number' ? `${props.width}px` : props.width
+              [ns.cssVarName('switch-width')]: typeof props.width === 'number' ? `${props.width}px` : props.width
             } : {}),
-            ...(props.activeColor ? { '--i-switch-on': props.activeColor, '--i-switch-on-color': props.activeColor } : {}),
-            ...(props.inactiveColor ? { '--i-switch-off': props.inactiveColor, '--i-switch-off-color': props.inactiveColor } : {}),
-            ...(props.borderColor ? { '--i-switch-border': props.borderColor, '--i-switch-border-color': props.borderColor } : {})
+            ...(props.activeColor ? { [ns.cssVarName('switch-on')]: props.activeColor, [ns.cssVarName('switch-on-color')]: props.activeColor } : {}),
+            ...(props.inactiveColor ? { [ns.cssVarName('switch-off')]: props.inactiveColor, [ns.cssVarName('switch-off-color')]: props.inactiveColor } : {}),
+            ...(props.borderColor ? { [ns.cssVarName('switch-border')]: props.borderColor, [ns.cssVarName('switch-border-color')]: props.borderColor } : {})
             }
           ]}>
           <input
@@ -127,18 +129,18 @@ export default defineComponent({
             }}
           />
           {!props.inlinePrompt && inactiveContent && (
-            <span class={['i-switch__inactive', !active && 'is-active']} aria-hidden={active && !slots.inactive ? 'true' : undefined}>
+            <span class={[ns.e('inactive'), !active && 'is-active']} aria-hidden={active && !slots.inactive ? 'true' : undefined}>
               {inactiveContent}
             </span>
           )}
-          <span class={['i-switch__track', active && 'is-active']} aria-hidden={actionSlot && !props.loading ? undefined : 'true'}>
-            {props.inlinePrompt && <span class='i-switch__prompt'>{promptContent}</span>}
-            <span class={['i-switch__action', active && 'is-active']}>
-              {props.loading ? <span class='i-switch__loading' aria-hidden='true' /> : actionSlot?.() ?? (actionIcon ? <Icon icon={actionIcon} class='i-switch__action-icon' /> : undefined)}
+          <span class={[ns.e('track'), active && 'is-active']} aria-hidden={actionSlot && !props.loading ? undefined : 'true'}>
+            {props.inlinePrompt && <span class={ns.e('prompt')}>{promptContent}</span>}
+            <span class={[ns.e('action'), active && 'is-active']}>
+              {props.loading ? <span class={ns.e('loading')} aria-hidden='true' /> : actionSlot?.() ?? (actionIcon ? <Icon icon={actionIcon} class={ns.e('action-icon')} /> : undefined)}
             </span>
           </span>
           {!props.inlinePrompt && activeContent && (
-            <span class={['i-switch__active', active && 'is-active']} aria-hidden={!active && !slots.active ? 'true' : undefined}>
+            <span class={[ns.e('active'), active && 'is-active']} aria-hidden={!active && !slots.active ? 'true' : undefined}>
               {activeContent}
             </span>
           )}

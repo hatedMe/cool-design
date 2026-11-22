@@ -1,10 +1,11 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, inject, nextTick, ref, type PropType } from 'vue';
-import { createNamespace } from '../../../src/utils/create';
+import { createBEM, createNamespace } from '../../../src/utils/create';
 import { formKey, useField } from '../form/context';
 import { useConfig } from '../config-provider/context';
 import './index.scss';
 
-const [componentName, bem] = createNamespace('input-number');
+const [componentName] = createNamespace('input-number');
 
 type Size = 'large' | 'default' | 'small';
 type ControlsPosition = '' | 'right';
@@ -51,6 +52,9 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change', 'focus', 'blur'],
   setup(props, { attrs, emit, expose, slots }) {
+    const ns = useNamespace('input-number');
+    const controlNs = useNamespace('control');
+    const bem = createBEM(ns.b);
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
@@ -179,7 +183,7 @@ export default defineComponent({
         />
       );
       return (
-        <div class={[bem({ disabled }), `i-control--${props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size}`, props.controlsPosition === 'right' && 'is-controls-right']}>
+        <div class={[bem({ disabled }), controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size), props.controlsPosition === 'right' && 'is-controls-right']}>
           {slots.prefix?.()}
           {props.controls && props.controlsPosition !== 'right' && (
             <button type='button' class={buttonClass('decrease')} aria-label='减少' disabled={disabled || currentValue.value! <= props.min} onClick={() => updateBy(-props.step)}>

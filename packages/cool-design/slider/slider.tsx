@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, inject, nextTick, onBeforeUnmount, type CSSProperties, type PropType, ref } from 'vue';
 import { formKey, useField } from '../form/context';
 import { useConfig } from '../config-provider/context';
@@ -68,6 +69,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'input', 'change'],
   setup(props, { emit, slots, attrs }) {
+    const ns = useNamespace('slider');
     const activeHandle = ref(0);
     const focusedHandle = ref<number | null>(null);
     const field = useField();
@@ -212,26 +214,26 @@ export default defineComponent({
     const markEntries = computed(() => Object.entries(props.marks || {}).map(([value, mark]) => ({ value: Number(value), mark })).filter(({ value }) => value >= bounds.value.min && value <= bounds.value.max));
 
     return () => (
-      <div {...attrs} class={{ 'i-slider': true, 'is-vertical': props.vertical, 'is-disabled': isDisabled.value, [`i-slider--${props.vertical ? 'default' : resolvedSize.value}`]: true }} style={props.vertical && cssHeight.value ? { ...(attrs.style as Record<string, string> || {}), height: cssHeight.value } : attrs.style as string | undefined}>
-        {props.rangeStartLabel && <span class='i-slider__label'>{props.rangeStartLabel}</span>}
-        <div class='i-slider__body'>
-          <div class='i-slider__track' onClick={handleTrackClick} onPointermove={handlePointerMove} onPointerup={stopDragging} onPointercancel={stopDragging}>
-            <div class='i-slider__bar' style={props.vertical
+      <div {...attrs} class={{ [ns.b()]: true, 'is-vertical': props.vertical, 'is-disabled': isDisabled.value, [ns.m(props.vertical ? 'default' : resolvedSize.value)]: true }} style={props.vertical && cssHeight.value ? { ...(attrs.style as Record<string, string> || {}), height: cssHeight.value } : attrs.style as string | undefined}>
+        {props.rangeStartLabel && <span class={ns.e('label')}>{props.rangeStartLabel}</span>}
+        <div class={ns.e('body')}>
+          <div class={ns.e('track')} onClick={handleTrackClick} onPointermove={handlePointerMove} onPointerup={stopDragging} onPointercancel={stopDragging}>
+            <div class={ns.e('bar')} style={props.vertical
               ? (props.range
                 ? { bottom: `${percentage(values.value[0])}%`, height: `${percentage(values.value[1]) - percentage(values.value[0])}%` }
                 : { height: `${percentage(values.value[0])}%` })
               : (props.range
                 ? { left: `${percentage(values.value[0])}%`, width: `${percentage(values.value[1]) - percentage(values.value[0])}%` }
                 : { width: `${percentage(values.value[0])}%` })} />
-            {stops.value.map((stop) => <span class='i-slider__stop' style={props.vertical ? { bottom: `${percentage(stop)}%` } : { left: `${percentage(stop)}%` }} />)}
+            {stops.value.map((stop) => <span class={ns.e('stop')} style={props.vertical ? { bottom: `${percentage(stop)}%` } : { left: `${percentage(stop)}%` }} />)}
             {markEntries.value.map(({ value, mark }) => {
               const markValue = typeof mark === 'string' ? mark : mark.label;
               const style = typeof mark === 'string' ? {} : mark.style;
-              return <span class='i-slider__mark' style={{ ...(props.vertical ? { bottom: `${percentage(value)}%` } : { left: `${percentage(value)}%` }), ...style }}>{slots.mark ? slots.mark({ value, label: markValue }) : markValue}</span>;
+              return <span class={ns.e('mark')} style={{ ...(props.vertical ? { bottom: `${percentage(value)}%` } : { left: `${percentage(value)}%` }), ...style }}>{slots.mark ? slots.mark({ value, label: markValue }) : markValue}</span>;
             })}
             {values.value.map((value, index) => (
               <span
-                class='i-slider__handle'
+                class={ns.e('handle')}
                 role='slider'
                 tabindex={isDisabled.value ? -1 : 0}
                 aria-valuemin={bounds.value.min}
@@ -250,16 +252,16 @@ export default defineComponent({
                 onPointerup={() => { focusedHandle.value = null; }}
                 onKeydown={(event: KeyboardEvent) => updateFromKeyboard(event, index)}
               >
-                {props.showTooltip && (props.persistent || focusedHandle.value === index || (dragging && activeHandle.value === index)) && <span class={{ 'i-slider__tooltip': true, 'is-hidden': focusedHandle.value !== index && !dragging, [props.tooltipClass || '']: Boolean(props.tooltipClass), [`is-${props.placement}`]: true }}>{displayValue(value)}</span>}
+                {props.showTooltip && (props.persistent || focusedHandle.value === index || (dragging && activeHandle.value === index)) && <span class={{ [ns.e('tooltip')]: true, 'is-hidden': focusedHandle.value !== index && !dragging, [props.tooltipClass || '']: Boolean(props.tooltipClass), [`is-${props.placement}`]: true }}>{displayValue(value)}</span>}
               </span>
             ))}
           </div>
         </div>
-        {props.rangeEndLabel && <span class='i-slider__label'>{props.rangeEndLabel}</span>}
+        {props.rangeEndLabel && <span class={ns.e('label')}>{props.rangeEndLabel}</span>}
         {props.showInput && props.step !== 'mark' && (
-          <div class='i-slider__inputs'>
+          <div class={ns.e('inputs')}>
             {values.value.map((value, index) => (
-              <span key={index} class={['i-slider__input-wrap', `i-slider__input-wrap--${resolvedInputSize.value}`]}>
+              <span key={index} class={[ns.e('input-wrap'), ns.em('input-wrap', resolvedInputSize.value)]}>
                 <InputNumber
                   modelValue={value}
                   min={props.range && index === 1 ? values.value[0] : bounds.value.min}

@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, nextTick, provide, watch, type PropType } from 'vue';
 import type { Size } from '../config-provider/context';
 import { cloneFormValue, formKey, getFieldPathIdentity, getFieldPathParts, getFieldValue, normalizeFieldPath, setFieldValue, type Field } from './context';
@@ -26,6 +27,7 @@ export default defineComponent({
   },
   emits: ['submit', 'validate'],
   setup(props, { slots, expose, emit }) {
+    const ns = useNamespace('form');
     let modelVersion = 0;
     watch(
       () => props.model,
@@ -173,9 +175,9 @@ export default defineComponent({
 
     return () => (
       <form
-        class={['i-form', props.inline && 'is-inline', `i-form--label-${props.labelPosition}`]}
+        class={[ns.b(), props.inline && 'is-inline', ns.m(`label-${props.labelPosition}`)]}
         style={{
-          '--i-form-label-width': typeof props.labelWidth === 'number' ? `${props.labelWidth}px` : props.labelWidth
+          [ns.cssVarName('form-label-width')]: typeof props.labelWidth === 'number' ? `${props.labelWidth}px` : props.labelWidth
         }}
         novalidate
         onSubmit={(event: Event) => {

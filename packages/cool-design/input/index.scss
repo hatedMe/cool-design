@@ -1,58 +1,60 @@
-.i-input__outside {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-input__outside {
   display: inline-flex;
   align-items: center;
   width: 100%;
 }
-.i-input__prepend,
-.i-input__append {
+.#{config.$namespace}-input__prepend,
+.#{config.$namespace}-input__append {
   flex: none;
   padding: 0 10px;
-  color: var(--i-text-secondary);
+  color: var(--#{config.$namespace}-text-secondary);
 }
-.i-input__loading {
+.#{config.$namespace}-input__loading {
   display: inline-flex;
   align-items: center;
   flex: none;
   padding: 0 2px;
-  color: var(--i-text-secondary);
+  color: var(--#{config.$namespace}-text-secondary);
 }
-.i-input__loading-spinner {
+.#{config.$namespace}-input__loading-spinner {
   width: 12px;
   height: 12px;
   box-sizing: border-box;
   border: 1.5px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  animation: i-input-loading-spin 0.8s linear infinite;
+  animation: #{config.$namespace}-input-loading-spin 0.8s linear infinite;
 }
-@keyframes i-input-loading-spin {
+@keyframes #{config.$namespace}-input-loading-spin {
   to {
     transform: rotate(360deg);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .i-input__loading-spinner {
+  .#{config.$namespace}-input__loading-spinner {
     animation: none;
   }
 }
-.i-input,
-.i-select {
+.#{config.$namespace}-input,
+.#{config.$namespace}-select {
   display: inline-flex;
   position: relative;
   align-items: center;
   width: 100%;
-  height: var(--i-control-height);
-  background: var(--i-bg);
-  border: 1px solid var(--i-border);
-  border-radius: var(--i-radius);
+  height: var(--#{config.$namespace}-control-height);
+  background: var(--#{config.$namespace}-bg);
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
 }
-.i-input:focus-within,
-.i-select:focus-within {
-  border-color: var(--i-primary);
+.#{config.$namespace}-input:focus-within,
+.#{config.$namespace}-select:focus-within {
+  border-color: var(--#{config.$namespace}-primary);
 }
-.i-input input,
-.i-input textarea,
-.i-select select {
+.#{config.$namespace}-input input,
+.#{config.$namespace}-input textarea,
+.#{config.$namespace}-select select {
   width: 100%;
   min-width: 0;
   height: 100%;
@@ -60,55 +62,55 @@
   border-radius: inherit;
   padding: 0 10px;
   background: transparent;
-  color: var(--i-text);
+  color: var(--#{config.$namespace}-text);
   font: inherit;
   outline: none;
 }
-.i-input textarea {
+.#{config.$namespace}-input textarea {
   resize: vertical;
   padding-block: 8px;
 }
-.i-input__icon,
-.i-input__count {
-  color: var(--i-text-secondary);
+.#{config.$namespace}-input__icon,
+.#{config.$namespace}-input__count {
+  color: var(--#{config.$namespace}-text-secondary);
   font-size: 12px;
   flex: none;
 }
-.i-input__icon {
+.#{config.$namespace}-input__icon {
   margin-inline: 8px;
 }
-.i-input__count {
+.#{config.$namespace}-input__count {
   margin-inline: 4px 8px;
 }
-.i-input.is-textarea {
+.#{config.$namespace}-input.is-textarea {
   height: auto;
-  min-height: calc(var(--i-control-height) * 2);
+  min-height: calc(var(--#{config.$namespace}-control-height) * 2);
 }
-.i-select option {
-  background: var(--i-bg);
-  color: var(--i-text);
+.#{config.$namespace}-select option {
+  background: var(--#{config.$namespace}-bg);
+  color: var(--#{config.$namespace}-text);
 }
-.i-input:has([aria-invalid='true']),
-.i-select:has([aria-invalid='true']) {
-  border-color: var(--i-danger);
+.#{config.$namespace}-input:has([aria-invalid='true']),
+.#{config.$namespace}-select:has([aria-invalid='true']) {
+  border-color: var(--#{config.$namespace}-danger);
 }
-.i-input button,
-.i-select button {
+.#{config.$namespace}-input button,
+.#{config.$namespace}-select button {
   border: 0;
   background: transparent;
-  color: var(--i-text-secondary);
+  color: var(--#{config.$namespace}-text-secondary);
   cursor: pointer;
   padding: 0 8px;
 }
-.i-input input:disabled,
-.i-select select:disabled {
+.#{config.$namespace}-input input:disabled,
+.#{config.$namespace}-select select:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
-.i-control--small {
+.#{config.$namespace}-control--small {
   height: 28px;
   font-size: 12px;
 }
-.i-control--large {
+.#{config.$namespace}-control--large {
   height: 40px;
 }

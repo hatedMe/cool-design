@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, h, inject, nextTick, provide, type InjectionKey, type PropType } from 'vue';
 import Button from './button';
 import Checkbox from './checkbox';
@@ -45,6 +46,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, slots }) {
+    const ns = useNamespace('checkbox-group');
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
@@ -99,7 +101,7 @@ export default defineComponent({
         });
       return h(
         props.tag,
-        { ...attrs, class: ['i-checkbox-group', `is-${size()}`], role: 'group' },
+        { ...attrs, class: [ns.b(), `is-${size()}`], role: 'group' },
         children
       );
     };

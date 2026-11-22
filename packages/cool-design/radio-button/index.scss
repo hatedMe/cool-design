@@ -1,6 +1,8 @@
+@use '../style/mixins/config';
+
 @import '../style/base.scss';
 
-.i-radio-button {
+.#{config.$namespace}-radio-button {
   display: inline-block;
   height: 20px;
   line-height: 20px;
@@ -9,8 +11,8 @@
   transition: all 0.3s;
 
   &--is-checked {
-    background-color: var(--i-radio-button-checked-bg-color, #{$primary});
-    color: var(--i-radio-button-checked-text-color, #{$white});
+    background-color: var(--#{config.$namespace}-radio-button-checked-bg-color, #{$primary});
+    color: var(--#{config.$namespace}-radio-button-checked-text-color, #{$white});
   }
 
   &--small {
