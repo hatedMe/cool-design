@@ -11,7 +11,8 @@ import {
   watch,
   type PropType
 } from 'vue';
-import { createNamespace } from '../../../src/utils/create';
+import { createBEM, createNamespace } from '../../../src/utils/create';
+import { useNamespace } from '../../hooks/use-namespace';
 import type {
   TreeAllowDrag,
   TreeAllowDrop,
@@ -28,7 +29,7 @@ import type {
   TreeRenderContent
 } from './types';
 
-const [name, bem] = createNamespace('tree');
+const [name] = createNamespace('tree');
 
 type InnerNode = TreeNode;
 
@@ -89,6 +90,8 @@ export default defineComponent({
     'node-drop'
   ],
   setup(props, { emit, slots, expose }) {
+    const ns = useNamespace('tree');
+    const bem = createBEM(ns.b);
     const instance = getCurrentInstance();
     const proxy = instance?.proxy;
     const rootNodes = ref<InnerNode[]>([]);

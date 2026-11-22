@@ -1,4 +1,5 @@
 import { computed, defineComponent, nextTick, ref, watch, type Component, type PropType, type SlotsType, type VNode } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import type {
   TreeV2CheckedInfo,
   TreeV2Data,
@@ -48,6 +49,7 @@ export default defineComponent({
   emits: ['node-click', 'node-contextmenu', 'check-change', 'check', 'current-change', 'node-expand', 'node-collapse'],
   slots: Object as SlotsType<{ default: { node: TreeV2Node; data: TreeV2Data }; empty: () => VNode[] }>,
   setup(props, { emit, slots, expose }) {
+    const ns = useNamespace('tree-v2');
     const version = ref(0);
     const nodes = ref<TreeV2InnerNode[]>([]);
     const keyMap = new Map<TreeV2Key, TreeV2InnerNode>();
@@ -415,14 +417,14 @@ export default defineComponent({
 
     return () => (
       <div
-        class={['i-tree-v2', props.scrollbarAlwaysOn && 'has-scrollbar']}
+        class={[ns.b(), props.scrollbarAlwaysOn && 'has-scrollbar']}
         role='tree'
         aria-multiselectable={props.showCheckbox ? 'true' : undefined}>
-        {rows.value.length === 0 && <div class='i-tree-v2__empty'>{slots.empty?.() ?? props.emptyText}</div>}
+        {rows.value.length === 0 && <div class={ns.e('empty')}>{slots.empty?.() ?? props.emptyText}</div>}
         {rows.value.length > 0 && (
           <div
             ref={listRef}
-            class='i-tree-v2__list'
+            class={ns.e('list')}
             style={{ height: `${props.height}px`, overflow: 'auto' }}
             onScroll={(event: Event) => {
               scrollTop.value = (event.target as HTMLElement).scrollTop;
@@ -441,7 +443,7 @@ export default defineComponent({
                       aria-disabled={disabled || undefined}
                       style={{ height: `${props.itemSize}px` }}
                       class={[
-                        'i-tree-v2__row',
+                        ns.e('row'),
                         typeof props.props?.class === 'function'
                           ? props.props.class(node.data, toPublicNode(node))
                           : props.props?.class,
@@ -454,11 +456,11 @@ export default defineComponent({
                       onContextmenu={(event: MouseEvent) => emit('node-contextmenu', event, node.data, toPublicNode(node))}>
                       <span style={{ width: `${(node.level - 1) * props.indent}px`, flex: '0 0 auto' }} />
                       {node.isLeaf ? (
-                        <span class='i-tree-v2__leaf' aria-hidden='true' />
+                        <span class={ns.e('leaf')} aria-hidden='true' />
                       ) : (
                         <button
                           type='button'
-                          class={['i-tree-v2__expand', node.expanded && 'is-expanded']}
+                          class={[ns.e('expand'), node.expanded && 'is-expanded']}
                           aria-label={node.expanded ? '收起' : '展开'}
                           onClick={(event: MouseEvent) => {
                             event.stopPropagation();
@@ -469,7 +471,7 @@ export default defineComponent({
                       )}
                       {props.showCheckbox && (
                         <input
-                          class='i-tree-v2__checkbox'
+                          class={ns.e('checkbox')}
                           type='checkbox'
                           checked={node.checked}
                           disabled={disabled}
@@ -483,7 +485,7 @@ export default defineComponent({
                           }
                         />
                       )}
-                      <span class='i-tree-v2__label'>
+                      <span class={ns.e('label')}>
                         {slots.default?.({ node: toPublicNode(node), data: node.data }) ?? node.label}
                       </span>
                     </div>

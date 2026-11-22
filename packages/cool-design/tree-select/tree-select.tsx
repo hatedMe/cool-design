@@ -18,6 +18,7 @@ import type { SelectInstance } from '../select';
 import Tree from '../tree';
 import type { TreeAllowDrag, TreeAllowDrop, TreeRenderContent, TreeData, TreeExposed, TreeKey, TreeLoadFunction, TreePropsMapping, TreeNode, TreeFilterMethod } from '../tree/types';
 import { useEmptyValues } from '../../hooks/use-empty-values';
+import { useNamespace } from '../../hooks/use-namespace';
 import { useConfig, type Size } from '../config-provider/context';
 import { formKey, useField } from '../form/context';
 import type { FloatingOptions, Placement } from '../../../src/utils/use-floating';
@@ -101,6 +102,9 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'clear', 'visible-change', 'remove-tag', 'focus', 'blur', 'node-click', 'check',
     'popup-scroll', 'end-reached', 'node-contextmenu', 'current-change', 'check-change', 'node-expand', 'node-collapse', 'node-drag-start', 'node-drag-enter', 'node-drag-leave', 'node-drag-over', 'node-drag-end', 'node-drop'],
   setup(props, { emit, expose, slots }) {
+    const ns = useNamespace('tree-select');
+    const treeNs = useNamespace('tree');
+    const selectNs = useNamespace('select');
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
@@ -287,7 +291,7 @@ export default defineComponent({
         selectRef.value?.focus();
       } else if (event.key === 'Enter' && (event.target as HTMLElement).matches('[role="treeitem"]')) {
         event.preventDefault();
-        (event.target as HTMLElement).querySelector<HTMLElement>(showCheckbox.value ? 'input[type="checkbox"]' : '.i-tree__content')?.click();
+        (event.target as HTMLElement).querySelector<HTMLElement>(showCheckbox.value ? 'input[type="checkbox"]' : `.${treeNs.e('content')}`)?.click();
       }
     };
 
@@ -323,10 +327,11 @@ export default defineComponent({
         ? selectedValues.value.slice(0, Math.max(0, props.maxCollapseTags))
         : selectedValues.value;
       const restCount = selectedValues.value.length - shownTags.length;
+      const tagClasses = [selectNs.e('tag'), props.tagType && selectNs.em('tag', props.tagType), selectNs.em('tag', props.tagEffect)];
       return (
         <span
           ref={root}
-          class={['i-tree-select', `i-tree-select--${size.value}`, open.value && 'is-open', isDisabled() && 'is-disabled']}
+          class={[ns.b(), ns.m(size.value), open.value && 'is-open', isDisabled() && 'is-disabled']}
           aria-invalid={field?.invalid() ? 'true' : undefined}
           aria-describedby={field?.invalid() ? field.errorId : undefined}>
           <Select
@@ -342,7 +347,7 @@ export default defineComponent({
             placement={props.placement}
             fallbackPlacements={props.fallbackPlacements}
             popperOptions={props.popperOptions}
-            popperClass={normalizeClass(['i-tree-select__dropdown', `i-tree-select__dropdown--${props.effect}`, props.popperClass])}
+            popperClass={normalizeClass([ns.e('dropdown'), ns.em('dropdown', props.effect), props.popperClass])}
             popperStyle={props.popperStyle}
             effect={props.effect}
             onPopup-scroll={(position: { scrollTop: number; scrollLeft: number }) => emit('popup-scroll', position)}
@@ -352,7 +357,7 @@ export default defineComponent({
               control: ({ toggle }: { toggle: () => void }) => <>
           <button
             type='button'
-            class='i-tree-select__control'
+            class={ns.e('control')}
             role='combobox'
             id={props.id ?? field?.id}
             tabindex={props.tabindex}
@@ -375,11 +380,11 @@ export default defineComponent({
             {props.multiple ? (
               shownTags.length ? (
                 shownTags.map((value) => (
-                  <span class={['i-tree-select__tag', 'i-select__tag', props.tagType && `i-select__tag--${props.tagType}`, `i-select__tag--${props.tagEffect}`]} key={String(value)}>
+                  <span class={[ns.e('tag'), tagClasses]} key={String(value)}>
                     {slots.label?.({ value, label: labelOf(value) }) ?? labelOf(value)}
                     {!isDisabled() && (
                       <span
-                        class='i-tree-select__tag-close'
+                        class={ns.e('tag-close')}
                         role='button'
                         tabindex={0}
                         aria-label={`移除 ${labelOf(value)}`}
@@ -393,15 +398,15 @@ export default defineComponent({
                   </span>
                 ))
               ) : (
-                <span class='i-tree-select__placeholder'>{props.placeholder}</span>
+                <span class={ns.e('placeholder')}>{props.placeholder}</span>
               )
             ) : selectedValues.value.length ? (
-              <span class='i-tree-select__label'>{slots.label?.({ value: selectedValues.value[0], label: labelOf(selectedValues.value[0]) }) ?? labelOf(selectedValues.value[0])}</span>
+              <span class={ns.e('label')}>{slots.label?.({ value: selectedValues.value[0], label: labelOf(selectedValues.value[0]) }) ?? labelOf(selectedValues.value[0])}</span>
             ) : (
-              <span class='i-tree-select__placeholder'>{props.placeholder}</span>
+              <span class={ns.e('placeholder')}>{props.placeholder}</span>
             )}
-            {props.multiple && restCount > 0 && <span class={['i-tree-select__more', 'i-select__tag', props.tagType && `i-select__tag--${props.tagType}`, `i-select__tag--${props.tagEffect}`]}>+{restCount}</span>}
-            {slots.suffix?.() ?? ((!props.remote || !props.filterable || props.remoteShowSuffix) && (props.suffixIcon ? <Icon icon={props.suffixIcon} aria-hidden='true' /> : <span class='i-select__suffix-caret' aria-hidden='true' />))}
+            {props.multiple && restCount > 0 && <span class={[ns.e('more'), tagClasses]}>+{restCount}</span>}
+            {slots.suffix?.() ?? ((!props.remote || !props.filterable || props.remoteShowSuffix) && (props.suffixIcon ? <Icon icon={props.suffixIcon} aria-hidden='true' /> : <span class={selectNs.e('suffix-caret')} aria-hidden='true' />))}
           </button>
           {props.name && (props.multiple ? selectedValues.value : [selectedValues.value[0] ?? '']).map((value, index) =>
             <input key={index} type='hidden' name={props.name} value={value} disabled={isDisabled()} />
@@ -409,7 +414,7 @@ export default defineComponent({
           {props.clearable && selectedValues.value.length > 0 && !isDisabled() && (
             <button
               type='button'
-              class='i-tree-select__clear'
+              class={ns.e('clear')}
               aria-label='清空'
               onClick={(event: MouseEvent) => {
                 event.stopPropagation();
@@ -424,7 +429,7 @@ export default defineComponent({
               dropdown: () => <div onKeydown={onTreeKeydown}>
                 {props.filterable && (
                   <input
-                    class='i-tree-select__filter'
+                    class={ns.e('filter')}
                     autocomplete={props.autocomplete}
                     value={query.value}
                     placeholder='筛选'
