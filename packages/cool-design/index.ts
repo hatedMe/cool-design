@@ -836,7 +836,7 @@ export type {
 } from './dropdown';
 export type { ImageInstance, ImageViewerInstance } from './image';
 export type { TourInstance } from './tour';
-export type { TabsInstance } from './tabs';
+export type { TabBarInstance, TabNavInstance, TabPaneProps, TabPaneSlots, TabsBeforeLeave, TabsClickPane, TabsInstance, TabsPaneName, TabsProps, TabsSlots } from './tabs';
 export type { CascaderInstance } from './cascader';
 export type { CascaderPanelInstance } from './cascader-panel';
 export type { MenuInstance, MenuItemClicked, MenuPopperClass, MenuRoute, MenuRouterResult, SubMenuInstance } from './menu';

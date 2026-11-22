@@ -418,7 +418,7 @@ export const pages: Page[] = [
     title: 'TabPane 标签面板',
     group: '导航组件',
     markdown:
-      '# TabPane 标签面板\n\n### 介绍\n\nTabs 的子组件，声明单个页签与面板。\n\n## 用法\n\n在 `Tabs` 中声明页签，`name` 为唯一标识：\n\n```vue\n<Tabs v-model="active">\n  <TabPane label="详情" name="detail">内容</TabPane>\n</Tabs>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `label` | 页签标题 | `string` | `\'\'` |\n| `name` | 唯一标识 | `string \\| number` | — |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n| `closable` | 单项是否可关闭 | `boolean` | — |\n| `lazy` | 是否懒渲染 | `boolean` | `false` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 面板内容 |\n| `label` | 自定义页签标题 |\n',
+      '# TabPane 标签面板\n\n### 介绍\n\nTabs 的子组件，声明单个页签与面板。\n\n## 用法\n\n在 `Tabs` 中声明页签，`name` 为唯一标识：\n\n```vue\n<Tabs v-model="active">\n  <TabPane label="详情" name="detail">内容</TabPane>\n</Tabs>\n```\n\n## API\n\n### Attributes\n\n| 参数 | 说明 | 类型 | 默认值 |\n| ---- | ---- | ---- | ------ |\n| `label` | 页签标题 | `string` | `\'\'` |\n| `name` | 唯一标识 | `string \\| number` | 当前顺序的字符串索引 |\n| `disabled` | 是否禁用 | `boolean` | `false` |\n| `closable` | 单项是否可关闭 | `boolean` | — |\n| `lazy` | 是否懒渲染 | `boolean` | `false` |\n\n### Slot\n\n| 名称 | 说明 |\n| ---- | ---- |\n| `default` | 面板内容 |\n| `label` | 自定义页签标题 |\n',
     demos: [
       demo(
         '../../packages/cool-design/tabs/demo/element.vue',

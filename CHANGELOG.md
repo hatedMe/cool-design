@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Tabs 公开响应式 `currentName` 和 `tabNavRef`，并支持条件插槽与动态页签重排。声明式页签省略初始值时使用字符串 `"0"`，具名页签需要默认选中时可传入 `default-value`。`before-leave` 拒绝 Promise 时会阻止切换。
+
 - Scrollbar 增加四向 `end-reached` 事件与默认 `0` 像素的 `distance` 触发距离。`tabindex` 现在作用于实际滚动元素，依赖外层聚焦的页面可在 Scrollbar 外添加可聚焦的包装元素。
 
 - Pagination 的条数选择改用 Select，可用 `append-size-to`、`popper-class` 和 `popper-style` 定位并设置下拉样式。下拉默认传送，设置 `:teleported="false"` 可在分页内部显示。`change(currentPage, pageSize)` 在渲染更新后为实际页码或条数变化合并触发，翻页按钮同步报告当时的绑定页码。依赖请求值时可改用 `update:current-page` 或 `update:page-size`。保留 `page-size-change` 兼容事件，新增 `size` 及上下页自定义图标，显式按钮文字优先。
