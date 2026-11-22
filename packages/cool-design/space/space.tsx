@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { Comment, defineComponent, h, isVNode, type PropType, type VNode } from 'vue';
 import { useConfig, type Size } from '../config-provider/context';
 export type SpaceAlignment = 'normal' | 'start' | 'end' | 'center' | 'baseline' | 'stretch';
@@ -18,6 +19,7 @@ export default defineComponent({
     spacer: [String, Number, Object] as PropType<string | number | VNode>
   },
   setup(props, { slots }) {
+    const ns = useNamespace('space');
     const config = useConfig();
     return () => {
       const size = props.size ?? config.value.size ?? 'small';
@@ -40,7 +42,7 @@ export default defineComponent({
         }
       }
       const children = (slots.default?.() ?? []).filter((child) => child.type !== Comment);
-      const itemClass = `${props.prefixCls || 'i-space'}__item`;
+      const itemClass = `${props.prefixCls || ns.b()}__item`;
       const itemStyle = props.fill ? { flexGrow: 1, minWidth: `${props.fillRatio}%` } : undefined;
       const rendered: unknown[] = [];
       children.forEach((child, index) => {
@@ -48,14 +50,14 @@ export default defineComponent({
           rendered.push(
             isVNode(props.spacer)
               ? h(props.spacer)
-              : h('span', { class: 'i-space__spacer' }, String(props.spacer))
+              : h('span', { class: ns.e('spacer') }, String(props.spacer))
           );
         }
         rendered.push(h('div', { class: itemClass, style: itemStyle }, [child]));
       });
       return (
         <div
-          class={['i-space', `i-space--${props.direction}`]}
+          class={[ns.b(), `${ns.b()}--${props.direction}`]}
           style={{
             flexDirection: props.direction === 'vertical' ? 'column' : 'row',
             flexWrap: props.wrap || props.fill ? 'wrap' : 'nowrap',

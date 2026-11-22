@@ -1,3 +1,5 @@
-.i-space {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-space {
   display: flex;
 }

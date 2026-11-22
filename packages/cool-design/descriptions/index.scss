@@ -1,88 +1,90 @@
-.i-descriptions {
-  color: var(--i-text);
-  font-size: var(--i-font-size, 14px);
+@use '../style/mixins/config';
+
+.#{config.$namespace}-descriptions {
+  color: var(--#{config.$namespace}-text);
+  font-size: var(--#{config.$namespace}-font-size, 14px);
   line-height: 1.6;
 }
 
-.i-descriptions__header {
+.#{config.$namespace}-descriptions__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
 }
 
-.i-descriptions__title {
-  color: var(--i-text);
+.#{config.$namespace}-descriptions__title {
+  color: var(--#{config.$namespace}-text);
   font-size: 16px;
   font-weight: 600;
 }
 
-.i-descriptions__extra {
-  color: var(--i-text-secondary);
+.#{config.$namespace}-descriptions__extra {
+  color: var(--#{config.$namespace}-text-secondary);
   font-size: 13px;
 }
 
-.i-descriptions__table {
+.#{config.$namespace}-descriptions__table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 }
 
-.i-descriptions__label,
-.i-descriptions__content {
+.#{config.$namespace}-descriptions__label,
+.#{config.$namespace}-descriptions__content {
   padding: 10px 12px;
   vertical-align: top;
   overflow-wrap: break-word;
 }
 
-.i-descriptions__label {
+.#{config.$namespace}-descriptions__label {
   width: 120px;
-  color: var(--i-text-secondary);
+  color: var(--#{config.$namespace}-text-secondary);
   font-weight: 400;
   text-align: left;
 }
 
-.i-descriptions__content {
-  color: var(--i-text);
+.#{config.$namespace}-descriptions__content {
+  color: var(--#{config.$namespace}-text);
 }
 
-.i-descriptions.is-bordered .i-descriptions__table,
-.i-descriptions.is-bordered .i-descriptions__label,
-.i-descriptions.is-bordered .i-descriptions__content {
-  border: 1px solid var(--i-border);
+.#{config.$namespace}-descriptions.is-bordered .#{config.$namespace}-descriptions__table,
+.#{config.$namespace}-descriptions.is-bordered .#{config.$namespace}-descriptions__label,
+.#{config.$namespace}-descriptions.is-bordered .#{config.$namespace}-descriptions__content {
+  border: 1px solid var(--#{config.$namespace}-border);
 }
 
-.i-descriptions.is-bordered .i-descriptions__label {
-  background: var(--i-bg-subtle);
+.#{config.$namespace}-descriptions.is-bordered .#{config.$namespace}-descriptions__label {
+  background: var(--#{config.$namespace}-bg-subtle);
 }
 
-.i-descriptions:not(.is-bordered) .i-descriptions__label,
-.i-descriptions:not(.is-bordered) .i-descriptions__content {
+.#{config.$namespace}-descriptions:not(.is-bordered) .#{config.$namespace}-descriptions__label,
+.#{config.$namespace}-descriptions:not(.is-bordered) .#{config.$namespace}-descriptions__content {
   padding-left: 0;
 }
 
-.i-descriptions.is-vertical .i-descriptions__label {
+.#{config.$namespace}-descriptions.is-vertical .#{config.$namespace}-descriptions__label {
   width: auto;
 }
 
-.i-descriptions--large {
+.#{config.$namespace}-descriptions--large {
   font-size: 15px;
 }
 
-.i-descriptions--large .i-descriptions__label,
-.i-descriptions--large .i-descriptions__content {
+.#{config.$namespace}-descriptions--large .#{config.$namespace}-descriptions__label,
+.#{config.$namespace}-descriptions--large .#{config.$namespace}-descriptions__content {
   padding: 12px 16px;
 }
 
-.i-descriptions--small {
+.#{config.$namespace}-descriptions--small {
   font-size: 13px;
 }
 
-.i-descriptions--small .i-descriptions__label,
-.i-descriptions--small .i-descriptions__content {
+.#{config.$namespace}-descriptions--small .#{config.$namespace}-descriptions__label,
+.#{config.$namespace}-descriptions--small .#{config.$namespace}-descriptions__content {
   padding: 6px 8px;
 }
 
-.i-descriptions-item {
+.#{config.$namespace}-descriptions-item {
   display: contents;
 }

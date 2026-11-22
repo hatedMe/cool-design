@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, h, inject, type PropType } from 'vue';
 import { rowKeys } from '../row/row';
 import type { ColSize } from './types';
@@ -18,14 +19,15 @@ export default defineComponent({
     xl: responsive
   },
   setup(props, { slots }) {
+    const ns = useNamespace('col');
     const { gutter } = inject(rowKeys, { gutter: computed(() => 0) });
     return () => {
       const classes = [
-        'i-col',
-        `i-col-${units(props.span)}`,
-        `i-col-offset-${units(props.offset)}`,
-        `i-col-push-${units(props.push)}`,
-        `i-col-pull-${units(props.pull)}`
+        ns.b(),
+        ns.b(String(units(props.span))),
+        ns.b(`offset-${units(props.offset)}`),
+        ns.b(`push-${units(props.push)}`),
+        ns.b(`pull-${units(props.pull)}`)
       ];
       for (const breakpoint of ['xs', 'sm', 'md', 'lg', 'xl'] as const) {
         const value = props[breakpoint];
@@ -35,7 +37,7 @@ export default defineComponent({
         for (const key of ['span', 'offset', 'push', 'pull'] as const) {
           const amount = values[key];
           if (amount !== undefined)
-            classes.push(`i-col-${breakpoint}-${key === 'span' ? '' : `${key}-`}${units(amount)}`);
+            classes.push(ns.b(`${breakpoint}-${key === 'span' ? '' : `${key}-`}${units(amount)}`));
         }
       }
       return h(

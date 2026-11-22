@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, onBeforeUnmount, ref, watch, type PropType } from 'vue';
 
 export type CountdownValue = number | Date;
@@ -17,6 +18,7 @@ export default defineComponent({
   },
   emits: ['change', 'finish'],
   setup(props, { slots, emit }) {
+    const ns = useNamespace('countdown');
     const remaining = ref(0);
     let timer: ReturnType<typeof setInterval> | undefined;
     let finished = false;
@@ -64,14 +66,14 @@ export default defineComponent({
     });
 
     return () => (
-      <div class='i-countdown'>
-        {(props.title || slots.title) && <div class='i-countdown__title'>{slots.title?.() ?? props.title}</div>}
-        <div class='i-countdown__content' style={props.valueStyle}>
-          {slots.prefix?.() ?? (props.prefix && <span class='i-countdown__prefix'>{props.prefix}</span>)}
+      <div class={ns.b()}>
+        {(props.title || slots.title) && <div class={ns.e('title')}>{slots.title?.() ?? props.title}</div>}
+        <div class={ns.e('content')} style={props.valueStyle}>
+          {slots.prefix?.() ?? (props.prefix && <span class={ns.e('prefix')}>{props.prefix}</span>)}
           {slots.default?.({ value: remaining.value, text: text.value }) ?? (
-            <span class='i-countdown__value'>{text.value}</span>
+            <span class={ns.e('value')}>{text.value}</span>
           )}
-          {slots.suffix?.() ?? (props.suffix && <span class='i-countdown__suffix'>{props.suffix}</span>)}
+          {slots.suffix?.() ?? (props.suffix && <span class={ns.e('suffix')}>{props.suffix}</span>)}
         </div>
       </div>
     );

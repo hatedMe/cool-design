@@ -1,7 +1,8 @@
 type Mod = string | Record<string, boolean | number | string>;
 type Mods = Mod | Mod[];
-function bem(componentName: string) {
+export function createBEM(getComponentName: () => string) {
   return function (elementOrMods?: Mod, mods?: Mods) {
+    const componentName = getComponentName();
     if (!elementOrMods) {
       return componentName;
     }
@@ -38,5 +39,5 @@ function bem(componentName: string) {
 
 export function createNamespace(name: string) {
   const prefixedName = `i-${name}`;
-  return [prefixedName, bem(prefixedName)] as const;
+  return [prefixedName, createBEM(() => prefixedName)] as const;
 }

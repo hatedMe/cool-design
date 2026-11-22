@@ -1,7 +1,8 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, type PropType } from 'vue';
 import { createNamespace } from '../../../src/utils/create';
 
-const [name, bem] = createNamespace('descriptions-item');
+const [name] = createNamespace('descriptions-item');
 
 export type DescriptionsItemAlign = 'left' | 'center' | 'right';
 
@@ -20,7 +21,8 @@ export default defineComponent({
     labelClassName: { type: String, default: '' }
   },
   setup(_, { slots }) {
+    const ns = useNamespace('descriptions-item');
     // 实际单元格由 Descriptions 父组件统一渲染为表格，此处仅兼容独立使用
-    return () => <div class={bem()}>{slots.default?.()}</div>;
+    return () => <div class={ns.b()}>{slots.default?.()}</div>;
   }
 });

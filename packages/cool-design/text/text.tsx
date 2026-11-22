@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, h, mergeProps, ref, shallowRef, watch, type PropType } from 'vue';
 
 export type TextType = 'primary' | 'success' | 'warning' | 'danger' | 'info' | '';
@@ -14,6 +15,7 @@ export default defineComponent({
     tag: { type: String, default: 'span' }
   },
   setup(props, { attrs, expose, slots }) {
+    const ns = useNamespace('text');
     const element = shallowRef<HTMLElement>();
     const automaticTitle = ref<string>();
 
@@ -69,9 +71,9 @@ export default defineComponent({
           {
             ref: element,
             class: [
-              'i-text',
-              props.type && `i-text--${props.type}`,
-              props.size && `i-text--${props.size}`,
+              ns.b(),
+              ns.m(props.type),
+              ns.m(props.size),
               props.truncated && 'is-truncated',
               props.lineClamp !== undefined && 'is-line-clamp'
             ],

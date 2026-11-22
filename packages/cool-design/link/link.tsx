@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, type PropType } from 'vue';
 import { useConfig, type Size } from '../config-provider/context';
 import Icon from '../icon';
@@ -17,6 +18,7 @@ export default defineComponent({
   },
   emits: ['click'],
   setup(props, { slots, attrs, emit }) {
+    const ns = useNamespace('link');
     const config = useConfig();
     return () => {
       const type = props.type ?? config.value.link?.type ?? 'default';
@@ -32,11 +34,11 @@ export default defineComponent({
         <a
           {...attrs}
           class={[
-            'i-link',
-            `i-link--${type}`,
-            `i-link--${props.size || config.value.size}`,
-            `i-link--underline-${underline}`,
-            { 'i-link--disabled': props.disabled },
+            ns.b(),
+            `${ns.b()}--${type}`,
+            `${ns.b()}--${props.size || config.value.size}`,
+            ns.m(`underline-${underline}`),
+            { [ns.m('disabled')]: props.disabled },
             attrs.class
           ]}
           href={props.disabled ? undefined : props.href}

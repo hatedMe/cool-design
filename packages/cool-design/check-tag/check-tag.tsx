@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, type PropType } from 'vue';
 import type { TagType } from '../tag/tag';
 
@@ -13,8 +14,9 @@ export default defineComponent({
     'update:checked': (checked: boolean) => typeof checked === 'boolean'
   },
   setup(props, { slots, emit }) {
+    const ns = useNamespace('check-tag');
     return () => (
-      <button type='button' class={['i-check-tag', `i-check-tag--${props.type}`]}
+      <button type='button' class={[ns.b(), `${ns.b()}--${props.type}`]}
         disabled={props.disabled} aria-pressed={props.checked}
         onClick={() => {
           if (props.disabled) return;

@@ -1,7 +1,8 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent } from 'vue';
 import type { PropType } from 'vue';
-import { createNamespace } from '../../../src/utils/create';
-const [name, bem] = createNamespace('badge');
+import { createBEM, createNamespace } from '../../../src/utils/create';
+const [name] = createNamespace('badge');
 
 export type BadgeType = 'primary' | 'success' | 'warning' | 'danger' | 'info';
 
@@ -44,6 +45,8 @@ export default defineComponent({
   name,
   props,
   setup(props, { slots }) {
+    const ns = useNamespace('badge');
+    const bem = createBEM(ns.b);
     const content = computed<string>(() => {
       const { max, value, isDot } = props;
       if (isDot) return '';
@@ -70,8 +73,8 @@ export default defineComponent({
             style={[
               {
                 background: props.color,
-                '--i-badge-offset-x': props.offset ? `${props.offset[0]}px` : undefined,
-                '--i-badge-offset-y': props.offset ? `${props.offset[1]}px` : undefined
+                [ns.cssVarName('badge-offset-x')]: props.offset ? `${props.offset[0]}px` : undefined,
+                [ns.cssVarName('badge-offset-y')]: props.offset ? `${props.offset[1]}px` : undefined
               },
               props.badgeStyle
             ]}

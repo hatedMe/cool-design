@@ -1,7 +1,8 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, type PropType, type StyleValue } from 'vue';
 import { createNamespace } from '../../../src/utils/create';
 
-const [name, bem] = createNamespace('statistic');
+const [name] = createNamespace('statistic');
 
 export type StatisticValue = string | number;
 export type StatisticFormatter = (value: StatisticValue) => string;
@@ -31,6 +32,7 @@ export default defineComponent({
     valueStyle: { type: [String, Object] as PropType<string | Record<string, string>>, default: undefined }
   },
   setup(props, { slots, expose }) {
+    const ns = useNamespace('statistic');
     const display = computed(() => {
       if (props.formatter) return props.formatter(props.value);
       const raw = props.value;
@@ -53,17 +55,17 @@ export default defineComponent({
     expose({ displayValue: display });
 
     return () => (
-      <div class={name}>
+      <div class={ns.b()}>
         {(props.title || slots.title) && (
-          <div class={bem('title')}>{slots.title?.() ?? props.title}</div>
+          <div class={ns.e('title')}>{slots.title?.() ?? props.title}</div>
         )}
-        <div class={bem('content')} style={contentStyle.value}>
+        <div class={ns.e('content')} style={contentStyle.value}>
           {(props.prefix || slots.prefix) && (
-            <span class={bem('prefix')}>{slots.prefix?.() ?? props.prefix}</span>
+            <span class={ns.e('prefix')}>{slots.prefix?.() ?? props.prefix}</span>
           )}
-          <span class={bem('number')}>{display.value}</span>
+          <span class={ns.e('number')}>{display.value}</span>
           {(props.suffix || slots.suffix) && (
-            <span class={bem('suffix')}>{slots.suffix?.() ?? props.suffix}</span>
+            <span class={ns.e('suffix')}>{slots.suffix?.() ?? props.suffix}</span>
           )}
         </div>
       </div>

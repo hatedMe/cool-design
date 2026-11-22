@@ -1,37 +1,39 @@
-.i-text {
-  color: var(--i-text, #303133);
+@use '../style/mixins/config';
+
+.#{config.$namespace}-text {
+  color: var(--#{config.$namespace}-text, #303133);
   font-size: 14px;
   line-height: 1.5;
 }
-.i-text--primary {
-  color: var(--i-primary, #409eff);
+.#{config.$namespace}-text--primary {
+  color: var(--#{config.$namespace}-primary, #409eff);
 }
-.i-text--success {
-  color: var(--i-success, #67c23a);
+.#{config.$namespace}-text--success {
+  color: var(--#{config.$namespace}-success, #67c23a);
 }
-.i-text--warning {
-  color: var(--i-warning, #e6a23c);
+.#{config.$namespace}-text--warning {
+  color: var(--#{config.$namespace}-warning, #e6a23c);
 }
-.i-text--danger {
-  color: var(--i-danger, #f56c6c);
+.#{config.$namespace}-text--danger {
+  color: var(--#{config.$namespace}-danger, #f56c6c);
 }
-.i-text--info {
-  color: var(--i-info, #909399);
+.#{config.$namespace}-text--info {
+  color: var(--#{config.$namespace}-info, #909399);
 }
-.i-text--small {
+.#{config.$namespace}-text--small {
   font-size: 12px;
 }
-.i-text--large {
+.#{config.$namespace}-text--large {
   font-size: 16px;
 }
-.i-text.is-truncated {
+.#{config.$namespace}-text.is-truncated {
   display: inline-block;
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: bottom;
   white-space: nowrap;
 }
-.i-text.is-line-clamp {
+.#{config.$namespace}-text.is-line-clamp {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;

@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, type PropType } from 'vue';
 
 export type DividerDirection = 'horizontal' | 'vertical';
@@ -24,6 +25,7 @@ export default defineComponent({
     borderStyle: { type: String as PropType<DividerBorderStyle>, default: 'solid' }
   },
   setup(props, { slots }) {
+    const ns = useNamespace('divider');
     const isVertical = () => props.vertical || props.direction === 'vertical';
     return () => {
       const vertical = isVertical();
@@ -32,13 +34,13 @@ export default defineComponent({
           role='separator'
           aria-orientation={vertical ? 'vertical' : 'horizontal'}
           class={[
-            'i-divider',
-            vertical ? 'i-divider--vertical' : 'i-divider--horizontal',
-            `i-divider--${props.contentPosition}`
+            ns.b(),
+            vertical ? ns.m('vertical') : ns.m('horizontal'),
+            `${ns.b()}--${props.contentPosition}`
           ]}
-          style={{ '--i-divider-border-style': props.borderStyle } as Record<string, string>}>
+          style={{ [ns.cssVarName('divider-border-style')]: props.borderStyle } as Record<string, string>}>
           {!vertical && slots.default && (
-            <div class={['i-divider__text', `is-${props.contentPosition}`]}>{slots.default()}</div>
+            <div class={[ns.e('text'), `is-${props.contentPosition}`]}>{slots.default()}</div>
           )}
         </div>
       );

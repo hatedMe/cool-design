@@ -1,8 +1,9 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, h, type Component, type PropType } from 'vue';
 import { createNamespace } from '../../../src/utils/create';
 import Icon from '../icon';
 
-const [name, bem] = createNamespace('result');
+const [name] = createNamespace('result');
 
 export type ResultStatus = 'success' | 'warning' | 'info' | 'error' | '404' | '403' | '500';
 export type ResultIcon = string | Component;
@@ -24,12 +25,13 @@ export default defineComponent({
     icon: [String, Object, Function] as PropType<ResultIcon>
   },
   setup(props, { slots }) {
+    const ns = useNamespace('result');
     const isHttpStatus = computed(() => props.status === '404' || props.status === '403' || props.status === '500');
 
     const renderDefaultIcon = () => {
       if (isHttpStatus.value) {
         return (
-          <span class={bem('code')} aria-hidden='true'>
+          <span class={ns.e('code')} aria-hidden='true'>
             {props.status}
           </span>
         );
@@ -37,7 +39,7 @@ export default defineComponent({
       const path = ICON_PATHS[props.status as 'success' | 'warning' | 'info' | 'error'] ?? ICON_PATHS.info;
       const circle = props.status === 'warning' ? 'M12 3 2.5 20h19L12 3Z' : undefined;
       return (
-        <svg class={bem('svg')} width='64' height='64' viewBox='0 0 24 24' fill='none' aria-hidden='true'>
+        <svg class={ns.e('svg')} width='64' height='64' viewBox='0 0 24 24' fill='none' aria-hidden='true'>
           {circle ? (
             <path d={circle} stroke='currentColor' stroke-width='1.8' stroke-linejoin='round' />
           ) : (
@@ -55,15 +57,15 @@ export default defineComponent({
     };
 
     return () => (
-      <section class={[name, `${name}--${props.status}`]} role='status'>
-        <div class={bem('icon')}>{slots.icon?.() ?? renderCustomIcon() ?? renderDefaultIcon()}</div>
+      <section class={[ns.b(), `${ns.b()}--${props.status}`]} role='status'>
+        <div class={ns.e('icon')}>{slots.icon?.() ?? renderCustomIcon() ?? renderDefaultIcon()}</div>
         {(props.title || slots.title) && (
-          <h2 class={bem('title')}>{slots.title?.() ?? props.title}</h2>
+          <h2 class={ns.e('title')}>{slots.title?.() ?? props.title}</h2>
         )}
         {(props.subTitle || slots['sub-title'] || slots.subTitle) && (
-          <p class={bem('sub-title')}>{slots['sub-title']?.() ?? slots.subTitle?.() ?? props.subTitle}</p>
+          <p class={ns.e('sub-title')}>{slots['sub-title']?.() ?? slots.subTitle?.() ?? props.subTitle}</p>
         )}
-        {slots.extra && <div class={bem('extra')}>{slots.extra()}</div>}
+        {slots.extra && <div class={ns.e('extra')}>{slots.extra()}</div>}
       </section>
     );
   }

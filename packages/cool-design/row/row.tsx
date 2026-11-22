@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, h, provide, type InjectionKey, type ComputedRef, type PropType } from 'vue';
 export const rowValues = ['start', 'end', 'center', 'space-around', 'space-between', 'space-evenly'] as const;
 export const columnValues = ['top', 'middle', 'bottom', 'center'] as const;
@@ -20,13 +21,14 @@ export default defineComponent({
     align: { type: String as PropType<(typeof columnValues)[number]> }
   },
   setup(props, { slots }) {
+    const ns = useNamespace('row');
     const gutter = computed(() => (Number.isFinite(props.gutter) ? Math.max(0, props.gutter) : 0));
     provide(rowKeys, { gutter });
     return () =>
       h(
         props.tag,
         {
-          class: 'i-row',
+          class: ns.b(),
           style: {
             display: 'flex',
             flexWrap: 'wrap',

@@ -82,7 +82,13 @@ import { ConfigProvider, en } from 'cool-design/config-provider';
 
 从 `cool-design/config-provider` 可导入 `zhCn`、`en` 和 `useLocale`。内置语言对象仅包含 Select、Table、ColorPicker、Empty 的基础文案；也可以直接传入 Element Plus 的语言对象。`useLocale().t('el.select.placeholder', '请选择')` 按路径读取字符串，缺失路径使用后备文案。具体组件须调用该工具才会响应语言切换。
 
-ConfigProvider、Button、ButtonGroup 和 Icon 支持自定义 CSS 前缀。子级继承最近 Provider 的前缀，也可显式覆盖。组件注册名仍使用 `i-*`、`I*` 和 `El*`。
+### 自定义 CSS 前缀
+
+子级继承最近 Provider 的前缀，也可显式覆盖。组件注册名仍使用 `i-*`、`I*` 和 `El*`。当前支持范围如下。
+
+- ConfigProvider、Button、ButtonGroup、Icon、Tooltip、Popover、Popconfirm 和 `v-popover`。
+- Container、Header、Aside、Main、Footer、Row、Col、Divider、Space、Text 和 Link。
+- Badge、Tag、CheckTag、Avatar、AvatarGroup、Card、Descriptions、DescriptionsItem、Empty、Result、Statistic、Countdown、Skeleton 和 SkeletonItem。
 
 从源码构建时，先配置 Sass，再加载样式。下例路径相对于仓库根目录。
 
@@ -91,7 +97,7 @@ ConfigProvider、Button、ButtonGroup 和 Icon 支持自定义 CSS 前缀。子�
 @use 'packages/cool-design/style/index';
 ```
 
-在模板中使用 `<i-config-provider namespace="acme" :theme-vars="{ '--acme-primary': '#057a55' }">`。`theme-vars` 保留原始键，自定义变量前缀须与所用 CSS 匹配。在页面中同时使用或动态切换 `i` 和 `acme` 时，分别编译并预加载两套样式。其余组件和浮层服务的前缀仍待迁移，当前 npm 包随附默认 `i` 样式。
+在模板中使用 `<i-config-provider namespace="acme" :theme-vars="{ '--acme-primary': '#057a55' }">`。`theme-vars` 保留原始键，自定义变量前缀须与所用 CSS 匹配。原先覆盖 `--i-main-padding` 等组件变量时，随命名空间改用 `--acme-main-padding` 等对应变量。Space 的 `prefix-cls` 仍可指定自己的子项包装类。在页面中同时使用或动态切换 `i` 和 `acme` 时，分别编译并预加载两套样式。其他组件和浮层服务的前缀仍按默认值处理，当前 npm 包随附默认 `i` 样式。
 
 `zIndex` 作用于使用 `useZIndex` 的锚定浮层以及 Dialog、Drawer；组件自身的 `zIndex` 属性优先。Message、Notification 服务默认从所属应用的层级递增，服务选项中显式传入的 `zIndex` 优先。空值配置由 `useEmptyValues` 读取，具体组件是否支持以组件 API 为准。
 

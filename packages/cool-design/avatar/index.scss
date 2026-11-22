@@ -1,8 +1,10 @@
+@use '../style/mixins/config';
+
 @import '../style/var.scss';
 
 $fits: (fill, contain, cover, none, scale-down);
 
-.i-avatar {
+.#{config.$namespace}-avatar {
   display: flex;
   justify-content: center;
   align-items: center;

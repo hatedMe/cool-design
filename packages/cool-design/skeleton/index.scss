@@ -1,63 +1,65 @@
-.i-skeleton {
-  --i-skeleton-color: var(--i-bg-subtle, #f2f3f5);
-  --i-skeleton-shimmer: var(--i-bg, #fff);
-  color: var(--i-text);
+@use '../style/mixins/config';
+
+.#{config.$namespace}-skeleton {
+  --#{config.$namespace}-skeleton-color: var(--#{config.$namespace}-bg-subtle, #f2f3f5);
+  --#{config.$namespace}-skeleton-shimmer: var(--#{config.$namespace}-bg, #fff);
+  color: var(--#{config.$namespace}-text);
 }
 
-.i-skeleton__block + .i-skeleton__block {
+.#{config.$namespace}-skeleton__block + .#{config.$namespace}-skeleton__block {
   margin-top: 16px;
 }
 
-.i-skeleton-item {
+.#{config.$namespace}-skeleton-item {
   display: block;
-  background: var(--i-skeleton-color);
+  background: var(--#{config.$namespace}-skeleton-color);
   border-radius: 4px;
 }
 
-.i-skeleton-item--p,
-.i-skeleton-item--text {
+.#{config.$namespace}-skeleton-item--p,
+.#{config.$namespace}-skeleton-item--text {
   height: 16px;
   margin-top: 12px;
 }
 
-.i-skeleton__first-row {
+.#{config.$namespace}-skeleton__first-row {
   width: 60%;
   margin-top: 0;
 }
 
-.i-skeleton-item--h1 {
+.#{config.$namespace}-skeleton-item--h1 {
   height: 28px;
   margin: 8px 0;
 }
 
-.i-skeleton-item--h3,
-.i-skeleton__title {
+.#{config.$namespace}-skeleton-item--h3,
+.#{config.$namespace}-skeleton__title {
   height: 20px;
   margin: 8px 0;
 }
 
-.i-skeleton-item--h5 {
+.#{config.$namespace}-skeleton-item--h5 {
   height: 18px;
   margin: 8px 0;
 }
 
-.i-skeleton-item--paragraph {
+.#{config.$namespace}-skeleton-item--paragraph {
   height: 16px;
   margin-top: 12px;
 }
 
-.i-skeleton-item--caption {
+.#{config.$namespace}-skeleton-item--caption {
   height: 12px;
   margin-top: 8px;
 }
 
-.i-skeleton-item--button {
+.#{config.$namespace}-skeleton-item--button {
   width: 96px;
   height: 32px;
-  border-radius: var(--i-radius, 4px);
+  border-radius: var(--#{config.$namespace}-radius, 4px);
 }
 
-.i-skeleton-item--image {
+.#{config.$namespace}-skeleton-item--image {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,30 +68,30 @@
   border-radius: 4px;
 }
 
-.i-skeleton-item--circle,
-.i-skeleton__avatar {
+.#{config.$namespace}-skeleton-item--circle,
+.#{config.$namespace}-skeleton__avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
 }
 
-.i-skeleton-item--rect {
+.#{config.$namespace}-skeleton-item--rect {
   width: 120px;
   height: 72px;
 }
 
-.i-skeleton.is-animated .i-skeleton-item {
+.#{config.$namespace}-skeleton.is-animated .#{config.$namespace}-skeleton-item {
   background: linear-gradient(
     90deg,
-    var(--i-skeleton-color) 25%,
-    var(--i-skeleton-shimmer) 37%,
-    var(--i-skeleton-color) 63%
+    var(--#{config.$namespace}-skeleton-color) 25%,
+    var(--#{config.$namespace}-skeleton-shimmer) 37%,
+    var(--#{config.$namespace}-skeleton-color) 63%
   );
   background-size: 400% 100%;
-  animation: i-skeleton-loading 1.4s ease infinite;
+  animation: #{config.$namespace}-skeleton-loading 1.4s ease infinite;
 }
 
-@keyframes i-skeleton-loading {
+@keyframes #{config.$namespace}-skeleton-loading {
   0% {
     background-position: 100% 50%;
   }
@@ -99,7 +101,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .i-skeleton.is-animated .i-skeleton-item {
+  .#{config.$namespace}-skeleton.is-animated .#{config.$namespace}-skeleton-item {
     animation: none;
   }
 }

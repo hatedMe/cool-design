@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, type PropType } from 'vue';
 import { useConfig, type Size } from '../config-provider/context';
 export type TagType = 'primary' | 'success' | 'warning' | 'danger' | 'info';
@@ -17,19 +18,20 @@ export default defineComponent({
   },
   emits: ['click', 'close'],
   setup(props, { slots, emit }) {
+    const ns = useNamespace('tag');
     const config = useConfig();
     return () => (
       <span
         class={[
-          'i-tag',
-          `i-tag--${props.type}`,
-          `i-tag--${props.effect}`,
-          `i-tag--${props.size || config.value.size}`,
+          ns.b(),
+          `${ns.b()}--${props.type}`,
+          `${ns.b()}--${props.effect}`,
+          `${ns.b()}--${props.size || config.value.size}`,
           {
-            'i-tag--disabled': props.disabled,
-            'i-tag--round': props.round,
-            'i-tag--hit': props.hit,
-            'i-tag--disable-transitions': props.disableTransitions
+            [ns.m('disabled')]: props.disabled,
+            [ns.m('round')]: props.round,
+            [ns.m('hit')]: props.hit,
+            [ns.m('disable-transitions')]: props.disableTransitions
           }
         ]}
         style={props.color ? { background: props.color } : undefined}

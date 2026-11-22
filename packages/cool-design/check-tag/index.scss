@@ -1,19 +1,21 @@
-.i-check-tag {
-  --i-check-tag-color: var(--i-primary, #409eff);
+@use '../style/mixins/config';
+
+.#{config.$namespace}-check-tag {
+  --#{config.$namespace}-check-tag-color: var(--#{config.$namespace}-primary, #409eff);
   border: 0;
-  border-radius: var(--i-radius, 4px);
+  border-radius: var(--#{config.$namespace}-radius, 4px);
   padding: 5px 10px;
-  background: var(--i-bg-soft, #f4f4f5);
-  color: var(--i-text, #606266);
+  background: var(--#{config.$namespace}-bg-soft, #f4f4f5);
+  color: var(--#{config.$namespace}-text, #606266);
   font: inherit;
   cursor: pointer;
 }
-.i-check-tag[aria-pressed='true'] {
-  background: color-mix(in srgb, var(--i-check-tag-color) 18%, transparent);
-  color: var(--i-check-tag-color);
+.#{config.$namespace}-check-tag[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--#{config.$namespace}-check-tag-color) 18%, transparent);
+  color: var(--#{config.$namespace}-check-tag-color);
 }
-.i-check-tag:disabled { cursor: not-allowed; opacity: .55; }
-.i-check-tag--success { --i-check-tag-color: var(--i-success, #67c23a); }
-.i-check-tag--info { --i-check-tag-color: var(--i-info, #909399); }
-.i-check-tag--warning { --i-check-tag-color: var(--i-warning, #e6a23c); }
-.i-check-tag--danger { --i-check-tag-color: var(--i-danger, #f56c6c); }
+.#{config.$namespace}-check-tag:disabled { cursor: not-allowed; opacity: .55; }
+.#{config.$namespace}-check-tag--success { --#{config.$namespace}-check-tag-color: var(--#{config.$namespace}-success, #67c23a); }
+.#{config.$namespace}-check-tag--info { --#{config.$namespace}-check-tag-color: var(--#{config.$namespace}-info, #909399); }
+.#{config.$namespace}-check-tag--warning { --#{config.$namespace}-check-tag-color: var(--#{config.$namespace}-warning, #e6a23c); }
+.#{config.$namespace}-check-tag--danger { --#{config.$namespace}-check-tag-color: var(--#{config.$namespace}-danger, #f56c6c); }

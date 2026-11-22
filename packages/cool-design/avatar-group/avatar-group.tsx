@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import {
   Comment, Fragment, Text, cloneVNode, createTextVNode, defineComponent, h, isVNode, normalizeClass, normalizeStyle, provide,
   type ComponentOptionsMixin, type CSSProperties, type DefineComponent, type ExtractPropTypes, type PropType, type VNode
@@ -15,7 +16,7 @@ type ClassValue = string | false | null | undefined | Record<string, unknown> | 
 type StyleValue = string | CSSProperties | false | null | undefined | StyleValue[];
 const classProp = { type: [String, Array, Object, Boolean] as PropType<ClassValue>, default: undefined };
 const styleProp = { type: [String, Array, Object, Boolean] as PropType<StyleValue>, default: undefined };
-const [name, bem] = createNamespace('avatar-group');
+const [name] = createNamespace('avatar-group');
 const countKey = Symbol('avatar-group-count');
 
 const avatarGroupProps = {
@@ -43,6 +44,7 @@ const Component = defineComponent({
   name,
   props: avatarGroupProps,
   setup(props, { slots }) {
+    const ns = useNamespace('avatar-group');
     provide(avatarGroupKey, props);
     let previousKeys: ScopedKeys = new Map();
 
@@ -84,7 +86,7 @@ const Component = defineComponent({
 
       const max = props.maxCollapseAvatars;
       const collapsed = props.collapseAvatars && avatars.length > max;
-      if (!collapsed) return <div class={bem()}>{avatars}</div>;
+      if (!collapsed) return <div class={ns.b()}>{avatars}</div>;
 
       const visible = avatars.slice(0, max);
       const hidden = avatars.slice(max);
@@ -95,11 +97,11 @@ const Component = defineComponent({
       }, () => `+ ${hidden.length}`);
 
       return (
-        <div class={bem()}>
+        <div class={ns.b()}>
           {visible}
           <Tooltip
             key={countKey}
-            triggerClass={bem('trigger')}
+            triggerClass={ns.e('trigger')}
             disabled={!props.collapseAvatarsTooltip}
             effect={props.effect}
             placement={props.placement}
@@ -108,7 +110,7 @@ const Component = defineComponent({
           >
             {{
               default: count,
-              content: () => <div class={bem('collapse-avatars')}>{hidden.map((node) => cloneVNode(node))}</div>
+              content: () => <div class={ns.e('collapse-avatars')}>{hidden.map((node) => cloneVNode(node))}</div>
             }}
           </Tooltip>
         </div>

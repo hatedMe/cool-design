@@ -1,4 +1,6 @@
-.i-aside {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-aside {
   width: 300px;
   flex-shrink: 0;
   min-width: 0;

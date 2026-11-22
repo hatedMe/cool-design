@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { Fragment, defineComponent, isVNode, type PropType } from 'vue';
 function hasVerticalRegion(children: unknown[]): boolean {
   return children.some(
@@ -13,10 +14,11 @@ export default defineComponent({
   name: 'i-container',
   props: { direction: String as PropType<'horizontal' | 'vertical'> },
   setup(props, { slots }) {
+    const ns = useNamespace('container');
     return () => {
       const children = slots.default?.() || [];
       const direction = props.direction || (hasVerticalRegion(children) ? 'vertical' : 'horizontal');
-      return <section class={['i-container', `i-container--${direction}`]}>{children}</section>;
+      return <section class={[ns.b(), `${ns.b()}--${direction}`]}>{children}</section>;
     };
   }
 });

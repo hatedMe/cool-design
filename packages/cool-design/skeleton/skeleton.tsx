@@ -1,8 +1,9 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { createNamespace } from '../../../src/utils/create';
 import SkeletonItem from './skeleton-item';
 
-const [name, bem] = createNamespace('skeleton');
+const [name] = createNamespace('skeleton');
 
 const toInt = (value: unknown, fallback: number): number => {
   const numeric = Number(value);
@@ -25,6 +26,7 @@ export default defineComponent({
     avatar: Boolean
   },
   setup(props, { slots }) {
+    const ns = useNamespace('skeleton');
     const count = computed(() => Math.max(1, toInt(props.count, 1)));
     const rows = computed(() => Math.max(0, toInt(props.rows, 3)));
     const throttleMs = computed(() => Math.max(0, toInt(props.throttle, 0)));
@@ -56,19 +58,19 @@ export default defineComponent({
 
     const renderDefaultTemplate = () => (
       <>
-        {props.avatar && <SkeletonItem variant='circle' class={bem('avatar')} />}
-        {props.title && <SkeletonItem variant='h3' class={bem('title')} />}
+        {props.avatar && <SkeletonItem variant='circle' class={ns.e('avatar')} />}
+        {props.title && <SkeletonItem variant='h3' class={ns.e('title')} />}
         {Array.from({ length: rows.value }, (_, index) => (
-          <SkeletonItem variant='p' key={index} class={index === 0 ? bem('first-row') : undefined} />
+          <SkeletonItem variant='p' key={index} class={index === 0 ? ns.e('first-row') : undefined} />
         ))}
       </>
     );
 
     return () =>
       showSkeleton.value ? (
-        <div class={{ [name]: true, 'is-animated': props.animated }} role='status' aria-label='加载中'>
+        <div class={{ [ns.b()]: true, 'is-animated': props.animated }} role='status' aria-label='加载中'>
           {Array.from({ length: count.value }, (_, index) => (
-            <div class={bem('block')} key={index} aria-hidden='true'>
+            <div class={ns.e('block')} key={index} aria-hidden='true'>
               {slots.template?.() ?? renderDefaultTemplate()}
             </div>
           ))}

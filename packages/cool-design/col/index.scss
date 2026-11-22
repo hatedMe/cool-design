@@ -1,27 +1,28 @@
+@use '../style/mixins/config';
 @use 'sass:math';
-.i-col {
+.#{config.$namespace}-col {
   box-sizing: border-box;
   min-width: 0;
   position: relative;
-  --i-col-push: 0;
-  --i-col-pull: 0;
-  left: calc((var(--i-col-push) - var(--i-col-pull)) / 24 * 100%);
+  --#{config.$namespace}-col-push: 0;
+  --#{config.$namespace}-col-pull: 0;
+  left: calc((var(--#{config.$namespace}-col-push) - var(--#{config.$namespace}-col-pull)) / 24 * 100%);
 }
 @mixin grid($prefix) {
   @for $i from 0 through 24 {
-    .i-col-#{$prefix}#{$i} {
+    .#{config.$namespace}-col-#{$prefix}#{$i} {
       display: if($i == 0, none, block);
       flex: 0 0 math.percentage(math.div($i, 24));
       max-width: math.percentage(math.div($i, 24));
     }
-    .i-col-#{$prefix}offset-#{$i} {
+    .#{config.$namespace}-col-#{$prefix}offset-#{$i} {
       margin-left: math.percentage(math.div($i, 24));
     }
-    .i-col-#{$prefix}push-#{$i} {
-      --i-col-push: #{$i};
+    .#{config.$namespace}-col-#{$prefix}push-#{$i} {
+      --#{config.$namespace}-col-push: #{$i};
     }
-    .i-col-#{$prefix}pull-#{$i} {
-      --i-col-pull: #{$i};
+    .#{config.$namespace}-col-#{$prefix}pull-#{$i} {
+      --#{config.$namespace}-col-pull: #{$i};
     }
   }
 }

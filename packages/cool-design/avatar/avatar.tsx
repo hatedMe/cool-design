@@ -1,11 +1,12 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import {
   PropType, computed, defineComponent, h, inject, ref, watch, type Component, type ComponentOptionsMixin,
   type DefineComponent
 } from 'vue';
-import { createNamespace } from '../../../src/utils/create';
+import { createBEM, createNamespace } from '../../../src/utils/create';
 import Icon from '../icon';
 import { avatarGroupKey } from './group-context';
-const [name, bem] = createNamespace('avatar');
+const [name] = createNamespace('avatar');
 
 export type AvatarShape = 'circle' | 'square';
 export type AvatarSize = '' | 'large' | 'default' | 'medium' | 'small' | number;
@@ -46,6 +47,8 @@ const Avatar: AvatarComponent = defineComponent({
   props: avatarProps,
   emits: ['error'],
   setup(props, { slots, emit }) {
+    const ns = useNamespace('avatar');
+    const bem = createBEM(ns.b);
     const group = inject(avatarGroupKey, undefined);
     const size = computed(() => {
       const value = props.size ?? group?.size ?? '';

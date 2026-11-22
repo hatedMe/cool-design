@@ -1,67 +1,69 @@
-.i-tag {
-  --i-tag-color: var(--i-primary);
-  --i-tag-bg-color: color-mix(in srgb, var(--i-tag-color) 12%, var(--i-bg, #fff));
-  --i-tag-border-color: var(--i-tag-color);
+@use '../style/mixins/config';
+
+.#{config.$namespace}-tag {
+  --#{config.$namespace}-tag-color: var(--#{config.$namespace}-primary);
+  --#{config.$namespace}-tag-bg-color: color-mix(in srgb, var(--#{config.$namespace}-tag-color) 12%, var(--#{config.$namespace}-bg, #fff));
+  --#{config.$namespace}-tag-border-color: var(--#{config.$namespace}-tag-color);
   display: inline-flex;
   align-items: center;
   gap: 4px;
   max-width: 100%;
   padding: 2px 8px;
-  border: 1px solid var(--i-tag-border-color);
+  border: 1px solid var(--#{config.$namespace}-tag-border-color);
   border-radius: 4px;
   font-size: 12px;
   line-height: 20px;
-  color: var(--i-tag-color);
-  background: var(--i-tag-bg-color);
+  color: var(--#{config.$namespace}-tag-color);
+  background: var(--#{config.$namespace}-tag-bg-color);
   vertical-align: middle;
 }
-.i-tag--success {
-  --i-tag-color: var(--i-success);
+.#{config.$namespace}-tag--success {
+  --#{config.$namespace}-tag-color: var(--#{config.$namespace}-success);
 }
-.i-tag--warning {
-  --i-tag-color: var(--i-warning);
+.#{config.$namespace}-tag--warning {
+  --#{config.$namespace}-tag-color: var(--#{config.$namespace}-warning);
 }
-.i-tag--danger {
-  --i-tag-color: var(--i-danger);
+.#{config.$namespace}-tag--danger {
+  --#{config.$namespace}-tag-color: var(--#{config.$namespace}-danger);
 }
-.i-tag--info {
-  --i-tag-color: var(--i-text-secondary);
+.#{config.$namespace}-tag--info {
+  --#{config.$namespace}-tag-color: var(--#{config.$namespace}-text-secondary);
 }
-.i-tag--plain {
-  background: var(--i-bg);
+.#{config.$namespace}-tag--plain {
+  background: var(--#{config.$namespace}-bg);
 }
-.i-tag--dark {
-  background: var(--i-tag-color);
-  color: var(--i-bg);
+.#{config.$namespace}-tag--dark {
+  background: var(--#{config.$namespace}-tag-color);
+  color: var(--#{config.$namespace}-bg);
 }
-.i-tag--dark.i-tag--primary {
-  color: var(--i-on-primary);
+.#{config.$namespace}-tag--dark.#{config.$namespace}-tag--primary {
+  color: var(--#{config.$namespace}-on-primary);
 }
-.i-tag--small {
+.#{config.$namespace}-tag--small {
   padding: 0 6px;
   line-height: 18px;
 }
-.i-tag--large {
+.#{config.$namespace}-tag--large {
   padding: 3px 10px;
   line-height: 24px;
   font-size: 14px;
 }
-.i-tag--disabled {
+.#{config.$namespace}-tag--disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-.i-tag--round {
+.#{config.$namespace}-tag--round {
   border-radius: 999px;
 }
-.i-tag--hit {
-  border-color: var(--i-tag-color);
+.#{config.$namespace}-tag--hit {
+  border-color: var(--#{config.$namespace}-tag-color);
   background: transparent;
 }
-.i-tag--disable-transitions,
-.i-tag--disable-transitions * {
+.#{config.$namespace}-tag--disable-transitions,
+.#{config.$namespace}-tag--disable-transitions * {
   transition: none !important;
 }
-.i-tag button {
+.#{config.$namespace}-tag button {
   border: 0;
   border-radius: 3px;
   padding: 0 2px;
@@ -70,6 +72,6 @@
   background: transparent;
   cursor: pointer;
 }
-.i-tag button:disabled {
+.#{config.$namespace}-tag button:disabled {
   cursor: not-allowed;
 }

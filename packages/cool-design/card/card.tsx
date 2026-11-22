@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, type PropType } from 'vue';
 export default defineComponent({
   name: 'i-card',
@@ -12,16 +13,17 @@ export default defineComponent({
     border: { type: Boolean, default: true }
   },
   setup(props, { slots }) {
+    const ns = useNamespace('card');
     return () => (
-      <section class={{ 'i-card': true, 'is-bordered': props.border, [`is-shadow-${props.shadow}`]: true }}>
+      <section class={{ [ns.b()]: true, 'is-bordered': props.border, [`is-shadow-${props.shadow}`]: true }}>
         {(props.header || slots.header) && (
-          <header class={['i-card__header', props.headerClass]}>{slots.header?.() ?? props.header}</header>
+          <header class={[ns.e('header'), props.headerClass]}>{slots.header?.() ?? props.header}</header>
         )}
-        <div class={['i-card__body', props.bodyClass]} style={props.bodyStyle}>
+        <div class={[ns.e('body'), props.bodyClass]} style={props.bodyStyle}>
           {slots.default?.()}
         </div>
         {(props.footer || slots.footer) && (
-          <footer class={['i-card__footer', props.footerClass]}>{slots.footer?.() ?? props.footer}</footer>
+          <footer class={[ns.e('footer'), props.footerClass]}>{slots.footer?.() ?? props.footer}</footer>
         )}
       </section>
     );

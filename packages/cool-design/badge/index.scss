@@ -1,20 +1,22 @@
+@use '../style/mixins/config';
+
 @import '../style/var.scss';
 
-.i-badge {
+.#{config.$namespace}-badge {
   position: relative;
   &__tag {
-    background: var(--i-warning, #f4984e);
+    background: var(--#{config.$namespace}-warning, #f4984e);
     &--primary {
-      background: var(--i-primary, #2463eb);
+      background: var(--#{config.$namespace}-primary, #2463eb);
     }
     &--success {
-      background: var(--i-success, #16815d);
+      background: var(--#{config.$namespace}-success, #16815d);
     }
     &--danger {
-      background: var(--i-danger, #d73d4a);
+      background: var(--#{config.$namespace}-danger, #d73d4a);
     }
     &--info {
-      background: var(--i-text-secondary, #65748a);
+      background: var(--#{config.$namespace}-text-secondary, #65748a);
     }
     position: absolute;
     top: -5px;
@@ -36,7 +38,7 @@
     border-radius: 10px;
     transform: translateY(-50%) translateX(100%);
     &[data-offset] {
-      transform: translate(var(--i-badge-offset-x, 0), var(--i-badge-offset-y, -50%)) translateX(100%);
+      transform: translate(var(--#{config.$namespace}-badge-offset-x, 0), var(--#{config.$namespace}-badge-offset-y, -50%)) translateX(100%);
     }
   }
   &__dot {

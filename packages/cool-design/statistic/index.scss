@@ -1,14 +1,16 @@
-.i-statistic {
-  color: var(--i-text);
+@use '../style/mixins/config';
+
+.#{config.$namespace}-statistic {
+  color: var(--#{config.$namespace}-text);
 }
 
-.i-statistic__title {
+.#{config.$namespace}-statistic__title {
   margin-bottom: 4px;
-  color: var(--i-text-secondary);
+  color: var(--#{config.$namespace}-text-secondary);
   font-size: 13px;
 }
 
-.i-statistic__content {
+.#{config.$namespace}-statistic__content {
   display: flex;
   align-items: baseline;
   gap: 4px;
@@ -16,7 +18,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.i-statistic__prefix,
-.i-statistic__suffix {
+.#{config.$namespace}-statistic__prefix,
+.#{config.$namespace}-statistic__suffix {
   font-size: 14px;
 }

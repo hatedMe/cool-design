@@ -1,3 +1,5 @@
-.i-row {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-row {
   box-sizing: border-box;
 }

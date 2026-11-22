@@ -1,7 +1,9 @@
-.i-header {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-header {
   height: 60px;
   flex-shrink: 0;
   min-width: 0;
   box-sizing: border-box;
-  padding: 0 var(--i-header-padding, 20px);
+  padding: 0 var(--#{config.$namespace}-header-padding, 20px);
 }

@@ -1,7 +1,8 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, type PropType } from 'vue';
 import { createNamespace } from '../../../src/utils/create';
 
-const [name, bem] = createNamespace('empty');
+const [name] = createNamespace('empty');
 
 export default defineComponent({
   name,
@@ -11,13 +12,14 @@ export default defineComponent({
     imageSize: { type: [String, Number] as PropType<string | number>, default: undefined }
   },
   setup(props, { slots }) {
+    const ns = useNamespace('empty');
     const imageStyle = computed(() => {
       const size = typeof props.imageSize === 'number' ? `${props.imageSize}px` : props.imageSize;
       return size ? { width: size, height: size } : undefined;
     });
     return () => (
-      <div class={name}>
-        <div class={bem('image')} aria-hidden='true'>
+      <div class={ns.b()}>
+        <div class={ns.e('image')} aria-hidden='true'>
           {slots.image?.() ??
             (props.image ? (
               <img src={props.image} alt={props.description} style={imageStyle.value} />
@@ -33,8 +35,8 @@ export default defineComponent({
               </svg>
             ))}
         </div>
-        <div class={bem('description')}>{slots.description?.() ?? props.description}</div>
-        {slots.default && <div class={bem('action')}>{slots.default()}</div>}
+        <div class={ns.e('description')}>{slots.description?.() ?? props.description}</div>
+        {slots.default && <div class={ns.e('action')}>{slots.default()}</div>}
       </div>
     );
   }

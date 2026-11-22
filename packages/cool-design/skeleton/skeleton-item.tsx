@@ -1,7 +1,8 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, type PropType } from 'vue';
-import { createNamespace } from '../../../src/utils/create';
+import { createBEM, createNamespace } from '../../../src/utils/create';
 
-const [name, bem] = createNamespace('skeleton-item');
+const [name] = createNamespace('skeleton-item');
 
 export type SkeletonItemVariant =
   | 'p'
@@ -22,6 +23,8 @@ export default defineComponent({
     variant: { type: String as PropType<SkeletonItemVariant>, default: 'text' }
   },
   setup(props, { slots }) {
+    const ns = useNamespace('skeleton-item');
+    const bem = createBEM(ns.b);
     return () => (
       <div class={[bem(), bem({ [props.variant]: true })]} aria-hidden='true'>
         {slots.default?.()}

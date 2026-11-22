@@ -1,17 +1,19 @@
-.i-empty {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-empty {
   padding: 32px 16px;
   text-align: center;
-  color: var(--i-text-secondary);
-  font-size: var(--i-font-size);
+  color: var(--#{config.$namespace}-text-secondary);
+  font-size: var(--#{config.$namespace}-font-size);
 }
-.i-empty__image {
-  color: var(--i-text-muted);
+.#{config.$namespace}-empty__image {
+  color: var(--#{config.$namespace}-text-muted);
   margin-bottom: 12px;
 }
-.i-empty__image img {
+.#{config.$namespace}-empty__image img {
   object-fit: contain;
 }
-.i-empty__action {
+.#{config.$namespace}-empty__action {
   display: flex;
   justify-content: center;
   gap: 8px;

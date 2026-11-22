@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import {
   Comment,
   Fragment,
@@ -12,7 +13,7 @@ import {
 import { createNamespace } from '../../../src/utils/create';
 import DescriptionsItem from './descriptions-item';
 
-const [name, bem] = createNamespace('descriptions');
+const [name] = createNamespace('descriptions');
 
 export type DescriptionsDirection = 'horizontal' | 'vertical';
 export type DescriptionsSize = 'large' | 'default' | 'small';
@@ -79,6 +80,7 @@ export default defineComponent({
     items: { type: Array as PropType<DescriptionItem[]>, default: () => [] }
   },
   setup(props, { slots }) {
+    const ns = useNamespace('descriptions');
     const column = computed(() => Math.max(1, toInt(props.column, 3)));
 
     const normalized = computed<NormalizedItem[]>(() => {
@@ -157,7 +159,7 @@ export default defineComponent({
         scope={scope}
         colspan={props.direction === 'vertical' ? item.span || undefined : undefined}
         rowspan={props.direction === 'horizontal' && item.rowspan > 1 ? item.rowspan : undefined}
-        class={[bem('label'), item.labelClassName]}
+        class={[ns.e('label'), item.labelClassName]}
         style={{ width: toCssSize(item.labelWidth || props.labelWidth || ''), textAlign: item.labelAlign as CSSProperties['textAlign'] || undefined }}>
         {item.labelSlot?.() ?? item.label}
       </th>
@@ -170,7 +172,7 @@ export default defineComponent({
         <td
           colspan={colspan > 1 ? colspan : undefined}
           rowspan={props.direction === 'horizontal' && item.rowspan > 1 ? item.rowspan : undefined}
-          class={[bem('content'), item.className]}
+          class={[ns.e('content'), item.className]}
           style={{
             width: toCssSize(item.width),
             minWidth: toCssSize(item.minWidth),
@@ -182,7 +184,7 @@ export default defineComponent({
     };
 
     const renderHorizontal = () => (
-      <table class={bem('table')}>
+      <table class={ns.e('table')}>
         <tbody>
           {rows.value.map((row, rowIndex) => (
             <tr key={rowIndex}>
@@ -199,7 +201,7 @@ export default defineComponent({
     );
 
     const renderVertical = () => (
-      <table class={bem('table')}>
+      <table class={ns.e('table')}>
         <tbody>
           {rows.value.map((row, rowIndex) => (
             <Fragment key={rowIndex}>
@@ -226,18 +228,18 @@ export default defineComponent({
     return () => (
       <section
         class={{
-          [name]: true,
+          [ns.b()]: true,
           'is-bordered': props.border,
           [`is-${props.direction}`]: true,
-          [`${name}--${props.size}`]: props.size !== 'default'
+          [`${ns.b()}--${props.size}`]: props.size !== 'default'
         }}>
         {hasHeader.value && (
-          <header class={bem('header')}>
-            <span class={bem('title')}>{slots.title?.() ?? props.title}</span>
-            <span class={bem('extra')}>{slots.extra?.() ?? props.extra}</span>
+          <header class={ns.e('header')}>
+            <span class={ns.e('title')}>{slots.title?.() ?? props.title}</span>
+            <span class={ns.e('extra')}>{slots.extra?.() ?? props.extra}</span>
           </header>
         )}
-        <div class={bem('body')}>{props.direction === 'vertical' ? renderVertical() : renderHorizontal()}</div>
+        <div class={ns.e('body')}>{props.direction === 'vertical' ? renderVertical() : renderHorizontal()}</div>
       </section>
     );
   }
