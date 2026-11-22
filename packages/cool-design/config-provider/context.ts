@@ -63,6 +63,13 @@ export interface Config {
   locale?: Language;
 }
 export const defaultConfig: Config = { namespace: defaultNamespace, size: 'default', theme: 'light', themeVars: {}, zIndex: 2000, locale: zhCn };
+export function getThemeStyle(config: Config, cssVarName: (name: string) => string) {
+  return {
+    [cssVarName('control-height')]: { small: '28px', default: '32px', large: '40px' }[config.size],
+    ...config.themeVars
+  };
+}
+
 const appConfigs = new WeakMap<AppContext, Set<ComputedRef<Config>>>();
 
 export function registerAppConfig(context: AppContext, config: ComputedRef<Config>) {

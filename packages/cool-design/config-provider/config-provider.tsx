@@ -1,5 +1,5 @@
 import { computed, defineComponent, getCurrentInstance, inject, onBeforeUnmount, provide, ref, type PropType } from 'vue';
-import { configKey, overlayKey, registerAppConfig, useConfig, type Config, type Language, type Size, type ValueOnClear } from './context';
+import { configKey, getThemeStyle, overlayKey, registerAppConfig, useConfig, type Config, type Language, type Size, type ValueOnClear } from './context';
 import { idKey, namespaceKey, sizeKey, useNamespace } from '../../hooks/index.ts';
 function mergeConfig<T extends object>(parent: T | undefined, local: T | undefined): T | undefined {
   if (!local) return parent;
@@ -60,10 +60,7 @@ export default defineComponent({
       <div
         class={ns.b()}
         data-theme={config.value.theme}
-        style={{
-          [ns.cssVarName('control-height')]: { small: '28px', default: '32px', large: '40px' }[config.value.size],
-          ...config.value.themeVars
-        }}>
+        style={getThemeStyle(config.value, ns.cssVarName)}>
         {slots.default?.()}
         <div ref={host} class={overlay.b()} />
       </div>

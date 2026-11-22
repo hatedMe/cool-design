@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Tooltip 支持自定义命名空间，挂载到外部容器时可继承最近 ConfigProvider 的主题、尺寸及主题变量。
+
 - ConfigProvider、Button、ButtonGroup 和 Icon 支持自定义 CSS 命名空间。使用自定义前缀时需从源码编译相应 Sass 样式，其他组件和服务将在后续迁移。
 
 - 新增 AvatarGroup 和兼容入口 `ElAvatarGroup`，按需安装 Avatar 时也会注册头像组。头像组支持叠放、统一大小和形状、折叠计数及 Tooltip。Avatar 进入组内后会继承未显式设置的 `size` 和 `shape`。需要固定原有大小和形状时，可在子项传入 `size="default"` 和 `shape="circle"`。Avatar 的显式空尺寸从 50px 改为默认的 32px，旧页面如需 50px 可改用 `:size="50"`。

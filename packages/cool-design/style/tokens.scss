@@ -1,7 +1,7 @@
 @use './mixins/config';
 
 :root,
-.#{config.$namespace}-config-provider {
+#{config.$theme-scope} {
   --#{config.$namespace}-on-primary: #fff;
   --#{config.$namespace}-primary: #2463eb;
   --#{config.$namespace}-primary-hover: #1d4ed8;
@@ -34,7 +34,10 @@
     Inter, 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial,
     sans-serif;
 }
-.#{config.$namespace}-config-provider[data-theme='dark'] {
+#{config.$theme-scope}[data-theme='light'] {
+  color-scheme: light;
+}
+#{config.$theme-scope}[data-theme='dark'] {
   color-scheme: dark;
   --#{config.$namespace}-on-primary: #13213b;
   --#{config.$namespace}-primary: #7aa9ff;
@@ -50,16 +53,16 @@
   --#{config.$namespace}-bg-subtle: #233147;
   --#{config.$namespace}-border: #36445a;
 }
-.#{config.$namespace}-config-provider {
+#{config.$theme-scope} {
   color: var(--#{config.$namespace}-text);
   font: var(--#{config.$namespace}-font-size) / var(--#{config.$namespace}-line-height-normal) var(--#{config.$namespace}-font-family);
 }
-.#{config.$namespace}-config-provider *,
-.#{config.$namespace}-config-provider *::before,
-.#{config.$namespace}-config-provider *::after {
+#{config.$theme-scope} *,
+#{config.$theme-scope} *::before,
+#{config.$theme-scope} *::after {
   box-sizing: border-box;
 }
-.#{config.$namespace}-config-provider :focus-visible {
+#{config.$theme-scope} :focus-visible {
   outline: 2px solid var(--#{config.$namespace}-primary);
   outline-offset: 3px;
 }

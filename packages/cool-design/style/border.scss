@@ -1,7 +1,7 @@
 @use './mixins/config';
 
 :root,
-.#{config.$namespace}-config-provider {
+#{config.$theme-scope} {
   --#{config.$namespace}-border-width: 1px;
   --#{config.$namespace}-border-style: solid;
   --#{config.$namespace}-border-color: var(--#{config.$namespace}-border);
@@ -21,7 +21,7 @@
   --#{config.$namespace}-shadow-large: 0 20px 56px var(--#{config.$namespace}-shadow-color);
   --#{config.$namespace}-shadow-inset: inset 0 1px 3px var(--#{config.$namespace}-shadow-color);
 }
-.#{config.$namespace}-config-provider[data-theme='dark'] {
+#{config.$theme-scope}[data-theme='dark'] {
   --#{config.$namespace}-border-color-light: #2c3a4e;
   --#{config.$namespace}-border-color-lighter: #263347;
   --#{config.$namespace}-border-color-strong: #586a82;
@@ -29,8 +29,8 @@
 }
 @supports (color: color-mix(in srgb, red, blue)) {
   :root,
-  .#{config.$namespace}-config-provider,
-  .#{config.$namespace}-config-provider[data-theme] {
+  #{config.$theme-scope},
+  #{config.$theme-scope}[data-theme] {
     --#{config.$namespace}-border-color-light: color-mix(in srgb, var(--#{config.$namespace}-border), var(--#{config.$namespace}-bg) 40%);
     --#{config.$namespace}-border-color-lighter: color-mix(in srgb, var(--#{config.$namespace}-border), var(--#{config.$namespace}-bg) 70%);
     --#{config.$namespace}-border-color-strong: color-mix(in srgb, var(--#{config.$namespace}-border), var(--#{config.$namespace}-text) 20%);

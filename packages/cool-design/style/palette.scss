@@ -24,18 +24,18 @@ $dark: (
   }
 }
 :root,
-.#{config.$namespace}-config-provider {
+#{config.$theme-scope} {
   --#{config.$namespace}-info: #65748a;
   @include fallback-shades($light, #fff, #203047);
 }
-.#{config.$namespace}-config-provider[data-theme='dark'] {
+#{config.$theme-scope}[data-theme='dark'] {
   --#{config.$namespace}-info: #a6b4c9;
   @include fallback-shades($dark, #1c2738, #e0e8f4);
 }
 @supports (color: color-mix(in srgb, red, blue)) {
   :root,
-  .#{config.$namespace}-config-provider,
-  .#{config.$namespace}-config-provider[data-theme] {
+  #{config.$theme-scope},
+  #{config.$theme-scope}[data-theme] {
     @each $name, $value in $light {
       @each $level in (3, 5, 7, 8, 9) {
         --#{config.$namespace}-#{$name}-light-#{$level}: color-mix(in srgb, var(--#{config.$namespace}-#{$name}), var(--#{config.$namespace}-bg) #{$level * 10%});
@@ -46,7 +46,7 @@ $dark: (
 }
 
 :root,
-.#{config.$namespace}-config-provider,
-.#{config.$namespace}-config-provider[data-theme] {
+#{config.$theme-scope},
+#{config.$theme-scope}[data-theme] {
   --#{config.$namespace}-primary-hover: var(--#{config.$namespace}-primary-dark-2);
 }

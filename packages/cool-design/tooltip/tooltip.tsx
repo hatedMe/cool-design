@@ -5,6 +5,7 @@ import {
   computed,
   defineComponent,
   getCurrentInstance,
+  inject,
   nextTick,
   normalizeStyle,
   onActivated,
@@ -23,6 +24,9 @@ import {
 } from 'vue';
 import type { Placement, PositioningStrategy } from '@popperjs/core';
 import { useFloating, type FloatingReference, type PopperOptions } from '../../../src/utils/use-floating';
+
+import { defaultNamespace, useNamespace } from '../../hooks/use-namespace';
+import { configKey, getThemeStyle, overlayKey } from '../config-provider/context';
 
 let id = 0;
 type Trigger = 'hover' | 'focus' | 'click' | 'contextmenu';
@@ -96,6 +100,10 @@ export default defineComponent({
   },
   emits: ['update:visible', 'before-show', 'show', 'before-hide', 'hide', 'open', 'close', 'visible-change'],
   setup(props, { slots, emit, expose }) {
+    const ns = useNamespace('tooltip');
+    const themeScope = useNamespace('theme-scope');
+    const provider = inject(configKey, undefined);
+    const host = inject(overlayKey, undefined);
     const owner = getCurrentInstance();
     const triggerWrapper = shallowRef<HTMLElement>();
     const triggerElement = shallowRef<HTMLElement>();
@@ -148,6 +156,15 @@ export default defineComponent({
         teleported: () => props.teleported
       }
     });
+
+    // Vue retains the previous target while Teleport is disabled.
+    const teleportTarget = shallowRef(position.target.value);
+    watch([position.target, () => props.teleported], ([target, enabled]) => {
+      if (enabled) teleportTarget.value = target;
+    });
+    const detachedTheme = computed(() =>
+      props.teleported && position.target.value !== host?.value ? provider?.value : undefined
+    );
 
     const clearTimer = () => {
       clearTimeout(timer);
@@ -333,7 +350,7 @@ export default defineComponent({
         showReason = undefined;
       };
       return {
-        name: 'el-fade-in-linear',
+        name: ns.namespace.value === defaultNamespace ? 'el-fade-in-linear' : `${ns.namespace.value}-fade-in-linear`,
         appear: props.trapFocus || !props.persistent,
         ...custom,
         onBeforeEnter(el) {
@@ -414,12 +431,13 @@ export default defineComponent({
           {...position.attributes.value.popper}
           id={tooltipId}
           ref={floating}
-          class={['i-tooltip', `i-tooltip--${props.effect}`, props.popperClass]}
+          class={[ns.b(), ns.m(props.effect), detachedTheme.value && themeScope.b(), props.popperClass]}
+          data-theme={detachedTheme.value?.theme}
           role={props.contentRole}
           tabindex={props.trapFocus ? -1 : undefined}
           aria-label={props.ariaLabel}
           aria-hidden={open.value ? undefined : 'true'}
-          style={[position.style.value, props.popperStyle]}
+          style={[detachedTheme.value && getThemeStyle(detachedTheme.value, ns.cssVarName), position.style.value, props.popperStyle]}
           data-placement={position.placement.value}
           onMouseenter={onPanelEnter}
           onMouseleave={onPanelLeave}
@@ -428,19 +446,19 @@ export default defineComponent({
             <span
               {...position.attributes.value.arrow}
               ref={arrow}
-              class={['i-tooltip__arrow', props.arrowClass]}
+              class={[ns.e('arrow'), props.arrowClass]}
               style={position.arrowStyle.value}
               data-horizontal={position.placement.value.split('-')[0] === 'top' || position.placement.value.split('-')[0] === 'bottom' ? 'center' : position.placement.value.split('-')[0]}
               data-vertical={position.placement.value.split('-')[0] === 'top' || position.placement.value.split('-')[0] === 'bottom' ? position.placement.value.split('-')[0] : position.placement.value.split('-')[1] || 'center'}
             />
           )}
-          <div class='i-tooltip__content'>
+          <div class={ns.e('content')}>
             {slots.content?.() ?? (props.rawContent ? <span innerHTML={props.content} /> : props.content)}
           </div>
         </div>
       ) : null;
       const content = (
-        <Teleport to={position.target.value} disabled={!props.teleported}>
+        <Teleport to={teleportTarget.value} disabled={!props.teleported}>
           <Transition {...transition.value} persisted>
             {panel ? withDirectives(panel, [[vShow, open.value]]) : panel}
           </Transition>
@@ -451,7 +469,7 @@ export default defineComponent({
       return (
         <>
           <span
-            class={['i-tooltip__trigger', props.triggerClass]}
+            class={[ns.e('trigger'), props.triggerClass]}
             ref={setTriggerWrapper}
             onMouseenter={onMouseenter}
             onMouseleave={onMouseleave}

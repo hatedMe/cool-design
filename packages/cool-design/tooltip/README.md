@@ -12,6 +12,10 @@
 </Tooltip>
 ```
 
+### 挂载到外部容器
+
+`append-to` 支持选择器、HTMLElement 和 `body`。面板使用最近 ConfigProvider 的主题、尺寸和主题变量，`popper-style` 可覆盖面板样式。使用自定义 `namespace` 时，请编译对应命名空间的 Sass。默认命名空间的过渡名为 `el-fade-in-linear`，自定义前缀如 `acme` 的过渡名为 `acme-fade-in-linear`。传入 `transition` 可指定自己的过渡。
+
 ### 键盘与定位
 
 `trigger-keys` 匹配 `KeyboardEvent.code`。默认可用 `Enter` / `Space` 切换提示，旧键名 `enter` / `space` / `Spacebar` 也可用，传 `[]` 可关闭键盘触发。布尔 `visible` 单独使用时由调用方决定显隐。`v-model:visible` 会同步本地触发请求。
@@ -42,7 +46,7 @@
 | effect | 主题：`light` / `dark` | `string` | `dark` |
 | trigger | 触发方式：`hover` / `focus` / `click` / `contextmenu`，支持数组组合 | `string` / `string[]` | `hover` |
 | trigger-keys | 切换提示的键盘 `code` | `string[]` | `['Enter', 'Space']` |
-| transition | 过渡名称或 Vue 过渡选项，用户钩子与组件事件组合执行 | `string` / `TransitionProps` | `el-fade-in-linear` |
+| transition | 过渡名称或 Vue 过渡选项，用户钩子与组件事件组合执行 | `string` / `TransitionProps` | 默认命名空间 `i` 使用 `el-fade-in-linear`，其他命名空间使用 `<namespace>-fade-in-linear` |
 | persistent | 首次渲染即挂载浮层，关闭时隐藏并保留节点 | `boolean` | `false` |
 | disabled | 是否禁用 | `boolean` | `false` |
 | offset | 触发元素与浮层的距离，单位 px | `number` | `12` |

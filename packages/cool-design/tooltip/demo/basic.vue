@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Button, Space, Tooltip } from '../../index';
+import { Button, ConfigProvider, Space, Tooltip } from '../../index';
 
 const visible = ref(false);
 </script>
@@ -25,6 +25,11 @@ const visible = ref(false);
     <Tooltip v-model:visible="visible" content="受控提示">
       <Button @click="visible = !visible">手动控制</Button>
     </Tooltip>
+    <ConfigProvider theme="dark">
+      <Tooltip append-to="body" effect="light" content="此面板使用局部深色主题">
+        <Button>挂载到 body</Button>
+      </Tooltip>
+    </ConfigProvider>
     <Tooltip content="已禁用的提示" disabled>
       <Button>禁用提示</Button>
     </Tooltip>
