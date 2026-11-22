@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, getCurrentInstance, ref, shallowRef, watch, type Component, type PropType, type VNodeChild } from 'vue';
 import Button from '../button';
 import type { ButtonType } from '../button/types';
@@ -55,6 +56,7 @@ const Popconfirm = defineComponent({
   },
   setup(props, { attrs, slots: contextSlots, emit, expose }) {
     const slots: PopconfirmSlots = contextSlots;
+    const ns = useNamespace('popconfirm');
     const owner = getCurrentInstance();
     const tooltip = shallowRef<TooltipInstance>();
     const internal = ref(false);
@@ -115,28 +117,28 @@ const Popconfirm = defineComponent({
           closeOnOutside
           contentRole='dialog'
           ariaLabel={title}
-          triggerClass='i-popconfirm__trigger'
-          popperClass={['i-popconfirm', `i-popconfirm--${props.effect}`]}
+          triggerClass={ns.e('trigger')}
+          popperClass={[ns.b(), ns.m(props.effect)]}
           popperStyle={{ width: typeof width === 'number' ? `${width}px` : width }}
           fallbackPlacements={['bottom', 'top', 'right', 'left']}
           v-slots={{
             default: () => slots.reference?.() ?? slots.default?.(),
             content: () => (
               <>
-                <p class='i-popconfirm__title'>
+                <p class={ns.e('title')}>
                   {!hideIcon &&
                     (slots.icon?.() ??
                       (icon ? (
                         <Icon icon={icon} color={iconColor} />
                       ) : (
-                        <span class='i-popconfirm__icon' style={{ color: iconColor }} aria-hidden='true'>
+                        <span class={ns.e('icon')} style={{ color: iconColor }} aria-hidden='true'>
                           ⚠{' '}
                         </span>
                       )))}
                   {title}
                 </p>
                 {slots.actions?.({ confirm, cancel }) ?? (
-                  <div class='i-popconfirm__actions'>
+                  <div class={ns.e('actions')}>
                     <Button size='small' type={cancelButtonType as ButtonType} onClick={cancel}>
                       {cancelButtonText}
                     </Button>

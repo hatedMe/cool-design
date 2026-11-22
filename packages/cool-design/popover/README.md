@@ -4,6 +4,8 @@
 
 展示与目标元素相关的补充内容，支持富文本与交互。提供完整组件 API：`reference` 插槽为触发元素，默认插槽为浮层内容；同时兼容旧用法（默认插槽为触发器，`content` 插槽或属性为内容）。
 
+面板和触发器使用最近一级 ConfigProvider 的命名空间、主题与尺寸。传送到外部容器时，面板继续使用该配置。 `v-popover` 同样继承指令所在位置的配置和浮层宿主。
+
 ### 基础用法
 
 ```vue
@@ -53,7 +55,7 @@
 | `strategy` | 定位策略，支持 `absolute` / `fixed` | `PositioningStrategy` | `absolute` |
 | `popper-options` | Popper 的 `placement`、`strategy`、`modifiers` 和 `onFirstUpdate` | `PopperOptions` | `computeStyles` 默认关闭 `gpuAcceleration` |
 | `visible` | 是否受控显示，可使用 `v-model:visible` | `boolean` / `null` | `null` |
-| `transition` | Vue 过渡名称或配置，可传入过渡钩子 | `string` / `TransitionProps` | `el-fade-in-linear` |
+| `transition` | Vue 过渡名称或配置，可传入过渡钩子 | `string` / `TransitionProps` | 默认命名空间为 `el-fade-in-linear`，自定义时为 `{namespace}-fade-in-linear` |
 | `persistent` | 从首次渲染起保留浮层节点，关闭时隐藏 | `boolean` | `true` |
 | `teleported` | 是否将浮层传送到挂载容器 | `boolean` | `true` |
 | `append-to` | 挂载容器选择器或元素 | `string` / `HTMLElement` | — |
@@ -106,6 +108,6 @@
 
 只绑定布尔 `visible` 时由父组件控制显隐。使用 `v-model:visible` 或非受控模式时可以按 Esc 请求关闭。普通触发模式还支持点击外部关闭。虚拟触发配置为 `click`、`contextmenu` 或仅包含这两项的组合时，点击外部现在也会请求关闭。焦点在浮层内时，Esc 关闭会将焦点还给触发元素。浮层随滚动、缩放及元素尺寸变化更新位置。
 
-显式设置 `transition="el-fade-in-linear"` 时会启用 GPU 定位。也可通过 `popper-options.modifiers` 的 `computeStyles` 设置覆盖。
+显式使用 `el-fade-in-linear` 或当前自定义命名空间的内建过渡名时会启用 GPU 定位。也可通过 `popper-options.modifiers` 的 `computeStyles` 设置覆盖。
 
 旧版依赖关闭后销毁节点时，设置 `:persistent="false"`。旧版的固定定位可用 `strategy="fixed"` 恢复。需要内容宽度自适应时，设置 `width="auto"`。实例和插槽的 `hide()` 立即请求关闭，`hide-after` 用于触发交互。一次关闭可能先后两次发送 `update:visible(false)`，分别对应关闭请求与离场结束。可在 `after-leave` 时清理业务状态。

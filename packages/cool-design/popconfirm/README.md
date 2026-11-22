@@ -4,6 +4,8 @@
 
 在触发按钮附近确认操作，适合停用、移除等简单确认场景。支持 `reference` 触发器、自定义图标、按钮文案与类型、受控显示。
 
+面板和触发器使用最近一级 ConfigProvider 的命名空间、主题与尺寸。传送到外部容器时，面板继续使用该配置。
+
 ### 基础用法
 
 ```vue
@@ -38,7 +40,7 @@
 | `width` | 面板宽度，支持数字或 CSS 尺寸 | `number` / `string` | — |
 | `teleported` | 是否将浮层传送到挂载容器 | `boolean` | `true` |
 | `append-to` | 挂载容器选择器或元素 | `string` / `HTMLElement` | — |
-| `transition` | 浮层过渡名称或 Vue 过渡配置 | `string` / `TransitionProps` | `el-fade-in-linear` |
+| `transition` | 浮层过渡名称或 Vue 过渡配置 | `string` / `TransitionProps` | 默认命名空间为 `el-fade-in-linear`，自定义时为 `{namespace}-fade-in-linear` |
 | `show-arrow` | 是否显示指向触发元素的箭头 | `boolean` | `true` |
 | `popper-options` | Popper 定位选项，支持 `strategy`、`placement`、`modifiers` 和 `onFirstUpdate` | `PopperOptions` | — |
 | `virtual-triggering` | 使用外部元素或虚拟定位锚点 | `boolean` | `false` |

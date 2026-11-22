@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, getCurrentInstance, normalizeClass, normalizeStyle, shallowRef, type PropType } from 'vue';
 import type { FloatingReference, Placement } from '../../../src/utils/use-floating';
 import type { TooltipInstance } from '../tooltip';
@@ -70,6 +71,7 @@ const Popover = defineComponent({
   },
   setup(props, { slots: contextSlots, emit, expose }) {
     const slots: Partial<PopoverSlots> = contextSlots;
+    const ns = useNamespace('popover');
     const owner = getCurrentInstance();
     const tooltip = shallowRef<TooltipInstance>();
     const hasUpdateHandler = () => !!owner?.vnode.props?.['onUpdate:visible'];
@@ -96,11 +98,11 @@ const Popover = defineComponent({
           ref={tooltip}
           {...floatingProps}
           ariaLabel={title || undefined}
-          triggerClass='i-popover__trigger'
-          arrowClass='i-popover__arrow'
-          popperClass={normalizeClass(['i-popover', `i-popover--${props.effect}`, popperClass])}
+          triggerClass={ns.e('trigger')}
+          arrowClass={ns.e('arrow')}
+          popperClass={normalizeClass([ns.b(), ns.m(props.effect), popperClass])}
           popperStyle={normalizeStyle([{ width: typeof width === 'number' ? `${width}px` : width }, popperStyle])}
-          gpuAcceleration={props.transition === 'el-fade-in-linear'}
+          gpuAcceleration={props.transition === 'el-fade-in-linear' || (ns.namespace.value !== 'i' && props.transition === `${ns.namespace.value}-fade-in-linear`)}
           closeOnOutside={props.virtualTriggering ? undefined : true}
           onUpdate:visible={props.visible == null || hasUpdateHandler() ? (value: boolean) => emit('update:visible', value) : undefined}
           onVisible-change={(value: boolean) => emit('visible-change', value)}
@@ -122,8 +124,8 @@ const Popover = defineComponent({
             default: () => slots.reference?.() ?? slots.default?.(scopedSlot),
             content: () => (
               <>
-                {title && <div class='i-popover__title'>{title}</div>}
-                <div class='i-popover__content'>
+                {title && <div class={ns.e('title')}>{title}</div>}
+                <div class={ns.e('content')}>
                   {(defaultIsContent ? slots.default?.(scopedSlot) : undefined) ?? slots.content?.() ?? props.content}
                 </div>
               </>

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Popover、Popconfirm 与 `v-popover` 支持最近一级 ConfigProvider 的命名空间、主题与浮层宿主。
+
 - Tooltip 支持自定义命名空间，挂载到外部容器时可继承最近 ConfigProvider 的主题、尺寸及主题变量。
 
 - ConfigProvider、Button、ButtonGroup 和 Icon 支持自定义 CSS 命名空间。使用自定义前缀时需从源码编译相应 Sass 样式，其他组件和服务将在后续迁移。

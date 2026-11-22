@@ -1,39 +1,41 @@
-.i-popconfirm__trigger {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-popconfirm__trigger {
   display: inline-flex;
   align-items: center;
   vertical-align: middle;
 }
-.i-popconfirm {
+.#{config.$namespace}-popconfirm {
   box-sizing: border-box;
   width: 260px;
   max-height: calc(100vh - 16px);
-  background: var(--i-bg);
-  color: var(--i-text);
-  border: 1px solid var(--i-border);
-  border-radius: var(--i-radius);
-  box-shadow: var(--i-shadow);
-  font-size: var(--i-font-size);
+  background: var(--#{config.$namespace}-bg);
+  color: var(--#{config.$namespace}-text);
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+  box-shadow: var(--#{config.$namespace}-shadow);
+  font-size: var(--#{config.$namespace}-font-size);
 }
-.i-popconfirm.i-tooltip {
+.#{config.$namespace}-popconfirm.#{config.$namespace}-tooltip {
   max-width: calc(100vw - 16px);
   padding: 16px;
 }
-.i-popconfirm .i-tooltip__content {
+.#{config.$namespace}-popconfirm .#{config.$namespace}-tooltip__content {
   max-height: calc(100vh - 50px);
 }
-.i-popconfirm--dark {
+.#{config.$namespace}-popconfirm--dark {
   background: #303133;
   color: #fff;
   border-color: #303133;
 }
-.i-popconfirm__title {
+.#{config.$namespace}-popconfirm__title {
   margin: 0 0 16px;
   overflow-wrap: anywhere;
 }
-.i-popconfirm__icon {
+.#{config.$namespace}-popconfirm__icon {
   margin-right: 4px;
 }
-.i-popconfirm__actions {
+.#{config.$namespace}-popconfirm__actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;

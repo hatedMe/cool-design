@@ -1,5 +1,5 @@
-import type { App, Directive } from 'vue';
-import { createApp, h } from 'vue';
+import type { App, ComponentInternalInstance, Directive, DirectiveBinding, VNode } from 'vue';
+import { createApp, h, isVNode } from 'vue';
 import PopoverComponent from '../popover/popover';
 import type { PopoverDirectiveValue } from '../popover/popover';
 import { lockScroll, unlockScroll } from '../loading/scroll-lock';
@@ -433,7 +433,23 @@ interface PopoverDirectiveState {
 }
 type PopoverElement = HTMLElement & { [popoverState]?: PopoverDirectiveState };
 
-const mountPopover = (el: PopoverElement, value: PopoverDirectiveValue) => {
+// 插槽的声明组件与渲染组件可能不同。沿已挂载的 VNode 找到渲染位置，
+// Teleport 与 Fragment 的子节点也保留在这棵逻辑树中。
+function findPopoverOwner(node: VNode, owner: ComponentInternalInstance, el: HTMLElement): ComponentInternalInstance | undefined {
+  if (node.component) return findPopoverOwner(node.component.subTree, node.component, el);
+  if (node.el === el) return owner;
+  if (node.suspense?.activeBranch) return findPopoverOwner(node.suspense.activeBranch, owner, el);
+  if (Array.isArray(node.children)) {
+    for (const child of node.children) {
+      if (!isVNode(child)) continue;
+      const found = findPopoverOwner(child, owner, el);
+      if (found) return found;
+    }
+  }
+}
+
+const mountPopover = (el: PopoverElement, binding: DirectiveBinding<PopoverDirectiveValue>, vnode: VNode) => {
+  const { value } = binding;
   const options = typeof value === 'string' ? { content: value } : value ?? {};
   const host = document.createElement('div');
   const app = createApp(() =>
@@ -450,16 +466,24 @@ const mountPopover = (el: PopoverElement, value: PopoverDirectiveValue) => {
       disabled: options.disabled ?? false
     })
   );
+  // 函数式组件没有公开实例，其 VNode 仍保存当前渲染上下文。
+  const context = binding.instance?.$ ?? (vnode as VNode & { ctx?: ComponentInternalInstance })?.ctx;
+  if (context) {
+    const owner = findPopoverOwner(context.subTree, context, el) ?? context;
+    // Vue 3.2 与 3.4 实例均以 provides 的原型链保存本地注入。
+    const { provides } = owner as ComponentInternalInstance & Pick<App['_context'], 'provides'>;
+    app._context.provides = Object.create(provides);
+  }
   app.mount(host);
   el[popoverState] = { app, host };
 };
 
 export const VPopover: Directive<PopoverElement, PopoverDirectiveValue> = {
-  mounted: (el, binding) => {
+  mounted: (el, binding, vnode) => {
     if (!binding.value) return;
-    mountPopover(el, binding.value);
+    mountPopover(el, binding, vnode);
   },
-  updated: (el, binding) => {
+  updated: (el, binding, vnode) => {
     const state = el[popoverState];
     if (!binding.value) {
       if (state) {
@@ -474,7 +498,7 @@ export const VPopover: Directive<PopoverElement, PopoverDirectiveValue> = {
       state.host.remove();
       delete el[popoverState];
     }
-    if (!el[popoverState]) mountPopover(el, binding.value);
+    if (!el[popoverState]) mountPopover(el, binding, vnode);
   },
   unmounted: (el) => {
     const state = el[popoverState];

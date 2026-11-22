@@ -1,34 +1,36 @@
-.i-popover__trigger {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-popover__trigger {
   display: inline-flex;
   align-items: center;
   vertical-align: middle;
 }
-.i-popover {
+.#{config.$namespace}-popover {
   box-sizing: border-box;
   min-width: 150px;
   max-height: calc(100vh - 16px);
   overflow-wrap: anywhere;
-  border: 1px solid var(--i-border);
-  border-radius: var(--i-radius);
-  background: var(--i-bg);
-  color: var(--i-text);
-  font-size: var(--i-font-size);
-  box-shadow: var(--i-shadow);
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+  background: var(--#{config.$namespace}-bg);
+  color: var(--#{config.$namespace}-text);
+  font-size: var(--#{config.$namespace}-font-size);
+  box-shadow: var(--#{config.$namespace}-shadow);
 }
-.i-popover.i-tooltip {
+.#{config.$namespace}-popover.#{config.$namespace}-tooltip {
   max-width: calc(100vw - 16px);
   padding: 12px;
 }
-.i-popover--dark {
+.#{config.$namespace}-popover--dark {
   background: #303133;
   color: #fff;
   border: 1px solid #303133;
 }
-.i-popover__title {
+.#{config.$namespace}-popover__title {
   margin-bottom: 8px;
   font-size: 16px;
   font-weight: 600;
 }
-.i-popover .i-tooltip__content {
+.#{config.$namespace}-popover .#{config.$namespace}-tooltip__content {
   max-height: calc(100vh - 42px);
 }
