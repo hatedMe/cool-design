@@ -1,3 +1,5 @@
+import { useNamespace } from '../../hooks/use-namespace';
+import { createBEM } from '../../../src/utils/create';
 import Panel from './panel';
 import type { TransferPanelInstance } from './types';
 import { computed, defineComponent, nextTick, ref, watch, type PropType } from 'vue';
@@ -57,6 +59,8 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change', 'left-check-change', 'right-check-change'],
   setup(props, { attrs, emit, slots, expose }) {
+    const ns = useNamespace('transfer');
+    const bem = createBEM(ns.b);
     const field = useField();
     const form = inject(formKey, undefined);
     const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
@@ -224,9 +228,9 @@ export default defineComponent({
         <Panel ref={side ? rightPanel : leftPanel} title={titleOf(side)} filterable={props.filterable}
           placeholder={props.filterPlaceholder} disabled={isDisabled()}>
           {{ header: () => (
-          <header class="i-transfer__header">
+          <header class={ns.e('header')}>
             <input
-              class="i-transfer__select-all"
+              class={ns.e('select-all')}
               type="checkbox"
               aria-label="全选"
               disabled={isDisabled() || available.length === 0}
@@ -234,22 +238,22 @@ export default defineComponent({
               ref={syncIndeterminate}
               onChange={() => toggleAll(side, items)}
             />
-            <span class="i-transfer__title">{titleOf(side)}</span>
-            <span class="i-transfer__count">{formatCount(count, items.length)}</span>
+            <span class={ns.e('title')}>{titleOf(side)}</span>
+            <span class={ns.e('count')}>{formatCount(count, items.length)}</span>
           </header>), default: () => <>
-          <div class="i-transfer__items" role="listbox" aria-multiselectable="true" aria-label={titleOf(side)}
+          <div class={ns.e('items')} role="listbox" aria-multiselectable="true" aria-label={titleOf(side)}
             ref={(element) => { listElements.value[side] = element as HTMLElement | undefined; }}
             onScroll={(event: Event) => { listScroll.value[side] = (event.currentTarget as HTMLElement).scrollTop; }}>
             {props.virtualScroll && <div aria-hidden='true' style={{ height: `${start * height}px` }} />}
             {shown.length === 0
-              ? emptySlot?.() ?? <span class="i-transfer__empty">{queryOf(side) ? props.noMatchText : props.noDataText}</span>
+              ? emptySlot?.() ?? <span class={ns.e('empty')}>{queryOf(side) ? props.noMatchText : props.noDataText}</span>
               : shown.slice(start, end).map((item) => {
                   const key = keyOf(item, map.value);
                   const itemDisabled = isDisabled() || disabledOf(item, map.value);
                   const isChecked = checked.value[side].has(key);
                   return (
                     <label
-                      class={['i-transfer__item', itemDisabled && 'is-disabled']}
+                      class={[ns.e('item'), itemDisabled && 'is-disabled']}
                       key={key}
                       style={props.virtualScroll ? { height: `${height}px`, boxSizing: 'border-box', paddingBlock: 0, overflow: 'hidden' } : undefined}
                       role="option"
@@ -263,7 +267,7 @@ export default defineComponent({
                 })}
             {props.virtualScroll && <div aria-hidden='true' style={{ height: `${(shown.length - end) * height}px` }} />}
           </div>
-          {footerSlot ? <footer class="i-transfer__footer">{footerSlot()}</footer> : null}
+          {footerSlot ? <footer class={ns.e('footer')}>{footerSlot()}</footer> : null}
           </> }}
         </Panel>
       );
@@ -274,17 +278,17 @@ export default defineComponent({
       const toRightText = props.buttonTexts[1] ?? '';
       return (
         <div
-          class={['i-transfer', isDisabled() && 'is-disabled']}
+          class={[ns.b(), isDisabled() && 'is-disabled']}
           id={(attrs.id as string) || field?.id}
           aria-disabled={isDisabled() ? 'true' : undefined}
           aria-invalid={field?.invalid() || undefined}
           aria-describedby={field?.invalid() ? field.errorId : undefined}
         >
           {panel(left.value, 0)}
-          <div class="i-transfer__buttons">
+          <div class={ns.e('buttons')}>
             <button
               type="button"
-              class="i-transfer__button i-transfer__button--right"
+              class={bem('button', { right: true })}
               aria-label={toRightText || '移到右侧'}
               disabled={!canMove(0)}
               onClick={() => move(true)}
@@ -294,7 +298,7 @@ export default defineComponent({
             </button>
             <button
               type="button"
-              class="i-transfer__button i-transfer__button--left"
+              class={bem('button', { left: true })}
               aria-label={toLeftText || '移到左侧'}
               disabled={!canMove(1)}
               onClick={() => move(false)}

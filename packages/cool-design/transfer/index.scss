@@ -1,4 +1,6 @@
-.i-transfer {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-transfer {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -9,9 +11,9 @@
     width: 220px;
     height: 280px;
     overflow: hidden;
-    border: 1px solid var(--i-border-color, #dcdfe6);
+    border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
     border-radius: 4px;
-    background: var(--i-bg, #fff);
+    background: var(--#{config.$namespace}-bg, #fff);
   }
 
   &__header {
@@ -82,7 +84,7 @@
 
   &__footer {
     padding: 8px;
-    border-top: 1px solid var(--i-border-color, #ebeef5);
+    border-top: 1px solid var(--#{config.$namespace}-border-color, #ebeef5);
   }
 
   &__buttons {
@@ -100,8 +102,8 @@
     cursor: pointer;
 
     &:hover:not(:disabled) {
-      border-color: var(--i-color-primary, #409eff);
-      color: var(--i-color-primary, #409eff);
+      border-color: var(--#{config.$namespace}-color-primary, #409eff);
+      color: var(--#{config.$namespace}-color-primary, #409eff);
     }
 
     &:disabled {

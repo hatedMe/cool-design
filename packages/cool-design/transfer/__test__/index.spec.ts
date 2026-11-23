@@ -3,6 +3,7 @@ import { defineComponent, h, reactive } from 'vue';
 import { describe, expect, test } from 'vitest';
 import Transfer from '..';
 import * as CoolDesign from '../../index';
+import ConfigProvider from '../../config-provider';
 import type { TransferItem } from '../types';
 
 const basicData = (): TransferItem[] => [
@@ -20,6 +21,33 @@ const toRight = (wrapper: ReturnType<typeof mount>) => buttons(wrapper)[0];
 const toLeft = (wrapper: ReturnType<typeof mount>) => buttons(wrapper)[1];
 const selectAll = (wrapper: ReturnType<typeof mount>, side: number) => panels(wrapper)[side].get('.i-transfer__select-all');
 const countText = (wrapper: ReturnType<typeof mount>, side: number) => panels(wrapper)[side].get('.i-transfer__count').text();
+
+test('Transfer 切换命名空间后保留筛选输入并可移动键值 0', async () => {
+  const model = reactive<{ value: (string | number)[] }>({ value: [] });
+  const wrapper = mount(ConfigProvider, {
+    props: { namespace: 'acme' },
+    slots: { default: () => h(Transfer, {
+      data: [{ key: 0, label: '零' }, { key: 'other', label: '其他' }],
+      filterable: true,
+      virtualScroll: true,
+      modelValue: model.value,
+      'onUpdate:modelValue': (value: (string | number)[]) => { model.value = value; }
+    }) }
+  });
+  expect(wrapper.findAll('.acme-transfer__panel')).toHaveLength(2);
+  const input = wrapper.get('.acme-transfer__filter');
+  await input.setValue('零');
+  await wrapper.setProps({ namespace: '3d' });
+  const filter = wrapper.findAll('input[type="text"]')[0];
+  expect(filter.element).toBe(input.element);
+  expect(filter.classes()).toContain('3d-transfer__filter');
+  expect((filter.element as HTMLInputElement).value).toBe('零');
+  expect(wrapper.get('[role="option"]').classes()).toContain('3d-transfer__item');
+  await wrapper.get('[role="option"] input').setValue(true);
+  await wrapper.get('button[aria-label="移到右侧"]').trigger('click');
+  expect(model.value).toEqual([0]);
+  wrapper.unmount();
+});
 
 describe('Transfer', () => {
   test('公开导出与全局安装一致', () => {

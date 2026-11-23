@@ -1,3 +1,5 @@
+import { useNamespace } from '../../hooks/use-namespace';
+import { createBEM } from '../../../src/utils/create';
 import { computed, defineComponent, inject, onBeforeUnmount, ref, watch, type PropType } from 'vue';
 import { formKey } from '../form/context';
 
@@ -97,6 +99,8 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'update:file-list', 'change', 'success', 'error', 'remove', 'exceed', 'progress'],
   setup(props, { emit, slots, expose }) {
+    const ns = useNamespace('upload');
+    const bem = createBEM(ns.b);
     const form = inject(formKey, undefined);
     const disabled = computed(() => props.disabled || !!form?.disabled?.());
     const input = ref<HTMLInputElement>();
@@ -408,7 +412,7 @@ export default defineComponent({
       return url;
     };
     const renderTrigger = () => slots.trigger?.({ choose }) ?? <button type='button' disabled={disabled.value} onClick={choose}>{slots.default?.() ?? '选择文件'}</button>;
-    const renderFile = (file: UploadFile, index: number) => slots.file?.({ file, index }) ?? <>{props.listType !== 'text' && <img src={getFileUrl(file)} alt={file.name} crossorigin={props.crossorigin || undefined} />}{props.listType === 'text' && <span>{file.name}</span>}<em class={{ 'i-upload__status': true, 'is-success': file.status === 'success', 'is-fail': file.status === 'fail' }}>{file.status}</em>{file.status === 'uploading' && <progress max='100' value={file.percentage ?? 0} />}{file.status === 'fail' && <button type='button' disabled={disabled.value} onClick={() => { if (!disabled.value) void upload(file); }}>重试</button>}{props.onPreview && <button type='button' onClick={() => callback('onPreview', file)}>预览</button>}{!disabled.value && <button type='button' class='i-upload__remove' onClick={() => { if (!disabled.value) void remove(file); }}>删除</button>}</>;
+    const renderFile = (file: UploadFile, index: number) => slots.file?.({ file, index }) ?? <>{props.listType !== 'text' && <img src={getFileUrl(file)} alt={file.name} crossorigin={props.crossorigin || undefined} />}{props.listType === 'text' && <span>{file.name}</span>}<em class={{ [ns.e('status')]: true, 'is-success': file.status === 'success', 'is-fail': file.status === 'fail' }}>{file.status}</em>{file.status === 'uploading' && <progress max='100' value={file.percentage ?? 0} />}{file.status === 'fail' && <button type='button' disabled={disabled.value} onClick={() => { if (!disabled.value) void upload(file); }}>重试</button>}{props.onPreview && <button type='button' onClick={() => callback('onPreview', file)}>预览</button>}{!disabled.value && <button type='button' class={ns.e('remove')} onClick={() => { if (!disabled.value) void remove(file); }}>删除</button>}</>;
     // 拖拽悬停高亮：dragenter/dragleave 计数处理子元素穿行，drop 后复位。
     const dragover = ref(false);
     let dragDepth = 0;
@@ -433,9 +437,9 @@ export default defineComponent({
       void add(event.dataTransfer?.files ? [...event.dataTransfer.files] : null);
     };
     return () => (
-      <div class={{ 'i-upload': true, 'is-drag': props.drag, 'is-dragover': props.drag && !disabled.value && dragover.value }} role={props.drag ? 'button' : undefined} tabindex={props.drag && !disabled.value ? 0 : undefined} aria-disabled={disabled.value || undefined} onKeydown={(event: KeyboardEvent) => { if (props.drag && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); choose(); } }} onDragenter={handleDragEnter} onDragover={(event: DragEvent) => { if (props.drag) event.preventDefault(); }} onDragleave={handleDragLeave} onDrop={handleDrop}>
+      <div class={{ [ns.b()]: true, 'is-drag': props.drag, 'is-dragover': props.drag && !disabled.value && dragover.value }} role={props.drag ? 'button' : undefined} tabindex={props.drag && !disabled.value ? 0 : undefined} aria-disabled={disabled.value || undefined} onKeydown={(event: KeyboardEvent) => { if (props.drag && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); choose(); } }} onDragenter={handleDragEnter} onDragover={(event: DragEvent) => { if (props.drag) event.preventDefault(); }} onDragleave={handleDragLeave} onDrop={handleDrop}>
         <input ref={input} type='file' name={props.name} accept={props.accept} multiple={props.multiple} disabled={disabled.value} {...(props.directory ? { webkitdirectory: '' } : {})} hidden onChange={(e: Event) => { if (!disabled.value) void add((e.target as HTMLInputElement).files); }} />
-        {props.showFileList && <ul class={{ 'i-upload__list': true, [`i-upload__list--${props.listType}`]: true }}>{files.value.map((file, index) => <li key={file.uid} data-uid={file.uid} class={{ 'i-upload__item': true, 'is-picture': props.listType !== 'text' }}>{renderFile(file, index)}</li>)}{props.listType === 'picture-card' && <li class='i-upload__trigger'>{renderTrigger()}</li>}</ul>}
+        {props.showFileList && <ul class={bem('list', { [props.listType]: true })}>{files.value.map((file, index) => <li key={file.uid} data-uid={file.uid} class={{ [ns.e('item')]: true, 'is-picture': props.listType !== 'text' }}>{renderFile(file, index)}</li>)}{props.listType === 'picture-card' && <li class={ns.e('trigger')}>{renderTrigger()}</li>}</ul>}
         {(!props.showFileList || props.listType !== 'picture-card') && renderTrigger()}
         {props.drag && <p>将文件拖到此处，或点击选择</p>}
         {slots.tip?.()}

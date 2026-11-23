@@ -1,9 +1,10 @@
-import { mount } from '@vue/test-utils';
-import { h } from 'vue';
+import { flushPromises, mount } from '@vue/test-utils';
+import { h, nextTick, ref } from 'vue';
 import { expect, test, vi } from 'vitest';
 import Upload, { type UploadFile, type UploadFiles, type UploadRawFile, type UploadStatus, type UploadUserFile } from '..';
 import { UploadDragger } from '..';
 import Form from '../../form';
+import ConfigProvider from '../../config-provider';
 
 const exportedTypes: [UploadStatus, UploadRawFile, UploadFile, UploadUserFile, UploadFiles] | undefined = undefined;
 void exportedTypes;
@@ -13,6 +14,32 @@ const select = async (wrapper: ReturnType<typeof mount>, files: File[]) => {
   Object.defineProperty(input.element, 'files', { value: files, configurable: true });
   await input.trigger('change');
 };
+
+test.each([Upload, UploadDragger])('$name 切换最近命名空间后保留选择和列表节点', async (Component) => {
+  const namespace = ref('acme');
+  const wrapper = mount(ConfigProvider, {
+    props: { namespace: 'outer' },
+    slots: { default: () => h(ConfigProvider, { namespace: namespace.value }, () => h(Component, {
+      id: 'picker', class: 'user-upload', listType: 'picture-card', autoUpload: false
+    })) }
+  });
+  const picker = wrapper.get('#picker');
+  expect(picker.classes()).toContain('acme-upload');
+  await select(wrapper, [new File(['test'], 'image.png', { type: 'image/png' })]);
+  await flushPromises();
+  const item = picker.get('.acme-upload__item');
+  expect(item.get('img').attributes('alt')).toBe('image.png');
+  const input = picker.get('input[type="file"]').element;
+  namespace.value = '3d';
+  await nextTick();
+  expect(picker.classes()).toEqual(expect.arrayContaining(['3d-upload', 'user-upload']));
+  expect(picker.get('input[type="file"]').element).toBe(input);
+  expect(picker.get('li[data-uid]').element).toBe(item.element);
+  expect(picker.get('ul').classes()).toEqual(['3d-upload__list', '3d-upload__list--picture-card']);
+  await item.get('button').trigger('click');
+  expect(picker.find('li[data-uid]').exists()).toBe(false);
+  wrapper.unmount();
+});
 
 test('拖拽区域支持 Enter 和 Space 键盘触发选择', async () => {
   const wrapper = mount(Upload, { props: { drag: true } });
