@@ -1,10 +1,9 @@
 import { computed, defineComponent, normalizeClass, normalizeStyle, ref, resolveDynamicComponent, watch, type Component, type PropType, type StyleValue, type VNode } from 'vue';
-import { createNamespace } from '../../../src/utils/create';
+import { createBEM } from '../../../src/utils/create';
+import { useNamespace } from '../../hooks/use-namespace';
 import { useConfig, type Size } from '../config-provider/context';
 import Icon, { type IconProp } from '../icon';
 import Select from '../select';
-
-const [name, bem] = createNamespace('pagination');
 
 export type PaginationLayoutItem = 'total' | 'sizes' | 'prev' | 'pager' | 'next' | 'jumper' | '->' | 'slot';
 export type PaginationPopperClass = string | boolean | Record<string, unknown> | PaginationPopperClass[];
@@ -47,7 +46,7 @@ const normalizePagerCount = (value: unknown): number => {
 };
 
 const Pagination = defineComponent({
-  name,
+  name: 'i-pagination',
   props: {
     currentPage: { type: Number, default: undefined },
     defaultCurrentPage: Number,
@@ -84,6 +83,8 @@ const Pagination = defineComponent({
     'next-click': isNumber
   },
   setup(props, { emit, slots }) {
+    const ns = useNamespace('pagination');
+    const bem = createBEM(ns.b);
     const config = useConfig();
     const controlSize = computed(() => props.small ? 'small' : props.size ?? config.value.size);
     const jumperValue = ref('');
@@ -277,10 +278,10 @@ const Pagination = defineComponent({
       props.hideOnSinglePage && pages.value <= 1 ? null : (
         <nav
           class={{
-            [name]: true,
+            [bem()]: true,
             'is-background': props.background,
             'is-small': controlSize.value === 'small',
-            [`${name}--${controlSize.value}`]: true,
+            [ns.m(controlSize.value)]: true,
             'is-disabled': props.disabled
           }}
           aria-label='列表分页'>

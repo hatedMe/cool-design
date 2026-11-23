@@ -1,4 +1,5 @@
 import { defineComponent, getCurrentInstance, inject, type Component, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import Icon from '../icon';
 import { dropdownKey, type DropdownCommand } from './context';
 import type { WithSlots } from './slots';
@@ -15,6 +16,7 @@ const DropdownItem = defineComponent({
   emits: { click: (originalEvent: MouseEvent | KeyboardEvent) =>
     originalEvent.type === 'click' || originalEvent.type === 'keydown' },
   setup(props, { slots, emit }) {
+    const ns = useNamespace('dropdown');
     const parent = inject(dropdownKey, undefined);
     const instance = getCurrentInstance()!.proxy as DropdownItemInstance;
 
@@ -36,11 +38,11 @@ const DropdownItem = defineComponent({
 
     return () => (
       <li
-        class={{ 'i-dropdown__item': true, 'is-divided': props.divided, 'is-disabled': props.disabled }}
+        class={{ [ns.e('item')]: true, 'is-divided': props.divided, 'is-disabled': props.disabled }}
         role='none'>
         <button
           type='button'
-          class='i-dropdown__item-button'
+          class={ns.e('item-button')}
           role='menuitem'
           disabled={props.disabled}
           tabindex={props.disabled ? -1 : 0}
@@ -48,11 +50,11 @@ const DropdownItem = defineComponent({
           onClick={activate}
           onKeydown={handleKeydown}>
           {(slots.icon?.() || props.icon) && (
-            <span class='i-dropdown__item-icon' aria-hidden='true'>
+            <span class={ns.e('item-icon')} aria-hidden='true'>
               {slots.icon?.() ?? (props.icon ? <Icon icon={props.icon} /> : null)}
             </span>
           )}
-          <span class='i-dropdown__item-label'>{slots.default?.()}</span>
+          <span class={ns.e('item-label')}>{slots.default?.()}</span>
         </button>
       </li>
     );

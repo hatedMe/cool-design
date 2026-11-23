@@ -1,4 +1,5 @@
 import { cloneVNode, defineComponent, provide, ref, shallowRef, type ExtractPropTypes, type PropType } from 'vue';
+import { defaultNamespace, useNamespace } from '../../hooks/use-namespace';
 import { dropdownKey, type DropdownCommand, type DropdownTrigger } from './context';
 import IDropdownMenu from './dropdown-menu';
 import IDropdownItem, { type DropdownItemInstance } from './dropdown-item';
@@ -62,6 +63,7 @@ export default defineComponent({
     'visible-change': (visible: boolean) => typeof visible === 'boolean'
   },
   setup(props, { slots, emit, expose }) {
+    const ns = useNamespace('dropdown');
     const open = ref(false);
     const tooltip = shallowRef<TooltipInstance>();
     const splitReference = shallowRef<HTMLElement>();
@@ -81,9 +83,16 @@ export default defineComponent({
       }
     });
 
-    const menuItems = () => Array.from(
-      menu.value?.querySelectorAll<HTMLElement>('.i-dropdown__menu button:not([disabled])') ?? []
-    );
+    const menuItems = () => {
+      const container = menu.value;
+      if (!container) return [];
+      const menus = [
+        ...container.getElementsByClassName(ns.e('menu')),
+        ...container.querySelectorAll('[data-dropdown-menu]')
+      ];
+      return Array.from(container.querySelectorAll<HTMLButtonElement>('button:not([disabled])'))
+        .filter((button) => menus.some((list) => list.contains(button)));
+    };
 
     const handleShow = (event?: Event) => {
       if (event?.type === 'keydown' && open.value) (menuItems()[0] ?? menu.value)?.focus();
@@ -114,7 +123,7 @@ export default defineComponent({
     const renderMenu = () => (
       <div
         ref={menu}
-        class='i-dropdown__scroll'
+        class={ns.e('scroll')}
         tabindex={-1}
         style={{ maxHeight: typeof props.maxHeight === 'number' || /^\d+(\.\d+)?$/.test(props.maxHeight)
           ? `${props.maxHeight}px` : props.maxHeight }}
@@ -133,7 +142,7 @@ export default defineComponent({
 
     return () => {
       const triggerAttrs = {
-        class: 'i-dropdown__trigger',
+        class: ns.e('trigger'),
         ...(props.id ? { id: props.id } : {}),
         role: 'button',
         tabindex: props.disabled ? -1 : props.tabindex,
@@ -153,7 +162,7 @@ export default defineComponent({
       const virtualRef = isVirtual ? props.virtualRef ?? splitReference.value : undefined;
 
       return (
-        <span class={['i-dropdown', props.size && `i-dropdown--${props.size}`, {
+        <span class={[ns.b(), ns.m(props.size), {
           'is-split-button': props.splitButton, 'is-disabled': props.disabled
         }]}>
           <Tooltip
@@ -164,7 +173,7 @@ export default defineComponent({
             gpuAcceleration={false}
             placement={props.placement}
             popperOptions={props.popperOptions}
-            popperClass={['i-dropdown__popper', `i-dropdown__popper--${props.effect}`, props.popperClass].flat()}
+            popperClass={[ns.e('popper'), ns.em('popper', props.effect), props.popperClass].flat()}
             popperStyle={props.popperStyle}
             trigger={props.trigger}
             triggerKeys={props.triggerKeys}
@@ -176,7 +185,7 @@ export default defineComponent({
             virtualTriggering={isVirtual}
             closeOnOutside
             disabled={props.disabled}
-            transition='el-zoom-in-top'
+            transition={ns.namespace.value === defaultNamespace ? 'el-zoom-in-top' : `${ns.namespace.value}-zoom-in-top`}
             teleported={props.teleported}
             appendTo={props.appendTo}
             persistent={props.persistent}
@@ -198,7 +207,7 @@ export default defineComponent({
                 type={buttonType}
                 size={props.size || undefined}
                 disabled={props.disabled || props.buttonProps?.disabled === true}
-                class='i-dropdown__button'
+                class={ns.e('button')}
                 onClick={(event: MouseEvent) => emit('click', event)}>
                 {slots.default?.() ?? '更多'}
               </Button>

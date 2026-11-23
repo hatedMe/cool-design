@@ -1,103 +1,105 @@
-.i-pagination {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-pagination {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: 12px;
   padding: 20px 0 0;
-  color: var(--i-text-secondary);
+  color: var(--#{config.$namespace}-text-secondary);
   font-size: 13px;
   flex-wrap: wrap;
 }
-.i-pagination button {
-  border: 1px solid var(--i-border);
-  border-radius: var(--i-radius);
-  background: var(--i-bg);
-  color: var(--i-text);
-  height: var(--i-control-height);
+.#{config.$namespace}-pagination button {
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+  background: var(--#{config.$namespace}-bg);
+  color: var(--#{config.$namespace}-text);
+  height: var(--#{config.$namespace}-control-height);
   padding: 0 10px;
   font: inherit;
   cursor: pointer;
 }
-.i-pagination__sizes .i-select {
+.#{config.$namespace}-pagination__sizes .#{config.$namespace}-select {
   min-width: 104px;
   height: auto;
   font: inherit;
 }
-.i-pagination__sizes .i-select > [role='combobox'] {
+.#{config.$namespace}-pagination__sizes .#{config.$namespace}-select > [role='combobox'] {
   box-sizing: border-box;
   justify-content: space-between;
-  min-height: var(--i-control-height);
+  min-height: var(--#{config.$namespace}-control-height);
 }
-.i-pagination__pager {
+.#{config.$namespace}-pagination__pager {
   display: flex;
   align-items: center;
   gap: 4px;
 }
-.i-pagination__pager button {
+.#{config.$namespace}-pagination__pager button {
   min-width: 32px;
   padding: 0 8px;
 }
-.i-pagination__pager button.is-active {
-  border-color: var(--i-primary);
-  background: var(--i-primary);
-  color: var(--i-on-primary);
+.#{config.$namespace}-pagination__pager button.is-active {
+  border-color: var(--#{config.$namespace}-primary);
+  background: var(--#{config.$namespace}-primary);
+  color: var(--#{config.$namespace}-on-primary);
 }
-.i-pagination__ellipsis {
+.#{config.$namespace}-pagination__ellipsis {
   padding: 0 4px;
 }
-.i-pagination__spacer {
+.#{config.$namespace}-pagination__spacer {
   flex: 1 1 auto;
 }
-.i-pagination__jumper {
+.#{config.$namespace}-pagination__jumper {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   white-space: nowrap;
 }
-.i-pagination__jumper input {
+.#{config.$namespace}-pagination__jumper input {
   width: 48px;
-  height: var(--i-control-height);
+  height: var(--#{config.$namespace}-control-height);
   padding: 0 8px;
-  border: 1px solid var(--i-border);
-  border-radius: var(--i-radius);
-  background: var(--i-bg);
-  color: var(--i-text);
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+  background: var(--#{config.$namespace}-bg);
+  color: var(--#{config.$namespace}-text);
   font: inherit;
   text-align: center;
 }
-.i-pagination__prev svg,
-.i-pagination__next svg {
+.#{config.$namespace}-pagination__prev svg,
+.#{config.$namespace}-pagination__next svg {
   display: block;
 }
-.i-pagination.is-small {
+.#{config.$namespace}-pagination.is-small {
   font-size: 12px;
 }
-.i-pagination.is-small button,
-.i-pagination.is-small .i-pagination__jumper input {
+.#{config.$namespace}-pagination.is-small button,
+.#{config.$namespace}-pagination.is-small .#{config.$namespace}-pagination__jumper input {
   height: 26px;
 }
-.i-pagination.is-small .i-pagination__sizes .i-select > [role='combobox'] {
+.#{config.$namespace}-pagination.is-small .#{config.$namespace}-pagination__sizes .#{config.$namespace}-select > [role='combobox'] {
   min-height: 26px;
 }
-.i-pagination--large button,
-.i-pagination--large .i-pagination__jumper input {
+.#{config.$namespace}-pagination--large button,
+.#{config.$namespace}-pagination--large .#{config.$namespace}-pagination__jumper input {
   height: 40px;
 }
-.i-pagination--large .i-pagination__sizes .i-select > [role='combobox'] {
+.#{config.$namespace}-pagination--large .#{config.$namespace}-pagination__sizes .#{config.$namespace}-select > [role='combobox'] {
   min-height: 40px;
 }
-.i-pagination.is-small .i-pagination__pager button {
+.#{config.$namespace}-pagination.is-small .#{config.$namespace}-pagination__pager button {
   min-width: 26px;
   padding: 0 6px;
 }
-.i-pagination.is-background .i-pagination__pager button {
+.#{config.$namespace}-pagination.is-background .#{config.$namespace}-pagination__pager button {
   border: 0;
-  background: var(--i-bg-subtle);
+  background: var(--#{config.$namespace}-bg-subtle);
 }
-.i-pagination.is-background .i-pagination__pager button.is-active {
-  background: var(--i-primary);
+.#{config.$namespace}-pagination.is-background .#{config.$namespace}-pagination__pager button.is-active {
+  background: var(--#{config.$namespace}-primary);
 }
-.i-pagination button:disabled {
+.#{config.$namespace}-pagination button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }

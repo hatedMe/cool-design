@@ -2,6 +2,7 @@ import {
   computed, defineComponent, getCurrentInstance, h, inject, nextTick, normalizeClass, normalizeStyle,
   onBeforeUnmount, provide, shallowRef, vShow, watch, withDirectives, type Component, type PropType
 } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import Tooltip, { type TooltipInstance } from '../tooltip';
 import { menuBranchKey, menuKey, menuPathKey, menuPopperProps } from './context';
 
@@ -25,6 +26,7 @@ export default defineComponent({
     collapseOpenIcon: iconType
   },
   setup(props, { slots, expose }) {
+    const ns = useNamespace('sub-menu');
     const owner = getCurrentInstance();
     const menu = inject(menuKey, undefined);
     const parentPath = inject(menuPathKey, undefined);
@@ -146,7 +148,7 @@ export default defineComponent({
       const button = (
         <button
           type='button'
-          class='i-sub-menu__title'
+          class={ns.e('title')}
           ref={title}
           disabled={props.disabled}
           tabindex={props.disabled ? -1 : 0}
@@ -156,9 +158,9 @@ export default defineComponent({
             if (!props.disabled && (!horizontal.value || menu?.menuTrigger === 'click')) toggle();
           }}
           onKeydown={handleKeydown}>
-          <span class='i-sub-menu__label'>{slots.title?.()}</span>
+          <span class={ns.e('label')}>{slots.title?.()}</span>
           <span
-            class={['i-sub-menu__arrow', { 'is-side': !expandIcons.value, 'is-custom': icon.value }]}
+            class={[ns.e('arrow'), { 'is-side': !expandIcons.value, 'is-custom': icon.value }]}
             aria-hidden='true'>
             {icon.value ? h(icon.value) : '‹'}
           </span>
@@ -167,7 +169,7 @@ export default defineComponent({
       return (
         <li
           ref={row}
-          class={['i-sub-menu', { 'is-opened': expanded.value, 'is-disabled': props.disabled }]}
+          class={[ns.b(), { 'is-opened': expanded.value, 'is-disabled': props.disabled }]}
           role='none'
           onMouseenter={onMouseenter}
           onMouseleave={leave}>
@@ -184,8 +186,8 @@ export default defineComponent({
               persistent={popper.value?.persistent}
               effect={popper.value?.effect}
               popperClass={normalizeClass([
-                'i-sub-menu__popup',
-                `i-sub-menu__popup--${popper.value?.effect ?? 'light'}`,
+                ns.e('popup'),
+                ns.em('popup', popper.value?.effect ?? 'light'),
                 props.popperClass ?? popper.value?.popperClass
               ])}
               popperStyle={normalizeStyle([menu?.themeStyle, props.popperStyle ?? popper.value?.popperStyle])}
@@ -199,8 +201,8 @@ export default defineComponent({
                 default: () => button,
                 content: () => (
                   <>
-                    {!horizontal.value && firstLevel && <div class='i-sub-menu__popup-title'>{slots.title?.()}</div>}
-                    <ul class='i-sub-menu__children' role='menu'>{slots.default?.()}</ul>
+                    {!horizontal.value && firstLevel && <div class={ns.e('popup-title')}>{slots.title?.()}</div>}
+                    <ul class={ns.e('children')} role='menu'>{slots.default?.()}</ul>
                   </>
                 )
               }}
@@ -209,7 +211,7 @@ export default defineComponent({
             <>
               {button}
               {withDirectives(
-                <ul ref={inline} class='i-sub-menu__children' role='menu'>{slots.default?.()}</ul>,
+                <ul ref={inline} class={ns.e('children')} role='menu'>{slots.default?.()}</ul>,
                 [[vShow, expanded.value]]
               )}
             </>

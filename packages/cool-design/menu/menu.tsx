@@ -1,4 +1,5 @@
 import { computed, defineComponent, getCurrentInstance, onBeforeUnmount, provide, ref, watch, type CSSProperties, type PropType, type Ref } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import {
   menuKey, menuPopperProps,
   type MenuItemClicked, type MenuItemData, type MenuMode, type MenuRoute, type MenuRouterResult, type MenuTrigger
@@ -46,6 +47,7 @@ export default defineComponent({
     close: isMenuEvent
   },
   setup(props, { emit, slots, expose }) {
+    const ns = useNamespace('menu');
     const instance = getCurrentInstance();
     const internalActive = ref(props.modelValue ?? props.defaultActive ?? '');
     const opened = ref<string[]>(props.collapse && props.mode === 'vertical' ? [] : [...props.defaultOpeneds]);
@@ -85,7 +87,7 @@ export default defineComponent({
     const themeStyle = computed<CSSProperties>(() => ({
       backgroundColor: props.backgroundColor || undefined,
       color: props.textColor || undefined,
-      '--i-menu-active-color': props.activeTextColor || undefined
+      [ns.cssVarName('menu-active-color')]: props.activeTextColor || undefined
     }));
 
     const isActive = (index: string) => activeIndex.value === index;
@@ -193,6 +195,12 @@ export default defineComponent({
       get menuTrigger() {
         return props.menuTrigger;
       },
+      get activeColorVar() {
+        return ns.cssVarName('menu-active-color');
+      },
+      get activeTextColor() {
+        return props.activeTextColor;
+      },
       get themeStyle() {
         return themeStyle.value;
       },
@@ -258,14 +266,14 @@ export default defineComponent({
       return (
         <nav
           class={{
-            'i-menu': true,
+            [ns.b()]: true,
             [`is-${props.mode}`]: true,
             'is-collapse': props.collapse,
             'is-ellipsis': props.ellipsis
           }}
           style={themeStyle.value}>
           <ul
-            class={{ 'i-menu__list': true, 'no-transition': !props.collapseTransition }}
+            class={{ [ns.e('list')]: true, 'no-transition': !props.collapseTransition }}
             role='menubar'
             aria-orientation={props.mode === 'horizontal' ? 'horizontal' : 'vertical'}>
             {hasSlot ? slots.default?.() : renderItems(props.items)}

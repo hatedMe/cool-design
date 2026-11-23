@@ -1,4 +1,5 @@
-import { computed, defineComponent, inject, normalizeClass, normalizeStyle, type PropType } from 'vue';
+import { computed, defineComponent, inject, normalizeClass, normalizeStyle, type CSSProperties, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import { menuKey, menuPathKey, type MenuRoute } from './context';
 import Tooltip from '../tooltip';
 
@@ -12,10 +13,17 @@ export default defineComponent({
   },
   emits: { click: (event: MouseEvent) => event instanceof MouseEvent },
   setup(props, { slots, emit }) {
+    const ns = useNamespace('menu-item');
     const menu = inject(menuKey, undefined);
     const parentPath = inject(menuPathKey, undefined);
     const indexPath = computed(() => [...(parentPath?.value ?? []), props.index]);
     const active = computed(() => menu?.isActive(props.index) ?? false);
+    const activeColorStyle = computed<CSSProperties | undefined>(() => {
+      if (!menu || menu.activeColorVar === ns.cssVarName('menu-active-color')) return;
+      // 局部变量仍由 CSS 级联决定，传送面板缺少根变量时回退到显式菜单颜色。
+      const rootColor = menu.activeTextColor ? `, ${menu.activeTextColor}` : '';
+      return { [ns.cssVarName('menu-active-color-fallback')]: `var(${menu.activeColorVar}${rootColor})` };
+    });
     // 折叠模式下的一级菜单项通过 Tooltip 展示完整标题
     const collapsedTooltip = computed(
       () => !!menu?.collapse && menu.mode === 'vertical' && !parentPath
@@ -46,7 +54,7 @@ export default defineComponent({
       const button = (
         <button
           type='button'
-          class='i-menu-item__button'
+          class={ns.e('button')}
           disabled={props.disabled}
           tabindex={props.disabled ? -1 : 0}
           aria-current={active.value ? 'page' : undefined}
@@ -57,7 +65,8 @@ export default defineComponent({
       );
       return (
         <li
-          class={{ 'i-menu-item': true, 'is-active': active.value, 'is-disabled': props.disabled }}
+          class={{ [ns.b()]: true, 'is-active': active.value, 'is-disabled': props.disabled }}
+          style={activeColorStyle.value}
           role='menuitem'
           aria-disabled={props.disabled || undefined}>
           {collapsedTooltip.value ? (

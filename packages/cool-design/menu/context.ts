@@ -36,6 +36,8 @@ export interface MenuContext {
   collapse: boolean;
   uniqueOpened: boolean;
   menuTrigger: MenuTrigger;
+  activeColorVar: string;
+  activeTextColor: string;
   themeStyle: CSSProperties;
   popperProps: {
     offset: number;

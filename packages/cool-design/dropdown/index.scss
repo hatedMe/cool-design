@@ -1,45 +1,51 @@
+@use '../style/mixins/config';
 @use '../tooltip/index';
 
-.i-dropdown {
+$transition: #{config.$namespace}-zoom-in-top;
+@if config.$namespace == 'i' {
+  $transition: el-zoom-in-top;
+}
+
+.#{config.$namespace}-dropdown {
   position: relative;
   display: inline-block;
 }
-.i-dropdown__trigger {
+.#{config.$namespace}-dropdown__trigger {
   cursor: pointer;
   display: inline-block;
 }
-.i-dropdown__trigger:focus-visible,
-.i-dropdown__button:focus-visible,
-.i-dropdown__item-button:focus-visible {
-  outline: 2px solid var(--i-primary);
+.#{config.$namespace}-dropdown__trigger:focus-visible,
+.#{config.$namespace}-dropdown__button:focus-visible,
+.#{config.$namespace}-dropdown__item-button:focus-visible {
+  outline: 2px solid var(--#{config.$namespace}-primary);
   outline-offset: 1px;
 }
-.i-dropdown.is-disabled .i-dropdown__trigger,
-.i-dropdown.is-disabled .i-dropdown__button {
-  color: var(--i-text-muted);
+.#{config.$namespace}-dropdown.is-disabled .#{config.$namespace}-dropdown__trigger,
+.#{config.$namespace}-dropdown.is-disabled .#{config.$namespace}-dropdown__button {
+  color: var(--#{config.$namespace}-text-muted);
   cursor: not-allowed;
 }
-.i-tooltip.i-dropdown__popper {
+.#{config.$namespace}-tooltip.#{config.$namespace}-dropdown__popper {
   min-width: 120px;
   max-width: calc(100vw - 16px);
   padding: 0;
 }
-.i-dropdown__popper .i-tooltip__content {
+.#{config.$namespace}-dropdown__popper .#{config.$namespace}-tooltip__content {
   max-height: none;
   overflow: visible;
 }
-.i-dropdown__scroll {
+.#{config.$namespace}-dropdown__scroll {
   max-height: calc(100vh - 16px);
   overflow: auto;
 }
-.i-dropdown__menu {
+.#{config.$namespace}-dropdown__menu {
   min-width: 120px;
   padding: 5px 0;
   margin: 0;
   list-style: none;
 }
-.i-dropdown__menu button,
-.i-dropdown__item-button {
+.#{config.$namespace}-dropdown__menu button,
+.#{config.$namespace}-dropdown__item-button {
   width: 100%;
   padding: 8px 12px;
   border: 0;
@@ -52,24 +58,24 @@
   align-items: center;
   gap: 8px;
 }
-.i-dropdown__item-button:hover {
-  background: var(--i-bg-subtle);
-  color: var(--i-primary);
+.#{config.$namespace}-dropdown__item-button:hover {
+  background: var(--#{config.$namespace}-bg-subtle);
+  color: var(--#{config.$namespace}-primary);
 }
-.i-dropdown__item.is-disabled .i-dropdown__item-button {
-  color: var(--i-text-muted);
+.#{config.$namespace}-dropdown__item.is-disabled .#{config.$namespace}-dropdown__item-button {
+  color: var(--#{config.$namespace}-text-muted);
   cursor: not-allowed;
 }
-.i-dropdown__menu .is-divided,
-.i-dropdown__item.is-divided {
-  border-top: 1px solid var(--i-border);
+.#{config.$namespace}-dropdown__menu .is-divided,
+.#{config.$namespace}-dropdown__item.is-divided {
+  border-top: 1px solid var(--#{config.$namespace}-border);
   margin-top: 5px;
   padding-top: 5px;
 }
-.i-dropdown__item-icon {
+.#{config.$namespace}-dropdown__item-icon {
   display: inline-flex;
 }
-.i-dropdown__popper--dark .i-dropdown__menu {
+.#{config.$namespace}-dropdown__popper--dark .#{config.$namespace}-dropdown__menu {
   background: #303133;
   border-color: #303133;
   color: #fff;
@@ -79,37 +85,37 @@
     color: #fff;
   }
 }
-.i-dropdown.is-split-button {
+.#{config.$namespace}-dropdown.is-split-button {
   display: inline-flex;
 }
-.i-dropdown__button {
+.#{config.$namespace}-dropdown__button {
   padding: 8px 12px;
-  border: 1px solid var(--i-border);
-  background: var(--i-bg);
+  border: 1px solid var(--#{config.$namespace}-border);
+  background: var(--#{config.$namespace}-bg);
   cursor: pointer;
 }
-.i-dropdown.is-split-button .i-dropdown__trigger {
+.#{config.$namespace}-dropdown.is-split-button .#{config.$namespace}-dropdown__trigger {
   padding: 8px 10px;
   cursor: pointer;
 }
 
-.i-dropdown__popper.el-zoom-in-top-enter-active,
-.i-dropdown__popper.el-zoom-in-top-leave-active {
+.#{config.$namespace}-dropdown__popper.#{$transition}-enter-active,
+.#{config.$namespace}-dropdown__popper.#{$transition}-leave-active {
   transition: opacity 0.2s ease, scale 0.2s ease;
   transform-origin: center top;
 }
-.i-dropdown__popper.el-zoom-in-top-enter-from,
-.i-dropdown__popper.el-zoom-in-top-leave-to {
+.#{config.$namespace}-dropdown__popper.#{$transition}-enter-from,
+.#{config.$namespace}-dropdown__popper.#{$transition}-leave-to {
   opacity: 0;
   scale: 1 0;
 }
-.i-dropdown--large .i-dropdown__button,
-.i-dropdown--large .i-dropdown__trigger {
+.#{config.$namespace}-dropdown--large .#{config.$namespace}-dropdown__button,
+.#{config.$namespace}-dropdown--large .#{config.$namespace}-dropdown__trigger {
   padding: 12px 16px;
   font-size: 16px;
 }
-.i-dropdown--small .i-dropdown__button,
-.i-dropdown--small .i-dropdown__trigger {
+.#{config.$namespace}-dropdown--small .#{config.$namespace}-dropdown__button,
+.#{config.$namespace}-dropdown--small .#{config.$namespace}-dropdown__trigger {
   padding: 5px 8px;
   font-size: 12px;
 }
