@@ -1,5 +1,6 @@
 import { computed, defineComponent, provide, ref, type PropType } from 'vue';
-import { collapseKey, type CollapseBeforeCollapse, type CollapseIconPosition, type CollapseName } from './context';
+import { useNamespace } from '../../hooks/use-namespace';
+import { collapseKey, type CollapseBeforeCollapse, type CollapseHeader, type CollapseIconPosition, type CollapseName } from './context';
 
 const toArray = (value: CollapseName | CollapseName[] | undefined): CollapseName[] =>
   value === undefined ? [] : Array.isArray(value) ? [...value] : [value];
@@ -14,11 +15,12 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { slots, emit, expose }) {
+    const ns = useNamespace('collapse');
     const root = ref<HTMLElement>();
     const internal = ref<CollapseName[]>(toArray(props.modelValue));
     const controlled = computed(() => props.modelValue !== undefined);
     const activeNames = computed(() => (controlled.value ? toArray(props.modelValue) : internal.value));
-    const order: symbol[] = [];
+    const registeredHeaders = new Set<CollapseHeader>();
     let seq = 0;
 
     const apply = (next: CollapseName[]) => {
@@ -50,24 +52,23 @@ export default defineComponent({
     provide(collapseKey, {
       activeNames,
       toggle,
-      register: (uid: symbol) => {
-        order.push(uid);
-        return order.length - 1;
+      register: (header) => {
+        registeredHeaders.add(header);
+        return registeredHeaders.size - 1;
       },
-      unregister: (uid: symbol) => {
-        const index = order.indexOf(uid);
-        if (index >= 0) order.splice(index, 1);
-      },
+      unregister: (header) => registeredHeaders.delete(header),
       expandIconPosition: computed(() => props.expandIconPosition)
     });
     expose({ activeNames, setActiveNames });
 
     const onKeydown = (event: KeyboardEvent) => {
-      if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
-      const headers = Array.from(
-        root.value?.querySelectorAll<HTMLButtonElement>('.i-collapse-item__header:not(:disabled)') || []
+      const element = root.value;
+      if (!element || !['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+      const owned = new Set(Array.from(registeredHeaders, (header) => header.value));
+      const headers = Array.from(element.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')).filter(
+        (button) => owned.has(button)
       );
-      const index = headers.indexOf(document.activeElement as HTMLButtonElement);
+      const index = headers.findIndex((header) => header === element.ownerDocument.activeElement);
       if (index < 0) return;
       event.preventDefault();
       const target =
@@ -82,7 +83,7 @@ export default defineComponent({
     };
 
     return () => (
-      <div ref={root} class='i-collapse' onKeydown={onKeydown}>
+      <div ref={root} class={ns.b()} onKeydown={onKeydown}>
         {slots.default?.()}
       </div>
     );

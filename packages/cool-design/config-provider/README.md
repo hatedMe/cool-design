@@ -104,6 +104,7 @@ import { ConfigProvider, en } from 'cool-design/config-provider';
 - Tabs 和 TabPane，包含声明式页签和独立页签面板。
 - Transfer、Upload 和 UploadDragger，包含穿梭框内部面板与上传文件列表。
 - Breadcrumb、BreadcrumbItem、PageHeader、Timeline、TimelineItem、Steps、Step、Progress、Alert 和 Watermark，包含进度条动画和水印图层。
+- Collapse 和 CollapseItem，包含面板高度过渡。
 
 从源码构建时，先配置 Sass，再加载样式。下例路径相对于仓库根目录。
 

@@ -1,6 +1,7 @@
 import { mount, flushPromises } from '@vue/test-utils';
-import { defineComponent, h, ref, type PropType } from 'vue';
+import { defineComponent, h, nextTick, provide, ref, type PropType } from 'vue';
 import { afterEach, expect, test } from 'vitest';
+import { namespaceKey } from '../../../hooks/use-namespace';
 import { Collapse, CollapseItem } from '..';
 
 const wrappers: ReturnType<typeof mount>[] = [];
@@ -87,6 +88,52 @@ test('键盘导航与 ARIA 关联', async () => {
   await headers[1].trigger('keydown', { key: 'ArrowUp' });
   expect(document.activeElement).toBe(headers[0].element);
   expect(headers[2].attributes('disabled')).toBeDefined();
+});
+
+test('键盘按 DOM 顺序定位本组标题，支持子项独立切换命名空间', async () => {
+  const namespace = ref('acme');
+  const extra = ref(true);
+  const MixedItem = defineComponent({
+    setup() {
+      provide(namespaceKey, namespace);
+      return () => h(CollapseItem, { id: 'mixed', title: '跨前缀' });
+    }
+  });
+  const wrapper = mount({
+    render: () => h(Collapse, { modelValue: ['outer'] }, () => [
+      h(CollapseItem, { id: 'outer', name: 'outer', title: '外组' }, () =>
+        h(Collapse, null, () => [
+          h(CollapseItem, { id: 'inner', title: '内组' }),
+          h('button', { class: 'i-collapse-item__header' }, '自定义按钮')
+        ])
+      ),
+      extra.value && h(CollapseItem, { id: 'disabled', disabled: true }),
+      h(MixedItem),
+      h(CollapseItem, { id: 'last', title: '末项' })
+    ])
+  }, { attachTo: document.body });
+  wrappers.push(wrapper);
+
+  const outer = wrapper.get('#outer > button');
+  const inner = wrapper.get('#inner > button');
+  const mixed = wrapper.get('#mixed > button');
+  const last = wrapper.get('#last > button');
+  (outer.element as HTMLButtonElement).focus();
+  await outer.trigger('keydown', { key: 'ArrowDown' });
+  expect(document.activeElement).toBe(mixed.element);
+  expect(mixed.classes()).toContain('acme-collapse-item__header');
+
+  namespace.value = '3d';
+  extra.value = false;
+  await nextTick();
+  expect(mixed.classes()).toContain('3d-collapse-item__header');
+  expect(document.activeElement).toBe(mixed.element);
+  await mixed.trigger('keydown', { key: 'ArrowDown' });
+  expect(document.activeElement).toBe(last.element);
+
+  (inner.element as HTMLButtonElement).focus();
+  await inner.trigger('keydown', { key: 'End' });
+  expect(document.activeElement).toBe(inner.element);
 });
 
 test('expose 支持读取与设置激活项', async () => {

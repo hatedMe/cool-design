@@ -1,4 +1,5 @@
-import { Transition, computed, defineComponent, inject, onBeforeUnmount, vShow, withDirectives, type Component, type PropType } from 'vue';
+import { Transition, computed, defineComponent, inject, onBeforeUnmount, ref, vShow, withDirectives, type Component, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import Icon from '../icon';
 import { collapseKey, type CollapseName } from './context';
 
@@ -15,9 +16,11 @@ export default defineComponent({
   setup(props, { slots, expose }) {
     const context = inject(collapseKey);
     if (!context) throw new Error('CollapseItem must be used inside Collapse.');
-    const uid = Symbol('collapse-item');
-    const fallback = context.register(uid);
-    onBeforeUnmount(() => context.unregister(uid));
+    const ns = useNamespace('collapse-item');
+    const transition = useNamespace('collapse');
+    const header = ref<HTMLButtonElement>();
+    const fallback = context.register(header);
+    onBeforeUnmount(() => context.unregister(header));
     const id = ++itemId;
     const headerId = `i-collapse-header-${id}`;
     const panelId = `i-collapse-panel-${id}`;
@@ -27,9 +30,9 @@ export default defineComponent({
     const arrow = () =>
       slots.icon?.({ isActive: expanded.value }) ??
       (props.icon ? (
-        <Icon icon={props.icon} class='i-collapse-item__icon' />
+        <Icon icon={props.icon} class={ns.e('icon')} />
       ) : (
-        <span class='i-collapse-item__arrow' aria-hidden='true'>
+        <span class={ns.e('arrow')} aria-hidden='true'>
           ›
         </span>
       ));
@@ -70,25 +73,22 @@ export default defineComponent({
 
     return () => (
       <div
-        class={{
-          'i-collapse-item': true,
-          'is-active': expanded.value,
-          'is-disabled': props.disabled
-        }}>
+        class={[ns.b(), ns.is('active', expanded.value), ns.is('disabled', props.disabled)]}>
         <button
+          ref={header}
           type='button'
           id={headerId}
-          class='i-collapse-item__header'
+          class={ns.e('header')}
           aria-expanded={expanded.value}
           aria-controls={panelId}
           disabled={props.disabled}
           onClick={() => !props.disabled && context.toggle(itemName.value)}>
           {context.expandIconPosition.value === 'left' && arrow()}
-          <span class='i-collapse-item__title'>{slots.title?.({ isActive: expanded.value }) ?? props.title}</span>
+          <span class={ns.e('title')}>{slots.title?.({ isActive: expanded.value }) ?? props.title}</span>
           {context.expandIconPosition.value === 'right' && arrow()}
         </button>
         <Transition
-          name='i-collapse'
+          name={transition.b()}
           onBeforeEnter={beforeEnter}
           onEnter={enter}
           onAfterEnter={afterEnter}
@@ -96,8 +96,8 @@ export default defineComponent({
           onLeave={leave}
           onAfterLeave={afterLeave}>
           {withDirectives(
-            <div id={panelId} class='i-collapse-item__wrap' role='region' aria-labelledby={headerId}>
-              <div class='i-collapse-item__content'>{slots.default?.()}</div>
+            <div id={panelId} class={ns.e('wrap')} role='region' aria-labelledby={headerId}>
+              <div class={ns.e('content')}>{slots.default?.()}</div>
             </div>,
             [[vShow, expanded.value]]
           )}
