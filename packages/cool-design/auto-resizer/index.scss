@@ -1,4 +1,6 @@
-.i-auto-resizer {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-auto-resizer {
   width: 100%;
   height: 100%;
 }

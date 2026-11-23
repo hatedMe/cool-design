@@ -1,41 +1,43 @@
-.i-table-v2 {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-table-v2 {
   position: relative;
-  border: 1px solid var(--i-border);
-  border-radius: var(--i-radius);
-  background: var(--i-bg);
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+  background: var(--#{config.$namespace}-bg);
   overflow: hidden;
 }
-.i-table-v2__scroll {
+.#{config.$namespace}-table-v2__scroll {
   height: 100%;
   overflow: auto;
 }
-.i-table-v2__scroll.is-dynamic {
+.#{config.$namespace}-table-v2__scroll.is-dynamic {
   overflow-anchor: none;
 }
-.i-table-v2__header {
+.#{config.$namespace}-table-v2__header {
   position: sticky;
   top: 0;
   z-index: 2;
-  background: var(--i-bg-subtle);
-  box-shadow: inset 0 -1px var(--i-border);
+  background: var(--#{config.$namespace}-bg-subtle);
+  box-shadow: inset 0 -1px var(--#{config.$namespace}-border);
 }
-.i-table-v2__row {
+.#{config.$namespace}-table-v2__row {
   display: flex;
   align-items: stretch;
   box-sizing: border-box;
 }
-.i-table-v2__row.is-body {
-  border-bottom: 1px solid var(--i-border);
-  background: var(--i-bg);
+.#{config.$namespace}-table-v2__row.is-body {
+  border-bottom: 1px solid var(--#{config.$namespace}-border);
+  background: var(--#{config.$namespace}-bg);
 }
-.i-table-v2__row.is-body:hover {
-  background: var(--i-bg-subtle);
+.#{config.$namespace}-table-v2__row.is-body:hover {
+  background: var(--#{config.$namespace}-bg-subtle);
 }
-.i-table-v2__row.is-fixed {
-  border-bottom: 1px solid var(--i-border);
-  background: var(--i-bg);
+.#{config.$namespace}-table-v2__row.is-fixed {
+  border-bottom: 1px solid var(--#{config.$namespace}-border);
+  background: var(--#{config.$namespace}-bg);
 }
-.i-table-v2__cell {
+.#{config.$namespace}-table-v2__cell {
   box-sizing: border-box;
   flex: none;
   display: flex;
@@ -45,17 +47,17 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.i-table-v2__cell.is-header {
-  color: var(--i-text-secondary);
+.#{config.$namespace}-table-v2__cell.is-header {
+  color: var(--#{config.$namespace}-text-secondary);
   font-size: 13px;
   font-weight: 500;
   cursor: default;
   user-select: none;
 }
-.i-table-v2__cell.is-header[aria-sort] {
+.#{config.$namespace}-table-v2__cell.is-header[aria-sort] {
   cursor: pointer;
 }
-.i-table-v2__measure {
+.#{config.$namespace}-table-v2__measure {
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -63,20 +65,20 @@
   white-space: normal;
   overflow-wrap: anywhere;
 }
-.i-table-v2__measure-content {
+.#{config.$namespace}-table-v2__measure-content {
   display: flow-root;
   min-width: 0;
   flex: 1;
 }
-.i-table-v2__body {
+.#{config.$namespace}-table-v2__body {
   position: relative;
 }
-.i-table-v2__empty {
+.#{config.$namespace}-table-v2__empty {
   padding: 16px 20px;
-  color: var(--i-text-muted);
+  color: var(--#{config.$namespace}-text-muted);
   text-align: center;
 }
-.i-table-v2__footer {
+.#{config.$namespace}-table-v2__footer {
   box-sizing: border-box;
   position: sticky;
   bottom: 0;
@@ -84,24 +86,24 @@
   display: flex;
   align-items: center;
   padding: 0 12px;
-  background: var(--i-bg-subtle);
-  border-top: 1px solid var(--i-border);
+  background: var(--#{config.$namespace}-bg-subtle);
+  border-top: 1px solid var(--#{config.$namespace}-border);
 }
-.i-table-v2__overlay {
+.#{config.$namespace}-table-v2__overlay {
   position: absolute;
   inset: 0;
   z-index: 4;
 }
-.i-table-v2__indent {
+.#{config.$namespace}-table-v2__indent {
   display: inline-block;
   flex: none;
 }
-.i-table-v2__tree-placeholder {
+.#{config.$namespace}-table-v2__tree-placeholder {
   display: inline-block;
   flex: none;
   width: 18px;
 }
-.i-table-v2__expand-toggle {
+.#{config.$namespace}-table-v2__expand-toggle {
   flex: none;
   background: none;
   border: 0;
@@ -110,10 +112,10 @@
   font: inherit;
   cursor: pointer;
 }
-.i-table-v2__expand-icon {
+.#{config.$namespace}-table-v2__expand-icon {
   display: inline-block;
   transition: transform 0.2s;
 }
-.i-table-v2__expand-icon.is-expanded {
+.#{config.$namespace}-table-v2__expand-icon.is-expanded {
   transform: rotate(90deg);
 }

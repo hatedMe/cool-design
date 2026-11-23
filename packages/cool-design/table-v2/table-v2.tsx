@@ -2,6 +2,7 @@ import {
   computed, defineComponent, mergeProps, nextTick, onBeforeUnmount, onMounted, ref, shallowReactive, watch, withDirectives,
   type CSSProperties, type ObjectDirective, type PropType
 } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import type {
   TableV2CellParams,
   TableV2Column,
@@ -101,6 +102,7 @@ export default defineComponent({
     'end-reached': tableV2Emits.endReached
   },
   setup(props, { emit, slots, expose }) {
+    const ns = useNamespace('table-v2');
     const key = (row: object) =>
       typeof props.rowKey === 'function'
         ? props.rowKey(row)
@@ -366,7 +368,7 @@ export default defineComponent({
       const range = rowRange.value;
       return range ? flatRows.value.slice(range.rowCacheStart, range.rowCacheEnd + 1) : [];
     });
-    const observedRows = new Map<HTMLElement, { row: BodyRow; contents: HTMLElement[] }>();
+    const observedRows = new Map<HTMLElement, { row: BodyRow; contents: Element[] }>();
     const observedContents = new Map<Element, HTMLElement>();
     const pendingMeasurements = new Set<HTMLElement>();
     let rowObserver: ResizeObserver | undefined;
@@ -413,7 +415,15 @@ export default defineComponent({
         measureRows(rows);
       });
       const previous = observedRows.get(element)?.contents ?? [];
-      const contents = [...element.querySelectorAll<HTMLElement>(':scope > .i-table-v2__cell > .i-table-v2__measure')];
+      const cellClass = ns.e('cell');
+      const measureClass = ns.e('measure');
+      const contents: Element[] = [];
+      for (const cell of element.children) {
+        if (!cell.classList.contains(cellClass)) continue;
+        for (const content of cell.children) {
+          if (content.classList.contains(measureClass)) contents.push(content);
+        }
+      }
       for (const content of previous) {
         if (!contents.includes(content)) {
           rowObserver.unobserve(content);
@@ -540,7 +550,7 @@ export default defineComponent({
       const style: CSSProperties = {
         position: 'sticky',
         zIndex: header ? 3 : 1,
-        background: header ? 'var(--i-bg-subtle)' : 'var(--i-bg)'
+        background: `var(${ns.cssVarName(header ? 'bg-subtle' : 'bg')})`
       };
       style[side] = `${offset}px`;
       return style;
@@ -557,7 +567,7 @@ export default defineComponent({
         const cellContext = { ...context, column, columnIndex };
         const rendererContext = {
           ...cellContext,
-          class: 'i-table-v2__header-cell-text',
+          class: ns.e('header-cell-text'),
           style,
           sortBy: props.sortBy,
           sortState: sortStateMap
@@ -565,7 +575,7 @@ export default defineComponent({
         return (
           <div {...mergeProps(resolveProps(props.headerCellProps, cellContext) ?? {}, {
             key: cellKey,
-            class: 'i-table-v2__cell is-header',
+            class: [ns.e('cell'), 'is-header'],
             role: 'columnheader',
             tabindex: column.sortable ? 0 : undefined,
             style,
@@ -588,7 +598,7 @@ export default defineComponent({
       return (
         <div {...mergeProps(resolveProps(props.headerProps, context) ?? {}, {
           key: headerIndex,
-          class: ['i-table-v2__row', typeof props.headerClass === 'function' ? props.headerClass(context) : props.headerClass],
+          class: [ns.e('row'), typeof props.headerClass === 'function' ? props.headerClass(context) : props.headerClass],
           role: 'row',
           style: { width: toPx(totalWidth.value), height: toPx(height) }
         })}>
@@ -616,7 +626,7 @@ export default defineComponent({
         <div {...mergeProps(extra ?? {}, {
           key: rowKey,
           class: [
-            'i-table-v2__row',
+            ns.e('row'),
             isFixed ? 'is-fixed' : 'is-body',
             typeof props.rowClass === 'function' ? props.rowClass(context) : props.rowClass
           ],
@@ -637,28 +647,28 @@ export default defineComponent({
             const cellContext = { ...getterContext, cellData };
             const rendererContext = {
               ...cellContext,
-              class: 'i-table-v2__cell-text',
+              class: ns.e('cell-text'),
               isScrolling: props.useIsScrolling ? isScrolling.value : undefined
             };
             const treeControls = (
               <>
                 {isExpandCell && level > 0 && (
-                  <span class='i-table-v2__indent' style={{ width: toPx(level * 16) }} aria-hidden='true' />
+                  <span class={ns.e('indent')} style={{ width: toPx(level * 16) }} aria-hidden='true' />
                 )}
                 {isExpandCell && (
                   showToggle ? (
                     <button
                       type='button'
-                      class='i-table-v2__expand-toggle'
+                      class={ns.e('expand-toggle')}
                       aria-expanded={expanded}
                       aria-label={expanded ? '收起子行' : '展开子行'}
                       onClick={(event: MouseEvent) => {
                         event.stopPropagation();
                         toggleExpand(rowData, rowIndex);
                       }}>
-                      <span class={{ 'i-table-v2__expand-icon': true, 'is-expanded': expanded }} aria-hidden='true'>›</span>
+                      <span class={{ [ns.e('expand-icon')]: true, 'is-expanded': expanded }} aria-hidden='true'>›</span>
                     </button>
-                  ) : <span class='i-table-v2__tree-placeholder' aria-hidden='true' />
+                  ) : <span class={ns.e('tree-placeholder')} aria-hidden='true' />
                 )}
               </>
             );
@@ -666,12 +676,12 @@ export default defineComponent({
             return (
               <div {...mergeProps(resolveProps(props.cellProps, cellContext) ?? {}, {
                 key: cellKey,
-                class: 'i-table-v2__cell',
+                class: ns.e('cell'),
                 role: 'gridcell',
                 style: { ...cellStyle(column), ...cellFixedStyle(column, columnIndex, false) }
               })}>
                 {dynamic
-                  ? <div class='i-table-v2__measure'>{treeControls}<div class='i-table-v2__measure-content'>{content}</div></div>
+                  ? <div class={ns.e('measure')}>{treeControls}<div class={ns.e('measure-content')}>{content}</div></div>
                   : <>{treeControls}{content}</>}
               </div>
             );
@@ -683,29 +693,29 @@ export default defineComponent({
 
     return () => (
       <div
-        class='i-table-v2'
+        class={ns.b()}
         style={{ width: toPx(props.width), height: toPx(props.height) }}
         role='grid'
         aria-rowcount={flatRows.value.length + fixedRows.value.length}
         aria-colcount={props.columns.length}>
-        <div class={['i-table-v2__scroll', { 'is-dynamic': estimatedHeight.value !== undefined }]} ref={scrollEl} onScroll={onScroll}>
-          <div class='i-table-v2__header' role='rowgroup'>
+        <div class={[ns.e('scroll'), { 'is-dynamic': estimatedHeight.value !== undefined }]} ref={scrollEl} onScroll={onScroll}>
+          <div class={ns.e('header')} role='rowgroup'>
             {headerHeights.value.map(renderHeader)}
             {fixedRows.value.map((row) => renderRow(row, row.height))}
           </div>
-          <div class='i-table-v2__body' style={{ height: toPx(totalBodyHeight.value) }}>
+          <div class={ns.e('body')} style={{ height: toPx(totalBodyHeight.value) }}>
             {windowRows.value.map((row) => renderRow(row, rowHeights.value[row.rowIndex], rowTops.value[row.rowIndex]))}
             {!flatRows.value.length && !fixedRows.value.length && (
-              <div class='i-table-v2__empty'>{slots.empty?.() ?? props.emptyText}</div>
+              <div class={ns.e('empty')}>{slots.empty?.() ?? props.emptyText}</div>
             )}
           </div>
           {props.footerHeight > 0 && (
-            <div class='i-table-v2__footer' style={{ height: toPx(props.footerHeight) }}>
+            <div class={ns.e('footer')} style={{ height: toPx(props.footerHeight) }}>
               {slots.footer?.()}
             </div>
           )}
         </div>
-        {slots.overlay && <div class='i-table-v2__overlay'>{slots.overlay()}</div>}
+        {slots.overlay && <div class={ns.e('overlay')}>{slots.overlay()}</div>}
       </div>
     );
   }

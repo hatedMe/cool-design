@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { h, nextTick, reactive } from 'vue';
 import { expect, test, vi } from 'vitest';
+import ConfigProvider from '../../config-provider';
 import TableV2, { type TableV2Instance, type TableV2SortBy } from '../index';
 
 const columns = [
@@ -8,6 +9,52 @@ const columns = [
   { key: 'name', dataKey: 'name', title: '姓名', width: 160 }
 ];
 const rows = (n: number) => Array.from({ length: n }, (_, i) => ({ id: i + 1, name: `行${i + 1}` }));
+
+test.each(['i', '3d'])('动态行测量跟随最近 Provider 切换至 %s 命名空间', async (namespace) => {
+  const observers = new Map<Element, ResizeObserverCallback>();
+  class Observer {
+    constructor(private callback: ResizeObserverCallback) {}
+    observe(target: Element) { observers.set(target, this.callback); }
+    disconnect() {}
+    unobserve(target: Element) { observers.delete(target); }
+  }
+  vi.stubGlobal('ResizeObserver', Observer);
+  // jsdom 缺少布局，通过行的可见矩形启用真实测量查询。
+  const rects = vi.spyOn(HTMLElement.prototype, 'getClientRects')
+    .mockReturnValue([new DOMRect(0, 0, 100, 80)] as unknown as DOMRectList);
+  const w = mount(ConfigProvider, {
+    attachTo: document.body,
+    props: { namespace: 'acme' },
+    slots: {
+      default: () => h(TableV2, {
+        columns,
+        data: rows(1),
+        estimatedRowHeight: 50,
+        rowClass: 'user-row'
+      })
+    }
+  });
+  try {
+    await nextTick();
+    const row = w.get<HTMLElement>('.user-row');
+    expect(row.classes()).toContain('acme-table-v2__row');
+    const measure = row.get<HTMLElement>('.acme-table-v2__measure');
+    measure.element.style.height = '80px';
+    await w.setProps({ namespace });
+    await nextTick();
+    expect(row.classes()).toContain(`${namespace}-table-v2__row`);
+    expect(row.get(`[class~="${namespace}-table-v2__measure"]`).element).toBe(measure.element);
+    expect(row.element.style.height).toBe('80px');
+    measure.element.style.height = '96px';
+    observers.get(measure.element)?.([{ target: measure.element } as ResizeObserverEntry], {} as ResizeObserver);
+    await nextTick();
+    expect(row.element.style.height).toBe('96px');
+  } finally {
+    w.unmount();
+    rects.mockRestore();
+    vi.unstubAllGlobals();
+  }
+});
 
 test('默认表头和正文行均为 50px，显式 40px 保持旧尺寸', async () => {
   const w = mount(TableV2, { props: { columns, data: rows(2), fixedData: [{ id: 0 }] } });

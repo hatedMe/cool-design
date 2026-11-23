@@ -1,4 +1,5 @@
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 
 export interface AutoResizerSize {
   width: number;
@@ -10,6 +11,7 @@ export default defineComponent({
   props: { disableWidth: Boolean, disableHeight: Boolean },
   emits: { resize: (size: AutoResizerSize) => Number.isFinite(size.width) && Number.isFinite(size.height) },
   setup(props, { emit, slots }) {
+    const ns = useNamespace('auto-resizer');
     const root = ref<HTMLElement>();
     const measurement = ref<AutoResizerSize>({ width: 0, height: 0 });
     const width = computed(() => props.disableWidth ? 0 : measurement.value.width);
@@ -29,6 +31,6 @@ export default defineComponent({
       observer = undefined;
     });
     watch([width, height], ([width, height]) => emit('resize', { width, height }));
-    return () => <div ref={root} class='i-auto-resizer'>{slots.default?.({ width: width.value, height: height.value })}</div>;
+    return () => <div ref={root} class={ns.b()}>{slots.default?.({ width: width.value, height: height.value })}</div>;
   }
 });
