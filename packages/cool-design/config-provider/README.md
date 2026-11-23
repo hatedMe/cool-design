@@ -95,11 +95,12 @@ import { ConfigProvider, en } from 'cool-design/config-provider';
 - DatePicker、DatePickerPanel、TimePicker、DateTimePicker 和 Calendar，包含日期网格、时间列与独立日期面板。
 - ColorPicker 和 ColorPickerPanel，包含独立面板、预设色和外置浮层。
 - Tree、TreeSelect 和 TreeV2。
-- Table 和 TableColumn，包含声明式列、筛选面板和溢出提示。Table 的加载遮罩仍使用默认前缀。
+- Table 和 TableColumn，包含声明式列、筛选面板和溢出提示和加载遮罩。
 - TableV2 和 AutoResizer。
 - Menu、MenuItem、SubMenu、MenuItemGroup、Dropdown、DropdownMenu、DropdownItem 和 Pagination，包含子菜单、下拉菜单和每页条数浮层。
 - Dialog、Drawer 和 MessageBox，包含命令式消息框。
 - Message 和 Notification，包含命令式消息提示与通知。
+- Loading 组件、命令式服务和 `v-loading` 指令。
 - Tabs 和 TabPane，包含声明式页签和独立页签面板。
 
 从源码构建时，先配置 Sass，再加载样式。下例路径相对于仓库根目录。

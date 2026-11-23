@@ -1,6 +1,6 @@
 import { afterEach, expect, test } from 'vitest';
-import { createApp, h } from 'vue';
-import Loading from '..';
+import { createApp, h, nextTick, ref, withDirectives } from 'vue';
+import Loading, { vLoading } from '..';
 
 const closers: Array<{ close(): void }> = [];
 afterEach(() => {
@@ -105,4 +105,81 @@ test('支持自定义 SVG 片段与尺寸', () => {
   expect(svg?.getAttribute('width')).toBe('64');
   expect(svg?.innerHTML).toContain('<circle');
   inst.close();
+});
+
+test('不同应用分别持有全屏实例并共享滚动锁', () => {
+  const a = createApp({});
+  const b = createApp({});
+  document.body.style.overflow = 'scroll';
+  const first = Loading.service({ lock: true }, a._context);
+  const second = Loading.service({ lock: true }, b._context);
+  closers.push(first, second);
+  expect(first).not.toBe(second);
+  first.close();
+  expect(document.body.style.overflow).toBe('hidden');
+  second.close();
+  expect(document.body.style.overflow).toBe('scroll');
+});
+
+test('文字重绘和移出宿主后只释放指令持有的定位', async () => {
+  const text = ref('before');
+  const body = ref(false);
+  const style = document.createElement('style');
+  style.textContent = 'section.loading-target { position: static }';
+  document.head.append(style);
+  const app = createApp(() => withDirectives(h('section', { class: 'loading-target' }, text.value), [
+    [vLoading, { body: body.value }]
+  ]));
+  const host = document.createElement('div');
+  document.body.append(host);
+  app.mount(host);
+  const target = host.querySelector('section')!;
+  const instance = Loading.service({ target, fullscreen: false });
+  closers.push(instance);
+  try {
+    text.value = 'after';
+    await nextTick();
+    expect(target.querySelector('[role=status]')).not.toBeNull();
+    body.value = true;
+    await nextTick();
+    expect(target.style.position).toBe('relative');
+    instance.close();
+    expect(target.style.position).toBe('');
+  } finally {
+    app.unmount();
+    style.remove();
+  }
+});
+
+test('目标已定位的服务关闭时保留后来实例取得的定位', () => {
+  const target = document.createElement('div');
+  document.body.append(target);
+  target.style.position = 'absolute';
+  const first = Loading.service({ target, fullscreen: false });
+  target.style.position = 'static';
+  const second = Loading.service({ target, fullscreen: false });
+  closers.push(first, second);
+  first.close();
+  expect(target.style.position).toBe('relative');
+  second.close();
+  expect(target.style.position).toBe('static');
+});
+
+test('最后释放时恢复滚动轴和定位优先级，保留其他样式更新', () => {
+  const target = document.createElement('div');
+  document.body.append(target);
+  target.style.setProperty('position', 'static', 'important');
+  document.body.style.setProperty('overflow-y', 'scroll', 'important');
+  const first = Loading.service({ target, fullscreen: false, lock: true });
+  const second = Loading.service({ target, fullscreen: false, lock: true });
+  closers.push(first, second);
+  target.style.color = 'red';
+  second.close();
+  expect(target.style.position).toBe('relative');
+  first.close();
+  expect(target.style.getPropertyPriority('position')).toBe('important');
+  expect(target.style.color).toBe('red');
+  expect(document.body.style.overflowY).toBe('scroll');
+  expect(document.body.style.getPropertyPriority('overflow-y')).toBe('important');
+  document.body.style.removeProperty('overflow-y');
 });

@@ -1,6 +1,9 @@
-import { createVNode, render, type AppContext } from 'vue';
+import { computed, createVNode, defineComponent, getCurrentInstance, getCurrentScope, inject, provide, render, type AppContext } from 'vue';
+import { configKey, defaultConfig, getAppConfig, getThemeStyle } from '../config-provider/context';
+import { namespaceKey, useNamespace } from '../../hooks/use-namespace';
+import { sizeKey } from '../../hooks/use-size';
 import LoadingComponent from './loading';
-import { lockScroll, unlockScroll } from './scroll-lock';
+import { lockScroll, retainPosition, unlockScroll } from './scroll-lock';
 
 export interface LoadingServiceOptions {
   target?: HTMLElement | string;
@@ -21,7 +24,7 @@ export interface LoadingInstance {
   setText(text: string): void;
 }
 
-let fullscreenInstance: LoadingInstance | null = null;
+const fullscreenInstances = new Map<AppContext | null, LoadingInstance>();
 
 function resolveTarget(target?: HTMLElement | string): HTMLElement {
   if (typeof target === 'string') return (document.querySelector(target) as HTMLElement) ?? document.body;
@@ -34,22 +37,19 @@ export function service(
   appContext?: AppContext | null
 ): LoadingInstance {
   const fullscreen = options.fullscreen ?? true;
-  if (fullscreen && fullscreenInstance) return fullscreenInstance;
+  const caller = getCurrentInstance();
+  const context = appContext === undefined ? caller?.appContext ?? null : appContext;
+  const localConfig = caller && caller.appContext === context ? inject(configKey, undefined) : undefined;
+  const callerScope = localConfig && getCurrentScope();
+  const existing = fullscreen && fullscreenInstances.get(context);
+  if (existing) return existing;
   const target = resolveTarget(options.target);
   const useBody = fullscreen || options.body || target === document.body;
   const parent = useBody ? document.body : target;
-  let changedPosition = false;
-  let positionBackup = '';
-  if (!useBody) {
-    if (getComputedStyle(target).position === 'static') {
-      positionBackup = target.style.position;
-      target.style.position = 'relative';
-      changedPosition = true;
-    }
-  }
-  if (options.lock) lockScroll();
+  const releasePosition = useBody ? undefined : retainPosition(target);
+  const locked = options.lock;
+  if (locked) lockScroll();
   const container = document.createElement('div');
-  container.className = 'i-loading-service';
   if (!useBody) {
     container.style.position = 'absolute';
     container.style.inset = '0';
@@ -65,20 +65,44 @@ export function service(
   }
   parent.appendChild(container);
   let currentText = options.text ?? '正在加载…';
+  const Root = defineComponent({
+    props: { text: String },
+    setup(props) {
+      const owner = computed(() => {
+        const root = getAppConfig(context);
+        return callerScope?.active && localConfig ? localConfig.value : root;
+      });
+      const config = computed(() => owner.value ?? defaultConfig);
+      const ns = useNamespace('loading', computed(() => config.value.namespace));
+      provide(configKey, config);
+      provide(namespaceKey, ns.namespace);
+      provide(sizeKey, computed(() => config.value.size));
+      return () => {
+        container.className = ns.b('service');
+        return createVNode(LoadingComponent, {
+          class: owner.value && ns.namespace.value + '-theme-scope',
+          'data-theme': owner.value?.theme,
+          style: owner.value && {
+            ...getThemeStyle(owner.value, ns.cssVarName),
+            ...(options.background && ns.cssVarBlock({ background: options.background }))
+          },
+          loading: true,
+          text: props.text,
+          background: options.background ?? '',
+          fullscreen,
+          overlay: !fullscreen,
+          customClass: options.customClass ?? '',
+          spinner: options.spinner ?? '',
+          svg: options.svg ?? '',
+          svgViewBox: options.svgViewBox ?? '',
+          svgSize: options.svgSize ?? 0
+        });
+      };
+    }
+  });
   const draw = () => {
-    const vnode = createVNode(LoadingComponent, {
-      loading: true,
-      text: currentText,
-      background: options.background ?? '',
-      fullscreen,
-      overlay: !fullscreen,
-      customClass: options.customClass ?? '',
-      spinner: options.spinner ?? '',
-      svg: options.svg ?? '',
-      svgViewBox: options.svgViewBox ?? '',
-      svgSize: options.svgSize ?? 0
-    });
-    vnode.appContext = appContext ?? null;
+    const vnode = createVNode(Root, { text: currentText });
+    vnode.appContext = context;
     render(vnode, container);
   };
   draw();
@@ -89,9 +113,9 @@ export function service(
       closed = true;
       render(null, container);
       container.remove();
-      if (changedPosition) target.style.position = positionBackup;
-      if (options.lock) unlockScroll();
-      if (fullscreen && fullscreenInstance === instance) fullscreenInstance = null;
+      releasePosition?.();
+      if (locked) unlockScroll();
+      if (fullscreen) fullscreenInstances.delete(context);
     },
     setText(text: string) {
       currentText = text;
@@ -99,6 +123,6 @@ export function service(
       draw();
     }
   };
-  if (fullscreen) fullscreenInstance = instance;
+  if (fullscreen) fullscreenInstances.set(context, instance);
   return instance;
 }

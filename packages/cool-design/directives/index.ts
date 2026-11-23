@@ -1,8 +1,10 @@
-import type { App, ComponentInternalInstance, Directive, DirectiveBinding, VNode } from 'vue';
-import { createApp, h, isVNode } from 'vue';
+import type { App, ComponentInternalInstance, ComputedRef, Directive, DirectiveBinding, VNode } from 'vue';
+import { createApp, h, isVNode, shallowRef, watchSyncEffect } from 'vue';
 import PopoverComponent from '../popover/popover';
 import type { PopoverDirectiveValue } from '../popover/popover';
-import { lockScroll, unlockScroll } from '../loading/scroll-lock';
+import { lockScroll, retainPosition, unlockScroll } from '../loading/scroll-lock';
+import { configKey, getThemeStyle, type Config } from '../config-provider/context';
+import { defaultNamespace } from '../../hooks/use-namespace';
 
 type LoadingValue = boolean | {
   text?: string;
@@ -15,9 +17,17 @@ type LoadingValue = boolean | {
   svgViewBox?: string;
   svgSize?: number;
 };
+const loadingEffect = Symbol('loading-effect');
+type LoadingEffect = { update(options: ResolvedLoadingOptions): void; stop(): void };
+const loadingPosition = Symbol('loading-position');
 const loadingLock = Symbol('loading-lock');
 const loadingMaskKey = Symbol('loading-mask');
-type LoadingElement = HTMLElement & { [loadingMaskKey]?: HTMLElement; [loadingLock]?: boolean };
+type LoadingElement = HTMLElement & {
+  [loadingEffect]?: LoadingEffect;
+  [loadingMaskKey]?: HTMLElement;
+  [loadingLock]?: boolean;
+  [loadingPosition]?: () => void;
+};
 
 const readStringAttr = (el: HTMLElement, name: string): string => {
   try {
@@ -72,10 +82,10 @@ const resolveLoadingOptions = (
   };
 };
 
-const buildLoadingSpinner = (options: ResolvedLoadingOptions): HTMLElement => {
+const buildLoadingSpinner = (options: ResolvedLoadingOptions, namespace: string): HTMLElement => {
   if (options.svg) {
     const wrapper = document.createElement('span');
-    wrapper.className = 'i-loading-mask__svg';
+    wrapper.className = `${namespace}-loading-mask__svg`;
     wrapper.setAttribute('aria-hidden', 'true');
     try {
       const viewBox = options.svgViewBox ? ` viewBox="${options.svgViewBox.replace(/"/g, '&quot;')}"` : '';
@@ -88,77 +98,93 @@ const buildLoadingSpinner = (options: ResolvedLoadingOptions): HTMLElement => {
         svg.setAttribute('width', String(options.svgSize));
         svg.setAttribute('height', String(options.svgSize));
       }
-      svg.setAttribute('class', 'i-loading-mask__svg-item');
+      svg.setAttribute('class', `${namespace}-loading-mask__svg-item`);
       wrapper.appendChild(svg);
     } catch {
       // 解析失败时回退默认旋转描边。
-      return buildLoadingSpinner({ ...options, svg: '', spinner: '' });
+      return buildLoadingSpinner({ ...options, svg: '', spinner: '' }, namespace);
     }
     return wrapper;
   }
   if (options.spinner) {
     const icon = document.createElement('i');
-    icon.className = `iconfont i-icon i-loading-mask__icon ${options.spinner}`;
+    icon.className = `iconfont ${namespace}-icon ${namespace}-loading-mask__icon ${options.spinner}`;
     icon.setAttribute('aria-hidden', 'true');
     return icon;
   }
   const spinner = document.createElement('span');
-  spinner.className = 'i-loading-mask__spinner';
+  spinner.className = `${namespace}-loading-mask__spinner`;
   spinner.setAttribute('aria-hidden', 'true');
   return spinner;
 };
 
-const setLoading = (el: LoadingElement, options: ResolvedLoadingOptions) => {
+const setLoading = (el: LoadingElement, options: ResolvedLoadingOptions, config?: Config) => {
   let mask = el[loadingMaskKey];
+  const target = options.fullscreen || options.body ? document.body : el;
+  const local = options.active && target === el;
+  if (local) {
+    el[loadingPosition] ??= retainPosition(el);
+  } else {
+    el[loadingPosition]?.();
+    delete el[loadingPosition];
+  }
+  const locked = options.active && options.lock;
+  if (locked && !el[loadingLock]) lockScroll();
+  if (!locked && el[loadingLock]) unlockScroll();
+  el[loadingLock] = locked;
   if (!options.active) {
     mask?.remove();
-    el[loadingMaskKey] = undefined;
+    delete el[loadingMaskKey];
     el.removeAttribute('aria-busy');
-    if (el[loadingLock]) {
-      unlockScroll();
-      el[loadingLock] = false;
-    }
     return;
   }
-  const target = options.fullscreen || options.body ? document.body : el;
   if (!mask) {
-    if (target === el && getComputedStyle(el).position === 'static') el.style.position = 'relative';
     mask = document.createElement('div');
-    mask.className = 'i-loading-mask';
     mask.setAttribute('role', 'status');
     mask.setAttribute('aria-live', 'polite');
     el[loadingMaskKey] = mask;
   }
+  const namespace = config?.namespace || defaultNamespace;
+  mask.className = `${namespace}-loading-mask`;
   mask.classList.toggle('is-fullscreen', options.fullscreen);
-  mask.textContent = '';
-  mask.append(buildLoadingSpinner(options), document.createElement('span'));
-  const textNode = mask.lastElementChild as HTMLElement;
-  textNode.className = 'i-loading-mask__text';
-  textNode.textContent = options.text;
-  if (options.background) mask.style.background = options.background;
-  target.appendChild(mask);
-  el.setAttribute('aria-busy', 'true');
-  if (options.lock && !el[loadingLock]) {
-    lockScroll();
-    el[loadingLock] = true;
+  mask.removeAttribute('style');
+  if (config && !local) {
+    mask.classList.add(`${namespace}-theme-scope`);
+    mask.dataset.theme = config.theme;
+    const style = getThemeStyle(config, (name) => `--${namespace}-${name}`);
+    for (const [name, value] of Object.entries(style)) mask.style.setProperty(name, value);
+  } else {
+    delete mask.dataset.theme;
   }
+  if (options.background) mask.style.background = options.background;
+  const textNode = document.createElement('span');
+  textNode.className = `${namespace}-loading-mask__text`;
+  textNode.textContent = options.text;
+  mask.replaceChildren(buildLoadingSpinner(options, namespace), textNode);
+  if (mask.parentElement !== target) target.appendChild(mask);
+  el.setAttribute('aria-busy', 'true');
 };
 
 export const LoadingDirective: Directive<LoadingElement, LoadingValue> = {
-  mounted: (el, binding) => {
-    setLoading(el, resolveLoadingOptions(el, binding.value, binding.modifiers ?? {}));
+  mounted(el, binding, vnode) {
+    const provides = getDirectiveProvides(el, binding, vnode);
+    const config = provides?.[configKey as symbol] as ComputedRef<Config> | undefined;
+    const options = shallowRef(resolveLoadingOptions(el, binding.value, binding.modifiers ?? {}));
+    const stop = watchSyncEffect(() => setLoading(el, options.value, config?.value));
+    el[loadingEffect] = { update(value) { options.value = value; }, stop };
   },
-  updated: (el, binding) => {
-    setLoading(el, resolveLoadingOptions(el, binding.value, binding.modifiers ?? {}));
+  updated(el, binding) {
+    el[loadingEffect]?.update(resolveLoadingOptions(el, binding.value, binding.modifiers ?? {}));
   },
-  unmounted: (el) => {
+  unmounted(el) {
+    el[loadingEffect]?.stop();
+    delete el[loadingEffect];
+    el[loadingPosition]?.();
+    delete el[loadingPosition];
     el[loadingMaskKey]?.remove();
-    el[loadingMaskKey] = undefined;
+    delete el[loadingMaskKey];
     el.removeAttribute('aria-busy');
-    if (el[loadingLock]) {
-      unlockScroll();
-      el[loadingLock] = false;
-    }
+    if (el[loadingLock]) unlockScroll();
     delete el[loadingLock];
   }
 };
@@ -435,17 +461,24 @@ type PopoverElement = HTMLElement & { [popoverState]?: PopoverDirectiveState };
 
 // 插槽的声明组件与渲染组件可能不同。沿已挂载的 VNode 找到渲染位置，
 // Teleport 与 Fragment 的子节点也保留在这棵逻辑树中。
-function findPopoverOwner(node: VNode, owner: ComponentInternalInstance, el: HTMLElement): ComponentInternalInstance | undefined {
-  if (node.component) return findPopoverOwner(node.component.subTree, node.component, el);
+function findDirectiveOwner(node: VNode, owner: ComponentInternalInstance, el: HTMLElement): ComponentInternalInstance | undefined {
+  if (node.component) return findDirectiveOwner(node.component.subTree, node.component, el);
   if (node.el === el) return owner;
-  if (node.suspense?.activeBranch) return findPopoverOwner(node.suspense.activeBranch, owner, el);
+  if (node.suspense?.activeBranch) return findDirectiveOwner(node.suspense.activeBranch, owner, el);
   if (Array.isArray(node.children)) {
     for (const child of node.children) {
       if (!isVNode(child)) continue;
-      const found = findPopoverOwner(child, owner, el);
+      const found = findDirectiveOwner(child, owner, el);
       if (found) return found;
     }
   }
+}
+
+function getDirectiveProvides(el: HTMLElement, binding: DirectiveBinding, vnode: VNode) {
+  const context = binding.instance?.$ ?? (vnode as VNode & { ctx?: ComponentInternalInstance })?.ctx;
+  if (!context) return;
+  const owner = findDirectiveOwner(context.subTree, context, el) ?? context;
+  return (owner as ComponentInternalInstance & Pick<App['_context'], 'provides'>).provides;
 }
 
 const mountPopover = (el: PopoverElement, binding: DirectiveBinding<PopoverDirectiveValue>, vnode: VNode) => {
@@ -466,14 +499,8 @@ const mountPopover = (el: PopoverElement, binding: DirectiveBinding<PopoverDirec
       disabled: options.disabled ?? false
     })
   );
-  // 函数式组件没有公开实例，其 VNode 仍保存当前渲染上下文。
-  const context = binding.instance?.$ ?? (vnode as VNode & { ctx?: ComponentInternalInstance })?.ctx;
-  if (context) {
-    const owner = findPopoverOwner(context.subTree, context, el) ?? context;
-    // Vue 3.2 与 3.4 实例均以 provides 的原型链保存本地注入。
-    const { provides } = owner as ComponentInternalInstance & Pick<App['_context'], 'provides'>;
-    app._context.provides = Object.create(provides);
-  }
+  const provides = getDirectiveProvides(el, binding, vnode);
+  if (provides) app._context.provides = Object.create(provides);
   app.mount(host);
   el[popoverState] = { app, host };
 };

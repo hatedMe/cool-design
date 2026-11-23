@@ -1,5 +1,6 @@
 import { defineComponent, onBeforeUnmount, watch } from 'vue';
 import { lockScroll, unlockScroll } from './scroll-lock';
+import { useNamespace } from '../../hooks/use-namespace';
 import Icon from '../icon';
 export default defineComponent({
   name: 'i-loading',
@@ -17,16 +18,20 @@ export default defineComponent({
     svgSize: { type: Number, default: 0 }
   },
   setup(props, { slots }) {
+    const ns = useNamespace('loading');
+    let locked = false;
     watch(
       () => props.loading && props.fullscreen && props.lock,
-      (shouldLock, wasLocked) => {
-        if (shouldLock && !wasLocked) lockScroll();
-        if (!shouldLock && wasLocked) unlockScroll();
+      (shouldLock) => {
+        if (typeof document === 'undefined') return;
+        if (shouldLock) lockScroll();
+        else if (locked) unlockScroll();
+        locked = shouldLock;
       },
       { immediate: true }
     );
     onBeforeUnmount(() => {
-      if (props.loading && props.fullscreen && props.lock) unlockScroll();
+      if (locked) unlockScroll();
     });
     const block = (event: Event) => {
       if (props.loading && props.overlay) {
@@ -38,7 +43,7 @@ export default defineComponent({
       if (props.svg) {
         return (
           <svg
-            class='i-loading__svg'
+            class={ns.e('svg')}
             viewBox={props.svgViewBox || undefined}
             width={props.svgSize || undefined}
             height={props.svgSize || undefined}
@@ -47,28 +52,28 @@ export default defineComponent({
           />
         );
       }
-      if (props.spinner) return <Icon class='i-loading__icon' icon={props.spinner} aria-hidden='true' />;
-      return <span class='i-loading__spinner' aria-hidden='true' />;
+      if (props.spinner) return <Icon class={ns.e('icon')} icon={props.spinner} aria-hidden='true' />;
+      return <span class={ns.e('spinner')} aria-hidden='true' />;
     };
     return () => (
       <div
         class={[
-          'i-loading',
-          { 'i-loading--overlay': props.overlay, 'i-loading--fullscreen': props.fullscreen },
+          ns.b(),
+          { [ns.m('overlay')]: props.overlay, [ns.m('fullscreen')]: props.fullscreen },
           props.customClass
         ]}
-        style={props.background && props.loading ? { '--i-loading-background': props.background } : undefined}
+        style={props.background && props.loading ? { [ns.cssVarName('loading-background')]: props.background } : undefined}
         aria-busy={props.loading}>
         {slots.default && (
           <div
-            class='i-loading__content'
+            class={ns.e('content')}
             inert={props.loading && props.overlay ? true : undefined}
             {...{ onClickCapture: block, onKeydownCapture: block }}>
             {slots.default()}
           </div>
         )}
         {props.loading && (
-          <div class='i-loading__status' role='status' aria-live='polite'>
+          <div class={ns.e('status')} role='status' aria-live='polite'>
             {spinnerNode()}
             <span>{props.text}</span>
           </div>

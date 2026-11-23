@@ -1,62 +1,64 @@
-.i-loading {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-loading {
   position: relative;
   min-width: 0;
 }
-.i-loading-service > .i-loading {
+.#{config.$namespace}-loading-service > .#{config.$namespace}-loading {
   height: 100%;
 }
-.i-loading__status {
+.#{config.$namespace}-loading__status {
   display: flex;
   gap: 8px;
   align-items: center;
   justify-content: center;
   padding: 16px;
-  color: var(--i-primary);
-  font-size: var(--i-font-size);
+  color: var(--#{config.$namespace}-primary);
+  font-size: var(--#{config.$namespace}-font-size);
 }
-.i-loading--overlay[aria-busy='true'] {
+.#{config.$namespace}-loading--overlay[aria-busy='true'] {
   min-height: 96px;
 }
-.i-loading--overlay > .i-loading__status {
+.#{config.$namespace}-loading--overlay > .#{config.$namespace}-loading__status {
   position: absolute;
   inset: 0;
   z-index: 5;
-  background: var(--i-loading-background, var(--i-bg));
+  background: var(--#{config.$namespace}-loading-background, var(--#{config.$namespace}-bg));
   opacity: 0.92;
 }
-.i-loading--fullscreen {
+.#{config.$namespace}-loading--fullscreen {
   position: fixed;
   inset: 0;
   z-index: 3000;
-  background: var(--i-loading-background, var(--i-bg));
+  background: var(--#{config.$namespace}-loading-background, var(--#{config.$namespace}-bg));
 }
-.i-loading--fullscreen > .i-loading__status {
+.#{config.$namespace}-loading--fullscreen > .#{config.$namespace}-loading__status {
   position: fixed;
   inset: 0;
 }
-.i-loading--overlay[aria-busy='true'] > .i-loading__content {
+.#{config.$namespace}-loading--overlay[aria-busy='true'] > .#{config.$namespace}-loading__content {
   pointer-events: none;
   user-select: none;
 }
-.i-loading__spinner {
+.#{config.$namespace}-loading__spinner {
   width: 16px;
   height: 16px;
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  animation: i-loading-spin 0.8s linear infinite;
+  animation: #{config.$namespace}-loading-spin 0.8s linear infinite;
 }
-@keyframes i-loading-spin {
+@keyframes #{config.$namespace}-loading-spin {
   to {
     transform: rotate(360deg);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .i-loading__spinner {
+  .#{config.$namespace}-loading__spinner {
     animation: none;
   }
 }
-.i-loading-mask {
+.#{config.$namespace}-loading-mask {
   position: absolute;
   inset: 0;
   z-index: 1000;
@@ -64,39 +66,39 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: color-mix(in srgb, var(--i-bg, #fff) 80%, transparent);
+  background: color-mix(in srgb, var(--#{config.$namespace}-bg, #fff) 80%, transparent);
 }
-.i-loading-mask.is-fullscreen {
+.#{config.$namespace}-loading-mask.is-fullscreen {
   position: fixed;
 }
-.i-loading-mask__spinner {
+.#{config.$namespace}-loading-mask__spinner {
   width: 18px;
   height: 18px;
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  animation: i-loading-mask-spin 0.8s linear infinite;
+  animation: #{config.$namespace}-loading-mask-spin 0.8s linear infinite;
 }
-.i-loading-mask__icon {
-  color: var(--i-primary);
+.#{config.$namespace}-loading-mask__icon {
+  color: var(--#{config.$namespace}-primary);
   font-size: 24px;
 }
-.i-loading-mask__svg {
+.#{config.$namespace}-loading-mask__svg {
   display: inline-flex;
 }
-.i-loading-mask__svg svg {
+.#{config.$namespace}-loading-mask__svg svg {
   display: block;
 }
-.i-loading-mask__text {
-  color: var(--i-text);
+.#{config.$namespace}-loading-mask__text {
+  color: var(--#{config.$namespace}-text);
 }
-@keyframes i-loading-mask-spin {
+@keyframes #{config.$namespace}-loading-mask-spin {
   to {
     transform: rotate(360deg);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .i-loading-mask__spinner {
+  .#{config.$namespace}-loading-mask__spinner {
     animation: none;
   }
 }
