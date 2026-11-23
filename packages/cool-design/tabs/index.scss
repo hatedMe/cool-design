@@ -1,154 +1,156 @@
-.i-tabs {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-tabs {
   display: flex;
   flex-direction: column;
 }
-.i-tabs.is-left,
-.i-tabs.is-right {
+.#{config.$namespace}-tabs.is-left,
+.#{config.$namespace}-tabs.is-right {
   flex-direction: row;
 }
-.i-tabs.is-left .i-tabs__header,
-.i-tabs.is-right .i-tabs__header {
+.#{config.$namespace}-tabs.is-left .#{config.$namespace}-tabs__header,
+.#{config.$namespace}-tabs.is-right .#{config.$namespace}-tabs__header {
   border-bottom: 0;
 }
-.i-tabs.is-left .i-tabs__nav,
-.i-tabs.is-right .i-tabs__nav {
+.#{config.$namespace}-tabs.is-left .#{config.$namespace}-tabs__nav,
+.#{config.$namespace}-tabs.is-right .#{config.$namespace}-tabs__nav {
   flex-direction: column;
 }
-.i-tabs.is-bottom .i-tabs__header {
+.#{config.$namespace}-tabs.is-bottom .#{config.$namespace}-tabs__header {
   border-bottom: 0;
-  border-top: 1px solid var(--i-border);
+  border-top: 1px solid var(--#{config.$namespace}-border);
 }
-.i-tabs__header {
+.#{config.$namespace}-tabs__header {
   display: flex;
-  border-bottom: 1px solid var(--i-border);
+  border-bottom: 1px solid var(--#{config.$namespace}-border);
 }
-.i-tabs__nav-scroll {
+.#{config.$namespace}-tabs__nav-scroll {
   flex: 1;
   min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
 }
-.i-tabs__nav-scroll::-webkit-scrollbar {
+.#{config.$namespace}-tabs__nav-scroll::-webkit-scrollbar {
   display: none;
 }
-.i-tabs.is-left .i-tabs__nav-scroll,
-.i-tabs.is-right .i-tabs__nav-scroll {
+.#{config.$namespace}-tabs.is-left .#{config.$namespace}-tabs__nav-scroll,
+.#{config.$namespace}-tabs.is-right .#{config.$namespace}-tabs__nav-scroll {
   overflow-x: hidden;
   overflow-y: auto;
 }
-.i-tabs__nav-prev,
-.i-tabs__nav-next {
+.#{config.$namespace}-tabs__nav-prev,
+.#{config.$namespace}-tabs__nav-next {
   flex: none;
   padding: 10px 4px;
   border: 0;
   background: transparent;
-  color: var(--i-text-secondary);
+  color: var(--#{config.$namespace}-text-secondary);
   font-size: 14px;
   cursor: pointer;
 }
-.i-tabs__nav-prev.is-disabled,
-.i-tabs__nav-next.is-disabled {
-  color: var(--i-text-placeholder);
+.#{config.$namespace}-tabs__nav-prev.is-disabled,
+.#{config.$namespace}-tabs__nav-next.is-disabled {
+  color: var(--#{config.$namespace}-text-placeholder);
   cursor: not-allowed;
 }
-.i-tabs__header.is-stretch .i-tabs__nav {
+.#{config.$namespace}-tabs__header.is-stretch .#{config.$namespace}-tabs__nav {
   width: 100%;
 }
-.i-tabs__header.is-stretch .i-tabs__item {
+.#{config.$namespace}-tabs__header.is-stretch .#{config.$namespace}-tabs__item {
   flex: 1;
   text-align: center;
 }
-.i-tabs__nav {
+.#{config.$namespace}-tabs__nav {
   position: relative;
   display: flex;
   align-items: center;
   gap: 4px;
 }
-.i-tabs.is-top .i-tabs__nav,
-.i-tabs.is-bottom .i-tabs__nav {
+.#{config.$namespace}-tabs.is-top .#{config.$namespace}-tabs__nav,
+.#{config.$namespace}-tabs.is-bottom .#{config.$namespace}-tabs__nav {
   width: max-content;
   min-width: 100%;
 }
-.i-tabs__active-bar {
+.#{config.$namespace}-tabs__active-bar {
   position: absolute;
   bottom: 0;
   left: 0;
   height: 2px;
-  background: var(--i-primary);
+  background: var(--#{config.$namespace}-primary);
   pointer-events: none;
 }
-.i-tabs.is-bottom .i-tabs__active-bar {
+.#{config.$namespace}-tabs.is-bottom .#{config.$namespace}-tabs__active-bar {
   top: 0;
   bottom: auto;
 }
-.i-tabs.is-left .i-tabs__active-bar,
-.i-tabs.is-right .i-tabs__active-bar {
+.#{config.$namespace}-tabs.is-left .#{config.$namespace}-tabs__active-bar,
+.#{config.$namespace}-tabs.is-right .#{config.$namespace}-tabs__active-bar {
   top: 0;
   bottom: auto;
   width: 2px;
   height: 0;
 }
-.i-tabs.is-left .i-tabs__active-bar {
+.#{config.$namespace}-tabs.is-left .#{config.$namespace}-tabs__active-bar {
   right: 0;
   left: auto;
 }
-.i-tabs__header button,
-.i-tabs__item,
-.i-tabs__add {
+.#{config.$namespace}-tabs__header button,
+.#{config.$namespace}-tabs__item,
+.#{config.$namespace}-tabs__add {
   padding: 10px 16px;
   border: 0;
   background: transparent;
   cursor: pointer;
   font-size: 14px;
-  color: var(--i-text);
+  color: var(--#{config.$namespace}-text);
 }
-.i-tabs__item.is-focus,
-.i-tabs__add:focus-visible,
-.i-tabs__close:focus-visible {
-  outline: 2px solid var(--i-primary);
+.#{config.$namespace}-tabs__item.is-focus,
+.#{config.$namespace}-tabs__add:focus-visible,
+.#{config.$namespace}-tabs__close:focus-visible {
+  outline: 2px solid var(--#{config.$namespace}-primary);
   outline-offset: -2px;
 }
-.i-tabs__header button.is-active,
-.i-tabs__item.is-active {
-  color: var(--i-primary);
+.#{config.$namespace}-tabs__header button.is-active,
+.#{config.$namespace}-tabs__item.is-active {
+  color: var(--#{config.$namespace}-primary);
 }
-.i-tabs__item.is-disabled {
-  color: var(--i-text-muted);
+.#{config.$namespace}-tabs__item.is-disabled {
+  color: var(--#{config.$namespace}-text-muted);
   cursor: not-allowed;
 }
-.i-tabs__header i,
-.i-tabs__close {
+.#{config.$namespace}-tabs__header i,
+.#{config.$namespace}-tabs__close {
   margin-left: 8px;
   font-style: normal;
   cursor: pointer;
 }
-.i-tabs__close:hover {
-  color: var(--i-danger);
+.#{config.$namespace}-tabs__close:hover {
+  color: var(--#{config.$namespace}-danger);
 }
-.i-tabs__content {
+.#{config.$namespace}-tabs__content {
   padding: 16px;
 }
-.i-tabs__pane[hidden] {
+.#{config.$namespace}-tabs__pane[hidden] {
   display: none;
 }
-.i-tabs.is-card .i-tabs__item,
-.i-tabs.is-border-card .i-tabs__item {
+.#{config.$namespace}-tabs.is-card .#{config.$namespace}-tabs__item,
+.#{config.$namespace}-tabs.is-border-card .#{config.$namespace}-tabs__item {
   border: 1px solid transparent;
   border-bottom: 0;
 }
-.i-tabs.is-card .i-tabs__item.is-active,
-.i-tabs.is-border-card .i-tabs__item.is-active {
-  border-color: var(--i-border);
-  border-bottom: 1px solid var(--i-bg);
-  background: var(--i-bg);
+.#{config.$namespace}-tabs.is-card .#{config.$namespace}-tabs__item.is-active,
+.#{config.$namespace}-tabs.is-border-card .#{config.$namespace}-tabs__item.is-active {
+  border-color: var(--#{config.$namespace}-border);
+  border-bottom: 1px solid var(--#{config.$namespace}-bg);
+  background: var(--#{config.$namespace}-bg);
 }
-.i-tabs.is-border-card {
-  border: 1px solid var(--i-border);
+.#{config.$namespace}-tabs.is-border-card {
+  border: 1px solid var(--#{config.$namespace}-border);
 }
-.i-tabs.is-border-card .i-tabs__header {
-  background: var(--i-bg-subtle);
+.#{config.$namespace}-tabs.is-border-card .#{config.$namespace}-tabs__header {
+  background: var(--#{config.$namespace}-bg-subtle);
 }
-.i-tabs.is-border-card .i-tabs__content {
-  background: var(--i-bg);
+.#{config.$namespace}-tabs.is-border-card .#{config.$namespace}-tabs__content {
+  background: var(--#{config.$namespace}-bg);
 }

@@ -98,6 +98,7 @@ import { ConfigProvider, en } from 'cool-design/config-provider';
 - Table 和 TableColumn，包含声明式列、筛选面板和溢出提示。Table 的加载遮罩仍使用默认前缀。
 - TableV2 和 AutoResizer。
 - Menu、MenuItem、SubMenu、MenuItemGroup、Dropdown、DropdownMenu、DropdownItem 和 Pagination，包含子菜单、下拉菜单和每页条数浮层。
+- Tabs 和 TabPane，包含声明式页签和独立页签面板。
 
 从源码构建时，先配置 Sass，再加载样式。下例路径相对于仓库根目录。
 

@@ -1,10 +1,55 @@
 import { Fragment, h, nextTick, onUnmounted, ref, watchEffect } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { describe, expect, test, vi } from 'vitest';
-import Tabs from '../index';
+import ConfigProvider from '../../config-provider';
+import Tabs, { TabPane as PublicTabPane } from '../index';
 import TabPane from '../tab-pane';
 
 describe('Tabs', () => {
+  test('命名空间切换后保留 Tabs 和活动面板节点及 ARIA 配对', async () => {
+    const wrapper = mount(ConfigProvider, {
+      props: { namespace: 'acme' },
+      slots: {
+        default: () => h(Tabs, { class: 'user-tabs', defaultValue: 'a' }, {
+          default: () => h(PublicTabPane, { name: 'a', label: 'A' }, () => 'content')
+        })
+      }
+    });
+    const root = wrapper.get('.user-tabs').element;
+    const panel = wrapper.get('[role="tabpanel"]').element;
+    const tab = wrapper.get('[role="tab"]').element;
+    expect(root.classList.contains('acme-tabs')).toBe(true);
+    expect(panel.classList.contains('acme-tabs__pane')).toBe(true);
+
+    await wrapper.setProps({ namespace: 'local' });
+    expect(wrapper.get('.local-tabs.user-tabs').element).toBe(root);
+    expect(wrapper.get('.local-tabs__pane').element).toBe(panel);
+    expect(wrapper.get('.local-tabs__item').element).toBe(tab);
+    expect(tab.getAttribute('aria-controls')).toBe(panel.id);
+    expect(panel.getAttribute('aria-labelledby')).toBe(tab.id);
+    wrapper.unmount();
+  });
+
+  test('独立 TabPane 跟随最近 Provider 并保留调用方的类名与内容', async () => {
+    const innerNamespace = ref('acme');
+    const wrapper = mount(ConfigProvider, {
+      props: { namespace: 'outer' },
+      slots: {
+        default: () => h(ConfigProvider, { namespace: innerNamespace.value }, {
+          default: () => h(PublicTabPane, { class: 'user-pane', name: 0 }, () => 'standalone')
+        })
+      }
+    });
+    const pane = wrapper.get('.user-pane');
+    expect(pane.classes()).toContain('acme-tab-pane');
+    innerNamespace.value = 'local';
+    await nextTick();
+    expect(wrapper.get('.local-tab-pane.user-pane').element).toBe(pane.element);
+    expect(pane.attributes('data-name')).toBe('0');
+    expect(pane.text()).toBe('standalone');
+    wrapper.unmount();
+  });
+
   test('在无键 Fragment 前增删独立页签后保留已访问的懒面板实例', async () => {
     const showPrefix = ref(false);
     const active = ref('a');

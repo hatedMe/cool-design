@@ -15,6 +15,8 @@ import {
   type VNodeArrayChildren,
   type VNodeChild
 } from 'vue';
+import { createBEM } from '../../../src/utils/create';
+import { useNamespace } from '../../hooks/use-namespace';
 import TabPaneComponent from './tab-pane';
 
 export type TabsPaneName = string | number;
@@ -113,6 +115,8 @@ export default defineComponent({
       action === 'add' ? name === null : action === 'remove' && isPaneName(name)
   },
   setup(props, { emit, slots, expose }) {
+    const ns = useNamespace('tabs');
+    const bem = createBEM(ns.b);
     const internalActive = ref(props.modelValue ?? props.defaultValue);
     const currentName = computed(() => {
       const selected = props.modelValue ?? internalActive.value;
@@ -357,28 +361,28 @@ export default defineComponent({
         <div
           key='header'
           class={{
-            'i-tabs__header': true,
+            [bem('header')]: true,
             [`is-${headerPosition}`]: true,
             'is-stretch': props.stretch
           }}>
           {navScrollable.value && (
             <button
               type='button'
-              class={{ 'i-tabs__nav-prev': true, 'is-disabled': navAtStart.value }}
+              class={{ [bem('nav-prev')]: true, 'is-disabled': navAtStart.value }}
               aria-label='上一个可视页签'
               disabled={navAtStart.value}
               onClick={() => scrollNav(-1)}>
               ‹
             </button>
           )}
-          <div class='i-tabs__nav-scroll' ref={navScrollRef} onScroll={updateNavScroll}>
+          <div class={bem('nav-scroll')} ref={navScrollRef} onScroll={updateNavScroll}>
             <div
-              class='i-tabs__nav'
+              class={bem('nav')}
               ref={tabListRef}
               role='tablist'
               aria-orientation={vertical ? 'vertical' : 'horizontal'}>
               {normalizedType.value === 'default' && panes.length > 0 && (
-                <div class='i-tabs__active-bar' ref={tabBarElement} style={barStyle.value} aria-hidden='true' />
+                <div class={bem('active-bar')} ref={tabBarElement} style={barStyle.value} aria-hidden='true' />
               )}
               {panes.map(({ pane, key }, index) => {
                 const isActive = pane.name === active;
@@ -393,15 +397,15 @@ export default defineComponent({
                     aria-disabled={pane.disabled || undefined}
                     aria-controls={`i-tabs-panel-${String(pane.name)}`}
                     tabindex={pane.disabled ? -1 : isActive ? 0 : -1}
-                    class={{ 'i-tabs__item': true, 'is-active': isActive, 'is-disabled': pane.disabled, 'is-focus': focusedTab.value === pane.name }}
+                    class={{ [bem('item')]: true, 'is-active': isActive, 'is-disabled': pane.disabled, 'is-focus': focusedTab.value === pane.name }}
                     onFocus={() => { focusedTab.value = pane.name; }}
                     onBlur={removeFocus}
                     onClick={(event) => { removeFocus(); return setActive(pane.name, event); }}
                     onKeydown={(event) => handleKeydown(event, index)}>
-                    <span class='i-tabs__label'>{pane.labelSlot?.() ?? pane.label}</span>
+                    <span class={bem('label')}>{pane.labelSlot?.() ?? pane.label}</span>
                     {closable && (
                       <span
-                        class='i-tabs__close'
+                        class={bem('close')}
                         role='button'
                         aria-label={`关闭${pane.label || pane.name}`}
                         tabindex={pane.disabled ? -1 : 0}
@@ -419,7 +423,7 @@ export default defineComponent({
                 );
               })}
               {showAdd.value && (
-                <button type='button' class='i-tabs__add' aria-label='新增页签' onClick={handleAdd}>
+                <button type='button' class={bem('add')} aria-label='新增页签' onClick={handleAdd}>
                   {slots['add-icon']?.() ?? '+'}
                 </button>
               )}
@@ -428,7 +432,7 @@ export default defineComponent({
           {navScrollable.value && (
             <button
               type='button'
-              class={{ 'i-tabs__nav-next': true, 'is-disabled': navAtEnd.value }}
+              class={{ [bem('nav-next')]: true, 'is-disabled': navAtEnd.value }}
               aria-label='下一个可视页签'
               disabled={navAtEnd.value}
               onClick={() => scrollNav(1)}>
@@ -439,7 +443,7 @@ export default defineComponent({
       );
 
       const content = (
-        <div class='i-tabs__content' key='content'>
+        <div class={bem('content')} key='content'>
           {paneNodes.length
             ? panes.map(({ pane, key }) => {
                 const isActive = pane.name === active;
@@ -458,7 +462,7 @@ export default defineComponent({
                     id={`i-tabs-panel-${String(pane.name)}`}
                     aria-labelledby={`i-tabs-tab-${String(pane.name)}`}
                     hidden={!isActive}
-                    class={{ 'i-tabs__pane': true, 'is-active': isActive }}
+                    class={{ [bem('pane')]: true, 'is-active': isActive }}
                     {...hooks}>
                     {pane.contentSlot?.()}
                   </div>
@@ -469,7 +473,7 @@ export default defineComponent({
                   role='tabpanel'
                   id={`i-tabs-panel-${String(active)}`}
                   aria-labelledby={`i-tabs-tab-${String(active)}`}
-                  class='i-tabs__pane is-active'>
+                  class={[bem('pane'), 'is-active']}>
                   {children}
                 </div>
               )}
@@ -479,7 +483,7 @@ export default defineComponent({
       return (
         <div
           class={{
-            'i-tabs': true,
+            [bem()]: true,
             [`is-${normalizedType.value}`]: true,
             [`is-${headerPosition}`]: true
           }}>
