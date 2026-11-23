@@ -1,5 +1,5 @@
 import { createVNode, render, type AppContext, type VNode } from 'vue';
-import { nextOverlayZIndex } from '../../hooks/use-z-index';
+import { renderService } from '../../../src/utils/service-render';
 import { positionServices } from '../../../src/utils/service-position';
 import { defaultConfig, getAppConfig } from '../config-provider/context';
 import MessageComponent, { type MessageIcon, type MessageType } from './message';
@@ -85,8 +85,6 @@ function messageFn(input: string | MessageOptions, context: AppContext | null): 
     return { close: () => {} };
   }
   const container = document.createElement('div');
-  container.className = `i-message-container i-message-container--${placement}`;
-  container.style.zIndex = String(opts.zIndex ?? nextOverlayZIndex(config.zIndex));
   document.body.appendChild(container);
   const reposition = () => positionServices(
     [...closers].filter((entry) => entry.placement === placement),
@@ -113,8 +111,8 @@ function messageFn(input: string | MessageOptions, context: AppContext | null): 
     opts.onClose?.();
   };
   closers.add(entry);
-  const draw = () => {
-    const vnode = createVNode(MessageComponent, {
+  const draw = renderService(container, context, 'message', placement, opts.zIndex, () =>
+    createVNode(MessageComponent, {
       message: opts.message,
       repeatNum: count,
       type: opts.type ?? 'info',
@@ -127,15 +125,12 @@ function messageFn(input: string | MessageOptions, context: AppContext | null): 
       icon: opts.icon,
       closeIcon: opts.closeIcon,
       onClose: doClose
-    });
-    vnode.appContext = context;
-    render(vnode, container);
-    reposition();
-  };
-  draw();
+    })
+  );
+  reposition();
   const handle: MessageHandle = { close: doClose };
   if (groupKey) {
-    groups.set(groupKey, { handle, bump: () => { count++; draw(); } });
+    groups.set(groupKey, { handle, bump: () => { count++; draw(); reposition(); } });
     grouped.set(context, groups);
   }
   return handle;

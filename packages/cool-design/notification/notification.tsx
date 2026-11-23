@@ -1,14 +1,14 @@
 import { defineComponent, onBeforeUnmount, onMounted, type PropType } from 'vue';
-import { createNamespace } from '../../../src/utils/create';
+import { useNamespace } from '../../hooks/use-namespace';
+import { useSize } from '../../hooks/use-size';
 import type { NotificationType } from './types';
-const [name, bem] = createNamespace('notification');
 
 export default defineComponent({
-  name,
+  name: 'i-notification',
   props: {
     title: String,
     message: String,
-    size: { type: String as PropType<'large' | 'normal' | 'small'>, default: 'normal' },
+    size: { type: String as PropType<'large' | 'normal' | 'small'>, default: undefined },
     type: { type: String as PropType<NotificationType>, default: 'warning' },
     duration: { type: Number, default: 4500 },
     showClose: { type: Boolean, default: true },
@@ -17,6 +17,8 @@ export default defineComponent({
   },
   emits: ['click', 'close'],
   setup(props, { emit, slots }) {
+    const ns = useNamespace('notification');
+    const size = useSize();
     let timer: ReturnType<typeof setTimeout> | undefined;
     let startAt = 0;
     let remaining = props.duration;
@@ -45,14 +47,14 @@ export default defineComponent({
     const normalizedType = () => (props.type === 'error' ? 'danger' : props.type);
     return () => (
       <section
-        class={[bem(), bem({ [normalizedType()]: true, [props.size]: true }), props.customClass]}
+        class={[ns.b(), ns.m(normalizedType()), ns.m(props.size ?? (size.value === 'default' ? 'normal' : size.value)), props.customClass]}
         role='status'
         onClick={(event: MouseEvent) => emit('click', event)}
         onMouseenter={pause}
         onMouseleave={resume}>
-        <div class={bem('content')}>
-          {props.title && <h3 class={bem('title')}>{props.title}</h3>}
-          <div class={bem('message')}>
+        <div class={ns.e('content')}>
+          {props.title && <h3 class={ns.e('title')}>{props.title}</h3>}
+          <div class={ns.e('message')}>
             {slots.default?.() ??
               (props.dangerouslyUseHTMLString ? (
                 <span innerHTML={props.message ?? ''} />

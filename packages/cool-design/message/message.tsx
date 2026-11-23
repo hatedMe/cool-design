@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, onBeforeUnmount, watch, type Component, type PropType, type VNode } from 'vue';
 import { useConfig } from '../config-provider/context';
 import Icon from '../icon';
@@ -20,6 +21,7 @@ export default defineComponent({
   },
   emits: ['close'],
   setup(props, { emit }) {
+    const ns = useNamespace('message');
     const config = useConfig();
     const duration = () => props.duration ?? config.value.message?.duration ?? 3000;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -61,14 +63,14 @@ export default defineComponent({
         );
       return (
         <div
-          class={['i-message', `i-message--${props.type}`, { 'is-center': props.center, 'is-plain': props.plain ?? config.value.message?.plain }, props.customClass]}
+          class={[ns.b(), ns.m(props.type), { 'is-center': props.center, 'is-plain': props.plain ?? config.value.message?.plain }, props.customClass]}
           role={props.type === 'error' ? 'alert' : 'status'}
           onMouseenter={pause}
           onMouseleave={start}>
-          {props.icon && <Icon class='i-message__icon' icon={props.icon} aria-hidden='true' />}
+          {props.icon && <Icon class={ns.e('icon')} icon={props.icon} aria-hidden='true' />}
           {content}
           {props.repeatNum !== undefined && props.repeatNum > 1 && (
-            <span class='i-message__badge' aria-label={`重复 ${props.repeatNum} 次`}>
+            <span class={ns.e('badge')} aria-label={`重复 ${props.repeatNum} 次`}>
               {props.repeatNum}
             </span>
           )}
@@ -76,7 +78,7 @@ export default defineComponent({
           (props.closeIcon ? (
             <button
               type='button'
-              class='i-message__close'
+              class={ns.e('close')}
               aria-label='关闭提示'
               onClick={() => {
                 clear();

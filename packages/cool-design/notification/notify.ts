@@ -1,7 +1,6 @@
 import { createVNode, render, type AppContext } from 'vue';
-import { nextOverlayZIndex } from '../../hooks/use-z-index';
+import { renderService } from '../../../src/utils/service-render';
 import { positionServices } from '../../../src/utils/service-position';
-import { defaultConfig, getAppConfig } from '../config-provider/context';
 import Notification from './notification';
 import type { NotificationHandle, NotificationOptions, NotificationPosition, NotificationType } from './types';
 
@@ -37,11 +36,8 @@ function notifyFn(input: NotifyInput | undefined, context: AppContext | null): N
   const options = normalize(input);
   const position = options.position ?? 'top-right';
   const offset = 20 + (options.offset ?? 0);
-  const config = getAppConfig(context) ?? defaultConfig;
   const container = document.createElement('div');
-  container.className = `i-notification-container i-notification-container--${position}`;
   container.style[position.endsWith('right') ? 'right' : 'left'] = '20px';
-  container.style.zIndex = String(options.zIndex ?? nextOverlayZIndex(config.zIndex));
   document.body.appendChild(container);
   const reposition = () => positionServices(
     [...instances].filter((entry) => entry.position === position),
@@ -62,7 +58,7 @@ function notifyFn(input: NotifyInput | undefined, context: AppContext | null): N
     }
   };
   instances.add(entry);
-  const vnode = createVNode(Notification, {
+  renderService(container, context, 'notification', position, options.zIndex, () => createVNode(Notification, {
     title: options.title,
     message: options.message,
     size: options.size,
@@ -73,9 +69,7 @@ function notifyFn(input: NotifyInput | undefined, context: AppContext | null): N
     showClose: options.showClose ?? true,
     onClick: options.onClick,
     onClose: entry.close
-  });
-  vnode.appContext = context;
-  render(vnode, container);
+  }));
   reposition();
   return { close: entry.close };
 }
