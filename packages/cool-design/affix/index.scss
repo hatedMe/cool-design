@@ -1,6 +1,8 @@
-.i-affix {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-affix {
   display: inline-block;
 }
-.i-affix__content.is-fixed {
+.#{config.$namespace}-affix__content.is-fixed {
   position: fixed;
 }

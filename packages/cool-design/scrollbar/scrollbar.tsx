@@ -8,6 +8,7 @@ import {
   watch,
   type PropType
 } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 
 export type ScrollbarStyle = string | Record<string, string>;
 export type ScrollbarDirection = 'top' | 'bottom' | 'left' | 'right';
@@ -46,6 +47,7 @@ export default defineComponent({
       Object.prototype.hasOwnProperty.call(oppositeDirection, direction)
   },
   setup(props, { slots, emit, expose }) {
+    const ns = useNamespace('scrollbar');
     const wrap = ref<HTMLElement>();
     const view = ref<HTMLElement>();
     const thumbY = ref<HTMLElement>();
@@ -212,10 +214,10 @@ export default defineComponent({
 
     const toPx = (value: string | number | undefined) => toCssSize(value);
     return () => (
-      <div class={['i-scrollbar', props.always && 'is-always']}>
+      <div class={[ns.b(), props.always && 'is-always']}>
         <div
           ref={wrap}
-          class={['i-scrollbar__wrap', props.wrapClass]}
+          class={[ns.e('wrap'), props.wrapClass]}
           tabindex={props.tabindex}
           style={[
             typeof props.wrapStyle === 'string' ? props.wrapStyle : props.wrapStyle,
@@ -224,17 +226,17 @@ export default defineComponent({
           onScroll={handleScroll}>
           {h(
             props.tag,
-            { ref: view, class: ['i-scrollbar__view', props.viewClass], style: props.viewStyle },
+            { ref: view, class: [ns.e('view'), props.viewClass], style: props.viewStyle },
             slots.default?.()
           )}
         </div>
         {!props.native && (
           <>
-            <div class='i-scrollbar__bar is-vertical'>
-              <div ref={thumbY} class='i-scrollbar__thumb' style={thumbYStyle.value} onMousedown={onThumbMousedown('y')} />
+            <div class={[ns.e('bar'), 'is-vertical']}>
+              <div ref={thumbY} class={ns.e('thumb')} style={thumbYStyle.value} onMousedown={onThumbMousedown('y')} />
             </div>
-            <div class='i-scrollbar__bar is-horizontal'>
-              <div ref={thumbX} class='i-scrollbar__thumb' style={thumbXStyle.value} onMousedown={onThumbMousedown('x')} />
+            <div class={[ns.e('bar'), 'is-horizontal']}>
+              <div ref={thumbX} class={ns.e('thumb')} style={thumbXStyle.value} onMousedown={onThumbMousedown('x')} />
             </div>
           </>
         )}

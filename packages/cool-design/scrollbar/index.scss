@@ -1,14 +1,16 @@
-.i-scrollbar {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-scrollbar {
   position: relative;
   overflow: hidden;
 }
-.i-scrollbar__wrap {
+.#{config.$namespace}-scrollbar__wrap {
   overflow: auto;
 }
-.i-scrollbar__view {
+.#{config.$namespace}-scrollbar__view {
   min-width: fit-content;
 }
-.i-scrollbar__bar {
+.#{config.$namespace}-scrollbar__bar {
   position: absolute;
   right: 2px;
   bottom: 2px;
@@ -16,28 +18,28 @@
   opacity: 0;
   transition: opacity 0.2s;
 }
-.i-scrollbar:hover .i-scrollbar__bar,
-.i-scrollbar.is-always .i-scrollbar__bar {
+.#{config.$namespace}-scrollbar:hover .#{config.$namespace}-scrollbar__bar,
+.#{config.$namespace}-scrollbar.is-always .#{config.$namespace}-scrollbar__bar {
   opacity: 1;
 }
-.i-scrollbar__bar.is-vertical {
+.#{config.$namespace}-scrollbar__bar.is-vertical {
   top: 2px;
   bottom: 2px;
   width: 6px;
 }
-.i-scrollbar__bar.is-horizontal {
+.#{config.$namespace}-scrollbar__bar.is-horizontal {
   right: 2px;
   left: 2px;
   height: 6px;
 }
-.i-scrollbar__thumb {
+.#{config.$namespace}-scrollbar__thumb {
   border-radius: 4px;
   background: rgb(0 0 0 / 25%);
   cursor: pointer;
 }
-.i-scrollbar__bar.is-vertical .i-scrollbar__thumb {
+.#{config.$namespace}-scrollbar__bar.is-vertical .#{config.$namespace}-scrollbar__thumb {
   width: 100%;
 }
-.i-scrollbar__bar.is-horizontal .i-scrollbar__thumb {
+.#{config.$namespace}-scrollbar__bar.is-horizontal .#{config.$namespace}-scrollbar__thumb {
   height: 100%;
 }

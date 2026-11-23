@@ -1,5 +1,15 @@
-import { defineComponent, inject, onBeforeUnmount, watch } from 'vue';
-import { anchorKey } from './context';
+import { defineComponent, inject, onBeforeUnmount, provide, watch, type InjectionKey } from 'vue';
+import { anchorKey, type AnchorContext } from './context';
+import { useNamespace } from '../../hooks/use-namespace';
+
+const subLinkOwnerKey: InjectionKey<AnchorContext | null> = Symbol('anchor-sub-link-owner');
+
+const AnchorSubLinks = defineComponent({
+  setup(_, { slots }) {
+    provide(subLinkOwnerKey, inject(anchorKey, null));
+    return () => <div>{slots.default?.()}</div>;
+  }
+});
 
 export default defineComponent({
   name: 'i-anchor-link',
@@ -8,7 +18,9 @@ export default defineComponent({
     title: String
   },
   setup(props, { slots }) {
+    const ns = useNamespace('anchor');
     const anchor = inject(anchorKey, undefined);
+    const isSubLink = inject(subLinkOwnerKey, undefined) === (anchor ?? null);
     anchor?.register(props.href);
     watch(
       () => props.href,
@@ -19,15 +31,20 @@ export default defineComponent({
     );
     onBeforeUnmount(() => anchor?.unregister(props.href));
     return () => (
-      <div class='i-anchor__item'>
+      <div class={ns.e('item')} data-anchor-horizontal={anchor?.layout.direction === 'horizontal' ? '' : undefined}>
         <a
-          class={['i-anchor__link', anchor?.activeHref() === props.href && 'is-active']}
+          class={[ns.e('link'), anchor?.activeHref() === props.href && 'is-active']}
+          data-anchor-horizontal={anchor?.layout.direction === 'horizontal' ? '' : undefined}
+          data-anchor-underline={anchor?.layout.type === 'underline' ? '' : undefined}
+          data-anchor-sub-link={isSubLink ? '' : undefined}
           href={props.href}
           title={props.title}
           onClick={(event: MouseEvent) => anchor?.handleClick(event, props.href)}>
           {slots.default?.() ?? props.title}
         </a>
-        {slots['sub-link'] && <div class='i-anchor__sub'>{slots['sub-link']()}</div>}
+        {slots['sub-link'] && (
+          <AnchorSubLinks class={ns.e('sub')} v-slots={{ default: slots['sub-link'] }} />
+        )}
       </div>
     );
   }

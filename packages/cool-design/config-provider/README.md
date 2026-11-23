@@ -106,6 +106,7 @@ import { ConfigProvider, en } from 'cool-design/config-provider';
 - Breadcrumb、BreadcrumbItem、PageHeader、Timeline、TimelineItem、Steps、Step、Progress、Alert 和 Watermark，包含进度条动画和水印图层。
 - Collapse 和 CollapseItem，包含面板高度过渡。
 - Carousel 和 CarouselItem，包含箭头、指示器和卡片布局。
+- Scrollbar、Affix、Backtop、Anchor 和 AnchorLink，包含自绘滚动条、Affix 固定内容和锚点布局。
 
 从源码构建时，先配置 Sass，再加载样式。下例路径相对于仓库根目录。
 

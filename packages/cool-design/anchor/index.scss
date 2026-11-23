@@ -1,40 +1,46 @@
-.i-anchor {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-anchor {
   position: relative;
 }
-.i-anchor.has-marker .i-anchor__list {
-  border-left: 2px solid var(--i-border-color, #dcdfe6);
+.#{config.$namespace}-anchor.has-marker .#{config.$namespace}-anchor__list {
+  border-left: 2px solid var(--#{config.$namespace}-border-color, #dcdfe6);
 }
-.i-anchor__link {
+.#{config.$namespace}-anchor__link {
   display: block;
   padding: 4px 0 4px 12px;
-  color: var(--i-text-secondary, #606266);
+  color: var(--#{config.$namespace}-text-secondary, #606266);
   font-size: 14px;
   line-height: 1.5;
   text-decoration: none;
 }
-.i-anchor__link:hover {
-  color: var(--i-primary, #409eff);
+.#{config.$namespace}-anchor__link:hover {
+  color: var(--#{config.$namespace}-primary, #409eff);
 }
-.i-anchor__link.is-active {
-  color: var(--i-primary, #409eff);
+.#{config.$namespace}-anchor__link.is-active {
+  color: var(--#{config.$namespace}-primary, #409eff);
   font-weight: 500;
 }
-.i-anchor--underline .i-anchor__link.is-active {
+.#{config.$namespace}-anchor--underline .#{config.$namespace}-anchor__link.is-active,
+.#{config.$namespace}-anchor__link[data-anchor-underline].is-active {
   text-decoration: underline;
 }
-.i-anchor__sub .i-anchor__link {
+.#{config.$namespace}-anchor__sub .#{config.$namespace}-anchor__link,
+.#{config.$namespace}-anchor__link[data-anchor-sub-link] {
   padding-left: 24px;
   font-size: 13px;
 }
-.i-anchor--horizontal .i-anchor__list {
+.#{config.$namespace}-anchor--horizontal .#{config.$namespace}-anchor__list {
   display: flex;
   gap: 16px;
   border-left: 0;
-  border-bottom: 2px solid var(--i-border-color, #dcdfe6);
+  border-bottom: 2px solid var(--#{config.$namespace}-border-color, #dcdfe6);
 }
-.i-anchor--horizontal .i-anchor__item {
+.#{config.$namespace}-anchor--horizontal .#{config.$namespace}-anchor__item,
+.#{config.$namespace}-anchor__item[data-anchor-horizontal] {
   display: inline-flex;
 }
-.i-anchor--horizontal .i-anchor__link {
+.#{config.$namespace}-anchor--horizontal .#{config.$namespace}-anchor__link,
+.#{config.$namespace}-anchor__link[data-anchor-horizontal] {
   padding: 4px 0;
 }

@@ -1,4 +1,6 @@
-.i-backtop {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-backtop {
   position: fixed;
   z-index: 1000;
   display: flex;
@@ -13,10 +15,10 @@
   box-shadow: 0 2px 12px rgb(0 0 0 / 12%);
   cursor: pointer;
 }
-.i-backtop:hover {
+.#{config.$namespace}-backtop:hover {
   background: #ecf5ff;
 }
-.i-backtop__icon {
+.#{config.$namespace}-backtop__icon {
   font-size: 20px;
   line-height: 1;
 }

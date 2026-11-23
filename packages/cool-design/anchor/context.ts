@@ -1,4 +1,5 @@
 import type { InjectionKey } from 'vue';
+import type { AnchorDirection, AnchorType } from './anchor';
 
 export interface AnchorContext {
   activeHref: () => string;
@@ -6,4 +7,8 @@ export interface AnchorContext {
   unregister: (href: string) => void;
   handleClick: (event: MouseEvent, href: string) => void;
 }
-export const anchorKey: InjectionKey<AnchorContext> = Symbol('anchor');
+interface AnchorLinkContext extends AnchorContext {
+  layout: { readonly direction: AnchorDirection; readonly type: AnchorType };
+}
+
+export const anchorKey: InjectionKey<AnchorLinkContext> = Symbol('anchor');

@@ -1,4 +1,5 @@
 import { defineComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 
 export default defineComponent({
   name: 'i-backtop',
@@ -10,6 +11,7 @@ export default defineComponent({
   },
   emits: ['click'],
   setup(props, { emit, slots }) {
+    const ns = useNamespace('backtop');
     const visible = ref(false);
     let container: HTMLElement | Window | null = null;
     let onScroll: (() => void) | null = null;
@@ -94,14 +96,14 @@ export default defineComponent({
       visible.value ? (
         <button
           type='button'
-          class='i-backtop'
+          class={ns.b()}
           style={{ right: `${props.right}px`, bottom: `${props.bottom}px` }}
           aria-label='回到顶部'
           onClick={(event: MouseEvent) => {
             scrollToTop();
             emit('click', event);
           }}>
-          {slots.default?.() ?? <span class='i-backtop__icon' aria-hidden='true'>↑</span>}
+          {slots.default?.() ?? <span class={ns.e('icon')} aria-hidden='true'>↑</span>}
         </button>
       ) : null;
   }

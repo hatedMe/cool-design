@@ -2,7 +2,9 @@ import {
   Teleport,
   computed,
   defineComponent,
+  inject,
   nextTick,
+  normalizeStyle,
   onActivated,
   onBeforeUnmount,
   onDeactivated,
@@ -13,6 +15,8 @@ import {
   type CSSProperties,
   type PropType
 } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
+import { configKey, getThemeStyle, overlayKey } from '../config-provider/context';
 
 export type AffixPosition = 'top' | 'bottom';
 export type AffixTargetContainer = string | HTMLElement;
@@ -44,7 +48,11 @@ export default defineComponent({
     scroll: (value: AffixScrollEvent) =>
       typeof value.scrollTop === 'number' && typeof value.fixed === 'boolean'
   },
-  setup(props, { slots, emit, expose }) {
+  setup(props, { attrs, slots, emit, expose }) {
+    const ns = useNamespace('affix');
+    const themeScope = useNamespace('theme-scope');
+    const provider = inject(configKey, undefined);
+    const overlayHost = inject(overlayKey, undefined);
     const root = ref<HTMLElement>();
     const fixed = ref(false);
     const measuring = ref(false);
@@ -192,13 +200,20 @@ export default defineComponent({
         const { appendTo } = props;
         target = typeof appendTo === 'string' ? root.value?.ownerDocument.querySelector(appendTo) : appendTo;
       }
+      const config = target && target !== overlayHost?.value ? provider?.value : undefined;
+      // 固定内容移出占位节点后，仍继承用户在占位节点上设置的主题变量。
+      const inheritedStyle = target && Object.fromEntries(
+        Object.entries(normalizeStyle([attrs.style]) ?? {}).filter(([key]) =>
+          key.startsWith('--') || key === 'colorScheme' || key === 'color-scheme')
+      );
       // 原位渲染时使用稳定的宿主，固定后再解析同批挂载的选择器。
       return (
-        <div ref={root} class='i-affix' style={rootStyle.value}>
+        <div ref={root} class={ns.b()} style={rootStyle.value}>
           <Teleport to={target ?? 'body'} disabled={!target}>
             <div
-              class={['i-affix__content', positioned.value && 'is-fixed']}
-              style={fixedStyle.value}>
+              class={[ns.e('content'), positioned.value && 'is-fixed', config && themeScope.b()]}
+              data-theme={config?.theme}
+              style={[fixedStyle.value, config && getThemeStyle(config, ns.cssVarName), inheritedStyle]}>
               {slots.default?.()}
             </div>
           </Teleport>

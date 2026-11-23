@@ -8,6 +8,7 @@ import {
   type PropType
 } from 'vue';
 import { anchorKey } from './context';
+import { useNamespace } from '../../hooks/use-namespace';
 
 export type AnchorType = 'default' | 'underline';
 export type AnchorDirection = 'vertical' | 'horizontal';
@@ -27,6 +28,7 @@ export default defineComponent({
   },
   emits: ['change', 'click'],
   setup(props, { slots, emit, expose }) {
+    const ns = useNamespace('anchor');
     const links: string[] = [];
     const activeHref = ref('');
     // 记录当前绑定滚动的容器，切换容器时注销旧监听
@@ -121,14 +123,17 @@ export default defineComponent({
       if (index >= 0) links.splice(index, 1);
     };
     const nextTickUpdate = () => {
-      void Promise.resolve().then(() => updateActive());
+      void Promise.resolve().then(() => {
+        if (boundContainer) updateActive();
+      });
     };
 
     provide(anchorKey, {
       activeHref: () => activeHref.value,
       register,
       unregister,
-      handleClick
+      handleClick,
+      layout: props
     });
 
     const onScroll = () => updateActive();
@@ -159,12 +164,12 @@ export default defineComponent({
     return () => (
       <div
         class={[
-          'i-anchor',
-          `i-anchor--${props.direction}`,
-          `i-anchor--${props.type}`,
+          ns.b(),
+          ns.m(props.direction),
+          ns.m(props.type),
           props.marker && 'has-marker'
         ]}>
-        <div class='i-anchor__list'>{slots.default?.()}</div>
+        <div class={ns.e('list')}>{slots.default?.()}</div>
       </div>
     );
   }
