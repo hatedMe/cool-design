@@ -48,7 +48,7 @@ interface FloatingController {
   update: () => Promise<Partial<State>> | void;
 }
 
-export function useFloatingTheme(target: FloatingController['target'], teleported: () => boolean) {
+export function useFloatingTheme(target: ComputedRef<Element | string | undefined>, teleported: () => boolean) {
   const provider = inject(configKey, undefined);
   const host = inject(overlayKey, undefined);
   const ns = useNamespace('theme-scope');

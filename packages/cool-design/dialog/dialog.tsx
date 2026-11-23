@@ -1,3 +1,5 @@
+import { useFloatingTheme } from '../../../src/utils/use-floating';
+import { useNamespace } from '../../hooks/use-namespace';
 import {
   Teleport,
   Transition,
@@ -24,8 +26,7 @@ import { bringDialogToFront, isTopDialog, isTopFocusDialog, lockDialog, unlockDi
 export type DialogBeforeClose = (done: (cancel?: boolean) => void) => void;
 export type DialogModalClass = string | boolean | Record<string, unknown> | DialogModalClass[];
 
-const defaultTransition = 'dialog-fade';
-function sameTransition(first: DialogConfigContext['transition'], second: DialogConfigContext['transition']) {
+function sameTransition(first: DialogConfigContext['transition'], second: DialogConfigContext['transition'], defaultTransition: string) {
   if (first === second) return true;
   if (first === undefined || second === undefined) return false;
   const previous: TransitionProps = typeof first === 'string' ? { name: first } : first;
@@ -83,10 +84,12 @@ const Dialog = defineComponent({
     'close-auto-focus': () => true
   },
   setup(props, { attrs, slots, emit, expose }) {
+    const ns = useNamespace('dialog');
     const config = useConfig();
     const alignCenter = computed(() => props.alignCenter ?? config.value.dialog?.alignCenter ?? false);
     const draggable = computed(() => props.draggable ?? config.value.dialog?.draggable ?? false);
     const overflow = computed(() => props.overflow ?? config.value.dialog?.overflow ?? false);
+    const defaultTransition = computed(() => ns.namespace.value === 'i' ? 'dialog-fade' : ns.b('fade'));
     const transition = computed(() => props.transition ?? config.value.dialog?.transition);
     const penetrable = computed(() => props.modalPenetrable && !props.modal && !props.fullscreen);
     const host = inject(overlayKey, undefined);
@@ -125,6 +128,7 @@ const Dialog = defineComponent({
       if (props.appendToBody) return document.body;
       return value === undefined ? host?.value : undefined;
     });
+    const theme = useFloatingTheme(target, () => !!target.value);
 
     const focusable = () =>
       Array.from(root.value?.querySelectorAll<HTMLElement>(
@@ -258,7 +262,7 @@ const Dialog = defineComponent({
       emit('open-auto-focus');
     };
     watch(transition, (animation) => {
-      if (!pendingLeave || visible.value || sameTransition(pendingLeave.transition, animation)) return;
+      if (!pendingLeave || visible.value || sameTransition(pendingLeave.transition, animation, defaultTransition.value)) return;
       retireLeave();
       finishClose();
     }, { flush: 'post' });
@@ -294,7 +298,7 @@ const Dialog = defineComponent({
       };
       const overlay = h(Transition, {
         ...options,
-        name: options?.name || defaultTransition,
+        name: options?.name || defaultTransition.value,
         persisted: true,
         onAfterEnter: (element: Element) => {
           if (!active || !visible.value || cycle !== openCycle.value) return;
@@ -319,7 +323,8 @@ const Dialog = defineComponent({
         default: () => withDirectives(
           <div
             class={[
-              props.modal ? 'i-dialog__mask' : 'i-dialog__wrapper',
+              theme.value.scopeClass,
+              props.modal ? ns.e('mask') : ns.e('wrapper'),
               props.modalClass,
               {
                 'is-penetrable': penetrable.value,
@@ -328,7 +333,8 @@ const Dialog = defineComponent({
                 'is-align-center': alignCenter.value
               }
             ]}
-            style={{ zIndex: props.zIndex ?? zIndex.value }}
+            data-theme={theme.value.theme}
+            style={{ ...theme.value.style, zIndex: props.zIndex ?? zIndex.value }}
             aria-hidden={visible.value ? undefined : 'true'}
             onMousedown={(event: MouseEvent) => { maskMousedown = event.target === event.currentTarget; }}
             onMouseup={(event: MouseEvent) => { maskMouseup = event.target === event.currentTarget; }}

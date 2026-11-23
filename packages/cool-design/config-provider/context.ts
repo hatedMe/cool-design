@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, inject, type AppContext, type ComputedRef, type InjectionKey, type Ref } from 'vue';
+import { computed, getCurrentInstance, inject, shallowReactive, type AppContext, type ComputedRef, type InjectionKey, type Ref } from 'vue';
 import type { TransitionProps } from 'vue';
 import type { ButtonType } from '../button/types';
 import type { LinkType, LinkUnderline } from '../link/link';
@@ -72,18 +72,23 @@ export function getThemeStyle(config: Config, cssVarName: (name: string) => stri
 
 const appConfigs = new WeakMap<AppContext, Set<ComputedRef<Config>>>();
 
+function getAppConfigs(context: AppContext) {
+  let configs = appConfigs.get(context);
+  if (!configs) {
+    configs = shallowReactive(new Set<ComputedRef<Config>>());
+    appConfigs.set(context, configs);
+  }
+  return configs;
+}
+
 export function registerAppConfig(context: AppContext, config: ComputedRef<Config>) {
-  const configs = appConfigs.get(context) ?? new Set<ComputedRef<Config>>();
-  appConfigs.set(context, configs);
+  const configs = getAppConfigs(context);
   configs.add(config);
-  return () => {
-    configs.delete(config);
-    if (!configs.size) appConfigs.delete(context);
-  };
+  return () => { configs.delete(config); };
 }
 
 export function getAppConfig(context: AppContext | null | undefined) {
-  return context ? Array.from(appConfigs.get(context) ?? []).pop()?.value : undefined;
+  return context ? Array.from(getAppConfigs(context)).pop()?.value : undefined;
 }
 
 export const configKey: InjectionKey<ComputedRef<Config>> = Symbol('config');

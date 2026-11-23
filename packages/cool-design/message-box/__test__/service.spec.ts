@@ -1,6 +1,9 @@
 import { flushPromises } from '@vue/test-utils';
 import { afterEach, expect, test, vi } from 'vitest';
-import MessageBox, { type MessageBoxAction, type MessageBoxInstance } from '..';
+import { createApp, defineComponent, h, ref } from 'vue';
+import ConfigProvider from '../../config-provider';
+import { getAppConfig } from '../../config-provider/context';
+import MessageBox, { useMessageBox, type MessageBoxAction, type MessageBoxInstance } from '..';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -97,4 +100,79 @@ test('支持 HTML、按钮与 beforeClose', async () => {
   await expect(p).resolves.toBe('confirm');
   expect(beforeClose).toHaveBeenCalled();
   expect(beforeClose.mock.calls[0][0]).toBe('confirm');
+});
+
+test('局部消息框与应用服务分别继承配置，打开期间保留应用根配置', async () => {
+  const namespace = ref('inner');
+  let services!: ReturnType<typeof useMessageBox>;
+  const Child = defineComponent({
+    setup() {
+      services = useMessageBox();
+      return () => null;
+    }
+  });
+  const app = createApp(() => h(ConfigProvider, { namespace: 'outer' }, () =>
+    h(ConfigProvider, { namespace: namespace.value, size: 'small' }, () => h(Child))));
+  const host = document.body.appendChild(document.createElement('div'));
+  app.use(MessageBox).mount(host);
+  const local = services.prompt('local').catch(action => action);
+  const global = app.config.globalProperties.$alert('global').catch(() => {});
+  try {
+    await flushPromises();
+    expect(getAppConfig(app._context)?.namespace).toBe('outer');
+    const input = document.querySelector('.inner-message-box__input');
+    expect(input).toBeTruthy();
+    expect(document.querySelector('.outer-message-box')?.textContent).toContain('global');
+    namespace.value = 'updated';
+    await flushPromises();
+    expect(document.querySelector('.updated-message-box__input')).toBe(input);
+  } finally {
+    MessageBox.close();
+    await Promise.all([local, global]);
+    app.unmount();
+    host.remove();
+  }
+});
+
+test('应用级消息框随根配置注册、替换和注销更新', async () => {
+  const mounted = ref(false);
+  const key = ref(0);
+  const namespace = ref('first');
+  const app = createApp(() => mounted.value ? h(ConfigProvider, { key: key.value, namespace: namespace.value }) : null);
+  const other = createApp(() => h(ConfigProvider, { namespace: 'other' }));
+  app.use(MessageBox).mount(document.createElement('div'));
+  other.use(MessageBox).mount(document.createElement('div'));
+  const pending = [
+    app.config.globalProperties.$alert('已有').catch(() => {}),
+    other.config.globalProperties.$alert('其他应用').catch(() => {})
+  ];
+  const messages = (ns: string) => Array.from(document.querySelectorAll(`.${ns}-message-box__message`), el => el.textContent);
+  try {
+    await flushPromises();
+    expect(messages('i')).toEqual(['已有']);
+    mounted.value = true;
+    await flushPromises();
+    expect(messages('first')).toEqual(['已有']);
+    namespace.value = 'updated';
+    await flushPromises();
+    expect(messages('updated')).toEqual(['已有']);
+    namespace.value = 'replacement';
+    key.value++;
+    await flushPromises();
+    pending.push(app.config.globalProperties.$alert('新开').catch(() => {}));
+    await flushPromises();
+    expect(messages('replacement')).toEqual(['已有', '新开']);
+    mounted.value = false;
+    await flushPromises();
+    expect(messages('i')).toEqual(['已有', '新开']);
+    mounted.value = true;
+    await flushPromises();
+    expect(messages('replacement')).toEqual(['已有', '新开']);
+    expect(messages('other')).toEqual(['其他应用']);
+  } finally {
+    MessageBox.close();
+    await Promise.all(pending);
+    app.unmount();
+    other.unmount();
+  }
 });

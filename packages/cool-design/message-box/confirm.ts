@@ -1,15 +1,17 @@
 import {
+  computed,
   createVNode,
   defineComponent,
   getCurrentInstance,
   h,
   onScopeDispose,
+  provide,
   render,
   type AppContext,
   type ComputedRef
 } from 'vue';
 import ConfigProvider from '../config-provider';
-import { useConfig, type Config } from '../config-provider/context';
+import { configKey, defaultConfig, getAppConfig, useConfig, type Config } from '../config-provider/context';
 import Box from './message-box';
 import type { MessageBoxAction, MessageBoxOptions, MessageBoxPromptResult } from './types';
 
@@ -60,10 +62,12 @@ function open(
     activeClosers.add(globalClose);
     unregister = register?.(() => finishReject('cancel')) || unregister;
     const Root = defineComponent({
-      setup: () => () =>
-        h(
+      setup() {
+        const inherited = config ?? computed(() => getAppConfig(context) ?? defaultConfig);
+        provide(configKey, inherited);
+        return () => h(
           ConfigProvider,
-          config ? { theme: config.value.theme, size: config.value.size, themeVars: config.value.themeVars } : {},
+          { namespace: inherited.value.namespace },
           () =>
             h(Box, {
               ...options,
@@ -74,7 +78,8 @@ function open(
               onCancel: () => finishReject('cancel'),
               onClose: () => finishReject('close')
             })
-        )
+        );
+      }
     });
     const vnode = createVNode(Root);
     vnode.appContext = context;

@@ -1,46 +1,48 @@
-.i-message-box__message {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-message-box__message {
   line-height: 1.7;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.i-message-box--success .i-message-box__message {
-  color: var(--i-success);
+.#{config.$namespace}-message-box--success .#{config.$namespace}-message-box__message {
+  color: var(--#{config.$namespace}-success);
 }
-.i-message-box--warning .i-message-box__message {
-  color: var(--i-warning);
+.#{config.$namespace}-message-box--warning .#{config.$namespace}-message-box__message {
+  color: var(--#{config.$namespace}-warning);
 }
-.i-message-box--info .i-message-box__message {
-  color: var(--i-info, var(--i-text-secondary));
+.#{config.$namespace}-message-box--info .#{config.$namespace}-message-box__message {
+  color: var(--#{config.$namespace}-info, var(--#{config.$namespace}-text-secondary));
 }
-.i-message-box--error .i-message-box__message {
-  color: var(--i-danger);
+.#{config.$namespace}-message-box--error .#{config.$namespace}-message-box__message {
+  color: var(--#{config.$namespace}-danger);
 }
-.i-message-box.is-center .i-message-box__message {
+.#{config.$namespace}-message-box.is-center .#{config.$namespace}-message-box__message {
   text-align: center;
 }
-.i-message-box__input {
+.#{config.$namespace}-message-box__input {
   width: 100%;
   margin-top: 12px;
   padding: 8px 12px;
-  border: 1px solid var(--i-border);
-  border-radius: var(--i-radius, 6px);
-  background: var(--i-bg);
-  color: var(--i-text);
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius, 6px);
+  background: var(--#{config.$namespace}-bg);
+  color: var(--#{config.$namespace}-text);
   font-size: 14px;
   box-sizing: border-box;
   &:focus {
     outline: none;
-    border-color: var(--i-primary);
+    border-color: var(--#{config.$namespace}-primary);
   }
   &:disabled {
     opacity: 0.6;
   }
 }
-textarea.i-message-box__input {
+textarea.#{config.$namespace}-message-box__input {
   min-height: 80px;
   resize: vertical;
 }
-.i-message-box__error {
-  color: var(--i-danger);
+.#{config.$namespace}-message-box__error {
+  color: var(--#{config.$namespace}-danger);
   margin: 12px 0 0;
 }

@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, onBeforeUnmount, ref, watch, type Component, type PropType, type VNode } from 'vue';
 import Icon from '../icon';
 
@@ -49,6 +50,7 @@ export default defineComponent({
     close: { type: Function as PropType<() => void>, required: true }
   },
   setup(props, { slots, expose }) {
+    const ns = useNamespace('dialog');
     const root = ref<HTMLElement>();
     const dragOffset = ref({ x: 0, y: 0 });
     let dragStart: { x: number; y: number; ox: number; oy: number; rect: DOMRect } | undefined;
@@ -100,13 +102,13 @@ export default defineComponent({
     expose({ resetPosition, updatePosition });
 
     return () => {
-      const titleClass = 'i-dialog__title';
+      const titleClass = ns.e('title');
       const { x, y } = dragOffset.value;
       const showTitle = !!(props.title || slots.title || slots.header);
       return (
         <section
           ref={root}
-          class={['i-dialog', { 'i-dialog--center': props.center, 'is-fullscreen': props.fullscreen }, props.customClass]}
+          class={[ns.b(), { [ns.m('center')]: props.center, 'is-fullscreen': props.fullscreen }, props.customClass]}
           style={{
             width: !props.fullscreen && typeof props.width === 'number'
               ? `${props.width}px` : props.fullscreen ? undefined : props.width,
@@ -121,7 +123,7 @@ export default defineComponent({
           tabindex={-1}>
           {(showTitle || props.showClose) && (
             <header
-              class={['i-dialog__header', props.headerClass, props.draggable && !props.fullscreen && 'is-draggable']}
+              class={[ns.e('header'), props.headerClass, props.draggable && !props.fullscreen && 'is-draggable']}
               onMousedown={onHeaderMousedown}>
               {(!slots.title && slots.header?.({ close: props.close, titleId: props.titleId, titleClass })) || (
                 <h2 id={props.titleId} class={titleClass} role='heading' aria-level={props.headerAriaLevel}>
@@ -131,7 +133,7 @@ export default defineComponent({
               {props.showClose && (
                 <button
                   type='button'
-                  class='i-dialog__close'
+                  class={ns.e('close')}
                   aria-label='关闭对话框'
                   disabled={!props.closable}
                   onClick={props.close}>
@@ -140,8 +142,8 @@ export default defineComponent({
               )}
             </header>
           )}
-          <div id={props.bodyId} class={['i-dialog__body', props.bodyClass]}>{slots.default?.()}</div>
-          {slots.footer && <footer class={['i-dialog__footer', props.footerClass]}>{slots.footer()}</footer>}
+          <div id={props.bodyId} class={[ns.e('body'), props.bodyClass]}>{slots.default?.()}</div>
+          {slots.footer && <footer class={[ns.e('footer'), props.footerClass]}>{slots.footer()}</footer>}
         </section>
       );
     };

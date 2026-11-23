@@ -1,3 +1,5 @@
+import { useFloatingTheme } from '../../../src/utils/use-floating';
+import { useNamespace } from '../../hooks/use-namespace';
 import {
   Teleport,
   Transition,
@@ -94,6 +96,7 @@ export default defineComponent({
     'resize-end'
   ],
   setup(props, { slots, emit, expose }) {
+    const ns = useNamespace('drawer');
     const host = inject(overlayKey, undefined);
     const { nextZIndex } = useZIndex();
     const root = ref<HTMLElement>();
@@ -101,7 +104,7 @@ export default defineComponent({
     const rendered = ref(false);
     const visible = ref(false);
     const titleId = `i-drawer-title-${++drawerId}`;
-    const titleClass = 'i-drawer__title';
+    const titleClass = computed(() => ns.e('title'));
     const token = Symbol('drawer');
     let active = false;
     let maskGestureAllowed = true;
@@ -129,6 +132,7 @@ export default defineComponent({
       if (props.appendToBody) return document.body;
       return value === undefined ? host?.value : undefined;
     });
+    const theme = useFloatingTheme(target, () => !!target.value);
 
     const isHorizontal = computed(() => props.direction === 'rtl' || props.direction === 'ltr');
     const isResizable = computed(() => !!props.resizable);
@@ -375,11 +379,13 @@ export default defineComponent({
     const content = () => (
       <div
         class={[
-          { 'i-drawer__mask': props.modal, 'i-drawer__wrapper': !props.modal },
+          theme.value.scopeClass,
+          props.modal ? ns.e('mask') : ns.e('wrapper'),
           { 'is-penetrable': !props.modal && props.modalPenetrable },
           props.modalClass
         ]}
-        style={{ zIndex: zIndex.value }}
+        data-theme={theme.value.theme}
+        style={{ ...theme.value.style, zIndex: zIndex.value }}
         onClick={(event: MouseEvent) => {
           const allowed = maskGestureAllowed && isTopDialog(token);
           maskGestureAllowed = true;
@@ -387,27 +393,27 @@ export default defineComponent({
         }}>
         <aside
           ref={root}
-          class={['i-drawer', `is-${props.direction}`, { 'is-resizable': isResizable.value }, props.customClass]}
+          class={[ns.b(), `is-${props.direction}`, { 'is-resizable': isResizable.value }, props.customClass]}
           style={{
             width: isHorizontal.value ? sizeValue.value : undefined,
             height: isHorizontal.value ? undefined : sizeValue.value,
-            ['--i-drawer-size' as string]: sizeValue.value
+            [ns.cssVarName('drawer-size')]: sizeValue.value
           }}
           role='dialog'
           aria-modal='true'
           aria-labelledby={props.withHeader && (props.title || slots.title || slots.header) ? titleId : undefined}
           tabindex={-1}>
           {props.withHeader && (
-            <header class={['i-drawer__header', props.headerClass]}>
-              {slots.header?.({ close: handleClose, titleId, titleClass }) ?? (
+            <header class={[ns.e('header'), props.headerClass]}>
+              {slots.header?.({ close: handleClose, titleId, titleClass: titleClass.value }) ?? (
                 <>
-                  <div id={titleId} class={titleClass} role='heading' aria-level={props.headerAriaLevel}>
+                  <div id={titleId} class={titleClass.value} role='heading' aria-level={props.headerAriaLevel}>
                     {slots.title?.() ?? props.title}
                   </div>
                   {props.showClose && (
                     <button
                       type='button'
-                      class='i-drawer__close'
+                      class={ns.e('close')}
                       aria-label='关闭'
                       onClick={handleClose}>
                       {typeof props.closeIcon === 'string'
@@ -421,11 +427,11 @@ export default defineComponent({
               )}
             </header>
           )}
-          <div class={['i-drawer__body', props.bodyClass]}>{slots.default?.()}</div>
-          {slots.footer && <footer class={['i-drawer__footer', props.footerClass]}>{slots.footer()}</footer>}
+          <div class={[ns.e('body'), props.bodyClass]}>{slots.default?.()}</div>
+          {slots.footer && <footer class={[ns.e('footer'), props.footerClass]}>{slots.footer()}</footer>}
           {isResizable.value && (
             <div
-              class={['i-drawer__resize-handle', `is-${props.direction}`]}
+              class={[ns.e('resize-handle'), `is-${props.direction}`]}
               role='separator'
               tabindex={0}
               aria-orientation={isHorizontal.value ? 'vertical' : 'horizontal'}
@@ -445,7 +451,7 @@ export default defineComponent({
       const node = rendered.value ? withDirectives(content(), [[vShow, visible.value]]) : null;
       const animated = (
         <Transition
-          name='i-drawer-fade'
+          name={ns.b('fade')}
           persisted
           onBeforeEnter={() => emit('open')}
           onAfterEnter={() => { if (visible.value) emit('opened'); }}

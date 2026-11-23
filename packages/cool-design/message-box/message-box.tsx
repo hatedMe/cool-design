@@ -1,3 +1,4 @@
+import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, onBeforeUnmount, ref, watch, type PropType } from 'vue';
 import Dialog from '../dialog';
 import Button from '../button';
@@ -45,6 +46,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'update:inputValue', 'confirm', 'cancel', 'close'],
   setup(props, { slots, emit }) {
+    const ns = useNamespace('message-box');
     const config = useConfig();
     const pending = ref(false),
       error = ref('');
@@ -160,8 +162,8 @@ export default defineComponent({
         beforeClose={close}>
         {{
           default: () => (
-            <div class={['i-message-box', `i-message-box--${props.type}`, { 'is-center': props.center }, props.customClass]}>
-              <div class='i-message-box__message'>
+            <div class={[ns.b(), ns.m(props.type), { 'is-center': props.center }, props.customClass]}>
+              <div class={ns.e('message')}>
                 {slots.default?.() ??
                   (props.dangerouslyUseHTMLString ? (
                     <span innerHTML={props.message} />
@@ -172,7 +174,7 @@ export default defineComponent({
               {props.showInput &&
                 (props.inputType === 'textarea' ? (
                   <textarea
-                    class='i-message-box__input'
+                    class={ns.e('input')}
                     placeholder={props.inputPlaceholder}
                     disabled={pending.value}
                     value={input.value}
@@ -180,7 +182,7 @@ export default defineComponent({
                   />
                 ) : (
                   <input
-                    class='i-message-box__input'
+                    class={ns.e('input')}
                     type={props.inputType}
                     placeholder={props.inputPlaceholder}
                     disabled={pending.value}
@@ -189,7 +191,7 @@ export default defineComponent({
                   />
                 ))}
               {error.value && (
-                <p class='i-message-box__error' role='alert'>
+                <p class={ns.e('error')} role='alert'>
                   {error.value}
                 </p>
               )}

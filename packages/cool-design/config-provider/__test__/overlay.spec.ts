@@ -32,3 +32,28 @@ test.each([
     local.unmount();
   }
 });
+
+test.each([
+  ['dialog', Dialog],
+  ['drawer', Drawer]
+] as const)('%s 外置浮层跟随最近配置切换前缀和主题', async (block, Component) => {
+  const wrapper = mount(ConfigProvider, {
+    attachTo: document.body,
+    props: { namespace: 'acme', theme: 'dark', size: 'small' },
+    slots: { default: () => h(Component, { modelValue: true, appendToBody: true }) }
+  });
+  try {
+    await flushPromises();
+    const mask = document.querySelector<HTMLElement>(`.acme-${block}__mask`)!;
+    expect(mask).toBeTruthy();
+    expect(mask.classList.contains('acme-theme-scope')).toBe(true);
+    expect(mask.dataset.theme).toBe('dark');
+    expect(mask.style.getPropertyValue('--acme-control-height')).toBe('28px');
+    await wrapper.setProps({ namespace: 'next', theme: 'light' });
+    expect(document.querySelector(`.next-${block}__mask`)).toBe(mask);
+    expect(mask.querySelector(`.next-${block}`)).toBeTruthy();
+    expect(mask.dataset.theme).toBe('light');
+  } finally {
+    wrapper.unmount();
+  }
+});
