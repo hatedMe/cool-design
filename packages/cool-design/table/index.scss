@@ -1,63 +1,65 @@
-.i-table {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-table {
   position: relative;
-  border: 1px solid var(--i-border);
-  border-radius: var(--i-radius);
-  background: var(--i-bg);
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+  background: var(--#{config.$namespace}-bg);
   overflow: hidden;
 }
-.i-table__scroll {
+.#{config.$namespace}-table__scroll {
   overflow: auto;
 }
-.i-table__scroll.has-always-scrollbar {
+.#{config.$namespace}-table__scroll.has-always-scrollbar {
   scrollbar-gutter: stable;
 }
-.i-table__scroll.has-custom-scrollbar {
+.#{config.$namespace}-table__scroll.has-custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: var(--i-border) transparent;
+  scrollbar-color: var(--#{config.$namespace}-border) transparent;
 }
-.i-table__scroll.has-custom-scrollbar::-webkit-scrollbar {
+.#{config.$namespace}-table__scroll.has-custom-scrollbar::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
-.i-table__scroll.has-custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--i-border);
+.#{config.$namespace}-table__scroll.has-custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--#{config.$namespace}-border);
   border-radius: 4px;
 }
-.i-table__scroll.has-custom-scrollbar::-webkit-scrollbar-track {
+.#{config.$namespace}-table__scroll.has-custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
-.i-table.is-resizing,
-.i-table.is-resizing * {
+.#{config.$namespace}-table.is-resizing,
+.#{config.$namespace}-table.is-resizing * {
   user-select: none;
 }
-.i-table.is-flexible table {
+.#{config.$namespace}-table.is-flexible table {
   width: auto;
 }
-.i-table table {
+.#{config.$namespace}-table table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   text-align: left;
 }
-.i-table th,
-.i-table td {
+.#{config.$namespace}-table th,
+.#{config.$namespace}-table td {
   padding: 13px 18px;
-  border-bottom: 1px solid var(--i-border);
-  background: var(--i-bg);
+  border-bottom: 1px solid var(--#{config.$namespace}-border);
+  background: var(--#{config.$namespace}-bg);
 }
-.i-table thead th {
+.#{config.$namespace}-table thead th {
   position: sticky;
   top: 0;
-  background: var(--i-bg-subtle);
-  color: var(--i-text-secondary);
+  background: var(--#{config.$namespace}-bg-subtle);
+  color: var(--#{config.$namespace}-text-secondary);
   font-size: 13px;
   font-weight: 500;
   z-index: 2 !important;
 }
-.i-table th[style*='sticky'] {
+.#{config.$namespace}-table th[style*='sticky'] {
   z-index: 3 !important;
 }
-.i-table th button {
+.#{config.$namespace}-table th button {
   background: none;
   border: 0;
   padding: 0;
@@ -65,11 +67,11 @@
   font: inherit;
   cursor: pointer;
 }
-.i-table th button:focus-visible {
-  outline: 2px solid var(--i-primary);
+.#{config.$namespace}-table th button:focus-visible {
+  outline: 2px solid var(--#{config.$namespace}-primary);
   outline-offset: 2px;
 }
-.i-table .i-table__selection {
+.#{config.$namespace}-table .#{config.$namespace}-table__selection {
   position: sticky;
   left: 0;
   width: 48px;
@@ -77,62 +79,62 @@
   padding: 12px;
   z-index: 1;
 }
-.i-table tbody tr:last-child td {
+.#{config.$namespace}-table tbody tr:last-child td {
   border-bottom: 0;
 }
-.i-table tbody tr:hover td,
-.i-table__selected td {
-  background: var(--i-bg-subtle);
+.#{config.$namespace}-table tbody tr:hover td,
+.#{config.$namespace}-table__selected td {
+  background: var(--#{config.$namespace}-bg-subtle);
 }
-.i-table.is-striped tbody tr:nth-child(even) td {
-  background: var(--i-bg-subtle);
+.#{config.$namespace}-table.is-striped tbody tr:nth-child(even) td {
+  background: var(--#{config.$namespace}-bg-subtle);
 }
-.i-table.is-bordered th,
-.i-table.is-bordered td {
-  border-right: 1px solid var(--i-border);
+.#{config.$namespace}-table.is-bordered th,
+.#{config.$namespace}-table.is-bordered td {
+  border-right: 1px solid var(--#{config.$namespace}-border);
 }
-.i-table .i-table__empty {
+.#{config.$namespace}-table .#{config.$namespace}-table__empty {
   text-align: center;
   padding: 16px 20px;
-  color: var(--i-text-muted);
+  color: var(--#{config.$namespace}-text-muted);
 }
-.i-table:not(.is-fit) table {
+.#{config.$namespace}-table:not(.is-fit) table {
   width: max-content;
   min-width: 100%;
 }
-.i-table.is-large th,
-.i-table.is-large td {
+.#{config.$namespace}-table.is-large th,
+.#{config.$namespace}-table.is-large td {
   padding: 15px 20px;
 }
-.i-table.is-small th,
-.i-table.is-small td {
+.#{config.$namespace}-table.is-small th,
+.#{config.$namespace}-table.is-small td {
   padding: 8px 12px;
   font-size: 12px;
 }
-.i-table tr.is-current td {
-  background: var(--i-bg-subtle);
-  box-shadow: inset 2px 0 0 var(--i-primary);
+.#{config.$namespace}-table tr.is-current td {
+  background: var(--#{config.$namespace}-bg-subtle);
+  box-shadow: inset 2px 0 0 var(--#{config.$namespace}-primary);
 }
-.i-table td .i-tooltip__trigger:has(> .i-table__cell-text) {
+.#{config.$namespace}-table td .#{config.$namespace}-tooltip__trigger:has(> .#{config.$namespace}-table__cell-text) {
   max-width: 100%;
 }
-.i-table__cell-text {
+.#{config.$namespace}-table__cell-text {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.i-table__editor {
+.#{config.$namespace}-table__editor {
   width: 100%;
-  height: var(--i-control-height);
+  height: var(--#{config.$namespace}-control-height);
   padding: 0 8px;
-  color: var(--i-text);
-  background: var(--i-bg);
-  border: 1px solid var(--i-primary);
-  border-radius: var(--i-radius);
+  color: var(--#{config.$namespace}-text);
+  background: var(--#{config.$namespace}-bg);
+  border: 1px solid var(--#{config.$namespace}-primary);
+  border-radius: var(--#{config.$namespace}-radius);
   outline: none;
 }
-.i-table thead th .i-table__resize-handle {
+.#{config.$namespace}-table thead th .#{config.$namespace}-table__resize-handle {
   position: absolute;
   top: 0;
   right: -4px;
@@ -141,15 +143,15 @@
   cursor: col-resize;
   z-index: 5;
 }
-.i-table thead th .i-table__resize-handle:hover,
-.i-table thead th .i-table__resize-handle:focus-visible {
-  background: var(--i-primary);
+.#{config.$namespace}-table thead th .#{config.$namespace}-table__resize-handle:hover,
+.#{config.$namespace}-table thead th .#{config.$namespace}-table__resize-handle:focus-visible {
+  background: var(--#{config.$namespace}-primary);
   outline: none;
 }
-.i-table thead th .i-table__resize-handle:active {
-  background: var(--i-primary-hover);
+.#{config.$namespace}-table thead th .#{config.$namespace}-table__resize-handle:active {
+  background: var(--#{config.$namespace}-primary-hover);
 }
-.i-table__expand-toggle {
+.#{config.$namespace}-table__expand-toggle {
   background: none;
   border: 0;
   padding: 0 4px;
@@ -157,69 +159,69 @@
   font: inherit;
   cursor: pointer;
 }
-.i-table__expand-icon {
+.#{config.$namespace}-table__expand-icon {
   display: inline-block;
   transition: transform 0.2s;
 }
-.i-table__expand-icon.is-expanded {
+.#{config.$namespace}-table__expand-icon.is-expanded {
   transform: rotate(90deg);
 }
-.i-table__expand-toggle:disabled {
+.#{config.$namespace}-table__expand-toggle:disabled {
   cursor: default;
   opacity: 0.6;
 }
-.i-table__indent {
+.#{config.$namespace}-table__indent {
   display: inline-block;
 }
-.i-table__tree-placeholder {
+.#{config.$namespace}-table__tree-placeholder {
   display: inline-block;
   width: 18px;
 }
-.i-table__expanded-row td {
-  background: var(--i-bg-subtle);
+.#{config.$namespace}-table__expanded-row td {
+  background: var(--#{config.$namespace}-bg-subtle);
 }
-.i-table__summary td {
-  background: var(--i-bg-subtle);
+.#{config.$namespace}-table__summary td {
+  background: var(--#{config.$namespace}-bg-subtle);
   font-weight: 500;
 }
-.i-table__filter-trigger {
+.#{config.$namespace}-table__filter-trigger {
   margin-left: 6px;
-  color: var(--i-text-muted);
+  color: var(--#{config.$namespace}-text-muted);
   vertical-align: middle;
 }
-.i-table__filter-trigger.is-active {
-  color: var(--i-primary);
+.#{config.$namespace}-table__filter-trigger.is-active {
+  color: var(--#{config.$namespace}-primary);
 }
-.i-table__filter-panel {
+.#{config.$namespace}-table__filter-panel {
   min-width: 140px;
   padding: 8px 12px;
-  background: var(--i-bg);
-  border: 1px solid var(--i-border);
-  border-radius: var(--i-radius);
-  box-shadow: var(--i-shadow);
+  background: var(--#{config.$namespace}-bg);
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+  box-shadow: var(--#{config.$namespace}-shadow);
   font-weight: 400;
 }
-.i-table__filter-panel .i-checkbox {
+.#{config.$namespace}-table__filter-panel .#{config.$namespace}-checkbox {
   display: flex;
   margin: 4px 0;
 }
-.i-table__filter-option {
+.#{config.$namespace}-table__filter-option {
   display: block;
   width: 100%;
   text-align: left;
   padding: 4px 0;
 }
-.i-table__filter-option.is-active {
-  color: var(--i-primary);
+.#{config.$namespace}-table__filter-option.is-active {
+  color: var(--#{config.$namespace}-primary);
 }
-.i-table__filter-actions {
+.#{config.$namespace}-table__filter-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid var(--i-border);
+  border-top: 1px solid var(--#{config.$namespace}-border);
 }
-.i-table__filter-actions .is-primary {
-  color: var(--i-primary);
+.#{config.$namespace}-table__filter-actions .is-primary {
+  color: var(--#{config.$namespace}-primary);
 }

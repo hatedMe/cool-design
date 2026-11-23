@@ -95,6 +95,7 @@ import { ConfigProvider, en } from 'cool-design/config-provider';
 - DatePicker、DatePickerPanel、TimePicker、DateTimePicker 和 Calendar，包含日期网格、时间列与独立日期面板。
 - ColorPicker 和 ColorPickerPanel，包含独立面板、预设色和外置浮层。
 - Tree、TreeSelect 和 TreeV2。
+- Table 和 TableColumn，包含声明式列、筛选面板和溢出提示。Table 的加载遮罩仍使用默认前缀。
 
 从源码构建时，先配置 Sass，再加载样式。下例路径相对于仓库根目录。
 

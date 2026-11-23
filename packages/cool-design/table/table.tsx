@@ -18,7 +18,9 @@ import {
 import Checkbox from '../checkbox';
 import { overlayKey, useConfig } from '../config-provider/context';
 import Tooltip from '../tooltip';
-import { useFloating } from '../../../src/utils/use-floating';
+import { useNamespace } from '../../hooks/use-namespace';
+import { createBEM } from '../../../src/utils/create';
+import { useFloating, useFloatingTheme } from '../../../src/utils/use-floating';
 import type {
   TableCellClassName,
   TableCellStyle,
@@ -150,6 +152,8 @@ export default defineComponent({
   ],
   setup(props, { emit, slots, expose }) {
     const config = useConfig();
+    const ns = useNamespace('table');
+    const bem = createBEM(ns.b);
     const overlayHost = inject(overlayKey, undefined);
     const fieldOf = (column: TableColumn) => column.prop ?? column.property ?? column.key ?? '';
     const titleOf = (column: TableColumn) => column.label ?? column.title ?? '';
@@ -536,6 +540,8 @@ export default defineComponent({
       offset: () => 0,
       close: () => { openFilter.value = null; }
     });
+    const filterTeleported = computed(() => props.appendFilterPanelTo !== undefined || !!overlayHost?.value);
+    const filterTheme = useFloatingTheme(filterPosition.target, () => filterTeleported.value);
     watch(activeFilterColumn, (column) => {
       if (!column) openFilter.value = null;
     });
@@ -1130,7 +1136,7 @@ export default defineComponent({
                   <button
                     type='button'
                     class={{
-                      'i-table__filter-trigger': true,
+                      [bem('filter-trigger')]: true,
                       'is-active': (activeFilters.value[filterKey] ?? []).length > 0
                     }}
                     aria-label={`筛选${titleOf(column)}`}
@@ -1148,15 +1154,17 @@ export default defineComponent({
                   {activeFilterColumn.value === column && (
                     <Teleport
                       to={filterPosition.target.value}
-                      disabled={props.appendFilterPanelTo === undefined && !overlayHost?.value}>
+                      disabled={!filterTeleported.value}>
                       <div
                         ref={filterPanel}
                         class={[
-                          'i-table__filter-panel',
+                          bem('filter-panel'),
                           `is-${column.filterPlacement ?? 'bottom'}`,
+                          filterTheme.value.scopeClass,
                           column.filterClassName
                         ]}
-                        style={filterPosition.style.value}
+                        data-theme={filterTheme.value.theme}
+                        style={[filterTheme.value.style, filterPosition.style.value]}
                         data-placement={filterPosition.placement.value}
                         role='dialog'
                         aria-label={`${titleOf(column)}筛选`}
@@ -1167,7 +1175,7 @@ export default defineComponent({
                               key={i}
                               type='button'
                               class={{
-                                'i-table__filter-option': true,
+                                [bem('filter-option')]: true,
                                 'is-active': (activeFilters.value[filterKey] ?? []).includes(opt.value)
                               }}
                               onClick={() =>
@@ -1189,7 +1197,7 @@ export default defineComponent({
                                 {opt.text}
                               </Checkbox>
                             ))}
-                            <div class='i-table__filter-actions'>
+                            <div class={bem('filter-actions')}>
                               <button type='button' onClick={() => commitFilter(column, [])}>
                                 重置
                               </button>
@@ -1216,7 +1224,7 @@ export default defineComponent({
     return () => (
       <div
         class={{
-          'i-table': true,
+          [bem()]: true,
           'is-striped': props.stripe,
           'is-bordered': props.border,
           'is-fit': props.fit,
@@ -1229,7 +1237,7 @@ export default defineComponent({
         <Loading loading={props.loading} overlay>
           <div
             class={{
-              'i-table__scroll': true,
+              [bem('scroll')]: true,
               'has-always-scrollbar': props.scrollbarAlwaysOn,
               'has-custom-scrollbar': !props.nativeScrollbar
             }}
@@ -1252,7 +1260,7 @@ export default defineComponent({
                       {r === 0 && hasPseudoSelection.value && (
                         <th
                           scope='col'
-                          class={['i-table__selection', headerCellClassNameOf(0, selectionColumn, 0)]}
+                          class={[bem('selection'), headerCellClassNameOf(0, selectionColumn, 0)]}
                           rowspan={headerRows.value.length > 1 ? headerRows.value.length : undefined}
                           style={{ ...columnStyle(selectionColumn, 0), ...headerCellStyleOf(0, selectionColumn, 0) }}>
                           <Checkbox
@@ -1316,7 +1324,7 @@ export default defineComponent({
                             {renderLeafHead(cell.column, ci + Number(r === 0 && hasPseudoSelection.value))}
                             {showResizeHandle(cell.column) && (
                               <span
-                                class='i-table__resize-handle'
+                                class={bem('resize-handle')}
                                 role='separator'
                                 tabindex={props.loading ? undefined : 0}
                                 aria-orientation='horizontal'
@@ -1341,7 +1349,7 @@ export default defineComponent({
                       class={[
                         rowClassNameOf(row, index),
                         {
-                          'i-table__selected': selected.value.includes(key(row)),
+                          [bem('selected')]: selected.value.includes(key(row)),
                           'is-current':
                             props.highlightCurrentRow && currentKey.value !== null && key(row) === currentKey.value
                         }
@@ -1376,7 +1384,7 @@ export default defineComponent({
                                   !!textElement && textElement.scrollWidth > textElement.clientWidth;
                               }}>
                               {{
-                                default: () => <span class='i-table__cell-text'>{text}</span>,
+                                default: () => <span class={bem('cell-text')}>{text}</span>,
                                 content: () => tooltipTextOf(column, row, cellValue, index, text ?? '')
                               }}
                             </Tooltip>
@@ -1399,7 +1407,7 @@ export default defineComponent({
                           ? slots[`${field}-edit`]?.(editorParams) ??
                             column.editor?.(editorParams) ?? (
                               <input
-                                class='i-table__editor'
+                                class={bem('editor')}
                                 value={editingDraft.value}
                                 aria-label={`编辑${titleOf(column)}`}
                                 ref={(el: unknown) => {
@@ -1424,7 +1432,7 @@ export default defineComponent({
                             rowspan={span && span.rowspan > 1 ? span.rowspan : undefined}
                             colspan={span && span.colspan > 1 ? span.colspan : undefined}
                             class={[
-                              column === selectionColumn ? 'i-table__selection' : undefined,
+                              column === selectionColumn ? bem('selection') : undefined,
                               column.className,
                               cellClassNameOf(row, column, index, columnIndex)
                             ]}
@@ -1455,7 +1463,7 @@ export default defineComponent({
                             ) : kind === 'expand' ? (
                               <button
                                 type='button'
-                                class='i-table__expand-toggle'
+                                class={bem('expand-toggle')}
                                 disabled={!canExpandDetail(row)}
                                 aria-expanded={detailExpanded(row)}
                                 aria-label={detailExpanded(row) ? '收起行' : '展开行'}
@@ -1468,7 +1476,7 @@ export default defineComponent({
                                   expandable: canExpandDetail(row)
                                 }) ?? <span
                                   class={{
-                                    'i-table__expand-icon': true,
+                                    [bem('expand-icon')]: true,
                                     'is-expanded': detailExpanded(row)
                                   }}
                                   aria-hidden='true'>
@@ -1479,7 +1487,7 @@ export default defineComponent({
                               <>
                                 {level > 0 && (
                                   <span
-                                    class='i-table__indent'
+                                    class={bem('indent')}
                                     style={{ width: `${level * props.indent}px` }}
                                     aria-hidden='true'
                                   />
@@ -1487,7 +1495,7 @@ export default defineComponent({
                                 {expandableOf(row) ? (
                                   <button
                                     type='button'
-                                    class='i-table__expand-toggle'
+                                    class={bem('expand-toggle')}
                                     disabled={loadingKeys.value.includes(key(row))}
                                     aria-expanded={treeExpandedKeys.value.includes(key(row))}
                                     aria-label={treeExpandedKeys.value.includes(key(row)) ? '收起子行' : '展开子行'}
@@ -1500,7 +1508,7 @@ export default defineComponent({
                                     ) : (
                                       <span
                                         class={{
-                                          'i-table__expand-icon': true,
+                                          [bem('expand-icon')]: true,
                                           'is-expanded': treeExpandedKeys.value.includes(key(row))
                                         }}
                                         aria-hidden='true'>
@@ -1509,7 +1517,7 @@ export default defineComponent({
                                     )}
                                   </button>
                                 ) : (
-                                  <span class='i-table__tree-placeholder' aria-hidden='true' />
+                                  <span class={bem('tree-placeholder')} aria-hidden='true' />
                                 )}
                                 {cellInner}
                               </>
@@ -1527,7 +1535,7 @@ export default defineComponent({
                         return (
                           <tr
                             key={`${String(key(row))}__expand_${i}`}
-                            class='i-table__expanded-row'
+                            class={bem('expanded-row')}
                             style={props.preserveExpandedContent && !expanded ? { display: 'none' } : undefined}>
                             <td colspan={renderColumns.value.length}>
                               {(columnSlots.get(column)?.default ?? slots[field])?.({ row, column, index, $index: index }) ??
@@ -1540,7 +1548,7 @@ export default defineComponent({
                 ))}
                 {!visibleRows.value.length && !props.loading && (
                   <tr>
-                    <td class='i-table__empty' colspan={renderColumns.value.length}>
+                    <td class={bem('empty')} colspan={renderColumns.value.length}>
                       {slots.empty?.() ?? <Empty description={props.emptyText} />}
                     </td>
                   </tr>
@@ -1548,10 +1556,10 @@ export default defineComponent({
               </tbody>
               {props.showSummary && (
                 <tfoot>
-                  <tr class='i-table__summary'>
+                  <tr class={bem('summary')}>
                     {renderColumns.value.map((column, columnIndex) => {
                       if (column === selectionColumn)
-                        return <td key='__summary_selection' class='i-table__selection' />;
+                        return <td key='__summary_selection' class={bem('selection')} />;
                       const i = columnIndex - (hasPseudoSelection.value ? 1 : 0);
                       return <td key={`${filterKeyOf(column)}@${columnIndex}`}>{sums.value[i] ?? ''}</td>;
                     })}
