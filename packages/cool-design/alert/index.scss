@@ -1,6 +1,8 @@
+@use '../style/mixins/config';
+
 @import '../style/base.scss';
 
-.i-alert {
+.#{config.$namespace}-alert {
   position: relative;
   display: flex;
   align-items: center;
@@ -13,43 +15,43 @@
   opacity: 1;
   transition: opacity 0.2s;
   &--primary {
-    color: var(--i-primary, #2463eb);
-    background-color: var(--i-primary-light-9, #ecf1fe);
+    color: var(--#{config.$namespace}-primary, #2463eb);
+    background-color: var(--#{config.$namespace}-primary-light-9, #ecf1fe);
   }
   &--success {
-    color: var(--i-success, #16815d);
-    background-color: var(--i-success-light-9, #e9f6f0);
+    color: var(--#{config.$namespace}-success, #16815d);
+    background-color: var(--#{config.$namespace}-success-light-9, #e9f6f0);
   }
   &--warning {
-    color: var(--i-warning, #b77909);
-    background-color: var(--i-warning-light-9, #fdf6ec);
+    color: var(--#{config.$namespace}-warning, #b77909);
+    background-color: var(--#{config.$namespace}-warning-light-9, #fdf6ec);
   }
   &--info {
-    color: var(--i-info, #65748a);
-    background-color: var(--i-info-light-9, #f4f4f5);
+    color: var(--#{config.$namespace}-info, #65748a);
+    background-color: var(--#{config.$namespace}-info-light-9, #f4f4f5);
   }
   &--error {
-    color: var(--i-danger, #d73d4a);
-    background-color: var(--i-danger-light-9, #fef0f0);
+    color: var(--#{config.$namespace}-danger, #d73d4a);
+    background-color: var(--#{config.$namespace}-danger-light-9, #fef0f0);
   }
   &.is-dark {
     color: #fff;
-    &.i-alert--primary {
-      background-color: var(--i-primary, #2463eb);
+    &.#{config.$namespace}-alert--primary {
+      background-color: var(--#{config.$namespace}-primary, #2463eb);
     }
-    &.i-alert--success {
-      background-color: var(--i-success, #16815d);
+    &.#{config.$namespace}-alert--success {
+      background-color: var(--#{config.$namespace}-success, #16815d);
     }
-    &.i-alert--warning {
-      background-color: var(--i-warning, #b77909);
+    &.#{config.$namespace}-alert--warning {
+      background-color: var(--#{config.$namespace}-warning, #b77909);
     }
-    &.i-alert--info {
-      background-color: var(--i-info, #65748a);
+    &.#{config.$namespace}-alert--info {
+      background-color: var(--#{config.$namespace}-info, #65748a);
     }
-    &.i-alert--error {
-      background-color: var(--i-danger, #d73d4a);
+    &.#{config.$namespace}-alert--error {
+      background-color: var(--#{config.$namespace}-danger, #d73d4a);
     }
-    .i-alert__close {
+    .#{config.$namespace}-alert__close {
       color: #fff;
     }
   }

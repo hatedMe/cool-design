@@ -1,4 +1,5 @@
 import { Comment, Fragment, defineComponent, type PropType, type VNode } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import ITimelineItem, {
   type TimelineItemPlacement,
   type TimelineItemSize,
@@ -40,6 +41,7 @@ export default defineComponent({
     mode: { type: String as PropType<TimelineMode>, default: 'start' }
   },
   setup(props, { slots }) {
+    const ns = useNamespace('timeline');
     return () => {
       const orderedItems = props.reverse ? [...props.items].reverse() : props.items;
       const renderItems = () =>
@@ -66,7 +68,7 @@ export default defineComponent({
         return props.reverse ? [...children].reverse() : children;
       };
       return (
-        <ul class={['i-timeline', `i-timeline--${props.mode}`]}>
+        <ul class={[ns.b(), ns.m(props.mode)]}>
           {props.items.length > 0 ? renderItems() : renderSlots()}
         </ul>
       );

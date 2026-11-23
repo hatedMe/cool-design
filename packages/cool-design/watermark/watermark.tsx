@@ -1,4 +1,5 @@
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 export interface WatermarkFont {
   color?: string;
   fontSize?: string | number;
@@ -30,6 +31,7 @@ export default defineComponent({
     zIndex: { type: Number, default: 9 }
   },
   setup(props, { slots }) {
+    const ns = useNamespace('watermark');
     const rootRef = ref<HTMLElement>();
     const layerRef = ref<HTMLElement>();
     // 数组内容逐行绘制，不再拼接成单行。
@@ -81,7 +83,8 @@ export default defineComponent({
       const root = rootRef.value;
       if (!layer || !root) return;
       if (layer.parentElement !== root) root.appendChild(layer);
-      if (!layer.classList.contains('i-watermark__layer')) layer.classList.add('i-watermark__layer');
+      const layerClass = ns.e('layer');
+      if (!layer.classList.contains(layerClass)) layer.classList.add(layerClass);
       if (layer.style.backgroundImage !== lastSerializedBackgroundImage) {
         layer.style.backgroundImage = layerStyle.value.backgroundImage;
         lastSerializedBackgroundImage = layer.style.backgroundImage;
@@ -99,9 +102,9 @@ export default defineComponent({
     });
     onBeforeUnmount(() => observer?.disconnect());
     return () => (
-      <div class='i-watermark' ref={rootRef}>
-        <div class='i-watermark__content'>{slots.default?.()}</div>
-        <div class='i-watermark__layer' ref={layerRef} style={layerStyle.value} />
+      <div class={ns.b()} ref={rootRef}>
+        <div class={ns.e('content')}>{slots.default?.()}</div>
+        <div class={ns.e('layer')} ref={layerRef} style={layerStyle.value} />
       </div>
     );
   }

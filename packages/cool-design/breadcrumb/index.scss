@@ -1,5 +1,7 @@
-.i-breadcrumb ol,
-.i-breadcrumb__list {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-breadcrumb ol,
+.#{config.$namespace}-breadcrumb__list {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -8,32 +10,34 @@
   padding: 0;
   margin: 0;
 }
-.i-breadcrumb a,
-.i-breadcrumb__inner {
-  color: var(--i-text-secondary);
+.#{config.$namespace}-breadcrumb a:not(:where([data-breadcrumb-link])),
+:where([data-breadcrumb]) a.#{config.$namespace}-breadcrumb__inner:where([data-breadcrumb-link]),
+.#{config.$namespace}-breadcrumb__inner {
+  color: var(--#{config.$namespace}-text-secondary);
   text-decoration: none;
   font-size: 14px;
 }
-.i-breadcrumb a:hover {
-  color: var(--i-primary);
+.#{config.$namespace}-breadcrumb a:not(:where([data-breadcrumb-link])):hover,
+:where([data-breadcrumb]) a.#{config.$namespace}-breadcrumb__inner:hover {
+  color: var(--#{config.$namespace}-primary);
 }
-.i-breadcrumb b,
-.i-breadcrumb__separator {
-  color: var(--i-text-muted);
+.#{config.$namespace}-breadcrumb b,
+.#{config.$namespace}-breadcrumb__separator {
+  color: var(--#{config.$namespace}-text-muted);
   font-weight: normal;
   margin-left: 8px;
 }
-.i-breadcrumb__item {
+.#{config.$namespace}-breadcrumb__item {
   display: flex;
   align-items: center;
 }
-.i-breadcrumb__item.is-last .i-breadcrumb__inner {
-  color: var(--i-text);
+.#{config.$namespace}-breadcrumb__item.is-last .#{config.$namespace}-breadcrumb__inner {
+  color: var(--#{config.$namespace}-text);
   font-weight: 500;
 }
-.i-breadcrumb__item.is-last .i-breadcrumb__separator {
+.#{config.$namespace}-breadcrumb__item.is-last .#{config.$namespace}-breadcrumb__separator {
   display: none;
 }
-.i-breadcrumb__item:last-child .i-breadcrumb__separator {
+.#{config.$namespace}-breadcrumb__item:last-child .#{config.$namespace}-breadcrumb__separator {
   display: none;
 }

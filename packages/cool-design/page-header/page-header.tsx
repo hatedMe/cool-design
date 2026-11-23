@@ -1,4 +1,5 @@
 import { computed, defineComponent, type Component, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import Icon from '../icon';
 
 export default defineComponent({
@@ -12,6 +13,7 @@ export default defineComponent({
   },
   emits: ['back'],
   setup(props, { slots, emit }) {
+    const ns = useNamespace('page-header');
     const showBack = computed(() => {
       // icon="" 且无 icon 插槽时隐藏返回按钮
       if (props.icon === '' && !slots.icon) return false;
@@ -36,24 +38,24 @@ export default defineComponent({
       const hasContent = !!(contentContent && (Array.isArray(contentContent) ? contentContent.length > 0 : contentContent));
 
       return (
-        <header class='i-page-header'>
-          <div class='i-page-header__header'>
-            <div class='i-page-header__left'>
+        <header class={ns.b()}>
+          <div class={ns.e('header')}>
+            <div class={ns.e('left')}>
               {showBack.value && (
-                <button type='button' class='i-page-header__back' aria-label={backLabel.value} onClick={handleBack}>
-                  <span class='i-page-header__icon'>{iconContent}</span>
-                  <span class='i-page-header__title'>{titleContent}</span>
+                <button type='button' class={ns.e('back')} aria-label={backLabel.value} onClick={handleBack}>
+                  <span class={ns.e('icon')}>{iconContent}</span>
+                  <span class={ns.e('title')}>{titleContent}</span>
                 </button>
               )}
-              {hasContent && showBack.value && <span class='i-page-header__divider' aria-hidden='true' />}
-              {hasContent && <div class='i-page-header__content'>{contentContent}</div>}
+              {hasContent && showBack.value && <span class={ns.e('divider')} aria-hidden='true' />}
+              {hasContent && <div class={ns.e('content')}>{contentContent}</div>}
             </div>
-            {extraContent && <div class='i-page-header__extra'>{extraContent}</div>}
+            {extraContent && <div class={ns.e('extra')}>{extraContent}</div>}
           </div>
           {(breadcrumbContent || defaultContent) && (
-            <div class='i-page-header__main'>
-              {breadcrumbContent && <div class='i-page-header__breadcrumb'>{breadcrumbContent}</div>}
-              {defaultContent && <div class='i-page-header__detail'>{defaultContent}</div>}
+            <div class={ns.e('main')}>
+              {breadcrumbContent && <div class={ns.e('breadcrumb')}>{breadcrumbContent}</div>}
+              {defaultContent && <div class={ns.e('detail')}>{defaultContent}</div>}
             </div>
           )}
         </header>

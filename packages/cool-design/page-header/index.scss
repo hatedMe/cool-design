@@ -1,25 +1,27 @@
-.i-page-header {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-page-header {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 14px 0;
 }
-.i-page-header__header {
+.#{config.$namespace}-page-header__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
 }
-.i-page-header__left {
+.#{config.$namespace}-page-header__left {
   display: flex;
   align-items: center;
   gap: 12px;
   min-width: 0;
 }
-.i-page-header__back {
+.#{config.$namespace}-page-header__back {
   border: 0;
   background: transparent;
-  color: var(--i-text-secondary);
+  color: var(--#{config.$namespace}-text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -27,49 +29,49 @@
   font-size: 14px;
   padding: 4px 8px;
 }
-.i-page-header__back:hover {
-  color: var(--i-primary);
+.#{config.$namespace}-page-header__back:hover {
+  color: var(--#{config.$namespace}-primary);
 }
-.i-page-header__back:focus-visible {
-  outline: 2px solid var(--i-primary);
+.#{config.$namespace}-page-header__back:focus-visible {
+  outline: 2px solid var(--#{config.$namespace}-primary);
   outline-offset: 1px;
 }
-.i-page-header__icon {
+.#{config.$namespace}-page-header__icon {
   display: inline-flex;
   align-items: center;
 }
-.i-page-header__title {
+.#{config.$namespace}-page-header__title {
   white-space: nowrap;
 }
-.i-page-header__divider {
+.#{config.$namespace}-page-header__divider {
   width: 1px;
   height: 16px;
-  background: var(--i-border);
+  background: var(--#{config.$namespace}-border);
 }
-.i-page-header__main,
-.i-page-header__content {
+.#{config.$namespace}-page-header__main,
+.#{config.$namespace}-page-header__content {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-.i-page-header__main strong,
-.i-page-header__content {
+.#{config.$namespace}-page-header__main strong,
+.#{config.$namespace}-page-header__content {
   font-size: 18px;
-  color: var(--i-text);
+  color: var(--#{config.$namespace}-text);
 }
-.i-page-header__main span {
-  color: var(--i-text-muted);
+.#{config.$namespace}-page-header__main span {
+  color: var(--#{config.$namespace}-text-muted);
 }
-.i-page-header__extra {
+.#{config.$namespace}-page-header__extra {
   margin-left: auto;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.i-page-header__breadcrumb {
+.#{config.$namespace}-page-header__breadcrumb {
   font-size: 14px;
 }
-.i-page-header__detail {
+.#{config.$namespace}-page-header__detail {
   font-size: 14px;
-  color: var(--i-text-secondary);
+  color: var(--#{config.$namespace}-text-secondary);
 }

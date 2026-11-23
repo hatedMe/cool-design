@@ -1,4 +1,5 @@
 import { defineComponent, provide, ref, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import { breadcrumbKey } from './context';
 import IBreadcrumbItem, { type BreadcrumbTo } from './breadcrumb-item';
 
@@ -17,6 +18,7 @@ export default defineComponent({
   },
   emits: ['click'],
   setup(props, { emit, slots }) {
+    const ns = useNamespace('breadcrumb');
     const order = ref<number[]>([]);
 
     const register = (uid: number) => {
@@ -49,8 +51,8 @@ export default defineComponent({
     return () => {
       const useSlotChildren = !!slots.default && props.items.length === 0;
       return (
-        <nav class='i-breadcrumb' aria-label='面包屑'>
-          <ol class='i-breadcrumb__list'>
+        <nav class={ns.b()} data-breadcrumb='' aria-label='面包屑'>
+          <ol class={ns.e('list')}>
             {useSlotChildren
               ? slots.default?.()
               : props.items.map((item, index) => (

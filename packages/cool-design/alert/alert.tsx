@@ -1,4 +1,5 @@
 import { defineComponent, ref, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 export type AlertType = 'primary' | 'success' | 'warning' | 'info' | 'error';
 export type AlertEffect = 'light' | 'dark';
 const icons: Record<AlertType, string> = { primary: 'ⓘ', success: '✓', warning: '⚠', info: 'ⓘ', error: '✕' };
@@ -16,6 +17,7 @@ export default defineComponent({
   },
   emits: ['close'],
   setup(props, { slots, emit }) {
+    const ns = useNamespace('alert');
     const visible = ref(true);
     const onClose = () => {
       visible.value = false;
@@ -29,20 +31,20 @@ export default defineComponent({
       return (
         <div
           class={{
-            'i-alert': true,
-            [`i-alert--${props.type}`]: true,
+            [ns.b()]: true,
+            [ns.m(props.type)]: true,
             'is-dark': props.effect === 'dark',
             'is-center': props.center,
             'is-with-description': !!hasDesc
           }}
           role='alert'>
-          {hasIcon && <span class='i-alert__icon'>{slots.icon?.() ?? icons[props.type]}</span>}
-          <div class='i-alert__content'>
-            {hasTitle && <span class='i-alert__title'>{slots.title?.() ?? props.title}</span>}
-            {hasDesc && <p class='i-alert__description'>{slots.default?.() ?? props.description}</p>}
+          {hasIcon && <span class={ns.e('icon')}>{slots.icon?.() ?? icons[props.type]}</span>}
+          <div class={ns.e('content')}>
+            {hasTitle && <span class={ns.e('title')}>{slots.title?.() ?? props.title}</span>}
+            {hasDesc && <p class={ns.e('description')}>{slots.default?.() ?? props.description}</p>}
           </div>
           {props.closable && (
-            <button type='button' class='i-alert__close' aria-label='关闭提示' onClick={onClose}>
+            <button type='button' class={ns.e('close')} aria-label='关闭提示' onClick={onClose}>
               {props.closeText ?? '×'}
             </button>
           )}

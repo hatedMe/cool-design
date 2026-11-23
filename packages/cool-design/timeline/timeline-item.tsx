@@ -1,4 +1,5 @@
 import { defineComponent, h, type PropType, type Component } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 
 export type TimelineItemType = '' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
 export type TimelineItemPlacement = 'top' | 'bottom';
@@ -18,6 +19,7 @@ export default defineComponent({
     hollow: Boolean
   },
   setup(props, { slots }) {
+    const ns = useNamespace('timeline-item');
     return () => {
       const IconComp = props.icon as unknown as Component | string | undefined;
       const showTimestamp = !props.hideTimestamp && props.timestamp !== '';
@@ -27,13 +29,13 @@ export default defineComponent({
           : { backgroundColor: props.color, borderColor: props.color }
         : undefined;
       const node = slots.dot ? (
-        <div class='i-timeline-item__dot'>{slots.dot()}</div>
+        <div class={ns.e('dot')}>{slots.dot()}</div>
       ) : (
         <div
           class={[
-            'i-timeline-item__node',
-            `i-timeline-item__node--${props.size}`,
-            props.type ? `i-timeline-item__node--${props.type}` : '',
+            ns.e('node'),
+            ns.em('node', props.size),
+            props.type ? ns.em('node', props.type) : '',
             { 'is-hollow': props.hollow, 'is-icon': !!props.icon }
           ]}
           style={nodeStyle}>
@@ -47,16 +49,16 @@ export default defineComponent({
         </div>
       );
       return (
-        <li class={['i-timeline-item', { 'is-center': props.center }]}>
-          <div class='i-timeline-item__tail' aria-hidden='true' />
+        <li class={[ns.b(), { 'is-center': props.center }]} data-timeline-item=''>
+          <div class={ns.e('tail')} data-timeline-tail='' aria-hidden='true' />
           {node}
-          <div class='i-timeline-item__wrapper'>
+          <div class={ns.e('wrapper')}>
             {props.placement === 'top' && showTimestamp && (
-              <div class='i-timeline-item__timestamp is-top'>{props.timestamp}</div>
+              <div class={[ns.e('timestamp'), 'is-top']}>{props.timestamp}</div>
             )}
-            <div class='i-timeline-item__content'>{slots.default?.()}</div>
+            <div class={ns.e('content')}>{slots.default?.()}</div>
             {props.placement === 'bottom' && showTimestamp && (
-              <div class='i-timeline-item__timestamp is-bottom'>{props.timestamp}</div>
+              <div class={[ns.e('timestamp'), 'is-bottom']}>{props.timestamp}</div>
             )}
           </div>
         </li>

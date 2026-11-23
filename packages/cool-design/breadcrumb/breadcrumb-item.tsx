@@ -1,4 +1,5 @@
 import { computed, defineComponent, getCurrentInstance, h, inject, onBeforeUnmount, onMounted, type Component, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import Icon from '../icon';
 import { breadcrumbKey } from './context';
 
@@ -13,6 +14,7 @@ export default defineComponent({
   },
   emits: ['click'],
   setup(props, { slots, emit }) {
+    const ns = useNamespace('breadcrumb');
     const parent = inject(breadcrumbKey, undefined);
     const instance = getCurrentInstance();
     const uid = instance?.uid ?? Math.floor(Math.random() * 1000000);
@@ -64,25 +66,26 @@ export default defineComponent({
       const inner = href.value ? (
         <a
           href={href.value}
-          class='i-breadcrumb__inner'
+          class={ns.e('inner')}
+          data-breadcrumb-link=''
           aria-current={isLast.value ? 'page' : undefined}
           onClick={handleClick}>
           {slots.default?.()}
         </a>
       ) : (
-        <span class='i-breadcrumb__inner' aria-current={isLast.value ? 'page' : undefined}>
+        <span class={ns.e('inner')} aria-current={isLast.value ? 'page' : undefined}>
           {slots.default?.()}
         </span>
       );
       return (
-        <li class={{ 'i-breadcrumb__item': true, 'is-last': isLast.value }}>
+        <li class={{ [ns.e('item')]: true, 'is-last': isLast.value }}>
           {itemIcon && (
-            <span class='i-breadcrumb__item-icon' aria-hidden='true'>
+            <span class={ns.e('item-icon')} aria-hidden='true'>
               {typeof itemIcon === 'string' ? <Icon icon={itemIcon} /> : h(itemIcon as never)}
             </span>
           )}
           {inner}
-          <span class='i-breadcrumb__separator' aria-hidden='true'>
+          <span class={ns.e('separator')} aria-hidden='true'>
             {separatorContent}
           </span>
         </li>

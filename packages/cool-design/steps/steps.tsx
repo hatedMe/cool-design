@@ -9,6 +9,7 @@ import {
   type Slot,
   type VNode
 } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import Icon from '../icon';
 
 export type StepStatus = 'wait' | 'process' | 'finish' | 'error' | 'success';
@@ -65,6 +66,7 @@ export default defineComponent({
   },
   emits: ['change'],
   setup(props, { emit, slots }) {
+    const ns = useNamespace('steps');
     const normalized = computed<NormalizedStep[]>(() => {
       const children = flatten(((slots.default?.() ?? []) as VNode[]).filter(Boolean)).filter(isStepVNode);
       if (children.length > 0) {
@@ -110,7 +112,7 @@ export default defineComponent({
       return (
         <div
           class={{
-            'i-steps': true,
+            [ns.b()]: true,
             [`is-${props.direction}`]: true,
             'is-center': props.alignCenter,
             'is-simple': props.simple
@@ -127,7 +129,7 @@ export default defineComponent({
             return (
               <div
                 class={{
-                  'i-steps__item': true,
+                  [ns.e('item')]: true,
                   [`is-${status}`]: true,
                   'is-last': isLast,
                   'is-center': props.alignCenter,
@@ -145,8 +147,8 @@ export default defineComponent({
                     emit('change', index);
                   }
                 }}>
-                <div class='i-steps__head'>
-                  <div class='i-steps__icon'>
+                <div class={ns.e('head')}>
+                  <div class={ns.e('icon')}>
                     {step.iconSlot?.()
                       ?? (step.icon ? (
                           <Icon icon={step.icon} aria-hidden='true' />
@@ -158,12 +160,12 @@ export default defineComponent({
                           (props.simple ? null : index + 1)
                         ))}
                   </div>
-                  {!isLast && <div class='i-steps__line' aria-hidden='true' />}
+                  {!isLast && <div class={ns.e('line')} aria-hidden='true' />}
                 </div>
-                <div class='i-steps__main'>
-                  <div class='i-steps__title'>{step.titleSlot?.() ?? step.title}</div>
+                <div class={ns.e('main')}>
+                  <div class={ns.e('title')}>{step.titleSlot?.() ?? step.title}</div>
                   {!props.simple && (step.descriptionSlot?.() || step.description) && (
-                    <div class='i-steps__description'>{step.descriptionSlot?.() ?? step.description}</div>
+                    <div class={ns.e('description')}>{step.descriptionSlot?.() ?? step.description}</div>
                   )}
                 </div>
               </div>

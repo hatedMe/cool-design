@@ -1,7 +1,8 @@
 import { computed, defineComponent, type PropType } from 'vue';
-import { createNamespace } from '../../../src/utils/create';
+import { useNamespace } from '../../hooks/use-namespace';
+import { createBEM, createNamespace } from '../../../src/utils/create';
 
-const [name, bem] = createNamespace('progress');
+const [name] = createNamespace('progress');
 
 export type ProgressType = 'line' | 'circle' | 'dashboard';
 export type ProgressStatus = '' | 'success' | 'exception' | 'warning';
@@ -43,6 +44,8 @@ export default defineComponent({
     textColor: { type: String, default: '' }
   },
   setup(props, { slots }) {
+    const ns = useNamespace('progress');
+    const bem = createBEM(ns.b);
     const clamped = computed(() => clampPercentage(props.percentage));
     const content = computed(() => props.format(clamped.value));
     const barColor = computed(() => {

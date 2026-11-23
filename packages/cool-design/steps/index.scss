@@ -1,98 +1,100 @@
-.i-steps {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-steps {
   display: flex;
 }
-.i-steps__item {
+.#{config.$namespace}-steps__item {
   display: flex;
   flex: 1;
   gap: 8px;
   cursor: pointer;
 }
-.i-steps__item:focus-visible {
-  outline: 2px solid var(--i-primary);
+.#{config.$namespace}-steps__item:focus-visible {
+  outline: 2px solid var(--#{config.$namespace}-primary);
   outline-offset: 2px;
 }
-.i-steps__head {
+.#{config.$namespace}-steps__head {
   display: flex;
   align-items: flex-start;
   gap: 8px;
 }
-.i-steps__head i,
-.i-steps__icon {
+.#{config.$namespace}-steps__head i,
+.#{config.$namespace}-steps__icon {
   display: grid;
   place-items: center;
   min-width: 24px;
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--i-text-muted);
-  color: var(--i-on-primary);
+  background: var(--#{config.$namespace}-text-muted);
+  color: var(--#{config.$namespace}-on-primary);
   font-style: normal;
   font-size: 12px;
 }
-.i-steps__line {
+.#{config.$namespace}-steps__line {
   flex: 1;
   min-width: 20px;
   height: 2px;
   margin-top: 11px;
-  background: var(--i-border-color-light);
+  background: var(--#{config.$namespace}-border-color-light);
 }
-.i-steps__item.is-finish .i-steps__icon,
-.i-steps__item.is-finish .i-steps__head i,
-.i-steps__item.is-process .i-steps__icon,
-.i-steps__item.is-process .i-steps__head i {
-  background: var(--i-primary);
+.#{config.$namespace}-steps__item.is-finish .#{config.$namespace}-steps__icon,
+.#{config.$namespace}-steps__item.is-finish .#{config.$namespace}-steps__head i,
+.#{config.$namespace}-steps__item.is-process .#{config.$namespace}-steps__icon,
+.#{config.$namespace}-steps__item.is-process .#{config.$namespace}-steps__head i {
+  background: var(--#{config.$namespace}-primary);
 }
-.i-steps__item.is-success .i-steps__icon {
-  background: var(--i-success);
+.#{config.$namespace}-steps__item.is-success .#{config.$namespace}-steps__icon {
+  background: var(--#{config.$namespace}-success);
 }
-.i-steps__item.is-error .i-steps__icon {
-  background: var(--i-danger);
+.#{config.$namespace}-steps__item.is-error .#{config.$namespace}-steps__icon {
+  background: var(--#{config.$namespace}-danger);
 }
-.i-steps__item.is-finish .i-steps__line {
-  background: var(--i-primary);
+.#{config.$namespace}-steps__item.is-finish .#{config.$namespace}-steps__line {
+  background: var(--#{config.$namespace}-primary);
 }
-.i-steps__item p,
-.i-steps__description {
+.#{config.$namespace}-steps__item p,
+.#{config.$namespace}-steps__description {
   margin: 4px 0;
-  color: var(--i-text-muted);
+  color: var(--#{config.$namespace}-text-muted);
   font-size: 12px;
 }
-.i-steps__title {
+.#{config.$namespace}-steps__title {
   font-size: 14px;
   font-weight: 500;
 }
-.i-steps.is-vertical {
+.#{config.$namespace}-steps.is-vertical {
   flex-direction: column;
   gap: 16px;
 }
-.i-steps.is-vertical .i-steps__item {
+.#{config.$namespace}-steps.is-vertical .#{config.$namespace}-steps__item {
   flex-direction: row;
 }
-.i-steps.is-vertical .i-steps__head {
+.#{config.$namespace}-steps.is-vertical .#{config.$namespace}-steps__head {
   flex-direction: column;
   align-items: center;
 }
-.i-steps.is-vertical .i-steps__line {
+.#{config.$namespace}-steps.is-vertical .#{config.$namespace}-steps__line {
   width: 2px;
   min-height: 20px;
   height: 100%;
   margin-top: 8px;
   margin-left: 0;
 }
-.i-steps.is-center .i-steps__item {
+.#{config.$namespace}-steps.is-center .#{config.$namespace}-steps__item {
   flex-direction: column;
   align-items: center;
   text-align: center;
 }
-.i-steps.is-center .i-steps__head {
+.#{config.$namespace}-steps.is-center .#{config.$namespace}-steps__head {
   width: 100%;
 }
-.i-steps.is-simple .i-steps__item {
+.#{config.$namespace}-steps.is-simple .#{config.$namespace}-steps__item {
   align-items: center;
 }
-.i-steps.is-simple .i-steps__main {
+.#{config.$namespace}-steps.is-simple .#{config.$namespace}-steps__main {
   display: flex;
 }
-.i-steps__item.is-last .i-steps__line {
+.#{config.$namespace}-steps__item.is-last .#{config.$namespace}-steps__line {
   display: none;
 }
