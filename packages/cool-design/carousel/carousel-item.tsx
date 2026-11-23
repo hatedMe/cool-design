@@ -1,4 +1,5 @@
 import { computed, defineComponent, getCurrentInstance, inject, onBeforeUnmount, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import { carouselKey } from './context';
 
 export default defineComponent({
@@ -8,6 +9,7 @@ export default defineComponent({
     label: { type: [String, Number] as PropType<string | number>, default: '' }
   },
   setup(props, { slots }) {
+    const ns = useNamespace('carousel');
     const context = inject(carouselKey);
     if (!context) throw new Error('CarouselItem must be used inside Carousel.');
     const uid = getCurrentInstance()!.uid;
@@ -19,7 +21,7 @@ export default defineComponent({
 
     return () => (
       <div
-        class={{ 'i-carousel__item': true, 'is-active': isActive.value }}
+        class={[ns.e('item'), { 'is-active': isActive.value }]}
         style={
           context.card.value
             ? {

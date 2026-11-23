@@ -1,38 +1,40 @@
-.i-carousel {
+@use '../style/mixins/config';
+
+.#{config.$namespace}-carousel {
   position: relative;
 }
-.i-carousel__stage {
+.#{config.$namespace}-carousel__stage {
   position: relative;
   height: 300px;
   overflow: hidden;
 }
-.i-carousel__track {
+.#{config.$namespace}-carousel__track {
   display: flex;
   width: 100%;
   height: 100%;
   transition: transform 0.4s ease;
 }
-.i-carousel.is-vertical .i-carousel__track {
+.#{config.$namespace}-carousel.is-vertical .#{config.$namespace}-carousel__track {
   flex-direction: column;
 }
-.i-carousel.is-motion-blur .i-carousel__track {
+.#{config.$namespace}-carousel.is-motion-blur .#{config.$namespace}-carousel__track {
   transition-duration: 0.25s;
   transition-timing-function: cubic-bezier(0.3, 0.6, 0.4, 1);
 }
-.i-carousel__item {
+.#{config.$namespace}-carousel__item {
   flex: 0 0 100%;
   height: 100%;
   overflow: hidden;
 }
-.i-carousel.is-card .i-carousel__item {
+.#{config.$namespace}-carousel.is-card .#{config.$namespace}-carousel__item {
   flex-basis: 50%;
   transition: transform 0.4s ease;
 }
-.i-carousel.is-vertical.is-card .i-carousel__item {
+.#{config.$namespace}-carousel.is-vertical.is-card .#{config.$namespace}-carousel__item {
   flex-basis: 50%;
   width: 100%;
 }
-.i-carousel__arrow {
+.#{config.$namespace}-carousel__arrow {
   position: absolute;
   top: 50%;
   z-index: 10;
@@ -50,28 +52,28 @@
   transform: translateY(-50%);
   transition: opacity 0.2s;
 }
-.i-carousel__arrow--left {
+.#{config.$namespace}-carousel__arrow--left {
   left: 16px;
 }
-.i-carousel__arrow--right {
+.#{config.$namespace}-carousel__arrow--right {
   right: 16px;
 }
-.i-carousel:hover .i-carousel__arrow,
-.i-carousel--arrow-always .i-carousel__arrow {
+.#{config.$namespace}-carousel:hover .#{config.$namespace}-carousel__arrow,
+.#{config.$namespace}-carousel--arrow-always .#{config.$namespace}-carousel__arrow {
   opacity: 1;
 }
-.i-carousel.is-vertical .i-carousel__arrow--left {
+.#{config.$namespace}-carousel.is-vertical .#{config.$namespace}-carousel__arrow--left {
   top: 16px;
   left: 50%;
   transform: translateX(-50%) rotate(90deg);
 }
-.i-carousel.is-vertical .i-carousel__arrow--right {
+.#{config.$namespace}-carousel.is-vertical .#{config.$namespace}-carousel__arrow--right {
   top: auto;
   bottom: 16px;
   left: 50%;
   transform: translateX(-50%) rotate(90deg);
 }
-.i-carousel__indicators {
+.#{config.$namespace}-carousel__indicators {
   position: absolute;
   right: 0;
   bottom: 12px;
@@ -84,25 +86,25 @@
   padding: 0;
   list-style: none;
 }
-.i-carousel.is-vertical .i-carousel__indicators {
+.#{config.$namespace}-carousel.is-vertical .#{config.$namespace}-carousel__indicators {
   top: 0;
   right: 12px;
   bottom: 0;
   left: auto;
   flex-direction: column;
 }
-.i-carousel--indicator-outside .i-carousel__indicators {
+.#{config.$namespace}-carousel--indicator-outside .#{config.$namespace}-carousel__indicators {
   position: static;
   margin-top: 12px;
 }
-.i-carousel--indicator-outside.is-vertical .i-carousel__indicators {
+.#{config.$namespace}-carousel--indicator-outside.is-vertical .#{config.$namespace}-carousel__indicators {
   flex-direction: row;
   margin-top: 12px;
 }
-.i-carousel__indicators li {
+.#{config.$namespace}-carousel__indicators li {
   padding: 0;
 }
-.i-carousel__indicator {
+.#{config.$namespace}-carousel__indicator {
   display: block;
   width: 24px;
   height: 4px;
@@ -112,6 +114,6 @@
   background: #c0c4cc;
   cursor: pointer;
 }
-.i-carousel__indicators .is-active .i-carousel__indicator {
+.#{config.$namespace}-carousel__indicators .is-active .#{config.$namespace}-carousel__indicator {
   background: #409eff;
 }

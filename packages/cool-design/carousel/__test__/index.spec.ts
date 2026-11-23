@@ -1,6 +1,7 @@
 import { mount, flushPromises } from '@vue/test-utils';
-import { h } from 'vue';
+import { Fragment, h, ref } from 'vue';
 import { afterEach, expect, test, vi } from 'vitest';
+import { ConfigProvider } from '../../config-provider';
 import { Carousel, CarouselItem } from '..';
 
 const wrappers: ReturnType<typeof mount>[] = [];
@@ -151,4 +152,38 @@ test('卡片模式缩放非激活项，高度属性生效', async () => {
   const [first, second] = w.findAll('.i-carousel__item');
   expect((first.element as HTMLElement).style.transform).toContain('scale(1)');
   expect((second.element as HTMLElement).style.transform).toContain('scale(0.83)');
+});
+
+test('切换最近 Provider 的命名空间时保留 Fragment 子项、激活索引和焦点', async () => {
+  const namespace = ref('acme');
+  const w = mount({
+    setup: () => () => h(ConfigProvider, { namespace: 'outer' }, () =>
+      h(ConfigProvider, { namespace: namespace.value }, () =>
+        h(Carousel, { autoplay: false, initialIndex: 1, indicatorPosition: 'outside' }, () => [
+          h(CarouselItem, { key: 'a' }, () => 'a'),
+          h(Fragment, [h(CarouselItem, { key: 'b', class: 'user-slide' }, () => 'b')])
+        ])
+      )
+    )
+  }, { attachTo: document.body });
+  wrappers.push(w);
+  await flushPromises();
+
+  expect(w.get('[role="region"]').classes()).toContain('acme-carousel');
+  const root = w.get<HTMLElement>('.acme-carousel--indicator-outside');
+  const slide = w.get('.acme-carousel__item.is-active.user-slide').element;
+  const arrow = root.get('.acme-carousel__arrow--left').element;
+  root.element.focus();
+
+  namespace.value = '3d';
+  await flushPromises();
+  expect(document.activeElement).toBe(root.element);
+  expect(root.classes()).toContain('3d-carousel--arrow-hover');
+  expect(slide.classList.contains('3d-carousel__item')).toBe(true);
+  expect(slide.classList.contains('is-active')).toBe(true);
+  expect(arrow.classList.contains('3d-carousel__arrow--left')).toBe(true);
+  await root.trigger('keydown', { key: 'ArrowLeft' });
+  expect(slide.getAttribute('aria-hidden')).toBe('true');
+  expect(w.get('[aria-current="true"]').classes()).toContain('3d-carousel__indicator');
+  expect(w.getComponent(Carousel).emitted('change')).toEqual([[0, 1]]);
 });

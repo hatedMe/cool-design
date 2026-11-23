@@ -11,6 +11,8 @@ import {
   type PropType,
   type VNode
 } from 'vue';
+import { createBEM } from '../../../src/utils/create';
+import { useNamespace } from '../../hooks/use-namespace';
 import { carouselKey } from './context';
 
 export type CarouselTrigger = 'hover' | 'click';
@@ -53,6 +55,7 @@ export default defineComponent({
   },
   emits: ['change'],
   setup(props, { slots, emit, expose }) {
+    const bem = createBEM(useNamespace('carousel').b);
     const active = ref(0);
     const paused = ref(false);
     const timer = ref<ReturnType<typeof setInterval>>();
@@ -159,28 +162,24 @@ export default defineComponent({
       const children = slots.default ? flatten(slots.default()).filter(isItemVNode) : [];
       return (
         <div
-          class={{
-            'i-carousel': true,
-            'is-vertical': vertical.value,
-            'is-card': card.value,
-            'is-motion-blur': props.motionBlur,
-            [`i-carousel--arrow-${props.arrow}`]: true,
-            'i-carousel--indicator-outside': props.indicatorPosition === 'outside'
-          }}
+          class={[
+            bem({ [`arrow-${props.arrow}`]: true, 'indicator-outside': props.indicatorPosition === 'outside' }),
+            { 'is-vertical': vertical.value, 'is-card': card.value, 'is-motion-blur': props.motionBlur }
+          ]}
           tabindex={0}
           role='region'
           aria-roledescription='carousel'
           onMouseenter={() => props.pauseOnHover && (paused.value = true)}
           onMouseleave={() => props.pauseOnHover && (paused.value = false)}
           onKeydown={onKeydown}>
-          <div class='i-carousel__stage' style={props.height ? { height: props.height } : undefined}>
-            <div class='i-carousel__track' style={trackStyle}>
+          <div class={bem('stage')} style={props.height ? { height: props.height } : undefined}>
+            <div class={bem('track')} style={trackStyle}>
               {children}
             </div>
             {showPrev && (
               <button
                 type='button'
-                class='i-carousel__arrow i-carousel__arrow--left'
+                class={bem('arrow', { left: true })}
                 aria-label='上一张'
                 onClick={prev}>
                 ‹
@@ -189,7 +188,7 @@ export default defineComponent({
             {showNext && (
               <button
                 type='button'
-                class='i-carousel__arrow i-carousel__arrow--right'
+                class={bem('arrow', { right: true })}
                 aria-label='下一张'
                 onClick={next}>
                 ›
@@ -197,12 +196,12 @@ export default defineComponent({
             )}
           </div>
           {props.indicatorPosition !== 'none' && count.value > 0 && (
-            <ul class='i-carousel__indicators'>
+            <ul class={bem('indicators')}>
               {items.value.map((item) => (
                 <li key={item.name} class={{ 'is-active': item.index === active.value }}>
                   <button
                     type='button'
-                    class='i-carousel__indicator'
+                    class={bem('indicator')}
                     aria-label={`切换到第 ${item.index + 1} 张`}
                     aria-current={item.index === active.value ? 'true' : undefined}
                     onClick={() => props.trigger === 'click' && go(item.index)}
