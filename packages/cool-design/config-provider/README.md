@@ -84,41 +84,13 @@ import { ConfigProvider, en } from 'cool-design/config-provider';
 
 ### 自定义 CSS 前缀
 
-子级继承最近 Provider 的前缀，也可显式覆盖。组件注册名仍使用 `i-*`、`I*` 和 `El*`。当前支持范围如下。
+组件库内部生成的样式类名、CSS 变量和内置动画随命名空间更新。组件导入名和原有注册名（如 `i-button`、`IButton`、`ElButton`）保持原样。子级省略 `namespace` 时继承最近的 Provider，也可显式覆盖。
 
-- ConfigProvider、Button、ButtonGroup、Icon、Tooltip、Popover、Popconfirm 和 `v-popover`。
-- Container、Header、Aside、Main、Footer、Row、Col、Divider、Space、Text 和 Link。
-- Badge、Tag、CheckTag、Avatar、AvatarGroup、Card、Descriptions、DescriptionsItem、Empty、Result、Statistic、Countdown、Skeleton 和 SkeletonItem。
-- Form、FormItem、Input、InputNumber、InputOtp、Checkbox、CheckboxButton、CheckboxGroup、Radio、RadioButton、RadioGroup、Switch、Slider、Rate 和 Segmented。
-- Select（含 SelectOption、SelectOptionGroup）、SelectV2、Autocomplete、Mention、InputTag 和 TimeSelect。
-- Cascader 和 CascaderPanel，包含级联选择器的内嵌面板、标签和折叠标签提示。
-- DatePicker、DatePickerPanel、TimePicker、DateTimePicker 和 Calendar，包含日期网格、时间列与独立日期面板。
-- ColorPicker 和 ColorPickerPanel，包含独立面板、预设色和外置浮层。
-- Tree、TreeSelect 和 TreeV2。
-- Table 和 TableColumn，包含声明式列、筛选面板和溢出提示和加载遮罩。
-- TableV2 和 AutoResizer。
-- Menu、MenuItem、SubMenu、MenuItemGroup、Dropdown、DropdownMenu、DropdownItem 和 Pagination，包含子菜单、下拉菜单和每页条数浮层。
-- Dialog、Drawer 和 MessageBox，包含命令式消息框。
-- Message 和 Notification，包含命令式消息提示与通知。
-- Loading 组件、命令式服务和 `v-loading` 指令。
-- Tabs 和 TabPane，包含声明式页签和独立页签面板。
-- Transfer、Upload 和 UploadDragger，包含穿梭框内部面板与上传文件列表。
-- Breadcrumb、BreadcrumbItem、PageHeader、Timeline、TimelineItem、Steps、Step、Progress、Alert 和 Watermark，包含进度条动画和水印图层。
-- Collapse 和 CollapseItem，包含面板高度过渡。
-- Carousel 和 CarouselItem，包含箭头、指示器和卡片布局。
-- Scrollbar、Affix、Backtop、Anchor 和 AnchorLink，包含自绘滚动条、Affix 固定内容和锚点布局。
-- Splitter 和 SplitterPanel，包含分隔条、面板和折叠按钮。
-- Image 和 ImageViewer，包含图片占位、失败状态和内联或挂载到 `body` 的预览。
-- Tour 和 TourStep，包含引导浮层、遮罩和声明式步骤，支持将浮层挂载到指定容器。
+默认前缀 `i` 使用 npm 包随附的 `cool-design/style.css`。自定义前缀需要从源码使用相同命名空间预编译完整 Sass 样式。例如启用 `namespace="acme"` 前，先配置 Sass 的 `$namespace: 'acme'`。局部混用、多个应用同时使用或运行时切换前缀时，预先加载每个前缀对应的 CSS。 [主题指南](#/guide/theme)
 
-从源码构建时，先配置 Sass，再加载样式。下例路径相对于仓库根目录。
+`themeVars` 的键按原值合并和传递。使用 `acme` 时将自己的变量覆盖写为 `--acme-primary`、`--acme-main-padding` 等完整名称。Space 的 `prefix-cls` 继续使用调用方提供的值。
 
-```scss
-@use 'packages/cool-design/style/mixins/config' with ($namespace: 'acme');
-@use 'packages/cool-design/style/index';
-```
-
-在模板中使用 `<i-config-provider namespace="acme" :theme-vars="{ '--acme-primary': '#057a55' }">`。`theme-vars` 保留原始键，自定义变量前缀须与所用 CSS 匹配。原先覆盖 `--i-main-padding` 等组件变量时，随命名空间改用 `--acme-main-padding` 等对应变量。Space 的 `prefix-cls` 仍可指定自己的子项包装类。在页面中同时使用或动态切换 `i` 和 `acme` 时，分别编译并预加载两套样式。其他组件和浮层服务的前缀仍按默认值处理，当前 npm 包随附默认 `i` 样式。
+浮层默认从最近的宿主继承配置。支持外置挂载的浮层同步最近的主题配置，支持内联模式的浮层按 DOM 作用域继承。通过插件安装的 `$message`、`$notify` 和 `$confirm` 读取所属应用的顶层配置。在同一应用的 Provider 后代组件 `setup` 中调用 `$loading` 创建遮罩时，优先使用最近 Provider 的配置。需要从局部 Provider 打开命令式消息框时，在后代组件内使用 `useMessageBox()`。
 
 `zIndex` 作用于使用 `useZIndex` 的锚定浮层以及 Dialog、Drawer；组件自身的 `zIndex` 属性优先。Message、Notification 服务默认从所属应用的层级递增，服务选项中显式传入的 `zIndex` 优先。空值配置由 `useEmptyValues` 读取，具体组件是否支持以组件 API 为准。
 

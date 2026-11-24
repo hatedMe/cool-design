@@ -1,6 +1,6 @@
 # 自定义主题
 
-通过 ConfigProvider 统一主题、桌面控件尺寸和 CSS 变量。配置运行时生效，无需重新编译组件样式；支持局部嵌套和深浅主题切换。
+通过 ConfigProvider 统一主题、桌面控件尺寸、CSS 变量和命名空间。主题、尺寸和变量可在运行时更新。自定义命名空间需要预先编译对应的样式。
 
 ## 全局主题与尺寸
 
@@ -97,6 +97,47 @@ const brand = { '--i-primary': '#126d58', '--i-primary-hover': '#0e5847', '--i-o
 
 父级明确设置的背景、文字等自定义变量也会传给子级。如果局部深色区域看起来没有切换颜色，检查父级 `themeVars` 是否固定了相关变量，并在子级按需覆盖。
 
+## 自定义命名空间
+
+组件库内部生成的样式类名、主题变量和内置动画使用当前命名空间。默认前缀为 `i`，npm 包的 `cool-design/style.css` 已包含这套样式。组件的导入名与注册名保持原样，例如 `Button`、`i-button`、`IButton` 和 `ElButton`。
+
+使用 `acme` 时，在源码仓库根目录创建 `namespace-acme.scss`，先配置 Sass 模块，再载入完整入口。
+
+```scss
+@use 'packages/cool-design/style/mixins/config' with ($namespace: 'acme');
+@use 'packages/cool-design/style/index';
+```
+
+从仓库根目录运行以下命令。输出放在 `style` 目录，可按编译后的相对路径访问 `../icon/fonts/` 下的字体。
+
+```bash
+pnpm exec sass --load-path=. --no-source-map namespace-acme.scss packages/cool-design/style/namespace-acme.css
+```
+
+在应用入口引入生成的 CSS 文件，并为根 Provider 设置相同前缀。
+
+```vue
+<script setup lang="ts">
+import { Button, ConfigProvider } from 'cool-design';
+
+const themeVars = {
+  '--acme-primary': '#126d58',
+  '--acme-primary-hover': '#0e5847',
+  '--acme-on-primary': '#ffffff'
+};
+</script>
+
+<template>
+  <ConfigProvider namespace="acme" :theme-vars="themeVars">
+    <Button type="primary">保存配置</Button>
+  </ConfigProvider>
+</template>
+```
+
+子级省略 `namespace` 时继承最近的配置，也可以单独指定。局部混用、同一页面挂载多个 Vue 应用或运行时切换前缀时，为每个前缀单独编译并预加载样式。以数字开头的前缀需要 Sass 中的 CSS 转义。例如 DOM 前缀用 `namespace="3d"`，Sass 配置改为 `$namespace: "\\33 d"`。CSS 变量仍使用完整原名，如 `--3d-primary`。
+
+`themeVars` 按原键合并和传递。切换前缀时，覆盖项与自定义 CSS 选择器也要匹配当前前缀。组件接收的 `class`、`style` 及 Space 的 `prefix-cls` 等调用方配置按原值使用。
+
 ## 常用 CSS 变量
 
 以下颜色默认值来自当前源码。完整定义位于 `packages/cool-design/style/tokens.scss`。
@@ -149,10 +190,10 @@ import { Button, ConfigProvider } from 'cool-design';
 
 ## 浮层继承主题
 
-Dialog、Tooltip、Popconfirm 和 MessageBox 使用最近 ConfigProvider 提供的浮层宿主，继承该配置的主题和变量。
+Dialog、Tooltip、Popconfirm 和声明式 MessageBox 默认使用最近 ConfigProvider 提供的浮层宿主，继承命名空间、主题、尺寸和变量。对支持 `append-to` 的组件，显式传送到 `body` 或其他容器时，浮层同步最近的配置。对支持内联渲染的组件，可以将 `teleported` 设为 `false`，由原 DOM 作用域继承。调用方传入的浮层样式优先。
 
 声明式弹窗放在 ConfigProvider 内即可。组合式 `useMessageBox()` 则应在 ConfigProvider **后代组件**的 setup 中调用；在渲染 ConfigProvider 的同一个组件 setup 中调用，无法读取这个组件将要提供的配置。
 
-独立的 `MessageBox.confirm()` 使用默认浅色配置；需要继承局部主题时，使用声明式组件或后代组件内的 `useMessageBox()`。详见 [MessageBox](#/components/message-box)。
+通过插件安装得到的 `$message`、`$notify` 和 `$confirm` 从所属应用读取顶层配置。独立调用 `MessageBox.confirm()` 时，未传应用上下文则使用默认的 `i` 前缀和浅色配置。需要继承局部配置时，使用声明式组件或在后代组件中调用 `useMessageBox()`。 [MessageBox](#/components/message-box)
 
 下面的演示可直接切换局部主题与尺寸；[ConfigProvider 文档](#/components/config-provider)提供完整配置 API。
