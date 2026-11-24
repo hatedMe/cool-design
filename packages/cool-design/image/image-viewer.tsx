@@ -2,6 +2,7 @@ import {
   Teleport,
   computed,
   defineComponent,
+  mergeProps,
   onBeforeUnmount,
   onMounted,
   ref,
@@ -9,6 +10,8 @@ import {
   type PropType
 } from 'vue';
 import { isTopOverlay } from '../../../src/utils/overlay-stack';
+import { useFloatingTheme } from '../../../src/utils/use-floating';
+import { useNamespace } from '../../hooks/use-namespace';
 import { lockDialog, unlockDialog } from '../dialog/stack';
 
 export interface ImageViewerToolbarActions {
@@ -39,6 +42,7 @@ export interface ImageViewerToolbarActions {
 
 export default defineComponent({
   name: 'i-image-viewer',
+  inheritAttrs: false,
   props: {
     urlList: { type: Array as PropType<string[]>, default: () => [] },
     initialIndex: { type: Number, default: 0 },
@@ -54,7 +58,10 @@ export default defineComponent({
     teleported: { type: Boolean, default: false }
   },
   emits: ['close', 'switch'],
-  setup(props, { emit, slots, expose }) {
+  setup(props, { attrs, emit, slots, expose }) {
+    const ns = useNamespace('image-viewer');
+    const target = computed(() => props.teleported ? 'body' : undefined);
+    const theme = useFloatingTheme(target, () => !!target.value);
     const token = Symbol('image-viewer');
     const stackZIndex = ref(2000);
     const index = ref(0);
@@ -226,32 +233,35 @@ export default defineComponent({
     const content = () => {
       const placeholderSlot = slots.placeholder ?? slots['viewer-placeholder'];
       const errorSlot = slots.error ?? slots['viewer-error'];
+      const maskProps = mergeProps({
+        class: [ns.e('mask'), theme.value.scopeClass],
+        style: { ...theme.value.style, zIndex: zIndexValue.value },
+        'data-theme': theme.value.theme,
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': '图片预览',
+        onWheel,
+        onClick: (event: MouseEvent) => {
+          if (event.target === event.currentTarget && props.hideOnClickModal) close();
+        }
+      }, attrs);
       return (
-        <div
-          class='i-image-viewer__mask'
-          style={{ zIndex: zIndexValue.value }}
-          role='dialog'
-          aria-modal='true'
-          aria-label='图片预览'
-          onWheel={onWheel}
-          onClick={(event: MouseEvent) => {
-            if (event.target === event.currentTarget && props.hideOnClickModal) close();
-          }}>
-          <div class='i-image-viewer__content'>
-            <button type='button' class='i-image-viewer__close' aria-label='关闭预览' onClick={close}>
+        <div {...maskProps}>
+          <div class={ns.e('content')}>
+            <button type='button' class={ns.e('close')} aria-label='关闭预览' onClick={close}>
               ×
             </button>
             {total.value > 1 && (
               <button
                 type='button'
-                class='i-image-viewer__prev'
+                class={ns.e('prev')}
                 aria-label='上一张'
                 disabled={!props.infinite && index.value <= 0}
                 onClick={prev}>
                 ‹
               </button>
             )}
-            <div class='i-image-viewer__stage'>
+            <div class={ns.e('stage')}>
               {slots.default?.({
                 url: currentUrl.value,
                 src: currentUrl.value,
@@ -259,7 +269,7 @@ export default defineComponent({
                 activeIndex: index.value
               }) ??
                 (error.value && errorSlot ? (
-                  <div class='i-image-viewer__error'>
+                  <div class={ns.e('error')}>
                     {errorSlot({ activeIndex: index.value, src: currentUrl.value, url: currentUrl.value, index: index.value })}
                   </div>
                 ) : (
@@ -285,7 +295,7 @@ export default defineComponent({
                     {loading.value &&
                       !error.value &&
                       placeholderSlot && (
-                        <div class='i-image-viewer__placeholder'>
+                        <div class={ns.e('placeholder')}>
                           {placeholderSlot({
                             activeIndex: index.value,
                             src: currentUrl.value,
@@ -300,7 +310,7 @@ export default defineComponent({
             {total.value > 1 && (
               <button
                 type='button'
-                class='i-image-viewer__next'
+                class={ns.e('next')}
                 aria-label='下一张'
                 disabled={!props.infinite && index.value >= total.value - 1}
                 onClick={next}>
@@ -309,12 +319,12 @@ export default defineComponent({
             )}
             {props.showProgress &&
               (slots.progress?.({ activeIndex: index.value, index: index.value, total: total.value }) ?? (
-                <div class='i-image-viewer__progress'>
+                <div class={ns.e('progress')}>
                   {index.value + 1} / {total.value}
                 </div>
               ))}
             {slots.toolbar?.(toolbarActions()) ?? (
-              <div class='i-image-viewer__toolbar' role='toolbar' aria-label='预览操作'>
+              <div class={ns.e('toolbar')} role='toolbar' aria-label='预览操作'>
                 <button type='button' aria-label='缩小' onClick={zoomOut}>
                   −
                 </button>
@@ -339,7 +349,7 @@ export default defineComponent({
 
     return () => {
       if (!total.value) return null;
-      return props.teleported ? <Teleport to='body'>{content()}</Teleport> : content();
+      return target.value ? <Teleport to={target.value}>{content()}</Teleport> : content();
     };
   }
 });

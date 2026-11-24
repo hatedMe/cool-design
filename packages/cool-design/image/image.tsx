@@ -6,6 +6,7 @@ import {
   watch,
   type PropType
 } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import IImageViewer from './image-viewer';
 
 export type ImageFit = '' | 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
@@ -59,6 +60,7 @@ export default defineComponent({
   },
   emits: ['load', 'error', 'show', 'switch', 'close'],
   setup(props, { emit, slots, expose }) {
+    const ns = useNamespace('image');
     const root = ref<HTMLElement>();
     const inView = ref(!props.lazy);
     const loaded = ref(false);
@@ -138,10 +140,10 @@ export default defineComponent({
     expose({ showPreview });
 
     return () => (
-      <div ref={root} class='i-image'>
+      <div ref={root} class={ns.b()}>
         {(!inView.value || (!loaded.value && !error.value)) &&
           slots.placeholder &&
-          !error.value && <div class='i-image__placeholder'>{slots.placeholder()}</div>}
+          !error.value && <div class={ns.e('placeholder')}>{slots.placeholder()}</div>}
         {inView.value &&
           (!error.value || !slots.error) && (
             <img
@@ -158,7 +160,7 @@ export default defineComponent({
               }}
             />
           )}
-        {error.value && slots.error && <div class='i-image__error'>{slots.error()}</div>}
+        {error.value && slots.error && <div class={ns.e('error')}>{slots.error()}</div>}
         {previewVisible.value &&
           props.previewSrcList.length > 0 &&
           (slots.viewer?.({

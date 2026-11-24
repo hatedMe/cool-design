@@ -1,7 +1,8 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, expect, test } from 'vitest';
-import { nextTick } from 'vue';
+import { h, nextTick, ref } from 'vue';
 import Image from '..';
+import ConfigProvider from '../../config-provider';
 import ImageViewer from '../image-viewer';
 
 afterEach(() => {
@@ -171,4 +172,77 @@ test('预览工具栏与进度插槽参数包含 activeIndex', async () => {
   expect(typeof (toolbarParams as unknown as { setActiveItem: unknown }).setActiveItem).toBe('function');
   expect(typeof (toolbarParams as unknown as { actions: unknown }).actions).toBe('object');
   w.unmount();
+});
+
+test('Image 最近的命名空间更新时保留图片和内联预览节点', async () => {
+  const namespace = ref('acme');
+  const w = mount({
+    setup: () => () => h(ConfigProvider, { namespace: 'outer' }, () =>
+      h(ConfigProvider, { namespace: namespace.value }, () =>
+        h(Image, {
+          src: 'a.jpg',
+          previewSrcList: ['a.jpg', 'b.jpg'],
+          class: 'user-image'
+        }, { placeholder: () => '加载中', error: () => '加载失败' })
+      )
+    )
+  });
+  try {
+    expect(w.get('.user-image').classes()).toContain('acme-image');
+    expect(w.get('.acme-image__placeholder').text()).toBe('加载中');
+    const image = w.get('img');
+    await image.trigger('load');
+    await image.trigger('click');
+    const mask = w.get('.acme-image-viewer__mask').element;
+    namespace.value = 'next';
+    await nextTick();
+    expect(w.get('.next-image-viewer__mask').element).toBe(mask);
+    expect(w.get('img').element).toBe(image.element);
+    expect(w.find('.next-image__placeholder').exists()).toBe(false);
+    await image.trigger('error');
+    expect(w.get('.next-image__error').text()).toBe('加载失败');
+  } finally {
+    w.unmount();
+  }
+});
+
+test('独立外置 ImageViewer 使用最近 Provider 并保留用户类和样式', async () => {
+  const config = ref<{ namespace: string; theme: 'dark' | 'light'; size: 'large' | 'small' }>(
+    { namespace: 'acme', theme: 'dark', size: 'large' }
+  );
+  const w = mount({
+    setup: () => () => h(ConfigProvider, { namespace: 'outer', theme: 'light' }, () =>
+      h(ConfigProvider, {
+        ...config.value,
+        themeVars: { '--preview-token': 'provider' }
+      }, () =>
+        h(ImageViewer, {
+          urlList: ['a.jpg', 'b.jpg'],
+          teleported: true,
+          class: 'user-viewer',
+          style: { '--preview-token': 'user' }
+        })
+      )
+    )
+  }, { attachTo: document.body });
+  try {
+    const mask = document.querySelector<HTMLElement>('.acme-image-viewer__mask');
+    expect(mask?.parentElement).toBe(document.body);
+    expect(mask?.classList.contains('acme-theme-scope')).toBe(true);
+    expect(mask?.classList.contains('user-viewer')).toBe(true);
+    expect(mask?.dataset.theme).toBe('dark');
+    expect(mask?.style.getPropertyValue('--acme-control-height')).toBe('40px');
+    expect(mask?.style.getPropertyValue('--preview-token')).toBe('user');
+
+    config.value = { namespace: 'next', theme: 'light', size: 'small' };
+    await nextTick();
+    expect(document.querySelector('.next-image-viewer__mask')).toBe(mask);
+    expect(mask?.dataset.theme).toBe('light');
+    expect(mask?.style.getPropertyValue('--acme-control-height')).toBe('');
+    expect(mask?.style.getPropertyValue('--next-control-height')).toBe('28px');
+  } finally {
+    w.unmount();
+  }
+  expect(document.querySelector('.user-viewer')).toBeNull();
+  expect(document.body.style.overflow).toBe('');
 });
