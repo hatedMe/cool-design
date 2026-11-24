@@ -1,9 +1,16 @@
 import { Fragment, h, nextTick, onUnmounted, ref, watchEffect } from 'vue';
-import { flushPromises, mount } from '@vue/test-utils';
+import { flushPromises, mount, type VueWrapper } from '@vue/test-utils';
 import { describe, expect, test, vi } from 'vitest';
 import ConfigProvider from '../../config-provider';
 import Tabs, { TabPane as PublicTabPane } from '../index';
 import TabPane from '../tab-pane';
+
+const panelFor = (wrapper: VueWrapper, name: string) => {
+  const tab = wrapper.find(`[data-tabs-tab="${name}"]`);
+  return tab.exists()
+    ? wrapper.findAll('[role="tabpanel"]').find((panel) => panel.attributes('aria-labelledby') === tab.element.id)
+    : undefined;
+};
 
 describe('Tabs', () => {
   test('命名空间切换后保留 Tabs 和活动面板节点及 ARIA 配对', async () => {
@@ -75,12 +82,12 @@ describe('Tabs', () => {
         ]
       })
     });
-    const a = wrapper.get('#i-tabs-panel-a');
+    const a = panelFor(wrapper, 'a')!;
     const aTab = wrapper.get('[data-tabs-tab="a"]').element;
     await a.get('button').trigger('click');
     active.value = 'b';
     await nextTick();
-    const b = wrapper.get('#i-tabs-panel-b');
+    const b = panelFor(wrapper, 'b')!;
     active.value = 'a';
     await nextTick();
 
@@ -90,10 +97,10 @@ describe('Tabs', () => {
       expect(wrapper.find('[data-tabs-tab="prefix"]').exists()).toBe(visible);
       expect(wrapper.find('[data-tabs-tab="group"]').exists()).toBe(visible);
       expect(wrapper.get('[data-tabs-tab="a"]').element).toBe(aTab);
-      expect(wrapper.get('#i-tabs-panel-a').element).toBe(a.element);
-      expect(wrapper.get('#i-tabs-panel-a').text()).toBe('a:1');
-      expect(wrapper.get('#i-tabs-panel-b').element).toBe(b.element);
-      expect(wrapper.find('#i-tabs-panel-c').exists()).toBe(false);
+      expect(panelFor(wrapper, 'a')!.element).toBe(a.element);
+      expect(panelFor(wrapper, 'a')!.text()).toBe('a:1');
+      expect(panelFor(wrapper, 'b')!.element).toBe(b.element);
+      expect(panelFor(wrapper, 'c')).toBeUndefined();
       expect(mounted).toEqual(['a', 'b']);
       expect(unmounted).toEqual([]);
     }
@@ -125,7 +132,7 @@ describe('Tabs', () => {
         ]))
       })
     }, { global: { config: { warnHandler: (message) => warnings.push(message) } } });
-    const first = wrapper.get('#i-tabs-panel-a').element;
+    const first = panelFor(wrapper, 'a')!.element;
     const firstTab = wrapper.get('[data-tabs-tab="a"]').element;
     expect(mounted).toEqual(['a']);
 
@@ -133,7 +140,7 @@ describe('Tabs', () => {
     await nextTick();
     expect(wrapper.findAll('[role="tab"]').map((tab) => tab.text())).toEqual(['c', 'b', 'a']);
     expect(wrapper.get('[data-tabs-tab="a"]').element).toBe(firstTab);
-    expect(wrapper.get('#i-tabs-panel-a').element).toBe(first);
+    expect(panelFor(wrapper, 'a')!.element).toBe(first);
     expect(mounted).toEqual(['a']);
 
     await wrapper.get('[data-tabs-tab="b"]').trigger('click');
@@ -141,13 +148,13 @@ describe('Tabs', () => {
     expect(mounted).toEqual(['a', 'b']);
     names.value = ['c', 'a'];
     await nextTick();
-    expect(wrapper.get('#i-tabs-panel-a').element).toBe(first);
-    expect(wrapper.get('#i-tabs-panel-a').text()).toBe('a');
+    expect(panelFor(wrapper, 'a')!.element).toBe(first);
+    expect(panelFor(wrapper, 'a')!.text()).toBe('a');
     expect(unmounted).toEqual(['b']);
 
     names.value = ['b', 'a', 'c'];
     await nextTick();
-    expect(wrapper.find('#i-tabs-panel-b').exists()).toBe(false);
+    expect(panelFor(wrapper, 'b')).toBeUndefined();
     expect(mounted).toEqual(['a', 'b']);
     expect(warnings).toEqual([]);
     wrapper.unmount();
@@ -194,11 +201,11 @@ describe('Tabs', () => {
       })
     });
     expect(wrapper.get('[aria-selected="true"]').text()).toBe('空字符串');
-    const initial = wrapper.get('#i-tabs-panel-').element;
+    const initial = panelFor(wrapper, '')!.element;
     key.value = 'updated';
     await nextTick();
     expect(wrapper.get('[aria-selected="true"]').text()).toBe('空字符串');
-    expect(wrapper.get('#i-tabs-panel-').element).not.toBe(initial);
+    expect(panelFor(wrapper, '')!.element).not.toBe(initial);
   });
 
   test('在渲染中读取动态 Fragment 与 TabPane 插槽', async () => {
@@ -227,23 +234,23 @@ describe('Tabs', () => {
     await nextTick();
     expect(tabs()).toEqual(['标题-b', '标题-a', '标题-c']);
     await wrapper.get('[data-tabs-tab="b"]').trigger('click');
-    expect(wrapper.get('#i-tabs-panel-b').attributes('hidden')).toBeUndefined();
+    expect(panelFor(wrapper, 'b')!.attributes('hidden')).toBeUndefined();
     await wrapper.get('[data-tabs-tab="a"]').trigger('click');
-    expect(wrapper.get('#i-tabs-panel-b').attributes('hidden')).toBeDefined();
+    expect(panelFor(wrapper, 'b')!.attributes('hidden')).toBeDefined();
 
     names.value = ['c', 'a'];
     label.value = '更新标题';
     content.value = '更新内容';
     await nextTick();
     expect(tabs()).toEqual(['更新标题-c', '更新标题-a']);
-    expect(wrapper.get('#i-tabs-panel-a').text()).toBe('更新内容-a');
-    expect(wrapper.find('#i-tabs-panel-b').exists()).toBe(false);
+    expect(panelFor(wrapper, 'a')!.text()).toBe('更新内容-a');
+    expect(panelFor(wrapper, 'b')).toBeUndefined();
 
     custom.value = false;
     names.value = ['c', 'b', 'a'];
     await nextTick();
     expect(tabs()).toEqual(['c', 'b', 'a']);
-    expect(wrapper.find('#i-tabs-panel-b').exists()).toBe(false);
+    expect(panelFor(wrapper, 'b')).toBeUndefined();
     expect(warnings).toEqual([]);
     wrapper.unmount();
   });

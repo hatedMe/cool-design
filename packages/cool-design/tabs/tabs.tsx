@@ -16,6 +16,8 @@ import {
   type VNodeChild
 } from 'vue';
 import { createBEM } from '../../../src/utils/create';
+import { avoidIdCollision, createSlotIds, reserveSlotIds } from '../../../src/utils/slot-ids';
+import { useId } from '../../hooks/use-id';
 import { useNamespace } from '../../hooks/use-namespace';
 import TabPaneComponent from './tab-pane';
 
@@ -114,9 +116,10 @@ export default defineComponent({
     edit: (name: TabsPaneName | null, action: TabsEditAction) =>
       action === 'add' ? name === null : action === 'remove' && isPaneName(name)
   },
-  setup(props, { emit, slots, expose }) {
+  setup(props, { attrs, emit, slots, expose }) {
     const ns = useNamespace('tabs');
     const bem = createBEM(ns.b);
+    const id = useId();
     const internalActive = ref(props.modelValue ?? props.defaultValue);
     const currentName = computed(() => {
       const selected = props.modelValue ?? internalActive.value;
@@ -357,6 +360,39 @@ export default defineComponent({
       const headerPosition = props.tabPosition ?? 'top';
       const vertical = headerPosition === 'left' || headerPosition === 'right';
 
+      // 只读取本次实际渲染的插槽，各插槽的执行顺序与渲染顺序一致。
+      const reservedIds = createSlotIds(attrs.id);
+      const labels = panes.map(({ pane }) => {
+        const label = pane.labelSlot?.() ?? pane.label;
+        reserveSlotIds(reservedIds, label);
+        return label;
+      });
+      const addIcon = showAdd.value ? slots['add-icon']?.() ?? '+' : undefined;
+      reserveSlotIds(reservedIds, addIcon);
+      const slotPanels = paneNodes.length
+        ? panes.map(({ pane, key }) => {
+            if (pane.lazy && pane.name !== active && !visited.has(key)) return;
+            const content = pane.contentSlot?.();
+            reserveSlotIds(reservedIds, content);
+            return { content };
+          })
+        : [];
+      if (!paneNodes.length) reserveSlotIds(reservedIds, children);
+
+      // JSON 转义先处理命名空间中的孤立代理字符。页签键的字符串部分已按同样规则转义。
+      const idPrefix = encodeURIComponent(JSON.stringify(id.value).slice(1, -1));
+      const sharedPanelIndex = paneNodes.length ? -1 : panes.findIndex(({ pane }) => pane.name === active);
+      const paneIds = panes.map(({ key }, index) => {
+        const suffix = encodeURIComponent(key);
+        return {
+          tabId: avoidIdCollision(`${idPrefix}:tab:${suffix}`, reservedIds),
+          panelId: slotPanels[index] || sharedPanelIndex === index
+            ? avoidIdCollision(`${idPrefix}:panel:${suffix}`, reservedIds)
+            : undefined
+        };
+      });
+      const sharedPanel = paneIds[sharedPanelIndex];
+
       const header = (
         <div
           key='header'
@@ -392,17 +428,17 @@ export default defineComponent({
                     key={key}
                     role='tab'
                     data-tabs-tab={String(pane.name)}
-                    id={`i-tabs-tab-${String(pane.name)}`}
+                    id={paneIds[index].tabId}
                     aria-selected={isActive}
                     aria-disabled={pane.disabled || undefined}
-                    aria-controls={`i-tabs-panel-${String(pane.name)}`}
+                    aria-controls={paneIds[index].panelId}
                     tabindex={pane.disabled ? -1 : isActive ? 0 : -1}
                     class={{ [bem('item')]: true, 'is-active': isActive, 'is-disabled': pane.disabled, 'is-focus': focusedTab.value === pane.name }}
                     onFocus={() => { focusedTab.value = pane.name; }}
                     onBlur={removeFocus}
                     onClick={(event) => { removeFocus(); return setActive(pane.name, event); }}
                     onKeydown={(event) => handleKeydown(event, index)}>
-                    <span class={bem('label')}>{pane.labelSlot?.() ?? pane.label}</span>
+                    <span class={bem('label')}>{labels[index]}</span>
                     {closable && (
                       <span
                         class={bem('close')}
@@ -424,7 +460,7 @@ export default defineComponent({
               })}
               {showAdd.value && (
                 <button type='button' class={bem('add')} aria-label='新增页签' onClick={handleAdd}>
-                  {slots['add-icon']?.() ?? '+'}
+                  {addIcon}
                 </button>
               )}
             </div>
@@ -445,10 +481,10 @@ export default defineComponent({
       const content = (
         <div class={bem('content')} key='content'>
           {paneNodes.length
-            ? panes.map(({ pane, key }) => {
+            ? panes.map(({ pane, key }, index) => {
+                const panel = slotPanels[index];
+                if (!panel) return null;
                 const isActive = pane.name === active;
-                const shouldRender = !pane.lazy || isActive || visited.has(key);
-                if (!shouldRender) return null;
                 const visit = () => { if (isActive) visited.add(key); };
                 const hooks = {
                   onVnodeMounted: visit,
@@ -459,20 +495,20 @@ export default defineComponent({
                   <div
                     key={key}
                     role='tabpanel'
-                    id={`i-tabs-panel-${String(pane.name)}`}
-                    aria-labelledby={`i-tabs-tab-${String(pane.name)}`}
+                    id={paneIds[index].panelId}
+                    aria-labelledby={paneIds[index].tabId}
                     hidden={!isActive}
                     class={{ [bem('pane')]: true, 'is-active': isActive }}
                     {...hooks}>
-                    {pane.contentSlot?.()}
+                    {panel.content}
                   </div>
                 );
               })
             : (
                 <div
                   role='tabpanel'
-                  id={`i-tabs-panel-${String(active)}`}
-                  aria-labelledby={`i-tabs-tab-${String(active)}`}
+                  id={sharedPanel?.panelId ?? avoidIdCollision(`${idPrefix}:panel`, reservedIds)}
+                  aria-labelledby={sharedPanel?.tabId}
                   class={[bem('pane'), 'is-active']}>
                   {children}
                 </div>
