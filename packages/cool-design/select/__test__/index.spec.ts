@@ -98,7 +98,8 @@ test('Select 打开时优先高亮选中项并跟随键盘滚动', async () => {
   });
   await wrapper.get('[role="combobox"]').trigger('click');
   expect(doc().get('.i-select__option.is-highlighted').attributes('data-value')).toBe('4');
-  expect(wrapper.get('[role="combobox"]').attributes('aria-activedescendant')).toBe('i-select-option-4');
+  expect(document.getElementById(wrapper.get('[role="combobox"]').attributes('aria-activedescendant')))
+    .toBe(doc().get('.i-select__option.is-highlighted').element);
   wrapper.unmount();
 
   const unselected = mount(Select, {

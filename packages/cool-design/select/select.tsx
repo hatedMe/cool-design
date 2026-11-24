@@ -18,6 +18,7 @@ import { Teleport } from 'vue';
 import { inject } from 'vue';
 import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { useConfig, useLocale, type Size } from '../config-provider/context';
+import { useId } from '../../hooks/use-id';
 import { useNamespace } from '../../hooks/use-namespace';
 import { useFloating, useFloatingTheme, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 
@@ -118,6 +119,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear', 'visible-change', 'remove-tag', 'popup-scroll', 'end-reached'],
   setup(props, { slots, attrs, emit, expose }) {
     const field = useFieldControl(undefined, () => !slots.control);
+    const optionBase = useId();
     const form = inject(formKey, undefined);
     const config = useConfig();
     const ns = useNamespace('select');
@@ -162,7 +164,7 @@ export default defineComponent({
       if (scrollLeft < scrollPosition.left && scrollLeft <= 0) emit('end-reached', 'left');
       scrollPosition.top = scrollTop;
       scrollPosition.left = scrollLeft;
-      if (props.virtualized) virtualOffset.value = Math.floor(scrollTop / props.itemHeight);
+      if (props.virtualized) virtualOffset.value = Math.max(0, Math.floor(scrollTop / props.itemHeight));
     };
     const position = useFloating({
       open,
@@ -434,9 +436,23 @@ export default defineComponent({
 
     return () => {
       selectedCache = selectedRecords.value;
+      const firstVisibleIndex = props.virtualized ? virtualOffset.value : 0;
       const visibleRecords = props.virtualized
-        ? filteredRecords.value.slice(virtualOffset.value, virtualOffset.value + Math.ceil(props.height / props.itemHeight) + 4)
+        ? filteredRecords.value.slice(firstVisibleIndex, firstVisibleIndex + Math.ceil(props.height / props.itemHeight) + 4)
         : filteredRecords.value;
+      const triggerId = !slots.control ? (attrs.id as string) || field?.id : undefined;
+      const getOptionId = (index: number) => {
+        const candidate = `${optionBase.value}-option-${index}`;
+        const id = field?.availableId?.(candidate) ?? candidate;
+        if (id !== triggerId) return id;
+        const fallback = `${id}-fallback`;
+        return field?.availableId?.(fallback) ?? fallback;
+      };
+      const activeIndex = highlightedIndex.value;
+      const activeOptionId = open.value && !loading.value && !slots.dropdown &&
+        activeIndex >= firstVisibleIndex && activeIndex < firstVisibleIndex + visibleRecords.length
+        ? getOptionId(activeIndex)
+        : undefined;
       const displayRecords = props.collapseTags ? selectedRecords.value.slice(0, props.maxCollapseTags) : selectedRecords.value;
       const comboboxValue = props.filterable || props.remote ? query.value : selectedRecords.value[0]?.label ?? placeholder.value;
       const nativeOptionOf = (item: OptionRecord) =>
@@ -454,12 +470,12 @@ export default defineComponent({
             data-value={String(keyOf(item.value))}
             aria-selected={isSelected}
             aria-disabled={item.disabled || undefined}
-            id={`i-select-option-${index + virtualOffset.value}`}
+            id={getOptionId(index)}
             class={[
               ns.e('option'),
               {
                 'is-selected': isSelected,
-                'is-highlighted': index + virtualOffset.value === highlightedIndex.value,
+                'is-highlighted': index === activeIndex,
                 'is-disabled': item.disabled
               }
             ]}
@@ -473,7 +489,7 @@ export default defineComponent({
         <span ref={root} class={[ns.b(), controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size), { 'is-disabled': isDisabled(), 'is-open': open.value }]}>
           {slots.control ? slots.control({ open: open.value, toggle: () => setOpen(!open.value) }) : <div
             {...attrs}
-            id={(attrs.id as string) || field?.id}
+            id={triggerId}
             aria-labelledby={(attrs['aria-labelledby'] as string) || (attrs['aria-label'] ? undefined : field?.getLabelId?.())}
             aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
             role='combobox'
@@ -481,7 +497,7 @@ export default defineComponent({
             aria-expanded={open.value}
             aria-haspopup='listbox'
             aria-disabled={isDisabled() || undefined}
-            aria-activedescendant={highlightedIndex.value >= 0 ? `i-select-option-${highlightedIndex.value}` : undefined}
+            aria-activedescendant={activeOptionId}
             onClick={() => setOpen(!open.value)}
             onFocus={(event: FocusEvent) => {
               emit('focus', event);
@@ -552,7 +568,7 @@ export default defineComponent({
                 {slots.dropdown ? slots.dropdown() : <>
                 {loading.value && <div class={ns.e('empty')}>{slots.empty ? slots.empty() : loadingText.value}</div>}
                 {!loading.value && !visibleRecords.length && <div class={ns.e('empty')}>{slots.empty ? slots.empty() : (query.value ? noMatchText.value : noDataText.value)}</div>}
-                {!loading.value && props.virtualized && visibleRecords.map((item, index) => renderOption(item, index))}
+                {!loading.value && props.virtualized && visibleRecords.map((item, index) => renderOption(item, firstVisibleIndex + index))}
                 {!loading.value && !props.virtualized && groupBy(filteredRecords.value).map((group) => [
                   group.label !== undefined && <div class={ns.e('group')} role='presentation'>{group.label}</div>,
                   group.items.map((item) => renderOption(item, filteredRecords.value.indexOf(item)))
