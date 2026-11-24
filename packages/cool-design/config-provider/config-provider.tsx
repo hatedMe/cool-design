@@ -1,6 +1,7 @@
 import { computed, defineComponent, getCurrentInstance, inject, onBeforeUnmount, provide, ref, type PropType } from 'vue';
 import { configKey, getThemeStyle, overlayKey, registerAppConfig, useConfig, type Config, type Language, type Size, type ValueOnClear } from './context';
-import { idKey, namespaceKey, sizeKey, useNamespace } from '../../hooks/index.ts';
+import { idKey, useIdState } from '../../hooks/use-id';
+import { namespaceKey, sizeKey, useNamespace } from '../../hooks/index.ts';
 function mergeConfig<T extends object>(parent: T | undefined, local: T | undefined): T | undefined {
   if (!local) return parent;
   const defined = Object.fromEntries(Object.entries(local).filter(([, value]) => value !== undefined));
@@ -54,7 +55,7 @@ export default defineComponent({
       sizeKey,
       computed(() => config.value.size)
     );
-    provide(idKey, { prefix: Math.floor(Math.random() * 10000), current: 0 });
+    provide(idKey, useIdState());
     provide(overlayKey, host);
     return () => (
       <div

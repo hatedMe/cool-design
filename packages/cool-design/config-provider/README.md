@@ -94,7 +94,37 @@ import { ConfigProvider, en } from 'cool-design/config-provider';
 
 `zIndex` 作用于使用 `useZIndex` 的锚定浮层以及 Dialog、Drawer；组件自身的 `zIndex` 属性优先。Message、Notification 服务默认从所属应用的层级递增，服务选项中显式传入的 `zIndex` 优先。空值配置由 `useEmptyValues` 读取，具体组件是否支持以组件 API 为准。
 
-SSR 注意：现有 `useId` 及 Provider 的 ID 前缀仍包含随机值，尚不能保证服务端与客户端生成一致 ID。
+### 服务端与客户端的 ID
+
+`useId` 从当前 Vue 应用分配 ID。默认种子是 `{ prefix: 0, current: 0 }`。每次调用保留一个序号，非空显式 ID 优先。切换命名空间或移除显式 ID 时，后备 ID 沿用原序号。Provider 继承最近的 `idKey` 注入；同一页面挂载多个独立应用时，请为每个应用选用不同的数字 `prefix`。
+
+服务端和客户端可以共用以下工厂。每次请求创建新应用，客户端水合时传入该应用相同的初始种子，保持两端组件树与调用顺序一致。
+
+```ts
+import { createSSRApp } from 'vue'
+import { idKey, type IdInjection } from 'cool-design/hooks'
+import App from './App.vue'
+
+export function createPage(initial: IdInjection) {
+  const app = createSSRApp(App)
+  app.provide(idKey, { ...initial })
+  return app
+}
+```
+
+```ts
+// 服务端请求处理函数中
+const initial = { prefix: 42, current: 10 }
+const html = await renderToString(createPage(initial))
+// 将 html 写入 #app，并随页面数据传递 initial（current 仍为 10）。
+```
+
+```ts
+// 客户端入口，pageData.initial 是服务端传来的初始值
+createPage(pageData.initial).mount('#app')
+```
+
+此约定适用于使用 `useId` 的组件，例如 TimeSelect。组件实例之外也可调用该工具；此时自动 ID 使用本地随机前缀，跨端复用请传入显式 ID。
 
 ### 空值工具迁移
 
