@@ -25,22 +25,28 @@ describe('树形组件的命名空间', () => {
     }
   });
 
-  test('打开的 TreeSelect 切换前缀后仍可使用 Enter 选择节点', async () => {
+  test.each(['acme', '3d'])('打开的 TreeSelect 切换到 %s 后仍可使用 Enter 选择节点', async (namespace) => {
     const onChange = vi.fn();
+    const onNodeClick = vi.fn();
     const wrapper = mount(ConfigProvider, {
       attachTo: document.body,
       props: { namespace: 'i', size: 'small' },
-      slots: { default: () => h(TreeSelect, { data: [{ value: 1, label: '候选' }], teleported: false, onChange }) }
+      slots: { default: () => h(TreeSelect, { data: [{ value: 1, label: '候选' }], teleported: false, onChange, onNodeClick }) }
     });
     try {
       await wrapper.get('[role="combobox"]').trigger('click');
       const node = wrapper.get('[role="treeitem"]');
-      (node.element as HTMLElement).focus();
-      await wrapper.setProps({ namespace: 'acme', size: 'large' });
+      const element = node.element as HTMLElement;
+      element.tabIndex = -1;
+      element.focus();
+      await wrapper.setProps({ namespace, size: 'large' });
+      expect(document.activeElement).toBe(node.element);
       await node.trigger('keydown', { key: 'Enter' });
-      expect(onChange).toHaveBeenCalledWith(1);
-      expect(wrapper.get('.acme-tree-select--large .acme-select.acme-control--large').exists()).toBe(true);
-      expect(node.get('.acme-tree__content').text()).toBe('候选');
+      expect(onChange.mock.calls).toEqual([[1]]);
+      expect(onNodeClick).toHaveBeenCalledTimes(1);
+      expect(wrapper.findComponent(TreeSelect).classes()).toContain(`${namespace}-tree-select--large`);
+      expect(wrapper.get('[role="combobox"]').element.parentElement?.classList.contains(`${namespace}-control--large`)).toBe(true);
+      expect(node.element.getElementsByClassName(`${namespace}-tree__content`)[0]?.textContent).toBe('候选');
     } finally {
       wrapper.unmount();
     }

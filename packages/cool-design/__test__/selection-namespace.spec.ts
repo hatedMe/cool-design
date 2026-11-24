@@ -28,7 +28,7 @@ describe('选择输入的命名空间', () => {
     }
   });
 
-  test('已打开的 Select 在切换前缀后滚动到分组的高亮选项并选择它', async () => {
+  test.each(['acme', '3d'])('已打开的 Select 切换到 %s 后滚动到分组的高亮选项并选择它', async (namespace) => {
     const onChange = vi.fn();
     const wrapper = mount(ConfigProvider, {
       props: { namespace: 'i' },
@@ -42,14 +42,15 @@ describe('选择输入的命名空间', () => {
     try {
       const combo = wrapper.get('[role="combobox"]');
       await combo.trigger('click');
-      await wrapper.setProps({ namespace: 'acme' });
-      expect(wrapper.get('.acme-select__group').text()).toBe('分组');
+      await wrapper.setProps({ namespace });
+      const groups = wrapper.element.getElementsByClassName(`${namespace}-select__group`);
+      expect(groups[0]?.textContent).toBe('分组');
       const option = wrapper.findAll('[role="option"]')[2];
       const scrollIntoView = vi.fn();
       Object.defineProperty(option.element, 'scrollIntoView', { value: scrollIntoView });
       await combo.trigger('keydown', { key: 'ArrowDown' });
       await nextTick();
-      expect(option.classes()).toContain('acme-select__option');
+      expect(option.classes()).toContain(`${namespace}-select__option`);
       expect(option.classes()).toContain('is-highlighted');
       expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
       await combo.trigger('keydown', { key: 'Enter' });

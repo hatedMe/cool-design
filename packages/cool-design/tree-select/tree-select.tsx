@@ -283,15 +283,19 @@ export default defineComponent({
     };
     const onTreeKeydown = (event: KeyboardEvent) => {
       if (isDisabled() || event.isComposing) return;
+      const target = event.target as HTMLElement;
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
         focusTreeNode(event.key === 'ArrowUp' ? -1 : 1);
       } else if (event.key === 'Escape') {
         close();
         selectRef.value?.focus();
-      } else if (event.key === 'Enter' && (event.target as HTMLElement).matches('[role="treeitem"]')) {
+      } else if (event.key === 'Enter' && target.matches('[role="treeitem"]')) {
         event.preventDefault();
-        (event.target as HTMLElement).querySelector<HTMLElement>(showCheckbox.value ? 'input[type="checkbox"]' : `.${treeNs.e('content')}`)?.click();
+        const control = showCheckbox.value
+          ? target.querySelector<HTMLElement>('input[type="checkbox"]')
+          : target.getElementsByClassName(treeNs.e('content'))[0] as HTMLElement | undefined;
+        control?.click();
       }
     };
 

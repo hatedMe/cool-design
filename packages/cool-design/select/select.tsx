@@ -410,7 +410,7 @@ export default defineComponent({
     });
     watch(highlightedIndex, () => {
       nextTick(() => {
-        dropdown.value?.querySelector(`.${ns.e('option')}.is-highlighted`)?.scrollIntoView?.({ block: 'nearest' });
+        dropdown.value?.getElementsByClassName(`${ns.e('option')} is-highlighted`)[0]?.scrollIntoView?.({ block: 'nearest' });
       });
     });
     const selectedLabel = computed(() => {
