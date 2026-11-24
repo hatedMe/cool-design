@@ -1,9 +1,11 @@
+@use '../style/mixins/config';
+
 @font-face {
   font-family: 'iconfont'; /* Project id 514653 */
   src:
-    url('../icon/fonts/iconfont.woff2?t=1632711203432') format('woff2'),
-    url('../icon/fonts/iconfont.woff?t=1632711203432') format('woff'),
-    url('../icon/fonts/iconfont.ttf?t=1632711203432') format('truetype');
+    url('#{config.$icon-font-path}/iconfont.woff2?t=1632711203432') format('woff2'),
+    url('#{config.$icon-font-path}/iconfont.woff?t=1632711203432') format('woff'),
+    url('#{config.$icon-font-path}/iconfont.ttf?t=1632711203432') format('truetype');
 }
 
 .iconfont {

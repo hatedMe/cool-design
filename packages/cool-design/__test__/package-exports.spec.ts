@@ -1,6 +1,8 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+import { compileString } from 'sass';
 import { execFileSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
 
@@ -21,6 +23,16 @@ describe('发布入口', () => {
   it('构建后的 ESM 与 CJS 主入口可由 Node 直接加载', () => {
     const script = `
       import { createRequire } from 'node:module';
+      const require = createRequire(import.meta.url);
+      for (const [entry, names] of Object.entries({
+        button: ['ButtonGroup'], checkbox: ['CheckboxGroup'], 'config-provider': ['en', 'useLocale', 'zhCn'],
+        icon: ['iconNames'], radio: ['RadioGroup'], row: ['columnValues']
+      })) {
+        const path = 'cool-design/' + entry;
+        for (const api of [await import(path), require(path)]) {
+          for (const name of names) if (!(name in api)) throw new Error(path + ' 缺少 ' + name);
+        }
+      }
       const esmDirect = await import('./es/packages/cool-design/avatar-group/avatar-group.js');
       const cjsDirect = createRequire(import.meta.url)('./lib/packages/cool-design/avatar-group/avatar-group.cjs');
       for (const item of [esmDirect, cjsDirect]) {
@@ -69,6 +81,40 @@ describe('发布入口', () => {
         if (/^(data:|https?:|#)/.test(url)) continue;
         expect(existsSync(resolve(dirname(cssPath), url.split(/[?#]/)[0])), `${format} 缺少资源 ${url}`).toBe(true);
       }
+    }
+  });
+
+  it('组件 CSS 可独立解析且包含内建组件样式', () => {
+    for (const directory of componentDirs) {
+      for (const format of ['es', 'lib']) {
+        const file = resolve(root, format, 'styles', directory + '.css');
+        const css = readFileSync(file, 'utf8');
+        expect(css).toContain('--i-primary');
+        for (const match of css.matchAll(/url\((['"]?)([^)'"]+)\1\)/g)) {
+          expect(existsSync(resolve(dirname(file), match[2].split('?')[0]))).toBe(true);
+        }
+      }
+    }
+    const button = readFileSync(resolve(root, 'es/styles/button.css'), 'utf8');
+    expect(button).toContain('.iconfont');
+    expect(button).toContain('.i-button');
+    expect(button).not.toMatch(/\.i-(table|tour|upload)\b/);
+    const table = readFileSync(resolve(root, 'es/styles/table.css'), 'utf8');
+    for (const name of ['table', 'checkbox', 'empty', 'loading', 'tooltip']) expect(table).toContain('.i-' + name);
+  });
+
+  it('发布 Sass 的字体路径可按打包器的包名配置', () => {
+    const compiled = compileString(`
+      @use "style/mixins/config" with ($namespace: "acme", $icon-font-path: "cool-design/es/sass/icon/fonts");
+      @use "style/published";
+    `, { loadPaths: [resolve(root, 'es/sass')] });
+    expect(compiled.css).toContain('.acme-icon');
+    const fonts = new Set([...compiled.css.matchAll(/url\("([^"]+\?t=1632711203432)"\)/g)].map((match) => match[1]));
+    const require = createRequire(import.meta.url);
+    for (const ext of ['woff2', 'woff', 'ttf']) {
+      const asset = 'cool-design/es/sass/icon/fonts/iconfont.' + ext;
+      expect(fonts.has(asset + '?t=1632711203432')).toBe(true);
+      expect(existsSync(require.resolve(asset))).toBe(true);
     }
   });
 

@@ -1,3 +1,4 @@
+import { existsSync, readdirSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import jsx from '@vitejs/plugin-vue-jsx';
@@ -29,13 +30,10 @@ export default defineConfig({
       entry: {
         'packages/cool-design/index': 'packages/cool-design/index.ts',
         'packages/cool-design/hooks': 'packages/cool-design/hooks.ts',
-        'packages/cool-design/calendar/index': 'packages/cool-design/calendar/index.ts',
-        'packages/cool-design/time-picker/index': 'packages/cool-design/time-picker/index.ts',
-        'packages/cool-design/date-time-picker/index': 'packages/cool-design/date-time-picker/index.ts',
-        'packages/cool-design/avatar-group/index': 'packages/cool-design/avatar-group/index.ts',
-        // 以下入口未被主入口引用图覆盖，单独注册以保证子路径可用。
-        'packages/cool-design/checkbox-button/index': 'packages/cool-design/checkbox-button/index.ts',
-        'packages/cool-design/table-v2/index': 'packages/cool-design/table-v2/index.ts'
+        ...Object.fromEntries(readdirSync('packages/cool-design').sort()
+          .map((name) => 'packages/cool-design/' + name + '/index')
+          .filter((entry) => existsSync(entry + '.ts'))
+          .map((entry) => [entry, entry + '.ts']))
       }
     },
     rollupOptions: {

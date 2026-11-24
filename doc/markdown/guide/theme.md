@@ -101,18 +101,28 @@ const brand = { '--i-primary': '#126d58', '--i-primary-hover': '#0e5847', '--i-o
 
 组件库内部生成的样式类名、主题变量和内置动画使用当前命名空间。默认前缀为 `i`，npm 包的 `cool-design/style.css` 已包含这套样式。组件的导入名与注册名保持原样，例如 `Button`、`i-button`、`IButton` 和 `ElButton`。
 
-使用 `acme` 时，在源码仓库根目录创建 `namespace-acme.scss`，先配置 Sass 模块，再载入完整入口。
+在 Vite 应用中创建 `namespace-acme.scss`，将字体路径指向包内资源。然后在应用入口写入 `import './namespace-acme.scss'`，Vite 会将这三种字体打包到输出目录。
 
 ```scss
-@use 'packages/cool-design/style/mixins/config' with ($namespace: 'acme');
-@use 'packages/cool-design/style/index';
+@use 'cool-design/es/sass/style/mixins/config' with (
+  $namespace: 'acme',
+  $icon-font-path: 'cool-design/es/sass/icon/fonts'
+);
+@use 'cool-design/es/sass/style/published';
 ```
 
-从仓库根目录运行以下命令。输出放在 `style` 目录，可按编译后的相对路径访问 `../icon/fonts/` 下的字体。
+使用 Sass CLI 时，采用默认的相对字体路径。
+
+```scss
+@use 'cool-design/es/sass/style/mixins/config' with ($namespace: 'acme');
+@use 'cool-design/es/sass/style/published';
+```
 
 ```bash
-pnpm exec sass --load-path=. --no-source-map namespace-acme.scss packages/cool-design/style/namespace-acme.css
+pnpm exec sass --load-path=node_modules --no-source-map namespace-acme.scss dist/styles/theme.css
 ```
+
+直接用 Sass CLI 生成 CSS 时，将包内 `es/sass/icon/fonts` 复制到 `dist/icon/fonts`，以便浏览器从样式表的相对路径加载字体。发布入口固定了组件的覆盖顺序。此前部分构建中的 RadioGroup 为 `inline-flex`，现为 `inline-block`。从旧源码全量入口迁移时，Cascader 标签插槽中的内联图片预览工具栏按钮会跟随 Cascader，字号为 `14px`。
 
 在应用入口引入生成的 CSS 文件，并为根 Provider 设置相同前缀。
 

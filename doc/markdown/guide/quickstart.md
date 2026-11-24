@@ -51,11 +51,13 @@ function reset() {
 
 ## 局部引入
 
-在 `<script setup>` 中导入需要的组件，模板可直接使用同名标签。样式在应用入口统一引入一次后，后续页面无需重复导入。
+在 `<script setup>` 中导入需要的组件，模板可直接使用同名标签。下面的示例只引入按钮所需样式。如果应用入口已经引入全量 `cool-design/style.css`，可以省略示例中的 CSS 导入。
 
 ```vue
 <script setup lang="ts">
-import { Button, ConfigProvider } from 'cool-design';
+import Button from 'cool-design/button';
+import ConfigProvider from 'cool-design/config-provider';
+import 'cool-design/button/style.css';
 </script>
 
 <template>
@@ -65,7 +67,7 @@ import { Button, ConfigProvider } from 'cool-design';
 </template>
 ```
 
-组件入口采用命名导出，支持构建工具处理 Tree Shaking；当前 `style.css` 为统一样式文件。项目没有配置自动导入插件，使用组件前应显式导入或全局注册。
+每个组件子路径都提供 `/style.css`，包含主题变量和组件内建依赖。插槽中另用的组件需引入各自样式。组合 Tag、Image 和 Cascader 时，依次引入三者的 CSS，可保持与全量样式相同的按钮优先级。
 
 ## 全局注册
 
@@ -111,7 +113,9 @@ export default {
 
 ```vue
 <script setup lang="ts">
-import { Button, ConfigProvider } from 'cool-design';
+import Button from 'cool-design/button';
+import ConfigProvider from 'cool-design/config-provider';
+import 'cool-design/button/style.css';
 </script>
 
 <template>

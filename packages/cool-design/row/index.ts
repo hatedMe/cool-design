@@ -4,5 +4,5 @@ import _Row from './row';
 
 export const Row = withInstall(_Row);
 export type { rowValues } from './row';
-export * from './row';
+export { columnValues, rowKeys } from './row';
 export default Row;

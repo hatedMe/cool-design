@@ -2,6 +2,7 @@ import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'vite';
+import { buildStyles } from './build-styles.mjs';
 for (const dir of ['es', 'lib']) await rm(new URL(`../${dir}/`, import.meta.url), { recursive: true, force: true });
 await build();
 
@@ -38,3 +39,8 @@ for (const file of files) {
   await mkdir(dirname(cjsFile), { recursive: true });
   await writeFile(cjsFile, rewrite('.cjs'));
 }
+
+const entries = files.filter((file) => /^packages\/cool-design\/[^/]+\/index\.d\.ts$/.test(
+  relative(esRoot, file).replaceAll('\\', '/')
+)).map((file) => relative(esRoot, dirname(file)).split(/[\\/]/).pop());
+await buildStyles(entries, [esRoot, libRoot]);

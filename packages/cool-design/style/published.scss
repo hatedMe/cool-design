@@ -1,0 +1,14 @@
+@use 'sass:meta';
+@use './index';
+
+// 保留历史发布 CSS 中同等优先级规则的胜出顺序。
+@each $entry in (
+  avatar, avatar-group, text, scrollbar, icon, check-tag, auto-resizer, radio-button, affix,
+  select-v2, rate, mention, tree-v2, input-otp, radio, cascader-panel, anchor, radio-group,
+  input-tag, badge, time-select, date-picker, date-picker-panel, image, transfer, timeline,
+  cascader, countdown, tree-select, tour, color-picker-panel, tree, card, segmented, splitter,
+  dropdown, tabs, drawer, page-header, alert, tooltip, menu, notification, watermark,
+  breadcrumb, steps, progress, input-number
+) {
+  @include meta.load-css('../#{$entry}/index');
+}
