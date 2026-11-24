@@ -1,3 +1,4 @@
+import { provideServiceIds } from '../../packages/hooks/use-id';
 import { computed, createVNode, defineComponent, h, provide, render, watchEffect, type AppContext, type VNode } from 'vue';
 import { configKey, defaultConfig, getAppConfig, getThemeStyle } from '../../packages/cool-design/config-provider/context';
 import { namespaceKey, useNamespace } from '../../packages/hooks/use-namespace';
@@ -13,7 +14,9 @@ export function renderService(
   content: () => VNode
 ) {
   const Root = defineComponent({
-    setup(_, { slots }) {
+    props: { revision: Number },
+    setup() {
+      provideServiceIds();
       const owner = computed(() => getAppConfig(context));
       const config = computed(() => owner.value ?? defaultConfig);
       const ns = useNamespace(block, computed(() => config.value.namespace));
@@ -30,11 +33,12 @@ export function renderService(
         class: ns.namespace.value + '-theme-scope',
         'data-theme': owner.value.theme,
         style: getThemeStyle(owner.value, ns.cssVarName)
-      }, slots.default?.());
+      }, content());
     }
   });
+  let revision = 0;
   const draw = () => {
-    const vnode = createVNode(Root, null, { default: content });
+    const vnode = createVNode(Root, { revision: ++revision });
     vnode.appContext = context;
     render(vnode, container);
   };

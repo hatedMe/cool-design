@@ -1,4 +1,4 @@
-import { getCurrentInstance, inject, readonly, toRef, type InjectionKey, type Ref, unref } from 'vue';
+import { getCurrentInstance, inject, provide, readonly, toRef, type InjectionKey, type Ref, unref } from 'vue';
 import { defaultNamespace, namespaceKey } from './use-namespace';
 
 export interface IdInjection {
@@ -7,6 +7,14 @@ export interface IdInjection {
 }
 
 export const idKey: InjectionKey<IdInjection> = Symbol('id');
+
+const serviceRoot = Symbol('service-root');
+let nextServiceRoot = 0;
+
+export function provideServiceIds() {
+  const state = { prefix: useIdState().prefix, current: 0, [serviceRoot]: ++nextServiceRoot };
+  provide(idKey, state);
+}
 
 const defaultStates = new WeakMap<object, IdInjection>();
 
@@ -29,7 +37,8 @@ export function useIdState(): IdInjection {
 export function useId(deterministicId?: string | Ref<string>): Ref<string> {
   const state = useIdState();
   const namespace = getCurrentInstance() ? inject(namespaceKey, undefined) : undefined;
-  const suffix = `${state.prefix}-${state.current++}`;
+  const root = serviceRoot in state ? `service-${state[serviceRoot]}-` : '';
+  const suffix = `${root}${state.prefix}-${state.current++}`;
   // Vue 3.2 SSR 可在渲染时复用 computed 的 setup 缓存，显式 ID 和命名空间都需要读取当前值。
   return readonly(toRef({
     get id() {

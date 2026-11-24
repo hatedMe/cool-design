@@ -1,3 +1,4 @@
+import { provideServiceIds } from '../../hooks/use-id';
 import { computed, createVNode, defineComponent, getCurrentInstance, getCurrentScope, inject, provide, render, type AppContext } from 'vue';
 import { configKey, defaultConfig, getAppConfig, getThemeStyle } from '../config-provider/context';
 import { namespaceKey, useNamespace } from '../../hooks/use-namespace';
@@ -36,6 +37,7 @@ export function service(
   options: LoadingServiceOptions = {},
   appContext?: AppContext | null
 ): LoadingInstance {
+  if (typeof document === 'undefined') return { close: () => {}, setText: () => {} };
   const fullscreen = options.fullscreen ?? true;
   const caller = getCurrentInstance();
   const context = appContext === undefined ? caller?.appContext ?? null : appContext;
@@ -68,6 +70,7 @@ export function service(
   const Root = defineComponent({
     props: { text: String },
     setup(props) {
+      provideServiceIds();
       const owner = computed(() => {
         const root = getAppConfig(context);
         return callerScope?.active && localConfig ? localConfig.value : root;

@@ -32,8 +32,9 @@ function normalize(input: NotifyInput | undefined, type?: NotificationType): Not
   return type ? { ...base, type } : { ...base };
 }
 
-function notifyFn(input: NotifyInput | undefined, context: AppContext | null): NotificationHandle {
-  const options = normalize(input);
+function notifyFn(input: NotifyInput | undefined, context: AppContext | null, type?: NotificationType): NotificationHandle {
+  if (typeof document === 'undefined') return { close: () => {} };
+  const options = normalize(input, type);
   const position = options.position ?? 'top-right';
   const offset = 20 + (options.offset ?? 0);
   const container = document.createElement('div');
@@ -78,7 +79,7 @@ export function createNotifyService(context?: AppContext): NotifyFn {
   const fn = ((input, appContext = fn._context ?? null) => notifyFn(input, appContext)) as NotifyFn;
   fn._context = context;
   (['primary', 'success', 'warning', 'info', 'error', 'danger'] as const).forEach((type) => {
-    fn[type] = (input, appContext) => fn(normalize(input, type), appContext);
+    fn[type] = (input, appContext = fn._context ?? null) => notifyFn(input, appContext, type);
   });
   fn.closeAll = () => {
     [...instances].forEach((entry) => {

@@ -1,6 +1,7 @@
 import { afterEach, expect, test } from 'vitest';
 import { createApp, h, nextTick, ref } from 'vue';
-import CoolDesign, { ConfigProvider, ElMessage, Notify } from '..';
+import { idKey, useId } from '../../hooks/use-id';
+import CoolDesign, { ConfigProvider, ElMessage, ElMessageBox, Notify } from '..';
 
 afterEach(() => {
   ElMessage.closeAll();
@@ -79,4 +80,41 @@ test('同方位服务各自使用显式层级并在关闭后移除容器和重�
   expect(document.querySelector<HTMLElement>('body > .i-notification-container')?.style.zIndex).toBe('0');
   notification.close();
   expect(document.querySelector('.i-notification-container')).toBeNull();
+});
+
+test('并存服务各自生成可解析的 ID，保留应用后续控件的序号', async () => {
+  const app = createApp(() => null);
+  const state = { prefix: 13, current: 2 };
+  app.provide(idKey, state);
+  const host = document.body.appendChild(document.createElement('div'));
+  app.mount(host);
+  const pending = [null, null, app._context].map(context =>
+    ElMessageBox.alert('内容', '标题', {}, context).catch(action => action));
+  const text = ref('初始');
+  const content = h({ setup() {
+    const id = useId();
+    return () => h('span', { id: id.value }, text.value);
+  } });
+  const handle = ElMessage({ message: content, duration: 0 }, app._context);
+  try {
+    await nextTick();
+    const dialogs = [...document.querySelectorAll('[role=dialog]')];
+    expect(dialogs).toHaveLength(3);
+    const ids = dialogs.map(dialog => dialog.getAttribute('aria-describedby')!);
+    expect(new Set(ids).size).toBe(3);
+    dialogs.forEach((dialog, index) => expect(dialog.contains(document.getElementById(ids[index]))).toBe(true));
+    expect(state.current).toBe(2);
+    const node = content.el;
+    expect(node?.textContent).toBe('初始');
+    text.value = '更新';
+    await nextTick();
+    expect(content.el).toBe(node);
+    expect(node?.textContent).toBe('更新');
+  } finally {
+    handle.close();
+    ElMessageBox.close();
+    await Promise.all(pending);
+    app.unmount();
+    host.remove();
+  }
 });

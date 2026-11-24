@@ -1,3 +1,4 @@
+import { provideServiceIds } from '../../hooks/use-id';
 import {
   computed,
   createVNode,
@@ -19,13 +20,13 @@ import type { MessageBoxAction, MessageBoxOptions, MessageBoxPromptResult } from
 const activeClosers = new Set<() => void>();
 
 function open(
-  message: string,
-  title: string,
-  options: MessageBoxOptions,
+  prepare: () => [string, string, MessageBoxOptions],
   context: AppContext | null,
   config?: ComputedRef<Config>,
   register?: (close: () => void) => () => void
 ): Promise<'confirm' | MessageBoxPromptResult> {
+  if (typeof document === 'undefined') return Promise.reject();
+  const [message, title, options] = prepare();
   const container = document.createElement('div');
   const host =
     typeof options.container === 'string'
@@ -63,6 +64,7 @@ function open(
     unregister = register?.(() => finishReject('cancel')) || unregister;
     const Root = defineComponent({
       setup() {
+        provideServiceIds();
         const inherited = config ?? computed(() => getAppConfig(context) ?? defaultConfig);
         provide(configKey, inherited);
         return () => h(
@@ -87,13 +89,15 @@ function open(
   });
 }
 
+function unpack(options: MessageBoxOptions & { message: string; title?: string }): [string, string, MessageBoxOptions] {
+  const { message, title = '', ...rest } = options;
+  return [message, title, rest];
+}
+
 export const msgbox = (
   options: MessageBoxOptions & { message: string; title?: string },
   appContext: AppContext | null = null
-): Promise<'confirm' | MessageBoxPromptResult> => {
-  const { message, title = '', ...rest } = options;
-  return open(message, title, rest, appContext);
-};
+): Promise<'confirm' | MessageBoxPromptResult> => open(() => unpack(options), appContext);
 
 /** 关闭当前全部消息确认框（按取消语义拒绝） */
 export const closeAll = () => {
@@ -106,14 +110,14 @@ export const alert = (
   options: MessageBoxOptions = {},
   appContext: AppContext | null = null
 ): Promise<'confirm'> =>
-  open(message, title, { showCancelButton: false, ...options }, appContext) as Promise<'confirm'>;
+  open(() => [message, title, { showCancelButton: false, ...options }], appContext) as Promise<'confirm'>;
 
 export const confirm = (
   message: string,
   title = '',
   options: MessageBoxOptions = {},
   appContext: AppContext | null = null
-): Promise<'confirm'> => open(message, title, options, appContext) as Promise<'confirm'>;
+): Promise<'confirm'> => open(() => [message, title, options], appContext) as Promise<'confirm'>;
 
 export const prompt = (
   message: string,
@@ -121,7 +125,7 @@ export const prompt = (
   options: MessageBoxOptions = {},
   appContext: AppContext | null = null
 ): Promise<MessageBoxPromptResult> =>
-  open(message, title, { showInput: true, ...options }, appContext) as Promise<MessageBoxPromptResult>;
+  open(() => [message, title, { showInput: true, ...options }], appContext) as Promise<MessageBoxPromptResult>;
 
 export function useMessageBox() {
   const context = getCurrentInstance()?.appContext || null;
@@ -136,16 +140,14 @@ export function useMessageBox() {
     return () => pending.delete(close);
   };
   return {
-    msgbox: (options: MessageBoxOptions & { message: string; title?: string }) => {
-      const { message, title = '', ...rest } = options;
-      return open(message, title, rest, context, config, register);
-    },
+    msgbox: (options: MessageBoxOptions & { message: string; title?: string }) =>
+      open(() => unpack(options), context, config, register),
     alert: (message: string, title = '', options: MessageBoxOptions = {}) =>
-      open(message, title, { showCancelButton: false, ...options }, context, config, register) as Promise<'confirm'>,
+      open(() => [message, title, { showCancelButton: false, ...options }], context, config, register) as Promise<'confirm'>,
     confirm: (message: string, title = '', options: MessageBoxOptions = {}) =>
-      open(message, title, options, context, config, register) as Promise<'confirm'>,
+      open(() => [message, title, options], context, config, register) as Promise<'confirm'>,
     prompt: (message: string, title = '', options: MessageBoxOptions = {}) =>
-      open(message, title, { showInput: true, ...options }, context, config, register) as Promise<MessageBoxPromptResult>
+      open(() => [message, title, { showInput: true, ...options }], context, config, register) as Promise<MessageBoxPromptResult>
   };
 }
 

@@ -54,10 +54,11 @@ function normalize(input: string | MessageOptions, type?: MessageType): MessageO
   return type ? { ...base, type } : { ...base };
 }
 
-function messageFn(input: string | MessageOptions, context: AppContext | null): MessageHandle {
+function messageFn(input: string | MessageOptions, context: AppContext | null, type?: MessageType): MessageHandle {
+  if (typeof document === 'undefined') return { close: () => {} };
   const config = getAppConfig(context) ?? defaultConfig;
   const defaults = config.message;
-  const options = normalize(input);
+  const options = normalize(input, type);
   const opts = {
     ...options,
     placement: options.placement ?? defaults?.placement,
@@ -140,7 +141,7 @@ export function createMessageService(context?: AppContext): MessageFn {
   const fn = ((input, appContext = fn._context ?? null) => messageFn(input, appContext)) as MessageFn;
   fn._context = context;
   (['primary', 'success', 'warning', 'info', 'error'] as const).forEach((type) => {
-    fn[type] = (input, appContext) => fn(normalize(input, type), appContext);
+    fn[type] = (input, appContext = fn._context ?? null) => messageFn(input, appContext, type);
   });
   fn.closeAll = (type) => {
     [...closers].forEach((entry) => {
