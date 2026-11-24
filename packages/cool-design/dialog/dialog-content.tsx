@@ -1,3 +1,4 @@
+import { avoidIdCollision, createSlotIds, reserveSlotIds } from '../../../src/utils/slot-ids';
 import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, onBeforeUnmount, ref, watch, type Component, type PropType, type VNode } from 'vue';
 import Icon from '../icon';
@@ -49,7 +50,7 @@ export default defineComponent({
     visible: Boolean,
     close: { type: Function as PropType<() => void>, required: true }
   },
-  setup(props, { slots, expose }) {
+  setup(props, { attrs, slots, expose }) {
     const ns = useNamespace('dialog');
     const root = ref<HTMLElement>();
     const dragOffset = ref({ x: 0, y: 0 });
@@ -105,6 +106,18 @@ export default defineComponent({
       const titleClass = ns.e('title');
       const { x, y } = dragOffset.value;
       const showTitle = !!(props.title || slots.title || slots.header);
+      const scopedHeader = slots.title ? undefined : slots.header;
+      const title = scopedHeader ? undefined : slots.title?.();
+      const body = slots.default?.();
+      const footer = slots.footer?.();
+      const reserved = createSlotIds(attrs.id);
+      reserveSlotIds(reserved, title);
+      reserveSlotIds(reserved, body);
+      reserveSlotIds(reserved, footer);
+      const titleId = avoidIdCollision(props.titleId, reserved);
+      const header = scopedHeader?.({ close: props.close, titleId, titleClass });
+      reserveSlotIds(reserved, header);
+      const bodyId = avoidIdCollision(props.bodyId, reserved);
       return (
         <section
           ref={root}
@@ -118,16 +131,16 @@ export default defineComponent({
           role={props.visible ? 'dialog' : undefined}
           aria-modal={props.visible ? 'true' : undefined}
           aria-label={props.title || undefined}
-          aria-labelledby={!props.title && showTitle ? props.titleId : undefined}
-          aria-describedby={props.bodyId}
+          aria-labelledby={!props.title && showTitle ? titleId : undefined}
+          aria-describedby={bodyId}
           tabindex={-1}>
           {(showTitle || props.showClose) && (
             <header
               class={[ns.e('header'), props.headerClass, props.draggable && !props.fullscreen && 'is-draggable']}
               onMousedown={onHeaderMousedown}>
-              {(!slots.title && slots.header?.({ close: props.close, titleId: props.titleId, titleClass })) || (
-                <h2 id={props.titleId} class={titleClass} role='heading' aria-level={props.headerAriaLevel}>
-                  {slots.title?.() ?? props.title}
+              {header || (
+                <h2 id={titleId} class={titleClass} role='heading' aria-level={props.headerAriaLevel}>
+                  {title ?? props.title}
                 </h2>
               )}
               {props.showClose && (
@@ -142,8 +155,8 @@ export default defineComponent({
               )}
             </header>
           )}
-          <div id={props.bodyId} class={[ns.e('body'), props.bodyClass]}>{slots.default?.()}</div>
-          {slots.footer && <footer class={[ns.e('footer'), props.footerClass]}>{slots.footer()}</footer>}
+          <div id={bodyId} class={[ns.e('body'), props.bodyClass]}>{body}</div>
+          {slots.footer && <footer class={[ns.e('footer'), props.footerClass]}>{footer}</footer>}
         </section>
       );
     };

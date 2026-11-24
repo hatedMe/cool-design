@@ -1,4 +1,6 @@
 import { useFloatingTheme } from '../../../src/utils/use-floating';
+import { avoidIdCollision, createSlotIds, reserveSlotIds } from '../../../src/utils/slot-ids';
+import { useId } from '../../hooks/use-id';
 import { useNamespace } from '../../hooks/use-namespace';
 import {
   Teleport,
@@ -6,7 +8,6 @@ import {
   computed,
   defineComponent,
   h,
-  inject,
   nextTick,
   onBeforeUnmount,
   onMounted,
@@ -18,9 +19,9 @@ import {
   type Component,
   type PropType
 } from 'vue';
-import { overlayKey } from '../config-provider/context';
 import { useZIndex } from '../../hooks/use-z-index';
 import { isTopDialog, isTopFocusDialog, lockDialog, unlockDialog } from '../dialog/stack';
+import { useModalTarget } from '../dialog/use-modal-target';
 
 export type DrawerDirection = 'rtl' | 'ltr' | 'ttb' | 'btt';
 export type DrawerBeforeClose = (done: (cancel?: boolean) => void) => void;
@@ -31,8 +32,6 @@ export interface DrawerResizableOptions {
 export interface DrawerResizePayload {
   size: string;
 }
-
-let drawerId = 0;
 
 const parseSizeToPx = (value: string | number | undefined, horizontal: boolean, fallback: number): number => {
   if (value === undefined) return fallback;
@@ -97,13 +96,12 @@ export default defineComponent({
   ],
   setup(props, { slots, emit, expose }) {
     const ns = useNamespace('drawer');
-    const host = inject(overlayKey, undefined);
     const { nextZIndex } = useZIndex();
     const root = ref<HTMLElement>();
     const zIndex = ref(2000);
     const rendered = ref(false);
     const visible = ref(false);
-    const titleId = `i-drawer-title-${++drawerId}`;
+    const id = useId();
     const titleClass = computed(() => ns.e('title'));
     const token = Symbol('drawer');
     let active = false;
@@ -118,20 +116,7 @@ export default defineComponent({
       maskGestureAllowed = isTopDialog(token);
     };
 
-    const target = computed(() => {
-      if (typeof document === 'undefined') return undefined;
-      const value = props.appendTo;
-      if (value && typeof value !== 'string') return value;
-      if (value && value !== 'body') {
-        try {
-          return document.querySelector(value) ?? undefined;
-        } catch {
-          return undefined;
-        }
-      }
-      if (props.appendToBody) return document.body;
-      return value === undefined ? host?.value : undefined;
-    });
+    const { target, teleportProps, initiallyInline } = useModalTarget(props);
     const theme = useFloatingTheme(target, () => !!target.value);
 
     const isHorizontal = computed(() => props.direction === 'rtl' || props.direction === 'ltr');
@@ -376,76 +361,88 @@ export default defineComponent({
 
     expose({ handleClose });
 
-    const content = () => (
-      <div
-        class={[
-          theme.value.scopeClass,
-          props.modal ? ns.e('mask') : ns.e('wrapper'),
-          { 'is-penetrable': !props.modal && props.modalPenetrable },
-          props.modalClass
-        ]}
-        data-theme={theme.value.theme}
-        style={{ ...theme.value.style, zIndex: zIndex.value }}
-        onClick={(event: MouseEvent) => {
-          const allowed = maskGestureAllowed && isTopDialog(token);
-          maskGestureAllowed = true;
-          if (event.target === event.currentTarget && props.closeOnClickModal && allowed) handleClose();
-        }}>
-        <aside
-          ref={root}
-          class={[ns.b(), `is-${props.direction}`, { 'is-resizable': isResizable.value }, props.customClass]}
-          style={{
-            width: isHorizontal.value ? sizeValue.value : undefined,
-            height: isHorizontal.value ? undefined : sizeValue.value,
-            [ns.cssVarName('drawer-size')]: sizeValue.value
-          }}
-          role='dialog'
-          aria-modal='true'
-          aria-labelledby={props.withHeader && (props.title || slots.title || slots.header) ? titleId : undefined}
-          tabindex={-1}>
-          {props.withHeader && (
-            <header class={[ns.e('header'), props.headerClass]}>
-              {slots.header?.({ close: handleClose, titleId, titleClass: titleClass.value }) ?? (
-                <>
-                  <div id={titleId} class={titleClass.value} role='heading' aria-level={props.headerAriaLevel}>
-                    {slots.title?.() ?? props.title}
-                  </div>
-                  {props.showClose && (
-                    <button
-                      type='button'
-                      class={ns.e('close')}
-                      aria-label='关闭'
-                      onClick={handleClose}>
-                      {typeof props.closeIcon === 'string'
-                        ? props.closeIcon
-                        : props.closeIcon
-                          ? h(toRaw(props.closeIcon))
-                          : '×'}
-                    </button>
-                  )}
-                </>
-              )}
-            </header>
-          )}
-          <div class={[ns.e('body'), props.bodyClass]}>{slots.default?.()}</div>
-          {slots.footer && <footer class={[ns.e('footer'), props.footerClass]}>{slots.footer()}</footer>}
-          {isResizable.value && (
-            <div
-              class={[ns.e('resize-handle'), `is-${props.direction}`]}
-              role='separator'
-              tabindex={0}
-              aria-orientation={isHorizontal.value ? 'vertical' : 'horizontal'}
-              aria-label='调整抽屉尺寸'
-              aria-valuenow={Math.round(sizePx.value)}
-              aria-valuemin={Math.round(minPx.value)}
-              aria-valuemax={Math.round(maxPx.value)}
-              onMousedown={onHandleMousedown}
-              onKeydown={onHandleKeydown}
-            />
-          )}
-        </aside>
-      </div>
-    );
+    const content = () => {
+      const scopedHeader = props.withHeader ? slots.header : undefined;
+      const title = props.withHeader && !scopedHeader ? slots.title?.() : undefined;
+      const body = slots.default?.();
+      const footer = slots.footer?.();
+      const reserved = createSlotIds();
+      reserveSlotIds(reserved, title);
+      reserveSlotIds(reserved, body);
+      reserveSlotIds(reserved, footer);
+      const titleId = avoidIdCollision(`${id.value}-drawer-title`, reserved);
+      const header = scopedHeader?.({ close: handleClose, titleId, titleClass: titleClass.value });
+      return (
+        <div
+          class={[
+            theme.value.scopeClass,
+            props.modal ? ns.e('mask') : ns.e('wrapper'),
+            { 'is-penetrable': !props.modal && props.modalPenetrable },
+            props.modalClass
+          ]}
+          data-theme={theme.value.theme}
+          style={{ ...theme.value.style, zIndex: zIndex.value }}
+          onClick={(event: MouseEvent) => {
+            const allowed = maskGestureAllowed && isTopDialog(token);
+            maskGestureAllowed = true;
+            if (event.target === event.currentTarget && props.closeOnClickModal && allowed) handleClose();
+          }}>
+          <aside
+            ref={root}
+            class={[ns.b(), `is-${props.direction}`, { 'is-resizable': isResizable.value }, props.customClass]}
+            style={{
+              width: isHorizontal.value ? sizeValue.value : undefined,
+              height: isHorizontal.value ? undefined : sizeValue.value,
+              [ns.cssVarName('drawer-size')]: sizeValue.value
+            }}
+            role='dialog'
+            aria-modal='true'
+            aria-labelledby={props.withHeader && (props.title || slots.title || slots.header) ? titleId : undefined}
+            tabindex={-1}>
+            {props.withHeader && (
+              <header class={[ns.e('header'), props.headerClass]}>
+                {header ?? (
+                  <>
+                    <div id={titleId} class={titleClass.value} role='heading' aria-level={props.headerAriaLevel}>
+                      {title ?? props.title}
+                    </div>
+                    {props.showClose && (
+                      <button
+                        type='button'
+                        class={ns.e('close')}
+                        aria-label='关闭'
+                        onClick={handleClose}>
+                        {typeof props.closeIcon === 'string'
+                          ? props.closeIcon
+                          : props.closeIcon
+                            ? h(toRaw(props.closeIcon))
+                            : '×'}
+                      </button>
+                    )}
+                  </>
+                )}
+              </header>
+            )}
+            <div class={[ns.e('body'), props.bodyClass]}>{body}</div>
+            {slots.footer && <footer class={[ns.e('footer'), props.footerClass]}>{footer}</footer>}
+            {isResizable.value && (
+              <div
+                class={[ns.e('resize-handle'), `is-${props.direction}`]}
+                role='separator'
+                tabindex={0}
+                aria-orientation={isHorizontal.value ? 'vertical' : 'horizontal'}
+                aria-label='调整抽屉尺寸'
+                aria-valuenow={Math.round(sizePx.value)}
+                aria-valuemin={Math.round(minPx.value)}
+                aria-valuemax={Math.round(maxPx.value)}
+                onMousedown={onHandleMousedown}
+                onKeydown={onHandleKeydown}
+              />
+            )}
+          </aside>
+        </div>
+      );
+    };
 
     return () => {
       const node = rendered.value ? withDirectives(content(), [[vShow, visible.value]]) : null;
@@ -460,7 +457,12 @@ export default defineComponent({
           {node}
         </Transition>
       );
-      return <Teleport to={target.value ?? 'body'} disabled={!target.value}>{animated}</Teleport>;
+      const teleport = (
+        <Teleport {...teleportProps()}>
+          {initiallyInline ? <>{animated}</> : animated}
+        </Teleport>
+      );
+      return initiallyInline ? <>{teleport}</> : teleport;
     };
   }
 });

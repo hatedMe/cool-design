@@ -530,14 +530,15 @@ test('header 插槽接收 close/titleId/titleClass，拖拽后 resetPosition 复
     slots: {
       header: (headerScope: DialogHeaderScope) => {
         scope = headerScope;
-        return h('div', { class: 'custom-header' }, '定制头');
+        return h('div', { class: 'custom-header', id: headerScope.titleId }, '定制头');
       },
       default: () => 'x'
     }
   });
   await flushPromises();
   expect(scope?.titleClass).toBe('i-dialog__title');
-  expect(scope?.titleId).toContain('i-dialog-title-');
+  expect(w.get('[role="dialog"]').attributes('aria-labelledby')).toBe(scope?.titleId);
+  expect(w.get('.custom-header').attributes('id')).toBe(scope?.titleId);
   expect(typeof scope?.close).toBe('function');
   scope?.close();
   await nextTick();

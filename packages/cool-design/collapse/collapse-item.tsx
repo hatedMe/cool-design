@@ -1,9 +1,9 @@
 import { Transition, computed, defineComponent, inject, onBeforeUnmount, ref, vShow, withDirectives, type Component, type PropType } from 'vue';
+import { avoidIdCollision, createSlotIds, reserveSlotIds } from '../../../src/utils/slot-ids';
+import { useId } from '../../hooks/use-id';
 import { useNamespace } from '../../hooks/use-namespace';
 import Icon from '../icon';
 import { collapseKey, type CollapseName } from './context';
-
-let itemId = 0;
 
 export default defineComponent({
   name: 'i-collapse-item',
@@ -13,7 +13,7 @@ export default defineComponent({
     disabled: Boolean,
     icon: { type: [String, Object, Function] as PropType<string | Component>, default: undefined }
   },
-  setup(props, { slots, expose }) {
+  setup(props, { attrs, slots, expose }) {
     const context = inject(collapseKey);
     if (!context) throw new Error('CollapseItem must be used inside Collapse.');
     const ns = useNamespace('collapse-item');
@@ -21,9 +21,7 @@ export default defineComponent({
     const header = ref<HTMLButtonElement>();
     const fallback = context.register(header);
     onBeforeUnmount(() => context.unregister(header));
-    const id = ++itemId;
-    const headerId = `i-collapse-header-${id}`;
-    const panelId = `i-collapse-panel-${id}`;
+    const id = useId();
 
     const itemName = computed(() => props.name ?? fallback);
     const expanded = computed(() => context.activeNames.value.includes(itemName.value));
@@ -71,38 +69,51 @@ export default defineComponent({
 
     expose({ isActive: computed(() => expanded.value) });
 
-    return () => (
-      <div
-        class={[ns.b(), ns.is('active', expanded.value), ns.is('disabled', props.disabled)]}>
-        <button
-          ref={header}
-          type='button'
-          id={headerId}
-          class={ns.e('header')}
-          aria-expanded={expanded.value}
-          aria-controls={panelId}
-          disabled={props.disabled}
-          onClick={() => !props.disabled && context.toggle(itemName.value)}>
-          {context.expandIconPosition.value === 'left' && arrow()}
-          <span class={ns.e('title')}>{slots.title?.({ isActive: expanded.value }) ?? props.title}</span>
-          {context.expandIconPosition.value === 'right' && arrow()}
-        </button>
-        <Transition
-          name={transition.b()}
-          onBeforeEnter={beforeEnter}
-          onEnter={enter}
-          onAfterEnter={afterEnter}
-          onBeforeLeave={beforeLeave}
-          onLeave={leave}
-          onAfterLeave={afterLeave}>
-          {withDirectives(
-            <div id={panelId} class={ns.e('wrap')} role='region' aria-labelledby={headerId}>
-              <div class={ns.e('content')}>{slots.default?.()}</div>
-            </div>,
-            [[vShow, expanded.value]]
-          )}
-        </Transition>
-      </div>
-    );
+    return () => {
+      const left = context.expandIconPosition.value === 'left' && arrow();
+      const title = slots.title?.({ isActive: expanded.value }) ?? props.title;
+      const right = context.expandIconPosition.value === 'right' && arrow();
+      const body = slots.default?.();
+      const reserved = createSlotIds(attrs.id);
+      reserveSlotIds(reserved, left);
+      reserveSlotIds(reserved, title);
+      reserveSlotIds(reserved, right);
+      reserveSlotIds(reserved, body);
+      const headerId = avoidIdCollision(`${id.value}-collapse-header`, reserved);
+      const panelId = avoidIdCollision(`${id.value}-collapse-panel`, reserved);
+      return (
+        <div
+          class={[ns.b(), ns.is('active', expanded.value), ns.is('disabled', props.disabled)]}>
+          <button
+            ref={header}
+            type='button'
+            id={headerId}
+            class={ns.e('header')}
+            aria-expanded={expanded.value}
+            aria-controls={panelId}
+            disabled={props.disabled}
+            onClick={() => !props.disabled && context.toggle(itemName.value)}>
+            {left}
+            <span class={ns.e('title')}>{title}</span>
+            {right}
+          </button>
+          <Transition
+            name={transition.b()}
+            onBeforeEnter={beforeEnter}
+            onEnter={enter}
+            onAfterEnter={afterEnter}
+            onBeforeLeave={beforeLeave}
+            onLeave={leave}
+            onAfterLeave={afterLeave}>
+            {withDirectives(
+              <div id={panelId} class={ns.e('wrap')} role='region' aria-labelledby={headerId}>
+                <div class={ns.e('content')}>{body}</div>
+              </div>,
+              [[vShow, expanded.value]]
+            )}
+          </Transition>
+        </div>
+      );
+    };
   }
 });

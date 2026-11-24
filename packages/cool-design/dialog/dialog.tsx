@@ -1,4 +1,5 @@
 import { useFloatingTheme } from '../../../src/utils/use-floating';
+import { useId } from '../../hooks/use-id';
 import { useNamespace } from '../../hooks/use-namespace';
 import {
   Teleport,
@@ -6,7 +7,6 @@ import {
   computed,
   defineComponent,
   h,
-  inject,
   mergeProps,
   nextTick,
   onBeforeUnmount,
@@ -18,10 +18,11 @@ import {
   type PropType,
   type TransitionProps
 } from 'vue';
-import { overlayKey, useConfig, type DialogConfigContext } from '../config-provider/context';
+import { useConfig, type DialogConfigContext } from '../config-provider/context';
 import { useZIndex } from '../../hooks/use-z-index';
 import DialogContent, { dialogContentProps, type DialogContentInstance, type DialogSlots } from './dialog-content';
 import { bringDialogToFront, isTopDialog, isTopFocusDialog, lockDialog, unlockDialog } from './stack';
+import { useModalTarget } from './use-modal-target';
 
 export type DialogBeforeClose = (done: (cancel?: boolean) => void) => void;
 export type DialogModalClass = string | boolean | Record<string, unknown> | DialogModalClass[];
@@ -51,7 +52,6 @@ function callHook<Args extends unknown[]>(hook: ((...args: Args) => void) | Arra
   else hook?.(...args);
 }
 
-let dialogId = 0;
 const Dialog = defineComponent({
   name: 'i-dialog',
   inheritAttrs: false,
@@ -92,7 +92,6 @@ const Dialog = defineComponent({
     const defaultTransition = computed(() => ns.namespace.value === 'i' ? 'dialog-fade' : ns.b('fade'));
     const transition = computed(() => props.transition ?? config.value.dialog?.transition);
     const penetrable = computed(() => props.modalPenetrable && !props.modal && !props.fullscreen);
-    const host = inject(overlayKey, undefined);
     const { nextZIndex } = useZIndex();
     const content = ref<DialogContentInstance | null>(null);
     const dialogContentRef = computed(() => content.value ?? undefined);
@@ -100,9 +99,7 @@ const Dialog = defineComponent({
     const zIndex = ref(2000);
     const rendered = ref(false);
     const visible = ref(false);
-    const id = ++dialogId;
-    const titleId = `i-dialog-title-${id}`;
-    const bodyId = `i-dialog-body-${id}`;
+    const id = useId();
     const token = Symbol('dialog');
     let active = false;
     let pendingLeave: { transition: DialogConfigContext['transition']; done?: () => void } | undefined;
@@ -114,20 +111,7 @@ const Dialog = defineComponent({
     let maskMousedown = true;
     let maskMouseup = true;
 
-    const target = computed(() => {
-      if (typeof document === 'undefined') return undefined;
-      const value = props.appendTo;
-      if (value && typeof value !== 'string') return value;
-      if (value && value !== 'body') {
-        try {
-          return document.querySelector(value) ?? undefined;
-        } catch {
-          return undefined;
-        }
-      }
-      if (props.appendToBody) return document.body;
-      return value === undefined ? host?.value : undefined;
-    });
+    const { target, teleportProps, initiallyInline } = useModalTarget(props);
     const theme = useFloatingTheme(target, () => !!target.value);
 
     const focusable = () =>
@@ -361,8 +345,8 @@ const Dialog = defineComponent({
                 center={props.center}
                 headerAriaLevel={props.headerAriaLevel}
                 closeIcon={props.closeIcon}
-                titleId={titleId}
-                bodyId={bodyId}
+                titleId={`${id.value}-dialog-title`}
+                bodyId={`${id.value}-dialog-body`}
                 visible={visible.value}
                 close={requestClose}
                 alignCenter={alignCenter.value}
@@ -375,7 +359,13 @@ const Dialog = defineComponent({
           [[vShow, visible.value]]
         )
       });
-      return <Teleport to={target.value ?? 'body'} disabled={!target.value}>{overlay}</Teleport>;
+      const teleport = (
+        <Teleport {...teleportProps()}>
+          {initiallyInline ? <>{overlay}</> : overlay}
+        </Teleport>
+      );
+      // Vue 3.2 需要独立片段来识别内联 Teleport 及其 Transition 的结束位置。
+      return initiallyInline ? <>{teleport}</> : teleport;
     };
   }
 });
