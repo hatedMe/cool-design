@@ -1,6 +1,7 @@
-import { h } from 'vue';
+import { defineComponent, h, nextTick, provide, ref } from 'vue';
 import { DOMWrapper, enableAutoUnmount, mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
+import { namespaceKey } from '../../hooks';
 import Menu from '../index';
 import MenuItem from '../menu-item';
 import SubMenu from '../sub-menu';
@@ -162,6 +163,46 @@ describe('Menu', () => {
     expect(doc().find('.i-sub-menu__popup').exists()).toBe(true);
     await wrapper.find('.i-sub-menu__title').trigger('keydown', { key: 'Escape' });
     expect(doc().find('.i-sub-menu__popup').isVisible()).toBe(false);
+  });
+
+  test('异前缀按钮跟随所属菜单的折叠状态与命名空间', async () => {
+    const rootNamespace = ref('i');
+    const childNamespace = ref('acme');
+    const collapsed = ref(true);
+    const Items = defineComponent({
+      setup() {
+        provide(namespaceKey, childNamespace);
+        return () => [
+          h(MenuItem, { index: 'item' }, () => '菜单项'),
+          h(SubMenu, { index: 'sub' }, { title: () => '子菜单' })
+        ];
+      }
+    });
+    const wrapper = mount(defineComponent({
+      setup() {
+        provide(namespaceKey, rootNamespace);
+        return () => h(Menu, { collapse: collapsed.value }, () => h(Items));
+      }
+    }));
+    const buttons = () => wrapper.get('[role="menubar"]').findAll('button');
+    const [item, sub] = buttons().map(button => button.element);
+    expect(buttons().map(button => button.classes().includes('i-menu__collapsed-button'))).toEqual([true, true]);
+    expect(buttons().map(button => button.element.parentElement?.classList.contains('i-menu__collapsed-trigger'))).toEqual([true, true]);
+
+    rootNamespace.value = '3d';
+    await nextTick();
+    expect(buttons().map(button => button.classes().includes('3d-menu__collapsed-button'))).toEqual([true, true]);
+    expect(buttons()[0].element).toBe(item);
+    expect(buttons()[1].element).toBe(sub);
+
+    collapsed.value = false;
+    await nextTick();
+    expect(buttons().map(button => button.classes().includes('3d-menu__collapsed-button'))).toEqual([false, false]);
+
+    collapsed.value = true;
+    childNamespace.value = '3d';
+    await nextTick();
+    expect(buttons().map(button => button.classes().includes('3d-menu__collapsed-button'))).toEqual([false, false]);
   });
 
   test('折叠弹层支持菜单级偏移、主题与类名配置', async () => {

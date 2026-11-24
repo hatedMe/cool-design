@@ -217,6 +217,9 @@ export default defineComponent({
         };
       },
       isActive,
+      collapsedClass(childNamespace, element) {
+        if (props.collapse && childNamespace !== ns.namespace.value) return ns.e(element);
+      },
       isOpened,
       handleSelect,
       handleOpen,

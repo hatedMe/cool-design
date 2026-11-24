@@ -79,11 +79,13 @@
   align-items: center;
 }
 .#{config.$namespace}-menu.is-collapse .#{config.$namespace}-menu-item__button,
-.#{config.$namespace}-menu.is-collapse .#{config.$namespace}-sub-menu__title {
+.#{config.$namespace}-menu.is-collapse .#{config.$namespace}-sub-menu__title,
+.#{config.$namespace}-menu.is-collapse .#{config.$namespace}-menu__collapsed-button {
   padding: 10px;
   text-align: center;
 }
 .#{config.$namespace}-menu .#{config.$namespace}-tooltip__trigger,
+.#{config.$namespace}-menu .#{config.$namespace}-menu__collapsed-trigger,
 .#{config.$namespace}-sub-menu__popup .#{config.$namespace}-tooltip__trigger {
   display: block;
 }
@@ -112,7 +114,8 @@
   overflow: visible;
 }
 .#{config.$namespace}-sub-menu__popup .#{config.$namespace}-sub-menu__children,
-.#{config.$namespace}-sub-menu__popup .#{config.$namespace}-menu-item-group__children {
+.#{config.$namespace}-sub-menu__popup .#{config.$namespace}-menu-item-group__children,
+.#{config.$namespace}-sub-menu__popup .#{config.$namespace}-sub-menu__popup-group {
   list-style: none;
   padding: 5px 0;
   margin: 0;

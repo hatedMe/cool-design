@@ -50,6 +50,7 @@ export interface MenuContext {
     hideTimeout: number;
   };
   isActive: (index: string) => boolean;
+  collapsedClass: (childNamespace: string, element: 'collapsed-button' | 'collapsed-trigger') => string | undefined;
   isOpened: (index: string) => boolean;
   handleSelect: (item: MenuItemClicked) => void;
   handleOpen: (index: string, indexPath: string[]) => void;
@@ -63,6 +64,7 @@ interface MenuBranch {
   expanded: Ref<boolean>;
   hold: () => void;
   leave: (event: MouseEvent) => void;
+  popupGroupClass: (childNamespace: string, childMenu: MenuContext | undefined) => string | undefined;
 }
 
 export const menuKey: InjectionKey<MenuContext> = Symbol('i-menu');

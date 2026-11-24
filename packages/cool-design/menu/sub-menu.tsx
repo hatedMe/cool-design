@@ -87,7 +87,16 @@ export default defineComponent({
       }
       parentBranch?.leave(event);
     };
-    provide(menuBranchKey, { expanded, hold, leave });
+    provide(menuBranchKey, {
+      expanded,
+      hold,
+      leave,
+      popupGroupClass(childNamespace, childMenu) {
+        if (childMenu === menu && popupMode.value && childNamespace !== ns.namespace.value) {
+          return ns.e('popup-group');
+        }
+      }
+    });
 
     const onMouseenter = () => {
       if (!hover.value) return;
@@ -148,7 +157,7 @@ export default defineComponent({
       const button = (
         <button
           type='button'
-          class={ns.e('title')}
+          class={[ns.e('title'), menu?.collapsedClass(ns.namespace.value, 'collapsed-button')]}
           ref={title}
           disabled={props.disabled}
           tabindex={props.disabled ? -1 : 0}
@@ -176,6 +185,7 @@ export default defineComponent({
           {popupMode.value ? (
             <Tooltip
               ref={panel}
+              triggerClass={menu?.collapsedClass(ns.namespace.value, 'collapsed-trigger')}
               visible={expanded.value}
               onUpdate:visible={() => undefined}
               onDismiss={dismiss}

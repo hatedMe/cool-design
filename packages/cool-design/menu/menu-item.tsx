@@ -54,7 +54,7 @@ export default defineComponent({
       const button = (
         <button
           type='button'
-          class={ns.e('button')}
+          class={[ns.e('button'), menu?.collapsedClass(ns.namespace.value, 'collapsed-button')]}
           disabled={props.disabled}
           tabindex={props.disabled ? -1 : 0}
           aria-current={active.value ? 'page' : undefined}
@@ -71,6 +71,7 @@ export default defineComponent({
           aria-disabled={props.disabled || undefined}>
           {collapsedTooltip.value ? (
             <Tooltip
+              triggerClass={menu?.collapsedClass(ns.namespace.value, 'collapsed-trigger')}
               placement='right'
               offset={menu?.popperProps.offset}
               effect={menu?.popperProps.effect}
