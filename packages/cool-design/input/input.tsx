@@ -167,7 +167,7 @@ export default defineComponent({
           id={(attrs.id as string) || field?.id}
           ref={input}
           value={displayValue.value}
-          style={textareaStyle.value}
+          style={textareaStyle.value.map(style => style ?? {})}
           rows={props.rows}
           maxlength={props.maxlength}
           minlength={props.minlength}

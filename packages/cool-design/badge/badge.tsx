@@ -76,7 +76,7 @@ export default defineComponent({
                 [ns.cssVarName('badge-offset-x')]: props.offset ? `${props.offset[0]}px` : undefined,
                 [ns.cssVarName('badge-offset-y')]: props.offset ? `${props.offset[1]}px` : undefined
               },
-              props.badgeStyle
+              props.badgeStyle ?? {}
             ]}
             data-offset={props.offset?.join(',')}>
             {slots.content?.() ?? content.value}

@@ -1,10 +1,17 @@
+import { execFileSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'vite';
 import { buildStyles } from './build-styles.mjs';
 for (const dir of ['es', 'lib']) await rm(new URL(`../${dir}/`, import.meta.url), { recursive: true, force: true });
-await build();
+const [esm] = await build();
+const defaultExports = new Set(esm.output
+  .filter(chunk => chunk.type === 'chunk' && chunk.exports.includes('default'))
+  .map(chunk => chunk.fileName));
+const require = createRequire(import.meta.url);
+execFileSync(process.execPath, [require.resolve('typescript/bin/tsc'), '-p', 'scripts/declarations'], { stdio: 'inherit' });
 
 // NodeNext 要求 ESM 声明带扩展名，CommonJS 使用独立的 .d.cts 声明。
 const esRoot = fileURLToPath(new URL('../es/', import.meta.url));
@@ -34,10 +41,26 @@ for (const file of files) {
       return `${quote}${path}${quote}`;
     });
   }
-  await writeFile(file, rewrite('.js'));
   const cjsFile = resolve(libRoot, relative(esRoot, file).replace(/\.d\.ts$/, '.d.cts'));
   await mkdir(dirname(cjsFile), { recursive: true });
   await writeFile(cjsFile, rewrite('.cjs'));
+  const name = relative(esRoot, file).replaceAll('\\', '/');
+  if (/^packages\/cool-design\/(?:(?:[^/]+\/)?index|hooks)\.d\.ts$/.test(name)) {
+    // 两种模块格式共享组件类型及全局声明。
+    const target = relative(dirname(file), cjsFile).replaceAll('\\', '/').replace(/\.d\.cts$/, '.cjs');
+    const lines = [`export * from '${target}';`];
+    if (defaultExports.has(name.replace(/\.d\.ts$/, '.js'))) {
+      lines.push(`declare const component: typeof import('${target}').default;`, 'export default component;');
+    }
+    if (name === 'packages/cool-design/index.d.ts') {
+      lines.push(`import type { RegisteredComponents, RegisteredServices } from '${target.replace(/index\.cjs$/, 'global-types.cjs')}';`,
+        "declare module 'vue' {", '  interface GlobalComponents extends RegisteredComponents {}',
+        '  interface ComponentCustomProperties extends RegisteredServices {}', '}');
+    }
+    await writeFile(file, lines.join('\n') + '\n');
+  } else {
+    await writeFile(file, rewrite('.js'));
+  }
 }
 
 const entries = files.filter((file) => /^packages\/cool-design\/[^/]+\/index\.d\.ts$/.test(

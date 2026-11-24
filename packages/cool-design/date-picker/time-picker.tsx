@@ -264,7 +264,7 @@ export default defineComponent({
     return () => {
       const ids = getPickerIds(baseId.value, range.value, props.id, field?.id, field?.availableId);
       const panel = open.value ? (
-        <div ref={floating} id={ids.panelId} role='dialog' class={[bem('dropdown'), panelTheme.value.scopeClass, props.popperClass]} data-theme={panelTheme.value.theme} style={[panelTheme.value.style, position.style.value, props.popperStyle as Record<string, string>]}>
+        <div ref={floating} id={ids.panelId} role='dialog' class={[bem('dropdown'), panelTheme.value.scopeClass, props.popperClass]} data-theme={panelTheme.value.theme} style={[panelTheme.value.style ?? {}, position.style.value, props.popperStyle as Record<string, string>]}>
           {props.arrowControl && <div class={bem('arrows')}>
             {(['hour', 'minute', 'second'] as TimeUnit[]).filter((unit) => props.format.includes(unit === 'hour' ? 'HH' : unit === 'minute' ? 'mm' : 'ss')).map((unit) => <><button type='button' aria-label={`增加${unit === 'hour' ? '小时' : unit === 'minute' ? '分钟' : '秒'}`} onClick={() => choose(unit, Math.min(unit === 'hour' ? 23 : 59, draft.value[unit] + 1))}>↑</button><button type='button' aria-label={`减少${unit === 'hour' ? '小时' : unit === 'minute' ? '分钟' : '秒'}`} onClick={() => choose(unit, Math.max(0, draft.value[unit] - 1))}>↓</button></>)}
           </div>}

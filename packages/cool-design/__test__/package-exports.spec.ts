@@ -173,6 +173,21 @@ describe('发布入口', () => {
     expect(packageJson.exports['./hooks'].require.default).toBe('./lib/packages/cool-design/hooks.cjs');
   });
 
+  it('发布声明的默认导出与运行时一致', () => {
+    const require = createRequire(import.meta.url);
+    const ts: typeof import('typescript') = require('typescript');
+    const entries = ['index', 'hooks', ...componentDirs.map(name => name + '/index')];
+    const files = entries.map(entry => resolve(esRoot, entry + '.d.ts'));
+    const program = ts.createProgram(files, { module: ts.ModuleKind.NodeNext });
+    const checker = program.getTypeChecker();
+    entries.forEach((entry, index) => {
+      const source = program.getSourceFile(files[index])!;
+      const symbol = checker.getSymbolAtLocation(source)!;
+      const hasDefault = checker.getExportsOfModule(symbol).some(item => item.name === 'default');
+      expect(hasDefault, entry).toBe(Object.hasOwn(require(resolve(libRoot, entry + '.cjs')), 'default'));
+    });
+  });
+
   it('样式入口应存在且不打包任何依赖', () => {
     expect(existsSync(resolve(root, 'es/style.css'))).toBe(true);
     expect(readFileSync(resolve(root, 'es/style.css'), 'utf8')).toContain('.i-avatar-group__collapse-avatars');

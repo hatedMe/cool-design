@@ -1,4 +1,4 @@
-import { computed, defineComponent, nextTick, ref, watch, type Component, type PropType, type SlotsType, type VNode } from 'vue';
+import { computed, defineComponent, nextTick, ref, watch, type Component, type PropType, type VNode } from 'vue';
 import { useNamespace } from '../../hooks/use-namespace';
 import type {
   TreeV2CheckedInfo,
@@ -24,7 +24,7 @@ const toPublicNode = (node: TreeV2InnerNode, withChildren = true): TreeV2Node =>
   isEffectivelyChecked: node.checked
 });
 
-export default defineComponent({
+const TreeV2 = defineComponent({
   name: 'i-tree-v2',
   props: {
     data: { type: Array as PropType<TreeV2Data[]>, default: () => [] },
@@ -47,8 +47,9 @@ export default defineComponent({
     height: { type: Number, default: 200 }
   },
   emits: ['node-click', 'node-contextmenu', 'check-change', 'check', 'current-change', 'node-expand', 'node-collapse'],
-  slots: Object as SlotsType<{ default: { node: TreeV2Node; data: TreeV2Data }; empty: () => VNode[] }>,
-  setup(props, { emit, slots, expose }) {
+
+  setup(props, { emit, slots: providedSlots, expose }) {
+    const slots: TreeV2Slots = providedSlots;
     const ns = useNamespace('tree-v2');
     const version = ref(0);
     const nodes = ref<TreeV2InnerNode[]>([]);
@@ -499,3 +500,15 @@ export default defineComponent({
     );
   }
 });
+
+type TreeV2Slots = Readonly<{
+  default?: (scope: { node: TreeV2Node; data: TreeV2Data }) => VNode[];
+  empty?: () => VNode[];
+}>;
+type TreeV2Options = { [K in keyof typeof TreeV2]: (typeof TreeV2)[K] };
+type TreeV2Component = TreeV2Options & (
+  new (...args: ConstructorParameters<typeof TreeV2>) => Omit<InstanceType<typeof TreeV2>, '$slots'> & {
+    $slots: TreeV2Slots;
+  }
+);
+export default (TreeV2 as TreeV2Options) as TreeV2Component;

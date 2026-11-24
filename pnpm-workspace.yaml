@@ -1,5 +1,15 @@
 packages:
   - 'packages/hooks'
+  - 'scripts/declarations'
 
 onlyBuiltDependencies:
   - esbuild
+
+# runtime-dom augments reactivity's RefUnwrapBailTypes for native DOM nodes.
+packageExtensions:
+  '@vue/runtime-dom@3.4.15':
+    dependencies:
+      '@vue/reactivity': 3.4.15
+  '@vue/runtime-dom@3.2.47':
+    dependencies:
+      '@vue/reactivity': 3.2.47

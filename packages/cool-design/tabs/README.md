@@ -51,7 +51,7 @@ Tabs 在多个内容面板之间切换，支持卡片样式、位置、新增/�
 | 事件名 | 说明 | 回调参数 |
 | ------ | ---- | -------- |
 | `update:modelValue` | 激活项变化 | `name: string \| number` |
-| `tab-click` | 点击页签。键盘切换或直接调用 `setActive` 时，事件参数可省略 | `pane: TabsClickPane, event?: Event` |
+| `tab-click` | 点击页签。JSX 支持 `onTabClick`，监听器对象也可使用 `'onTab-click'`。键盘切换或直接调用 `setActive` 时，事件参数可省略 | `pane: TabsClickPane, event?: Event` |
 | `tab-change` | 激活项变更后 | `name: string \| number` |
 | `tab-add` | 点击新增 | — |
 | `tab-remove` | 点击关闭 | `name: string \| number` |

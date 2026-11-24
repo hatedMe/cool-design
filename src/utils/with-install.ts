@@ -15,10 +15,12 @@ const selectNames: Record<string, string> = {
 export type withInstall<T> = T & { install: (app: App) => void };
 type WithExposed<T, Exposed> = [Exposed] extends [never] ? T :
   T extends abstract new (...args: infer Args) => infer Instance
-    ? Omit<T, never> & (new (...args: Args) => Instance & Exposed)
+    ? { [K in keyof T]: T[K] } & (new (...args: Args) => Instance & Exposed)
     : T;
 
-export function withInstall<T extends Component, Exposed = never>(opt: T) {
+export type InstalledComponent<T, Exposed = never> = withInstall<WithExposed<T, Exposed>>;
+
+export function withInstall<T extends Component, Exposed = never>(opt: T): InstalledComponent<T, Exposed> {
   (opt as Record<string, unknown>).install = (app: App) => {
     const { name } = opt;
     if (!name) return;

@@ -1044,7 +1044,7 @@ export default defineComponent({
       if (node.loading) return <span class={bem('loading')} aria-hidden="true" />;
       if (slots.icon) return slots.icon({ node, data: node.data, expanded: node.expanded });
       if (typeof props.icon === 'string' && props.icon) return <i class={[bem('icon'), props.icon]} aria-hidden="true" />;
-      if (props.icon) return h(props.icon, { class: bem('icon'), 'aria-hidden': 'true' });
+      if (props.icon && typeof props.icon !== 'string') return h(props.icon, { class: bem('icon'), 'aria-hidden': 'true' });
       return (
         <span class={[bem('caret'), node.expanded && 'is-expanded']} aria-hidden="true">
           ▸

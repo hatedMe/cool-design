@@ -1164,7 +1164,7 @@ export default defineComponent({
                           column.filterClassName
                         ]}
                         data-theme={filterTheme.value.theme}
-                        style={[filterTheme.value.style, filterPosition.style.value]}
+                        style={[filterTheme.value.style ?? {}, filterPosition.style.value]}
                         data-placement={filterPosition.placement.value}
                         role='dialog'
                         aria-label={`${titleOf(column)}筛选`}

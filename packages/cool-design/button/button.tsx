@@ -130,29 +130,26 @@ export default defineComponent({
             (props.icon && h(Icon, { icon: props.icon, class: ns.e('icon'), 'aria-hidden': 'true' }))),
         content
       ];
-      return h(
-        props.tag,
-        {
-          ...attrs,
-          ref: element,
-          class: [attrs.class, classes],
-          style: [attrs.style, customStyle],
-          type: props.tag === 'button' ? props.nativeType : undefined,
-          autofocus: props.autofocus || undefined,
-          disabled: props.tag === 'button' ? disabled : undefined,
-          'aria-disabled': props.tag !== 'button' && disabled ? 'true' : undefined,
-          'aria-busy': props.loading || undefined,
-          onClick: (event: MouseEvent) => {
-            if (disabled) {
-              event.stopPropagation();
-              return;
-            }
-            if (props.tag === 'button' && props.nativeType === 'reset') form?.resetFields?.();
-            emit('click', event);
+      const tagProps = {
+        ...attrs,
+        ref: element,
+        class: [attrs.class, classes],
+        style: [attrs.style, customStyle],
+        type: props.tag === 'button' ? props.nativeType : undefined,
+        autofocus: props.autofocus || undefined,
+        disabled: props.tag === 'button' ? disabled : undefined,
+        'aria-disabled': props.tag !== 'button' && disabled ? 'true' : undefined,
+        'aria-busy': props.loading || undefined,
+        onClick: (event: MouseEvent) => {
+          if (disabled) {
+            event.stopPropagation();
+            return;
           }
-        },
-        typeof props.tag === 'string' ? children : { default: () => children }
-      );
+          if (props.tag === 'button' && props.nativeType === 'reset') form?.resetFields?.();
+          emit('click', event);
+        }
+      };
+      return typeof props.tag === 'string' ? h(props.tag, tagProps, children) : h(props.tag, tagProps, { default: () => children });
     };
   }
 });

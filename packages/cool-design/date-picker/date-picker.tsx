@@ -524,7 +524,7 @@ const createDatePicker = (inline: boolean) => defineComponent({
     return () => {
       const ids = baseId && getPickerIds(baseId.value, isRange.value, props.id, field?.id, field?.availableId);
       const value = model.value;
-      const panel = open.value ? <div {...inline ? attrs : { role: 'dialog' }} id={inline ? (typeof props.id === 'string' ? props.id : undefined) : ids?.panelId} ref={floating} class={[inline ? panelNs.b() : bem('dropdown'), panelTheme.value.scopeClass, props.popperClass, inline && attrs.class, inline && disabledOf() && 'is-disabled']} data-theme={inline ? attrs['data-theme'] : panelTheme.value.theme} style={[panelTheme.value.style, inline ? attrs.style as StyleValue : position.style.value, props.popperStyle]} aria-disabled={inline && disabledOf() || undefined}>
+      const panel = open.value ? <div {...inline ? attrs : { role: 'dialog' }} id={inline ? (typeof props.id === 'string' ? props.id : undefined) : ids?.panelId} ref={floating} class={[inline ? panelNs.b() : bem('dropdown'), panelTheme.value.scopeClass, props.popperClass, inline && attrs.class, inline && disabledOf() && 'is-disabled']} data-theme={inline ? attrs['data-theme'] : panelTheme.value.theme} style={[panelTheme.value.style ?? {}, inline ? attrs.style as StyleValue : position.style.value, props.popperStyle ?? {}]} aria-disabled={inline && disabledOf() || undefined}>
         {inline && props.shortcuts?.length ? <div class={panelNs.e('shortcuts')}>{renderShortcuts()}</div> : null}
         <div class={bem('datetime-panel')}>
           {inline && hasTime.value && <div class={panelNs.e('times')}>{renderInlineTime(0)}{isRange.value && renderInlineTime(1)}</div>}

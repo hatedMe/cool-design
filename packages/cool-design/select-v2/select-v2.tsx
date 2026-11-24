@@ -528,7 +528,7 @@ export default defineComponent({
                 aria-hidden={kept ? 'true' : undefined}
                 data-theme={panelTheme.value.theme}
                 data-placement={position.placement.value}
-                style={[panelTheme.value.style, position.style.value, { maxHeight: `${props.height}px` }, props.popperStyle, kept ? { display: 'none' } : undefined]}
+                style={[panelTheme.value.style ?? {}, position.style.value, { maxHeight: `${props.height}px` }, props.popperStyle ?? {}, kept ? { display: 'none' } : {}]}
                 onScroll={onScroll}>
                 {props.showArrow && <span class={ns.e('arrow')} style={position.arrowStyle.value} aria-hidden='true' />}
                 {slots.header && <div onClick={(event: MouseEvent) => event.stopPropagation()}>{slots.header()}</div>}

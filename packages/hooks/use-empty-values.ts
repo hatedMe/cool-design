@@ -1,4 +1,5 @@
-import { computed, type MaybeRef, unref } from 'vue';
+import { computed, unref } from 'vue';
+import type { MaybeRef } from './maybe-ref';
 import { useConfig } from '../cool-design/config-provider/context';
 export const DEFAULT_EMPTY_VALUES = ['', undefined, null];
 function equalEmptyValue(value: unknown, empty: unknown): boolean {

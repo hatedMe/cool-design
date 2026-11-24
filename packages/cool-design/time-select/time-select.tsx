@@ -241,7 +241,7 @@ export default defineComponent({
               aria-hidden={kept ? 'true' : undefined}
               data-theme={panelTheme.value.theme}
               data-placement={position.placement.value}
-              style={[panelTheme.value.style, position.style.value, props.popperStyle, kept ? { display: 'none' } : undefined]}>
+              style={[panelTheme.value.style ?? {}, position.style.value, props.popperStyle ?? {}, kept ? { display: 'none' } : {}]}>
               {visibleOptions.value.map((option, index) => (
                 <div
                   key={option.time}

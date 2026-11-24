@@ -237,7 +237,7 @@ export default defineComponent({
               <div
                 class={[ns.e('spotlight'), scopeClass]}
                 data-theme={theme}
-                style={[themeStyle, {
+                style={[themeStyle ?? {}, {
                   top: `${spotlight.value.top}px`,
                   left: `${spotlight.value.left}px`,
                   width: `${spotlight.value.width}px`,
@@ -253,7 +253,7 @@ export default defineComponent({
               <div
                 class={[ns.e('mask'), scopeClass]}
                 data-theme={theme}
-                style={[themeStyle, { background: maskColor, zIndex: props.zIndex, ...maskStyle }]}
+                style={[themeStyle ?? {}, { background: maskColor, zIndex: props.zIndex, ...maskStyle }]}
               />
             ))}
           <div
@@ -261,7 +261,7 @@ export default defineComponent({
             class={[ns.b(), ns.m(currentStep.type ?? props.type), scopeClass]}
             data-theme={theme}
             style={[
-              themeStyle,
+              themeStyle ?? {},
               isCenter()
                 ? {
                     position: 'fixed',
@@ -271,7 +271,7 @@ export default defineComponent({
                     zIndex: props.zIndex + 1
                   }
                 : [position.style.value, { zIndex: props.zIndex + 1 }],
-              maskStyle
+              maskStyle ?? {}
             ]}
             tabindex={-1}
             role='dialog'

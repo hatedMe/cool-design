@@ -139,7 +139,7 @@ export default defineComponent({
           <Teleport to={position.target.value} disabled={!props.teleported}>
           <div ref={panel} class={[bem('panel'), panelTheme.value.scopeClass, props.popperClass]}
             data-theme={panelTheme.value.theme}
-            style={[panelTheme.value.style, position.style.value, props.popperStyle, !open.value ? { display: 'none' } : undefined]}
+            style={[panelTheme.value.style ?? {}, position.style.value, props.popperStyle ?? {}, !open.value ? { display: 'none' } : {}]}
             aria-hidden={!open.value || undefined} role='dialog'>
             <ColorPickerPanel popupEditor modelValue={currentColor.value} border={false} disabled={isDisabled()}
               showAlpha={props.showAlpha} colorFormat={props.colorFormat} predefine={props.predefine}

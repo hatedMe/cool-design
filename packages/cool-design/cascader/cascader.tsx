@@ -418,7 +418,7 @@ export default defineComponent({
           data-theme={panelTheme.value.theme}
           data-placement={position.placement.value}
           aria-hidden={!open.value || undefined}
-          style={[panelTheme.value.style, position.style.value, props.popperStyle, !open.value ? { display: 'none' } : undefined]}>
+          style={[panelTheme.value.style ?? {}, position.style.value, props.popperStyle ?? {}, !open.value ? { display: 'none' } : {}]}>
           {slots.header?.()}
           {isFiltering.value ? (
             suggestionNodes.value.length ? (

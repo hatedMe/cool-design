@@ -502,7 +502,7 @@ export default defineComponent({
           tabindex={props.trapFocus ? -1 : undefined}
           aria-label={props.ariaLabel}
           aria-hidden={open.value ? undefined : 'true'}
-          style={[detachedTheme.value && getThemeStyle(detachedTheme.value, ns.cssVarName), position.style.value, props.popperStyle]}
+          style={[detachedTheme.value ? getThemeStyle(detachedTheme.value, ns.cssVarName) : {}, position.style.value, props.popperStyle ?? {}]}
           data-placement={position.placement.value}
           onMouseenter={onPanelEnter}
           onMouseleave={onPanelLeave}

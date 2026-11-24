@@ -2,29 +2,9 @@ import { existsSync, readdirSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import jsx from '@vitejs/plugin-vue-jsx';
-import dts from 'vite-plugin-dts';
 
 export default defineConfig({
-  plugins: [
-    vue(),
-    jsx(),
-    dts({
-      tsconfigPath: 'tsconfig.build.json',
-      // 组件范围用通配整体纳入，不逐目录列举；与 tsconfig.build.json 的 include 是同一份范围，调整时两处同步。
-      include: [
-        'packages/cool-design/index.ts',
-        'packages/cool-design/hooks.ts',
-        'packages/cool-design/*/**/*.{ts,tsx}',
-        'packages/hooks/**/*.ts',
-        'src/utils/create.ts',
-        'src/utils/with-install.ts',
-        'src/utils/overlay-stack.ts',
-        'src/utils/use-floating.ts'
-      ],
-      exclude: ['**/__test__/**'],
-      outDir: 'es'
-    })
-  ],
+  plugins: [vue(), jsx()],
   build: {
     lib: {
       entry: {

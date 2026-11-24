@@ -12,5 +12,5 @@ export type {
   TreeV2PropsMapping
 } from './types';
 export type TreeV2Instance = TreeV2Exposed;
-export const TreeV2 = withInstall<typeof Component, TreeV2Instance>(Component);
+export const TreeV2: ReturnType<typeof withInstall<typeof Component, TreeV2Instance>> = withInstall<typeof Component, TreeV2Instance>(Component);
 export default TreeV2;

@@ -220,7 +220,7 @@ export default defineComponent({
           class={[ns.e('wrap'), props.wrapClass]}
           tabindex={props.tabindex}
           style={[
-            typeof props.wrapStyle === 'string' ? props.wrapStyle : props.wrapStyle,
+            props.wrapStyle ?? {},
             { height: toPx(props.height), maxHeight: toPx(props.maxHeight) }
           ]}
           onScroll={handleScroll}>

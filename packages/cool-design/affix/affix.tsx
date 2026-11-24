@@ -213,7 +213,7 @@ export default defineComponent({
             <div
               class={[ns.e('content'), positioned.value && 'is-fixed', config && themeScope.b()]}
               data-theme={config?.theme}
-              style={[fixedStyle.value, config && getThemeStyle(config, ns.cssVarName), inheritedStyle]}>
+              style={[fixedStyle.value, config ? getThemeStyle(config, ns.cssVarName) : {}, inheritedStyle ?? {}]}>
               {slots.default?.()}
             </div>
           </Teleport>
