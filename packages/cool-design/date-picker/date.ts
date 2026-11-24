@@ -18,6 +18,18 @@ export type DateValue = string | number | Date;
 export type DateModelValue = DateValue | Array<DateValue | null> | null;
 export type TimeParts = { hour: number; minute: number; second: number };
 
+export function getPickerIds(baseId: string, range: boolean, id?: string | string[], fieldId?: string) {
+  const explicitStart = Array.isArray(id) ? id[0] : id;
+  const explicitEnd = range && Array.isArray(id) ? id[1] : undefined;
+  const start = `${baseId}-${range ? 'start' : 'input'}`;
+  const end = `${baseId}-end`;
+  const inputId = explicitStart || (!range && fieldId) || (start === explicitEnd ? `${start}-fallback` : start);
+  const endId = range ? explicitEnd || (end === inputId ? `${end}-fallback` : end) : undefined;
+  let panelId = baseId;
+  while (panelId === inputId || panelId === endId) panelId += '-panel';
+  return { inputId, endId, panelId };
+}
+
 export const pad = (value: number) => String(value).padStart(2, '0');
 
 const toDayjs = (value: DateValue | null | undefined): Dayjs | null => {

@@ -12,6 +12,7 @@ import {
   type PropType
 } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
+import { useId } from '../../hooks/use-id';
 import { useNamespace } from '../../hooks/use-namespace';
 import { formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
@@ -120,7 +121,7 @@ export default defineComponent({
     const referenceWidth = ref(0);
     const query = ref('');
     const activeValues = ref<CascaderNodeValue[]>([]);
-    const panelId = `i-cascader-panel-${Math.random().toString(36).slice(2)}`;
+    const baseId = useId();
 
     const isDisabled = () => props.disabled || (field?.disabled?.() ?? form?.disabled?.());
 
@@ -400,6 +401,8 @@ export default defineComponent({
     );
 
     return () => {
+      const inputId = (attrs.id as string) || field?.id || `${baseId.value}-input`;
+      const panelId = inputId === baseId.value ? `${baseId.value}-panel` : baseId.value;
       const visibleEntries = displayEntries.value;
       const tagEntries = props.collapseTags
         ? visibleEntries.slice(0, props.maxCollapseTags)
@@ -469,7 +472,7 @@ export default defineComponent({
           <div
             {...attrs}
             ref={reference}
-            id={(attrs.id as string) || field?.id}
+            id={props.filterable ? undefined : inputId}
             class={bem('control')}
             role='combobox'
             tabindex={isDisabled() ? -1 : 0}
@@ -538,6 +541,7 @@ export default defineComponent({
             {props.filterable && (
               <input
                 ref={inputRef}
+                id={inputId}
                 class={bem('input')}
                 type='text'
                 value={query.value || (multiple.value ? '' : displayText.value)}

@@ -75,6 +75,7 @@ TimePicker 用于选择一天中的时间，支持单时间和时间范围选择
 | default-value    | 初始值                                                     | `string` / `number` / `Date`            | —            |
 | empty-values     | 视为空的输入值                                             | `Array<string \| number>`             | —            |
 | value-on-clear   | 清空时的回退值                                             | `string` / `number` / `null`            | —            |
+| id               | 原生输入框 ID，范围模式可分别指定起止输入框                | `string` / `string[]`                  | —            |
 | name             | 原生 input 名称                                            | `string`                               | —            |
 | tabindex         | Tab 顺序                                                   | `string` / `number`                     | —            |
 | aria-label       | 无障碍名称                                                 | `string`                               | —            |

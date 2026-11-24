@@ -24,6 +24,7 @@ const formatTime = (minutes: number) =>
 
 export default defineComponent({
   name: 'i-time-select',
+  inheritAttrs: false,
   props: {
     modelValue: { type: [String, Number, Boolean] as PropType<string | number | boolean | null>, default: undefined },
     emptyValues: Array as PropType<unknown[]>,
@@ -54,7 +55,7 @@ export default defineComponent({
     effect: { type: String as PropType<'light' | 'dark'>, default: 'light' }
   },
   emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear', 'visible-change'],
-  setup(props, { emit, expose }) {
+  setup(props, { attrs, emit, expose }) {
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
@@ -69,7 +70,7 @@ export default defineComponent({
     const dropdown = ref<HTMLElement>();
     const open = ref(false);
     const control = ref<HTMLInputElement>();
-    const listId = useId();
+    const baseId = useId();
     const query = ref<string>();
     const highlightedIndex = ref(-1);
     const shownOnce = ref(false);
@@ -165,8 +166,17 @@ export default defineComponent({
 
     expose({ focus: () => control.value?.focus(), blur: () => control.value?.blur() });
 
+    const getInputId = () => (attrs.id as string) || field?.id || `${baseId.value}-input`;
+    const getListId = () => getInputId() === baseId.value ? `${baseId.value}-listbox` : baseId.value;
+    const getOptionId = (time: number) => {
+      const id = `${getListId()}-${time}`;
+      return id === getInputId() ? `${id}-option` : id;
+    };
+
     return () => (
       <span
+        {...attrs}
+        id={undefined}
         ref={root}
         class={[
           ns.b(),
@@ -181,13 +191,13 @@ export default defineComponent({
           role='combobox'
           disabled={isDisabled()}
           readonly={!props.editable}
-          id={field?.id}
+          id={getInputId()}
           value={query.value ?? (hasValue.value ? String(props.modelValue) : '')}
           placeholder={props.placeholder}
           aria-haspopup='listbox'
           aria-expanded={open.value}
-          aria-controls={open.value ? listId.value : undefined}
-          aria-activedescendant={open.value && activeOption.value ? `${listId.value}-${activeOption.value.time}` : undefined}
+          aria-controls={open.value ? getListId() : undefined}
+          aria-activedescendant={open.value && activeOption.value ? getOptionId(activeOption.value.time) : undefined}
           aria-invalid={field?.invalid() ? 'true' : undefined}
           onClick={() => setOpen(props.editable || !open.value)}
           onInput={(event: Event) => {
@@ -225,7 +235,7 @@ export default defineComponent({
             <div
               ref={dropdown}
               class={[ns.e('dropdown'), ns.em('dropdown', props.effect), panelTheme.value.scopeClass, props.popperClass]}
-              id={listId.value}
+              id={getListId()}
               role='listbox'
               aria-hidden={kept ? 'true' : undefined}
               data-theme={panelTheme.value.theme}
@@ -234,7 +244,7 @@ export default defineComponent({
               {visibleOptions.value.map((option, index) => (
                 <div
                   key={option.time}
-                  id={`${listId.value}-${option.time}`}
+                  id={getOptionId(option.time)}
                   role='option'
                   aria-selected={option.value === props.modelValue}
                   aria-disabled={option.disabled || undefined}

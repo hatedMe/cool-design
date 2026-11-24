@@ -1,11 +1,12 @@
 import { Teleport, computed, defineComponent, h, inject, markRaw, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch, type Component, type ComponentPublicInstance, type PropType } from 'vue';
 import { useNamespace } from '../../hooks/use-namespace';
+import { useId } from '../../hooks/use-id';
 import { createBEM } from '../../../src/utils/create';
 import { useConfig, type Size } from '../config-provider/context';
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { formKey, useField } from '../form/context';
 import { useFloating, useFloatingTheme, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
-import { emitValue, formatTimeParts, parseTimeParts, timeInputValue, type DateModelValue, type DateValue, type TimeParts } from './date';
+import { emitValue, formatTimeParts, getPickerIds, parseTimeParts, timeInputValue, type DateModelValue, type DateValue, type TimeParts } from './date';
 import TimePickerPanel, { type TimeDisabledRule, type TimeUnit } from './time-picker-panel';
 
 export default defineComponent({
@@ -33,6 +34,7 @@ export default defineComponent({
     defaultValue: { type: [String, Number, Date, Array] as PropType<DateModelValue>, default: null },
     saveOnBlur: { type: Boolean, default: true },
     emptyValues: Array as PropType<unknown[]>,
+    id: [String, Array] as PropType<string | string[]>,
     name: String,
     tabindex: [String, Number],
     ariaLabel: String,
@@ -64,6 +66,7 @@ export default defineComponent({
     const floating = ref<HTMLElement>();
     const inputRefs = ref<Array<HTMLInputElement | undefined>>([]);
     const open = ref(false);
+    const baseId = useId();
     const activeIndex = ref(0);
     const draft = ref<TimeParts>({ hour: 0, minute: 0, second: 0 });
     const rangeDraft = ref<Array<DateValue | null>>([null, null]);
@@ -204,13 +207,15 @@ export default defineComponent({
         emit('change', nextValues); validate('change');
       }
     };
-    const renderInput = (value: DateValue | null | undefined, index?: number) => (
+    const renderInput = (ids: ReturnType<typeof getPickerIds>, value: DateValue | null | undefined, index?: number) => (
       <input
         {...attrs}
         ref={(element: Element | ComponentPublicInstance | null) => { inputRefs.value[index ?? 0] = element as HTMLInputElement | undefined; }}
+        id={index === 1 ? ids.endId : ids.inputId}
         role='combobox'
         aria-haspopup='dialog'
         aria-expanded={open.value}
+        aria-controls={open.value ? ids.panelId : undefined}
         aria-disabled={disabledOf() || undefined}
         aria-label={props.ariaLabel}
         name={props.name}
@@ -256,8 +261,9 @@ export default defineComponent({
     onBeforeUnmount(() => document.removeEventListener('mousedown', onOutside));
     expose({ focus: () => inputRefs.value[activeIndex.value]?.focus(), blur: () => inputRefs.value[activeIndex.value]?.blur(), handleOpen: () => setOpen(true), handleClose: close });
     return () => {
+      const ids = getPickerIds(baseId.value, range.value, props.id, field?.id);
       const panel = open.value ? (
-        <div ref={floating} class={[bem('dropdown'), panelTheme.value.scopeClass, props.popperClass]} data-theme={panelTheme.value.theme} style={[panelTheme.value.style, position.style.value, props.popperStyle as Record<string, string>]}>
+        <div ref={floating} id={ids.panelId} role='dialog' class={[bem('dropdown'), panelTheme.value.scopeClass, props.popperClass]} data-theme={panelTheme.value.theme} style={[panelTheme.value.style, position.style.value, props.popperStyle as Record<string, string>]}>
           {props.arrowControl && <div class={bem('arrows')}>
             {(['hour', 'minute', 'second'] as TimeUnit[]).filter((unit) => props.format.includes(unit === 'hour' ? 'HH' : unit === 'minute' ? 'mm' : 'ss')).map((unit) => <><button type='button' aria-label={`增加${unit === 'hour' ? '小时' : unit === 'minute' ? '分钟' : '秒'}`} onClick={() => choose(unit, Math.min(unit === 'hour' ? 23 : 59, draft.value[unit] + 1))}>↑</button><button type='button' aria-label={`减少${unit === 'hour' ? '小时' : unit === 'minute' ? '分钟' : '秒'}`} onClick={() => choose(unit, Math.max(0, draft.value[unit] - 1))}>↓</button></>)}
           </div>}
@@ -269,7 +275,7 @@ export default defineComponent({
       const value = model.value;
       return (
         <span ref={root} class={[bem(), controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size), range.value && 'is-range']}>
-          {range.value ? <><div ref={reference}>{props.prefixIcon && <span class={bem('prefix-icon')}>{renderIcon(props.prefixIcon as string | Component, bem('icon'))}</span>}{renderInput(Array.isArray(value) ? value[0] : null, 0)}</div><span class={bem('separator')}>{props.rangeSeparator}</span><div>{renderInput(Array.isArray(value) ? value[1] : null, 1)}</div></> : <div ref={reference}>{props.prefixIcon && <span class={bem('prefix-icon')}>{renderIcon(props.prefixIcon as string | Component, bem('icon'))}</span>}{renderInput(value as DateValue | null)}</div>}
+          {range.value ? <><div ref={reference}>{props.prefixIcon && <span class={bem('prefix-icon')}>{renderIcon(props.prefixIcon as string | Component, bem('icon'))}</span>}{renderInput(ids, Array.isArray(value) ? value[0] : null, 0)}</div><span class={bem('separator')}>{props.rangeSeparator}</span><div>{renderInput(ids, Array.isArray(value) ? value[1] : null, 1)}</div></> : <div ref={reference}>{props.prefixIcon && <span class={bem('prefix-icon')}>{renderIcon(props.prefixIcon as string | Component, bem('icon'))}</span>}{renderInput(ids, value as DateValue | null)}</div>}
           {props.clearable && (range.value ? Array.isArray(value) && value.some((item) => item != null && !isEmptyValue(item)) : value != null) && <button type='button' class={bem('clear')} disabled={disabledOf() || props.readonly} aria-label='清空' onClick={() => clear()}>{props.clearIcon ? <span class={bem('clear-icon')}>{renderIcon(props.clearIcon as string | Component, bem('icon'))}</span> : '×'}</button>}
           {content}
         </span>

@@ -1,11 +1,12 @@
 import { Teleport, computed, defineComponent, h, inject, markRaw, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch, type Component, type PropType, type StyleValue } from 'vue';
 import { useNamespace } from '../../hooks/use-namespace';
+import { useId } from '../../hooks/use-id';
 import { createBEM } from '../../../src/utils/create';
 import dayjs from 'dayjs';
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useConfig, type Size } from '../config-provider/context';
 import { formKey, useField } from '../form/context';
-import { emitValue, formatDate, getWeekStart, parseFormattedDate, parseTimeParts, toDate, type DateModelValue, type DateValue, type TimeParts } from './date';
+import { emitValue, formatDate, getPickerIds, getWeekStart, parseFormattedDate, parseTimeParts, toDate, type DateModelValue, type DateValue, type TimeParts } from './date';
 import DatePickerPanel, { type DatePanelType } from './date-picker-panel';
 import TimePickerPanel, { type TimeUnit } from './time-picker-panel';
 import { useFloating, useFloatingTheme, type Placement, type FloatingOptions } from '../../../src/utils/use-floating';
@@ -84,7 +85,7 @@ const createDatePicker = (inline: boolean) => defineComponent({
     const validate = (trigger: 'blur' | 'change') => {
       if (props.validateEvent) nextTick(() => field?.validate(trigger));
     };
-    const panelId = `i-date-picker-panel-${Math.random().toString(36).slice(2)}`;
+    const baseId = inline ? undefined : useId();
     const rangePanelCursors = ref<[DateValue | null, DateValue | null]>([null, null]);
     const root = ref<HTMLElement>();
     const reference = ref<HTMLElement>();
@@ -419,10 +420,10 @@ const createDatePicker = (inline: boolean) => defineComponent({
         commit(values);
       }
     };
-    const renderInput = (value: DateValue | null | undefined, index?: number) => (
+    const renderInput = (ids: ReturnType<typeof getPickerIds>, value: DateValue | null | undefined, index?: number) => (
       <>
         {index === 0 && props.prefixIcon && <span class={bem('prefix-icon')}>{renderIcon(props.prefixIcon as string | Component, bem('icon'))}</span>}
-        <input {...attrs} ref={index === 0 || index == null ? inputRef : undefined} class={bem('input')} type='text' value={value != null ? formatDate(value, formatValue.value) : ''} placeholder={index === 0 ? props.startPlaceholder || props.placeholder : props.endPlaceholder || props.placeholder} disabled={disabledOf()} id={Array.isArray(props.id) ? props.id[index ?? 0] : props.id ?? (index == null ? field?.id : undefined)} name={props.name} readonly={props.readonly || !props.editable} role='combobox' aria-haspopup='dialog' aria-expanded={open.value} aria-controls={panelId} aria-disabled={disabledOf() || undefined} onClick={() => { if (index != null) activeIndex.value = index; setOpen(true); }} onInput={(event: Event) => updateInput(index, (event.target as HTMLInputElement).value)} onChange={() => commitInput(index)} onFocus={(event: FocusEvent) => emit('focus', event)} onBlur={(event: FocusEvent) => { commitInput(index); emit('blur', event); validate('blur'); }} onKeydown={(event: KeyboardEvent) => { if (event.key === 'Escape') close(); if (event.key === 'Enter') setOpen(!open.value); }} />
+        <input {...attrs} ref={index === 0 || index == null ? inputRef : undefined} class={bem('input')} type='text' value={value != null ? formatDate(value, formatValue.value) : ''} placeholder={index === 0 ? props.startPlaceholder || props.placeholder : props.endPlaceholder || props.placeholder} disabled={disabledOf()} id={index === 1 ? ids.endId : ids.inputId} name={props.name} readonly={props.readonly || !props.editable} role='combobox' aria-haspopup='dialog' aria-expanded={open.value} aria-controls={open.value ? ids.panelId : undefined} aria-disabled={disabledOf() || undefined} onClick={() => { if (index != null) activeIndex.value = index; setOpen(true); }} onInput={(event: Event) => updateInput(index, (event.target as HTMLInputElement).value)} onChange={() => commitInput(index)} onFocus={(event: FocusEvent) => emit('focus', event)} onBlur={(event: FocusEvent) => { commitInput(index); emit('blur', event); validate('blur'); }} onKeydown={(event: KeyboardEvent) => { if (event.key === 'Escape') close(); if (event.key === 'Enter') setOpen(!open.value); }} />
       </>
     );
     const clear = clearValue;
@@ -521,8 +522,9 @@ const createDatePicker = (inline: boolean) => defineComponent({
     }
     expose({ focus: () => inputRef.value?.focus(), blur: () => inputRef.value?.blur(), handleOpen: () => { manualOpen.value = true; setOpen(true); }, handleClose: close });
     return () => {
+      const ids = baseId && getPickerIds(baseId.value, isRange.value, props.id, field?.id);
       const value = model.value;
-      const panel = open.value ? <div {...inline ? attrs : { id: panelId }} ref={floating} class={[inline ? panelNs.b() : bem('dropdown'), panelTheme.value.scopeClass, props.popperClass, inline && attrs.class, inline && disabledOf() && 'is-disabled']} data-theme={inline ? attrs['data-theme'] : panelTheme.value.theme} style={[panelTheme.value.style, inline ? attrs.style as StyleValue : position.style.value, props.popperStyle]} aria-disabled={inline && disabledOf() || undefined}>
+      const panel = open.value ? <div {...inline ? attrs : { role: 'dialog' }} id={inline ? (typeof props.id === 'string' ? props.id : undefined) : ids?.panelId} ref={floating} class={[inline ? panelNs.b() : bem('dropdown'), panelTheme.value.scopeClass, props.popperClass, inline && attrs.class, inline && disabledOf() && 'is-disabled']} data-theme={inline ? attrs['data-theme'] : panelTheme.value.theme} style={[panelTheme.value.style, inline ? attrs.style as StyleValue : position.style.value, props.popperStyle]} aria-disabled={inline && disabledOf() || undefined}>
         {inline && props.shortcuts?.length ? <div class={panelNs.e('shortcuts')}>{renderShortcuts()}</div> : null}
         <div class={bem('datetime-panel')}>
           {inline && hasTime.value && <div class={panelNs.e('times')}>{renderInlineTime(0)}{isRange.value && renderInlineTime(1)}</div>}
@@ -531,10 +533,10 @@ const createDatePicker = (inline: boolean) => defineComponent({
         </div>
         {renderFooter()}
       </div> : null;
-      if (inline) return panel;
+      if (!ids) return panel;
 
       const content = props.teleported && panel ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;
-      return <span ref={root} class={[bem(), controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size), isRange.value && 'is-range']}><div ref={reference}>{isRange.value ? <>{renderInput(Array.isArray(value) ? value[0] : null, 0)}<span class={bem('separator')}>{props.rangeSeparator}</span>{renderInput(Array.isArray(value) ? value[1] : null, 1)}</> : renderInput(value as DateValue | null)}</div>{props.clearable && (Array.isArray(value) ? value.some((item) => item != null && !isEmptyValue(item)) : value != null) && <button type='button' class={bem('clear')} aria-label='清空' disabled={disabledOf() || props.readonly} onClick={clear}>{props.clearIcon ? <span class={bem('clear-icon')}>{renderIcon(props.clearIcon as string | Component, bem('icon'))}</span> : '×'}</button>}{content}</span>;
+      return <span ref={root} class={[bem(), controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size), isRange.value && 'is-range']}><div ref={reference}>{isRange.value ? <>{renderInput(ids, Array.isArray(value) ? value[0] : null, 0)}<span class={bem('separator')}>{props.rangeSeparator}</span>{renderInput(ids, Array.isArray(value) ? value[1] : null, 1)}</> : renderInput(ids, value as DateValue | null)}</div>{props.clearable && (Array.isArray(value) ? value.some((item) => item != null && !isEmptyValue(item)) : value != null) && <button type='button' class={bem('clear')} aria-label='清空' disabled={disabledOf() || props.readonly} onClick={clear}>{props.clearIcon ? <span class={bem('clear-icon')}>{renderIcon(props.clearIcon as string | Component, bem('icon'))}</span> : '×'}</button>}{content}</span>;
     };
   }
 });
