@@ -132,7 +132,7 @@ const Popconfirm = defineComponent({
                         <Icon icon={icon} color={iconColor} />
                       ) : (
                         <span class={ns.e('icon')} style={{ color: iconColor }} aria-hidden='true'>
-                          ⚠{' '}
+                          {'⚠ '}
                         </span>
                       )))}
                   {title}

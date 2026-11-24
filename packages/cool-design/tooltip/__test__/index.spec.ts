@@ -1,6 +1,8 @@
 import { mount, flushPromises } from '@vue/test-utils';
-import { h } from 'vue';
+import { createApp, createSSRApp, h, nextTick, ref } from 'vue';
 import { afterEach, expect, test, vi } from 'vitest';
+import { idKey } from '../../../hooks/use-id';
+import { namespaceKey } from '../../../hooks/use-namespace';
 import Tooltip from '..';
 const wrappers: ReturnType<typeof mount>[] = [];
 const mockLayout = (anchorRect: () => DOMRect) => {
@@ -55,6 +57,178 @@ test('聚焦显示纯文本说明，Esc 隐藏并解除关联，禁用不显示'
   await w.get('button').trigger('focusin');
   await flushPromises();
   expect(document.querySelector('[role="tooltip"]')).toBeNull();
+});
+
+test('插槽触发器保留显式 ID，持久面板的 ID 避开冲突并响应命名空间变化', async () => {
+  const namespace = ref('brand');
+  const triggerId = ref('brand-id-41-2-tooltip');
+  const description = ref('caller-help');
+  const onClick = vi.fn();
+  const w = mount(Tooltip, {
+    props: { content: '说明', trigger: 'click', persistent: true, hideAfter: 0, transition: { css: false } },
+    slots: { default: () => h('button', {
+      id: triggerId.value, title: '原始标题', class: 'caller', style: { color: 'red' },
+      'aria-describedby': description.value, onClick
+    }, '打开') },
+    attachTo: document.body,
+    global: { provide: { [idKey]: { prefix: 41, current: 2 }, [namespaceKey]: namespace }, stubs: { transition: false } }
+  });
+  wrappers.push(w);
+  const button = w.get<HTMLButtonElement>('button');
+  const panel = document.querySelector<HTMLElement>('[role="tooltip"]')!;
+  const assertDescription = (id: string) => {
+    expect(panel.id).toBe(id);
+    expect(document.getElementById(id)).toBe(panel);
+    expect(button.attributes('aria-describedby')).toBe(`${description.value} ${id}`);
+  };
+  expect(button.attributes('aria-describedby')).toBe('caller-help');
+  button.element.focus();
+  await button.trigger('click');
+  assertDescription('brand-id-41-2-tooltip-fallback');
+  expect(button.attributes('id')).toBe(triggerId.value);
+  expect(button.attributes('title')).toBe('原始标题');
+  expect(button.classes()).toContain('caller');
+  expect(button.element.style.color).toBe('red');
+  expect(onClick).toHaveBeenCalledTimes(1);
+  triggerId.value = 'caller-target';
+  await flushPromises();
+  assertDescription('brand-id-41-2-tooltip');
+  const help = document.createElement('span');
+  help.id = 'brand-id-41-2-tooltip';
+  document.body.append(help);
+  description.value = `caller-help ${help.id}`;
+  await nextTick();
+  assertDescription('brand-id-41-2-tooltip-fallback');
+  expect(document.getElementById(help.id)).toBe(help);
+  namespace.value = 'other';
+  await nextTick();
+  assertDescription('other-id-41-2-tooltip');
+  expect(document.activeElement).toBe(button.element);
+  await button.trigger('click');
+  expect(button.attributes('aria-describedby')).toBe(description.value);
+  expect(panel.getAttribute('aria-hidden')).toBe('true');
+});
+
+test('虚拟引用更换锚点或 ID 时，只清理当前浮层添加的说明引用', async () => {
+  const namespace = ref('i');
+  const first = document.createElement('button');
+  const second = document.createElement('button');
+  first.id = 'i-id-43-0-tooltip';
+  first.setAttribute('aria-describedby', 'first-help');
+  second.setAttribute('aria-describedby', 'second-help');
+  document.body.append(first, second);
+  const w = mount(Tooltip, {
+    props: { content: '说明', visible: true, persistent: true, virtualTriggering: true, virtualRef: first },
+    attachTo: document.body,
+    global: { provide: { [idKey]: { prefix: 43, current: 0 }, [namespaceKey]: namespace }, stubs: { transition: false } }
+  });
+  wrappers.push(w);
+  await flushPromises();
+  const panel = document.querySelector<HTMLElement>('[role="tooltip"]')!;
+  expect(panel.id).toBe('i-id-43-0-tooltip-fallback');
+  expect(first.getAttribute('aria-describedby')).toBe(`first-help ${panel.id}`);
+  first.id = 'caller-target';
+  await flushPromises();
+  expect(panel.id).toBe('i-id-43-0-tooltip');
+  expect(first.getAttribute('aria-describedby')).toBe(`first-help ${panel.id}`);
+  namespace.value = 'brand';
+  await nextTick();
+  const help = document.createElement('span');
+  help.id = 'i-id-43-0-tooltip';
+  document.body.append(help);
+  second.setAttribute('aria-describedby', `second-help ${help.id}`);
+  await w.setProps({ virtualRef: second });
+  expect(first.getAttribute('aria-describedby')).toBe('first-help');
+  namespace.value = 'i';
+  await nextTick();
+  expect(panel.id).toBe('i-id-43-0-tooltip-fallback');
+  expect(document.getElementById(help.id)).toBe(help);
+  expect(second.getAttribute('aria-describedby')).toBe(`second-help ${help.id} ${panel.id}`);
+  await w.setProps({ visible: false });
+  expect(second.getAttribute('aria-describedby')).toBe(`second-help ${help.id}`);
+});
+
+test('外部虚拟锚点在水合前已存在时，保留面板并更新冲突 ID', async () => {
+  const id = 'i-id-123-0-tooltip';
+  document.body.innerHTML = `
+    <button id="${id}" aria-describedby="help">锚点</button><p id="help">帮助</p>
+    <main><!--[--><!--teleport start--><!--teleport end--><!--]--></main>
+    <aside id="host"><div id="${id}" class="i-tooltip i-tooltip--dark" role="tooltip" aria-hidden="true"
+      style="position:absolute;visibility:hidden;display:none;" data-placement="bottom"><!----><div class="i-tooltip__content">说明</div></div><!--teleport anchor--></aside>`;
+  const anchor = document.querySelector('button')!;
+  const panel = document.querySelector<HTMLElement>('[role="tooltip"]')!;
+  const visible = ref(true);
+  const onOpen = vi.fn();
+  const onClose = vi.fn();
+  const onVisibleChange = vi.fn();
+  const app = createSSRApp({ setup: () => () => h(Tooltip, {
+    appendTo: '#host', content: '说明', persistent: true, showArrow: false,
+    transition: { css: false }, visible: visible.value, virtualTriggering: true, virtualRef: anchor,
+    onOpen, onClose, onVisibleChange
+  }) });
+  app.provide(idKey, { prefix: 123, current: 0 });
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+  app.mount('main');
+  try {
+    await flushPromises();
+    expect(document.querySelector('[role="tooltip"]')).toBe(panel);
+    expect(document.getElementById(id)).toBe(anchor);
+    expect(document.querySelectorAll(`[id="${id}"]`)).toHaveLength(1);
+    expect(anchor.getAttribute('aria-describedby')).toBe('help ' + panel.id);
+    expect(panel.getAttribute('aria-hidden')).toBeNull();
+    expect(panel.style.display).not.toBe('none');
+    expect(onOpen).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(onVisibleChange.mock.calls).toEqual([[true]]);
+    expect(warn).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
+    visible.value = false;
+    await nextTick();
+    expect(anchor.getAttribute('aria-describedby')).toBe('help');
+    visible.value = true;
+    await nextTick();
+    expect(document.getElementById(panel.id)).toBe(panel);
+    expect(anchor.getAttribute('aria-describedby')).toBe('help ' + panel.id);
+  } finally {
+    app.unmount();
+  }
+  expect(anchor.getAttribute('aria-describedby')).toBe('help');
+});
+
+test.each([
+  { visible: true, appear: false, initial: ['open', 'visible:true'] },
+  { visible: true, appear: true, initial: ['open', 'visible:true', 'before-show', 'appear', 'show'] },
+  { visible: false, appear: false, initial: [] }
+])('普通挂载保留虚拟浮层的进入过渡和事件（visible=$visible, appear=$appear）', async ({ visible, appear, initial }) => {
+  document.body.innerHTML = '<button>锚点</button><main></main><aside id="host"></aside>';
+  const anchor = document.querySelector('button')!;
+  const open = ref(visible);
+  const events: string[] = [];
+  const app = createApp({ setup: () => () => h(Tooltip, {
+    appendTo: '#host', content: '说明', persistent: true, visible: open.value,
+    virtualTriggering: true, virtualRef: anchor,
+    transition: { css: false, appear, onAppear: () => events.push('appear'), onEnter: () => events.push('enter') },
+    onOpen: () => events.push('open'), onClose: () => events.push('close'),
+    onVisibleChange: (value: boolean) => events.push(`visible:${value}`),
+    onBeforeShow: () => events.push('before-show'), onShow: () => events.push('show'),
+    onBeforeHide: () => events.push('before-hide'), onHide: () => events.push('hide')
+  }) });
+  app.mount('main');
+  try {
+    await nextTick();
+    expect(events.splice(0)).toEqual(initial);
+    if (visible) {
+      open.value = false;
+      await nextTick();
+      expect(events.splice(0)).toEqual(['close', 'visible:false', 'before-hide', 'hide']);
+    }
+    open.value = true;
+    await nextTick();
+    expect(events).toEqual(['open', 'visible:true', 'before-show', 'enter', 'show']);
+  } finally {
+    app.unmount();
+  }
 });
 test('视口顶部放不下时翻转，滚动更新坐标，卸载移除监听和 DOM', async () => {
   let anchorLeft = 100;
