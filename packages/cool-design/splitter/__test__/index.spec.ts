@@ -1,7 +1,8 @@
 import { mount } from '@vue/test-utils';
-import { h, nextTick } from 'vue';
+import { h, nextTick, ref } from 'vue';
 import { afterEach, describe, expect, test } from 'vitest';
 import Splitter from '..';
+import ConfigProvider from '../../config-provider';
 import SplitterPanel from '../splitter-panel';
 
 const panels = (propsList: Array<Record<string, unknown>> = [{ size: 100 }, { size: 200 }]) =>
@@ -12,6 +13,46 @@ afterEach(() => {
 });
 
 describe('test `Splitter` component', () => {
+  test('更换命名空间时保留正在拖拽的分隔条和面板', async () => {
+    const namespace = ref('acme');
+    const wrapper = mount(
+      () =>
+        h(ConfigProvider, { namespace: namespace.value }, () =>
+          h(Splitter, { layout: 'vertical' }, () =>
+            panels([{ size: 100, collapsible: true, class: 'user-panel' }, { size: 200 }])
+          )
+        ),
+      { attachTo: document.body }
+    );
+
+    try {
+      await nextTick();
+      const splitter = wrapper.getComponent(Splitter);
+      const panel = wrapper.getComponent(SplitterPanel);
+      const divider = wrapper.get('[role="separator"]');
+      expect(splitter.classes()).toEqual(['acme-splitter', 'acme-splitter--vertical']);
+      expect(panel.classes()).toEqual(['acme-splitter__panel', 'user-panel']);
+      expect(wrapper.get('button').classes()).toEqual(['acme-splitter__collapse', 'is-start']);
+      expect(divider.classes()).toEqual(['acme-splitter__divider']);
+      await divider.trigger('mousedown', { clientY: 20 });
+      namespace.value = '3d';
+      await nextTick();
+      expect(wrapper.get('[role="separator"]').element).toBe(divider.element);
+      expect(wrapper.get('.user-panel').element).toBe(panel.element);
+      expect(splitter.classes()).toEqual(['3d-splitter', '3d-splitter--vertical']);
+      expect(panel.classes()).toEqual(['3d-splitter__panel', 'user-panel']);
+      expect(divider.classes()).toEqual(['3d-splitter__divider']);
+
+      document.dispatchEvent(new MouseEvent('mousemove', { clientY: 50 }));
+      document.dispatchEvent(new MouseEvent('mouseup'));
+      await nextTick();
+      expect(splitter.emitted('resize-end')).toEqual([[0, [130, 170]]]);
+      expect(panel.emitted('update:size')).toEqual([[130]]);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
   test('渲染面板与分隔条，layout 控制分隔条方向', () => {
     const wrapper = mount(Splitter, {
       slots: { default: () => panels() }

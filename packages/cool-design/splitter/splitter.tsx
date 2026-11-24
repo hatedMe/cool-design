@@ -8,6 +8,7 @@ import {
   type PropType,
   type VNode
 } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import { splitterKey, type SplitterLayout, type SplitterPanelMeta, type SplitterSize } from './context';
 
 interface PanelEntry {
@@ -36,6 +37,7 @@ export default defineComponent({
   },
   emits: ['resize-start', 'resize', 'resize-end', 'collapse'],
   setup(props, { slots, emit }) {
+    const ns = useNamespace('splitter');
     const root = ref<HTMLElement>();
     // 面板以唯一 id 标识，Map 的插入顺序即面板注册顺序（与渲染顺序一致）；
     // 面板增删后 id 不复用，避免分隔条与面板配对错乱
@@ -213,14 +215,14 @@ export default defineComponent({
       const right = rightId !== undefined ? panels.get(rightId) : undefined;
       return (
         <div
-          class='i-splitter__divider'
+          class={ns.e('divider')}
           role='separator'
           aria-orientation={props.layout === 'vertical' ? 'horizontal' : 'vertical'}
           onMousedown={startDrag(position)}>
           {left?.meta().collapsible && (
             <button
               type='button'
-              class='i-splitter__collapse is-start'
+              class={[ns.e('collapse'), 'is-start']}
               aria-label='折叠起始面板'
               onClick={(event: MouseEvent) => {
                 event.stopPropagation();
@@ -232,7 +234,7 @@ export default defineComponent({
           {right?.meta().collapsible && (
             <button
               type='button'
-              class='i-splitter__collapse is-end'
+              class={[ns.e('collapse'), 'is-end']}
               aria-label='折叠结束面板'
               onClick={(event: MouseEvent) => {
                 event.stopPropagation();
@@ -253,7 +255,7 @@ export default defineComponent({
         rendered.push(child);
       });
       return (
-        <div ref={root} class={['i-splitter', `i-splitter--${props.layout}`]}>
+        <div ref={root} class={[ns.b(), ns.m(props.layout)]}>
           {rendered}
         </div>
       );

@@ -1,4 +1,5 @@
 import { defineComponent, inject, onBeforeUnmount, ref, type PropType } from 'vue';
+import { useNamespace } from '../../hooks/use-namespace';
 import { splitterKey, type SplitterSize } from './context';
 
 export default defineComponent({
@@ -12,6 +13,7 @@ export default defineComponent({
   },
   emits: ['update:size'],
   setup(props, { slots, emit, expose }) {
+    const ns = useNamespace('splitter');
     const splitter = inject(splitterKey, undefined);
     const element = ref<HTMLElement>();
     // 注册返回面板唯一 id，父组件按注册顺序解析分隔条相邻面板
@@ -34,7 +36,7 @@ export default defineComponent({
     onBeforeUnmount(() => splitter?.unregister(id));
     expose({ splitterPanelRef: element });
     return () => (
-      <div ref={element} class='i-splitter__panel' style={id >= 0 ? splitter?.sizeStyle(id) : undefined}>
+      <div ref={element} class={ns.e('panel')} style={id >= 0 ? splitter?.sizeStyle(id) : undefined}>
         {slots.default?.()}
       </div>
     );
