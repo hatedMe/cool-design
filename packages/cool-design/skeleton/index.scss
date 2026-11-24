@@ -1,8 +1,9 @@
 @use '../style/mixins/config';
 
 .#{config.$namespace}-skeleton {
-  --#{config.$namespace}-skeleton-color: var(--#{config.$namespace}-bg-subtle, #f2f3f5);
-  --#{config.$namespace}-skeleton-shimmer: var(--#{config.$namespace}-bg, #fff);
+  // Keep the defaults computed on this Skeleton separate from user overrides.
+  --#{config.$namespace}-skeleton-default-color: var(--#{config.$namespace}-bg-subtle, #f2f3f5);
+  --#{config.$namespace}-skeleton-default-shimmer: var(--#{config.$namespace}-bg, #fff);
   color: var(--#{config.$namespace}-text);
 }
 
@@ -10,10 +11,20 @@
   margin-top: 16px;
 }
 
+$color: var(--#{config.$namespace}-skeleton-color, var(--#{config.$namespace}-skeleton-default-color));
+$shimmer: var(--#{config.$namespace}-skeleton-shimmer, var(--#{config.$namespace}-skeleton-default-shimmer));
+
 .#{config.$namespace}-skeleton-item {
   display: block;
-  background: var(--#{config.$namespace}-skeleton-color);
+  background: $color;
   border-radius: 4px;
+}
+
+$cross-namespace-color: var(--#{config.$namespace}-skeleton-color, var(--#{config.$namespace}-bg-subtle, #f2f3f5));
+$cross-namespace-shimmer: var(--#{config.$namespace}-skeleton-shimmer, var(--#{config.$namespace}-bg, #fff));
+
+.#{config.$namespace}-skeleton-item:where([data-skeleton-cross-namespace]) {
+  background: $cross-namespace-color;
 }
 
 .#{config.$namespace}-skeleton-item--p,
@@ -80,15 +91,21 @@
   height: 72px;
 }
 
-.#{config.$namespace}-skeleton.is-animated .#{config.$namespace}-skeleton-item {
-  background: linear-gradient(
-    90deg,
-    var(--#{config.$namespace}-skeleton-color) 25%,
-    var(--#{config.$namespace}-skeleton-shimmer) 37%,
-    var(--#{config.$namespace}-skeleton-color) 63%
-  );
+@mixin shimmer($color, $highlight) {
+  background: linear-gradient(90deg, $color 25%, $highlight 37%, $color 63%);
   background-size: 400% 100%;
   animation: #{config.$namespace}-skeleton-loading 1.4s ease infinite;
+}
+
+$animated: '.#{config.$namespace}-skeleton.is-animated .#{config.$namespace}-skeleton-item:where(:not([data-skeleton-cross-namespace]))';
+$cross-namespace-animated: '.#{config.$namespace}-skeleton-item[data-skeleton-cross-namespace][data-skeleton-animated="true"]';
+
+#{$animated} {
+  @include shimmer($color, $shimmer);
+}
+
+#{$cross-namespace-animated} {
+  @include shimmer($cross-namespace-color, $cross-namespace-shimmer);
 }
 
 @keyframes #{config.$namespace}-skeleton-loading {
@@ -101,7 +118,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .#{config.$namespace}-skeleton.is-animated .#{config.$namespace}-skeleton-item {
+  #{$animated},
+  #{$cross-namespace-animated} {
     animation: none;
   }
 }

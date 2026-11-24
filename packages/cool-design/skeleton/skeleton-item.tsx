@@ -1,6 +1,7 @@
 import { useNamespace } from '../../hooks/use-namespace';
-import { defineComponent, type PropType } from 'vue';
+import { defineComponent, inject, type PropType } from 'vue';
 import { createBEM, createNamespace } from '../../../src/utils/create';
+import { skeletonKey } from './context';
 
 const [name] = createNamespace('skeleton-item');
 
@@ -25,10 +26,19 @@ export default defineComponent({
   setup(props, { slots }) {
     const ns = useNamespace('skeleton-item');
     const bem = createBEM(ns.b);
-    return () => (
-      <div class={[bem(), bem({ [props.variant]: true })]} aria-hidden='true'>
-        {slots.default?.()}
-      </div>
-    );
+    const skeleton = inject(skeletonKey, undefined);
+    return () => {
+      const owner = skeleton?.value;
+      const crossNamespace = owner && owner.namespace !== ns.namespace.value;
+      return (
+        <div
+          class={[bem(), bem({ [props.variant]: true })]}
+          aria-hidden='true'
+          data-skeleton-cross-namespace={crossNamespace || undefined}
+          data-skeleton-animated={crossNamespace ? owner.animated : undefined}>
+          {slots.default?.()}
+        </div>
+      );
+    };
   }
 });

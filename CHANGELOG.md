@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- 修复 Skeleton 的自定义模板跨 ConfigProvider 命名空间时占位项的底色和动画。`--i-skeleton-color` 和 `--i-skeleton-shimmer` 仍可显式覆盖。自定义 CSS 若直接读取默认色，请分别添加 `--i-bg-subtle` 和 `--i-bg` 作为回退。
+
 - Popover、Popconfirm 与 `v-popover` 支持最近一级 ConfigProvider 的命名空间、主题与浮层宿主。
 
 - Tooltip 支持自定义命名空间，挂载到外部容器时可继承最近 ConfigProvider 的主题、尺寸及主题变量。

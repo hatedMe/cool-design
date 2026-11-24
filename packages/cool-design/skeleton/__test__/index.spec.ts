@@ -1,6 +1,8 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, test, vi } from 'vitest';
+import { h, nextTick, ref } from 'vue';
 import Skeleton, { SkeletonItem } from '..';
+import ConfigProvider from '../../config-provider';
 
 describe('test `Skeleton` component', () => {
   test('loading 切换骨架与真实内容', async () => {
@@ -49,5 +51,34 @@ describe('test `Skeleton` component', () => {
     expect(wrapper.get('.custom-tpl').text()).toBe('自定义');
     const item = mount(SkeletonItem, { props: { variant: 'circle' } });
     expect(item.classes()).toContain('i-skeleton-item--circle');
+  });
+
+  test('跨 ConfigProvider 的占位项跟随所属骨架屏，保留同一个插槽节点', async () => {
+    const namespace = ref('acme');
+    const animated = ref(true);
+    const wrapper = mount({
+      setup: () => () => h(Skeleton, { animated: animated.value }, {
+        template: () => h(ConfigProvider, { namespace: namespace.value }, {
+          default: () => h(SkeletonItem, { key: 'rect', variant: 'rect' })
+        })
+      })
+    });
+    try {
+      const item = wrapper.get('.acme-skeleton-item--rect');
+      expect(item.attributes('data-skeleton-cross-namespace')).toBe('true');
+      expect(item.attributes('data-skeleton-animated')).toBe('true');
+      namespace.value = '3d';
+      animated.value = false;
+      await nextTick();
+      const updated = wrapper.get('[class~="3d-skeleton-item--rect"]');
+      expect(updated.element).toBe(item.element);
+      expect(updated.attributes('data-skeleton-animated')).toBe('false');
+      namespace.value = 'i';
+      await nextTick();
+      expect(wrapper.get('.i-skeleton-item--rect').element).toBe(item.element);
+      expect(item.attributes('data-skeleton-cross-namespace')).toBeUndefined();
+    } finally {
+      wrapper.unmount();
+    }
   });
 });

@@ -1,7 +1,8 @@
 import { useNamespace } from '../../hooks/use-namespace';
-import { computed, defineComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, defineComponent, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue';
 import { createNamespace } from '../../../src/utils/create';
 import SkeletonItem from './skeleton-item';
+import { skeletonKey } from './context';
 
 const [name] = createNamespace('skeleton');
 
@@ -31,6 +32,7 @@ export default defineComponent({
     const rows = computed(() => Math.max(0, toInt(props.rows, 3)));
     const throttleMs = computed(() => Math.max(0, toInt(props.throttle, 0)));
     const showSkeleton = ref(props.loading && throttleMs.value <= 0);
+    provide(skeletonKey, computed(() => showSkeleton.value ? { namespace: ns.namespace.value, animated: props.animated } : undefined));
     let timer: ReturnType<typeof setTimeout> | undefined;
 
     const clearTimer = () => {
