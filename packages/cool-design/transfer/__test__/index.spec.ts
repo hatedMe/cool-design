@@ -324,8 +324,9 @@ describe('Transfer', () => {
     );
     const root = wrapper.find('.i-transfer');
     const fieldId = root.attributes('id');
-    expect(fieldId).toMatch(/^i-field-/);
-    expect(wrapper.find('label').attributes('for')).toBe(fieldId);
+    expect(fieldId).toMatch(/^i-id-/);
+    expect(wrapper.find('label').attributes('for')).toBeUndefined();
+    expect(root.attributes('aria-labelledby')).toBe(wrapper.get('.i-form-item__label').element.id);
     expect(wrapper.text()).not.toContain('不允许选择');
 
     await itemsOf(wrapper, 0)[0].get('input').setValue(true);
@@ -333,7 +334,7 @@ describe('Transfer', () => {
     await flushPromises();
     expect(wrapper.text()).toContain('不允许选择');
     expect(root.attributes('aria-invalid')).toBe('true');
-    expect(root.attributes('aria-describedby')).toBe(`${fieldId}-error`);
+    expect(root.attributes('aria-describedby')).toBe(wrapper.get('[role=alert]').attributes('id'));
     wrapper.unmount();
 
     const disabledWrapper = mount(

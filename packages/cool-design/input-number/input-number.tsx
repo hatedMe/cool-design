@@ -1,7 +1,7 @@
 import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, inject, nextTick, ref, type PropType } from 'vue';
 import { createBEM, createNamespace } from '../../../src/utils/create';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { useConfig } from '../config-provider/context';
 import './index.scss';
 
@@ -55,7 +55,7 @@ export default defineComponent({
     const ns = useNamespace('input-number');
     const controlNs = useNamespace('control');
     const bem = createBEM(ns.b);
-    const field = useField();
+    const field = useFieldControl((fallback) => props.id || fallback);
     const form = inject(formKey, undefined);
     const config = useConfig();
     const input = ref<HTMLInputElement>();
@@ -145,11 +145,12 @@ export default defineComponent({
       const buttonClass = (type: 'increase' | 'decrease') => bem(type, { disabled: disabled || (type === 'increase' ? currentValue.value! >= props.max : currentValue.value! <= props.min) });
       const inputAttrs = {
         ...attrs,
-        id: props.id ?? field?.id,
+        id: props.id || field?.id || props.id,
         name: props.name,
         inputmode: props.inputmode,
         tabindex: props.tabindex,
-        'aria-label': props.ariaLabel,
+        'aria-label': props.ariaLabel ?? (attrs['aria-label'] as string | undefined),
+        'aria-describedby': fieldDescription(field, attrs['aria-describedby']),
         placeholder: props.placeholder,
         disabled,
         readonly: props.readonly,

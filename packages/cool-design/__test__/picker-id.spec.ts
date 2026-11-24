@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { createSSRApp, h } from 'vue';
+import { createSSRApp, h, nextTick } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 import { afterEach, expect, test } from 'vitest';
 import { idKey } from '../../hooks/use-id';
@@ -95,6 +95,7 @@ test.each([
   expect(wrapper.findAll('#explicit-input')).toHaveLength(1);
   const fallback = mount(Form, { props: { model: {} }, slots: { default: () => h(FormItem, { label: '时间或地区' }, () => h(component, props)) } });
   mounts.push(fallback);
+  await nextTick();
   expect(fallback.get('input[type="text"]').attributes('id')).toBe(fallback.get('label').attributes('for'));
 });
 

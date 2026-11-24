@@ -7,7 +7,7 @@ import { useId } from '../../hooks/use-id';
 import Icon from '../icon';
 import type { Component } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useNamespace } from '../../hooks/use-namespace';
 import { useFloating, useFloatingTheme, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
@@ -56,7 +56,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear', 'visible-change'],
   setup(props, { attrs, emit, expose }) {
-    const field = useField();
+    const field = useFieldControl((fallback) => (attrs.id as string) || fallback);
     const form = inject(formKey, undefined);
     const config = useConfig();
     const ns = useNamespace('time-select');
@@ -191,6 +191,7 @@ export default defineComponent({
           role='combobox'
           disabled={isDisabled()}
           readonly={!props.editable}
+          aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
           id={getInputId()}
           value={query.value ?? (hasValue.value ? String(props.modelValue) : '')}
           placeholder={props.placeholder}

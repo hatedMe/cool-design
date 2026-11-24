@@ -18,15 +18,20 @@ export type DateValue = string | number | Date;
 export type DateModelValue = DateValue | Array<DateValue | null> | null;
 export type TimeParts = { hour: number; minute: number; second: number };
 
-export function getPickerIds(baseId: string, range: boolean, id?: string | string[], fieldId?: string) {
+export function getPickerIds(baseId: string, range: boolean, id?: string | string[], fieldId?: string, available = (candidate: string) => candidate) {
   const explicitStart = Array.isArray(id) ? id[0] : id;
   const explicitEnd = range && Array.isArray(id) ? id[1] : undefined;
+  const unique = (candidate: string, other?: string) => {
+    let value = available(candidate);
+    while (value === other) value = available(value + '-fallback');
+    return value;
+  };
   const start = `${baseId}-${range ? 'start' : 'input'}`;
   const end = `${baseId}-end`;
-  const inputId = explicitStart || (!range && fieldId) || (start === explicitEnd ? `${start}-fallback` : start);
-  const endId = range ? explicitEnd || (end === inputId ? `${end}-fallback` : end) : undefined;
-  let panelId = baseId;
-  while (panelId === inputId || panelId === endId) panelId += '-panel';
+  const inputId = explicitStart || (!range && fieldId) || unique(start, explicitEnd);
+  const endId = range ? explicitEnd || unique(end, inputId) : undefined;
+  let panelId = available(baseId);
+  while (panelId === inputId || panelId === endId) panelId = available(panelId + '-panel');
   return { inputId, endId, panelId };
 }
 

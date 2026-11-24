@@ -3,7 +3,7 @@ import { defineComponent, nextTick, ref, watch, type PropType, type StyleValue }
 import Icon from '../icon/icon';
 import type { IconProp } from '../icon';
 import { inject } from 'vue';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { useConfig } from '../config-provider/context';
 export default defineComponent({
   name: 'i-switch',
@@ -33,7 +33,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'input'],
   setup(props, { attrs, emit, slots, expose }) {
     const ns = useNamespace('switch');
-    const field = useField();
+    const field = useFieldControl((fallback) => (attrs.id as string) || fallback);
     const form = inject(formKey, undefined);
     const disabledOf = () => props.disabled || (field?.disabled?.() ?? form?.disabled?.()) || props.loading;
     const config = useConfig();
@@ -94,6 +94,7 @@ export default defineComponent({
             style={props.width === undefined ? undefined : { width: typeof props.width === 'number' ? `${props.width}px` : props.width }}
             id={(attrs.id as string) || field?.id}
             type='checkbox'
+            aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
             role='switch'
             aria-checked={active}
             aria-disabled={disabled}

@@ -14,7 +14,7 @@ import {
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useId } from '../../hooks/use-id';
 import { useNamespace } from '../../hooks/use-namespace';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useFloating, useFloatingTheme, type Placement, type FloatingOptions } from '../../../src/utils/use-floating';
 import { createBEM, createNamespace } from '../../../src/utils/create';
@@ -104,7 +104,7 @@ export default defineComponent({
       checkOnClickNode: props.props?.checkOnClickNode ?? props.checkOnClickNode,
       showPrefix: props.props?.showPrefix ?? props.showPrefix
     }));
-    const field = useField();
+    const field = useFieldControl((fallback) => props.filterable ? (attrs.id as string) || fallback : undefined);
     const form = inject(formKey, undefined);
     const config = useConfig();
     const { getValueOnClear, isEmptyValue } = useEmptyValues({
@@ -474,6 +474,7 @@ export default defineComponent({
             ref={reference}
             id={props.filterable ? undefined : inputId}
             class={bem('control')}
+            aria-labelledby={(attrs['aria-labelledby'] as string) || (attrs['aria-label'] ? undefined : field?.getLabelId?.())}
             role='combobox'
             tabindex={isDisabled() ? -1 : 0}
             aria-expanded={open.value}
@@ -481,7 +482,7 @@ export default defineComponent({
             aria-controls={open.value ? panelId : undefined}
             aria-disabled={isDisabled() || undefined}
             aria-invalid={field?.invalid() || undefined}
-            aria-describedby={field?.invalid() ? field.errorId : undefined}
+            aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
             onClick={() => {
               if (!open.value) query.value = '';
               setOpen(!open.value);

@@ -4,7 +4,7 @@ import Panel from './panel';
 import type { TransferPanelInstance } from './types';
 import { computed, defineComponent, nextTick, ref, watch, type PropType } from 'vue';
 import { inject } from 'vue';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import type {
   TransferDirection,
   TransferFilterMethod,
@@ -36,6 +36,7 @@ const disabledOf = (item: TransferItem, map: TransferPropsMap) => Boolean(item[m
 
 export default defineComponent({
   name: 'i-transfer',
+  inheritAttrs: false,
   props: {
     modelValue: { type: Array as PropType<TransferKey[]>, default: () => [] },
     data: { type: Array as PropType<TransferItem[]>, default: () => [] },
@@ -61,7 +62,7 @@ export default defineComponent({
   setup(props, { attrs, emit, slots, expose }) {
     const ns = useNamespace('transfer');
     const bem = createBEM(ns.b);
-    const field = useField();
+    const field = useFieldControl();
     const form = inject(formKey, undefined);
     const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
     const leftPanel = ref<TransferPanelInstance>();
@@ -278,11 +279,14 @@ export default defineComponent({
       const toRightText = props.buttonTexts[1] ?? '';
       return (
         <div
+          {...attrs}
           class={[ns.b(), isDisabled() && 'is-disabled']}
           id={(attrs.id as string) || field?.id}
-          aria-disabled={isDisabled() ? 'true' : undefined}
-          aria-invalid={field?.invalid() || undefined}
-          aria-describedby={field?.invalid() ? field.errorId : undefined}
+          role={(attrs.role as string) ?? (field ? 'group' : undefined)}
+          aria-labelledby={(attrs['aria-labelledby'] as string) || (attrs['aria-label'] ? undefined : field?.getLabelId?.())}
+          aria-disabled={(attrs['aria-disabled'] as 'true' | 'false' | undefined) ?? (isDisabled() ? 'true' : undefined)}
+          aria-invalid={(attrs['aria-invalid'] as 'true' | 'false' | undefined) ?? (field?.invalid() ? 'true' : undefined)}
+          aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
         >
           {panel(left.value, 0)}
           <div class={ns.e('buttons')}>

@@ -1,6 +1,6 @@
 import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, h, inject, markRaw, nextTick, onMounted, ref, toRaw, watch, type Component, type PropType } from 'vue';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useComposition } from '../../hooks/index.ts';
 export default defineComponent({
@@ -51,7 +51,7 @@ export default defineComponent({
   setup(props, { attrs, emit, expose, slots }) {
     const ns = useNamespace('input');
     const controlNs = useNamespace('control');
-    const field = useField();
+    const field = useFieldControl((fallback) => (attrs.id as string) || fallback);
     const form = inject(formKey, undefined);
     const disabled = computed(() => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.()));
     const config = useConfig();
@@ -175,7 +175,7 @@ export default defineComponent({
           readonly={props.readonly}
           placeholder={props.placeholder}
           aria-invalid={field?.invalid() || undefined}
-          aria-describedby={field?.invalid() ? field.errorId : undefined}
+          aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
           onCompositionstart={(e: CompositionEvent) => {
             handleCompositionStart();
             emit('compositionstart', e);
@@ -218,7 +218,7 @@ export default defineComponent({
           readonly={props.readonly}
           placeholder={props.placeholder}
           aria-invalid={field?.invalid() || undefined}
-          aria-describedby={field?.invalid() ? field.errorId : undefined}
+          aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
           onCompositionstart={(e: CompositionEvent) => {
             handleCompositionStart();
             emit('compositionstart', e);

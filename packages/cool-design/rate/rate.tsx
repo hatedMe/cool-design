@@ -1,6 +1,6 @@
 import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, inject, ref, watch, type PropType } from 'vue';
-import { fieldKey, formKey } from '../form/context';
+import { fieldDescription, useFieldControl, formKey } from '../form/context';
 import { useConfig } from '../config-provider/context';
 import { createBEM, createNamespace } from '../../../src/utils/create';
 import { Icon } from '../icon';
@@ -53,7 +53,7 @@ export default defineComponent({
     const ns = useNamespace('rate');
     const bem = createBEM(ns.b);
     const form = inject(formKey, undefined);
-    const field = inject(fieldKey, undefined);
+    const field = useFieldControl();
     const config = useConfig();
     const isDisabled = computed(() => props.disabled || Boolean(form?.disabled?.()));
     const effectiveSize = computed(() => props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size);
@@ -136,9 +136,10 @@ export default defineComponent({
         {...attrs}
         id={props.id || field?.id}
         class={[bem(), ns.m(String(effectiveSize.value)), isDisabled.value && bem('', { disabled: true })]}
+        aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
         role='slider'
         aria-label={(typeof attrs['aria-label'] === 'string' ? attrs['aria-label'] : undefined) || props.ariaLabel || props.label || (field?.getLabelId?.() ? undefined : 'rating')}
-        aria-labelledby={(typeof attrs['aria-labelledby'] === 'string' ? attrs['aria-labelledby'] : undefined) || (!props.ariaLabel && !props.label ? field?.getLabelId?.() : undefined)}
+        aria-labelledby={(typeof attrs['aria-labelledby'] === 'string' ? attrs['aria-labelledby'] : undefined) || (!attrs['aria-label'] && !props.ariaLabel && !props.label ? field?.getLabelId?.() : undefined)}
         title={props.label}
         data-role='rate-slider'
         aria-valuetext={(props.showText || props.showScore) && displayText.value ? displayText.value : undefined}

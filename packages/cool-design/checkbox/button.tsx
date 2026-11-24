@@ -1,11 +1,12 @@
 import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, inject, type PropType } from 'vue';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { useConfig } from '../config-provider/context';
 import { checkboxGroupKey, checkboxValueEqual, type CheckboxValue } from './group';
 
 export default defineComponent({
   name: 'i-checkbox-button',
+  inheritAttrs: false,
   props: {
     modelValue: { type: [String, Number, Boolean] as PropType<string | number | boolean>, default: undefined },
     value: { type: [String, Number, Boolean, Object] as PropType<CheckboxValue>, default: undefined },
@@ -18,9 +19,9 @@ export default defineComponent({
     size: { type: String as PropType<'small' | 'default' | 'large'>, default: undefined }
   },
   emits: ['update:modelValue', 'change'],
-  setup(props, { emit, slots }) {
+  setup(props, { attrs, emit, slots }) {
     const ns = useNamespace('checkbox-button');
-    const field = useField();
+    const field = useFieldControl((fallback) => group ? undefined : (attrs.id as string) || fallback);
     const form = inject(formKey, undefined);
     const config = useConfig();
     const group = inject(checkboxGroupKey, undefined);
@@ -45,6 +46,7 @@ export default defineComponent({
       return (
         <button
           type='button'
+          id={(attrs.id as string) || field?.id}
           class={[
             ns.b(),
             checked && 'is-checked',
@@ -63,6 +65,8 @@ export default defineComponent({
             emit('update:modelValue', value);
             emit('change', value);
           }}
+          {...attrs}
+          aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
         >
           {slots.default?.() ?? (props.label === undefined ? undefined : String(props.label))}
         </button>

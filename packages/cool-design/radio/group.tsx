@@ -2,7 +2,7 @@ import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, inject, nextTick, provide, type InjectionKey, type PropType } from 'vue';
 import Radio, { type RadioValue } from './radio';
 import RadioButton from '../radio-button/radio-button';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 
 export interface RadioItem {
   uid: number;
@@ -28,6 +28,7 @@ export const radioGroupKey: InjectionKey<RadioGroupContext> = Symbol('radio-grou
 
 export default defineComponent({
   name: 'i-radio-group',
+  inheritAttrs: false,
   props: {
     modelValue: [String, Number, Boolean] as PropType<RadioValue>,
     name: String,
@@ -41,9 +42,9 @@ export default defineComponent({
     validateEvent: { type: Boolean, default: true }
   },
   emits: ['update:modelValue', 'change'],
-  setup(props, { emit, slots }) {
+  setup(props, { attrs, emit, slots }) {
     const ns = useNamespace('radio-group');
-    const field = useField();
+    const field = useFieldControl();
     const form = inject(formKey, undefined);
     const items: RadioItem[] = [];
     const register: RadioGroupContext['register'] = (item) => {
@@ -117,11 +118,14 @@ export default defineComponent({
       <div
         class={ns.b()}
         role='radiogroup'
+        aria-labelledby={attrs['aria-label'] ? undefined : field?.getLabelId?.()}
         onKeydown={onKeydown}
         style={{
           [ns.cssVarName('radio-button-checked-bg-color')]: props.fill,
           [ns.cssVarName('radio-button-checked-text-color')]: props.textColor
-        }}>
+        }}
+        {...attrs}
+        aria-describedby={fieldDescription(field, attrs['aria-describedby'])}>
         {slots.default ? slots.default() : props.options?.map((option, index) => {
           const { value = 'value', label = 'label', disabled = 'disabled' } = props.props ?? {};
           const Component = props.type === 'button' ? RadioButton : Radio;

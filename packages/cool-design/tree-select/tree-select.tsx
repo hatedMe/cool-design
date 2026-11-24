@@ -20,7 +20,7 @@ import type { TreeAllowDrag, TreeAllowDrop, TreeRenderContent, TreeData, TreeExp
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useNamespace } from '../../hooks/use-namespace';
 import { useConfig, type Size } from '../config-provider/context';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import type { FloatingOptions, Placement } from '../../../src/utils/use-floating';
 export interface TreeSelectNode extends TreeData {
   value?: string | number;
@@ -30,6 +30,7 @@ export interface TreeSelectNode extends TreeData {
 }
 export default defineComponent({
   name: 'i-tree-select',
+  inheritAttrs: false,
   props: {
     modelValue: {
       type: [String, Number, Boolean, Array] as PropType<string | number | boolean | (string | number)[] | null>,
@@ -101,11 +102,11 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change', 'clear', 'visible-change', 'remove-tag', 'focus', 'blur', 'node-click', 'check',
     'popup-scroll', 'end-reached', 'node-contextmenu', 'current-change', 'check-change', 'node-expand', 'node-collapse', 'node-drag-start', 'node-drag-enter', 'node-drag-leave', 'node-drag-over', 'node-drag-end', 'node-drop'],
-  setup(props, { emit, expose, slots }) {
+  setup(props, { attrs, emit, expose, slots }) {
     const ns = useNamespace('tree-select');
     const treeNs = useNamespace('tree');
     const selectNs = useNamespace('select');
-    const field = useField();
+    const field = useFieldControl((fallback) => props.id || fallback);
     const form = inject(formKey, undefined);
     const config = useConfig();
     const size = computed(() => props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size);
@@ -334,10 +335,11 @@ export default defineComponent({
       const tagClasses = [selectNs.e('tag'), props.tagType && selectNs.em('tag', props.tagType), selectNs.em('tag', props.tagEffect)];
       return (
         <span
+          {...attrs}
           ref={root}
           class={[ns.b(), ns.m(size.value), open.value && 'is-open', isDisabled() && 'is-disabled']}
-          aria-invalid={field?.invalid() ? 'true' : undefined}
-          aria-describedby={field?.invalid() ? field.errorId : undefined}>
+          aria-invalid={(attrs['aria-invalid'] as 'true' | 'false' | undefined) ?? (field?.invalid() ? 'true' : undefined)}
+          >
           <Select
             ref={selectRef}
             disabled={isDisabled()}
@@ -363,7 +365,8 @@ export default defineComponent({
             type='button'
             class={ns.e('control')}
             role='combobox'
-            id={props.id ?? field?.id}
+            aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
+            id={props.id || field?.id || props.id}
             tabindex={props.tabindex}
             aria-label={props.ariaLabel}
             onFocus={(event: FocusEvent) => emit('focus', event)}

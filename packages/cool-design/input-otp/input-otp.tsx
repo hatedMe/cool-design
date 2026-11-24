@@ -1,6 +1,6 @@
 import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, inject, nextTick, ref, watch, type PropType, type VNode } from 'vue';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 
 export type InputOtpType = 'outlined' | 'filled' | 'underlined';
@@ -8,6 +8,7 @@ export type InputOtpSeparator = string | VNode | ((index: number) => string | VN
 
 export default defineComponent({
   name: 'i-input-otp',
+  inheritAttrs: false,
   props: {
     modelValue: [String, Number] as PropType<string | number>,
     length: { type: Number, default: 6 },
@@ -24,10 +25,10 @@ export default defineComponent({
     ariaLabel: String
   },
   emits: ['update:modelValue', 'change', 'finish', 'focus', 'blur'],
-  setup(props, { emit, slots, expose }) {
+  setup(props, { attrs, emit, slots, expose }) {
     const ns = useNamespace('input-otp');
     const controlNs = useNamespace('control');
-    const field = useField();
+    const field = useFieldControl();
     const form = inject(formKey, undefined);
     const config = useConfig();
     const inputs = ref<HTMLInputElement[]>([]);
@@ -157,6 +158,7 @@ export default defineComponent({
 
     return () => (
       <div
+        {...attrs}
         ref={root}
         class={[
           ns.b(),
@@ -164,10 +166,10 @@ export default defineComponent({
           controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size),
           { 'is-disabled': isDisabled() }
         ]}
-        id={props.id ?? field?.id}
-        aria-label={props.ariaLabel}
-        aria-invalid={field?.invalid() ? 'true' : undefined}
-        aria-describedby={field?.invalid() ? field.errorId : undefined}>
+        id={props.id || field?.id || props.id}
+        aria-label={(attrs['aria-label'] as string) ?? props.ariaLabel}
+        aria-invalid={(attrs['aria-invalid'] as 'true' | 'false' | undefined) ?? (field?.invalid() ? 'true' : undefined)}
+        aria-describedby={fieldDescription(field, attrs['aria-describedby'])}>
         {chars.value.map((char, index) => [
           index > 0 && (
             <span class={ns.e('separator')} key={`separator-${index}`} aria-hidden='true'>

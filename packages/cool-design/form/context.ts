@@ -1,4 +1,5 @@
-import { inject, toRaw, type InjectionKey } from 'vue';
+import { useId } from '../../hooks/use-id';
+import { inject, onActivated, onDeactivated, onMounted, onUpdated, onBeforeUnmount, toRaw, type InjectionKey } from 'vue';
 import type { ValidateError } from 'async-validator';
 import type { FormFieldContext, FormItemProp, FormRule } from './types';
 
@@ -100,10 +101,11 @@ export interface FormContext {
   scrollIntoViewOptions: () => ScrollIntoViewOptions | boolean;
 }
 export interface FieldContext {
-  id: string;
-  labelId?: string;
+  setControl: (key: symbol, nativeId: string | undefined) => void;
+  removeControl: (key: symbol) => void;
+  availableId: (candidate: string) => string;
   getLabelId?: () => string | undefined;
-  errorId: string;
+  getErrorId: () => string | undefined;
   invalid: () => boolean;
   validate: (trigger: 'blur' | 'change') => void;
   disabled?: () => boolean;
@@ -111,6 +113,30 @@ export interface FieldContext {
 }
 export const formKey: InjectionKey<FormContext> = Symbol('form');
 export const fieldKey: InjectionKey<FieldContext> = Symbol('field');
-let fieldId = 0;
-export const nextFieldId = () => `i-field-${++fieldId}`;
 export const useField = () => inject(fieldKey, undefined);
+
+export function useFieldControl(nativeId?: (fallback: string) => string | undefined, active = () => true) {
+  const field = useField();
+  if (!field) return;
+  const base = useId();
+  const key = Symbol();
+  const fallback = () => field.availableId?.(base.value) ?? base.value;
+  let deactivated = false;
+  const update = () => {
+    if (!deactivated && active()) field.setControl?.(key, nativeId?.(fallback()));
+    else field.removeControl?.(key);
+  };
+  onActivated(() => { deactivated = false; update(); });
+  onDeactivated(() => { deactivated = true; field.removeControl?.(key); });
+  onMounted(update);
+  onUpdated(update);
+  onBeforeUnmount(() => field.removeControl?.(key));
+  return { ...field, get id() { return fallback(); } };
+}
+
+export function fieldDescription(field: FieldContext | undefined, description: unknown) {
+  const error = field?.getErrorId?.();
+  const tokens = typeof description === 'string' ? description.split(/\s+/).filter(Boolean) : [];
+  if (error && !tokens.includes(error)) tokens.push(error);
+  return tokens.join(' ') || undefined;
+}

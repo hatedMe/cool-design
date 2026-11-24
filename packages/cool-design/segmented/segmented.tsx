@@ -1,7 +1,7 @@
 import { useNamespace } from '../../hooks/use-namespace';
 import { Comment, Fragment, Text, computed, defineComponent, inject, nextTick, ref, type PropType, type VNode } from 'vue';
 import { useConfig } from '../config-provider/context';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 
 export interface SegmentedOption {
   label?: string;
@@ -25,6 +25,7 @@ const flattenSlot = (vnodes: VNode[]): VNode[] =>
 
 export default defineComponent({
   name: 'i-segmented',
+  inheritAttrs: false,
   props: {
     options: { type: Array as PropType<SegmentedRawOption[]>, default: () => [] },
     modelValue: [String, Number] as PropType<SegmentedValue>,
@@ -36,9 +37,9 @@ export default defineComponent({
     size: String as PropType<'large' | 'default' | 'small'>
   },
   emits: ['update:modelValue', 'change'],
-  setup(props, { emit, slots }) {
+  setup(props, { attrs, emit, slots }) {
     const ns = useNamespace('segmented');
-    const field = useField();
+    const field = useFieldControl();
     const form = inject(formKey, undefined);
     const config = useConfig();
     const disabled = computed(() => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.()));
@@ -114,7 +115,9 @@ export default defineComponent({
         aria-orientation={props.direction}
         aria-label={labelId.value ? undefined : (props.ariaLabel ?? 'segmented')}
         aria-labelledby={labelId.value}
-        onKeydown={onKeydown}>
+        onKeydown={onKeydown}
+        {...attrs}
+        aria-describedby={fieldDescription(field, attrs['aria-describedby'])}>
         {items.value.map((option) => {
           const selected = option.value === props.modelValue;
           return (

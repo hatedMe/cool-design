@@ -1,6 +1,6 @@
 import Tooltip from '../tooltip';
 import { computed, defineComponent, inject, nextTick, ref, watch, type PropType } from 'vue';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
 import { useNamespace } from '../../hooks/use-namespace';
 import Icon from '../icon';
@@ -11,6 +11,7 @@ export type InputTagTagEffect = 'light' | 'dark' | 'plain';
 
 export default defineComponent({
   name: 'i-input-tag',
+  inheritAttrs: false,
   props: {
     modelValue: Array as PropType<string[]>,
     max: Number,
@@ -39,8 +40,8 @@ export default defineComponent({
     autocomplete: { type: String, default: 'off' }
   },
   emits: ['update:modelValue', 'change', 'input', 'add-tag', 'remove-tag', 'drag-tag', 'focus', 'blur', 'clear'],
-  setup(props, { emit, slots, expose }) {
-    const field = useField();
+  setup(props, { attrs, emit, slots, expose }) {
+    const field = useFieldControl();
     const form = inject(formKey, undefined);
     const config = useConfig();
     const ns = useNamespace('input-tag');
@@ -160,14 +161,15 @@ export default defineComponent({
       const rest = tags.value.length - shown.length;
       return (
         <div
+          {...attrs}
           class={[
             ns.b(),
             controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size),
             { 'is-disabled': isDisabled(), 'is-readonly': isReadonly() }
           ]}
-          id={props.id ?? field?.id}
-          aria-invalid={field?.invalid() ? 'true' : undefined}
-          aria-describedby={field?.invalid() ? field.errorId : undefined}>
+          id={props.id || field?.id || props.id}
+          aria-invalid={(attrs['aria-invalid'] as 'true' | 'false' | undefined) ?? (field?.invalid() ? 'true' : undefined)}
+          aria-describedby={fieldDescription(field, attrs['aria-describedby'])}>
           {slots.prefix?.()}
           {shown.map((value, index) => (
             <span

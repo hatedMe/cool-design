@@ -21,10 +21,9 @@ describe('Rate', () => {
     const wrapper = mount(Root);
     const label = wrapper.get('label');
     const rate = wrapper.get('[role="slider"]');
-    expect(label.attributes('for')).toBeTruthy();
+    expect(label.attributes('for')).toBeUndefined();
     expect(rate.attributes('id')).toBeTruthy();
     expect(rate.attributes('aria-labelledby')).toBeTruthy();
-    expect(label.attributes('for')).toBe(rate.attributes('id'));
     expect(rate.attributes('aria-labelledby')).toBe(label.attributes('id'));
     expect(rate.attributes('aria-label')).toBeUndefined();
   });

@@ -4,7 +4,7 @@ import { useId } from '../../hooks/use-id';
 import { createBEM } from '../../../src/utils/create';
 import { useConfig, type Size } from '../config-provider/context';
 import { useEmptyValues } from '../../hooks/use-empty-values';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { useFloating, useFloatingTheme, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
 import { emitValue, formatTimeParts, getPickerIds, parseTimeParts, timeInputValue, type DateModelValue, type DateValue, type TimeParts } from './date';
 import TimePickerPanel, { type TimeDisabledRule, type TimeUnit } from './time-picker-panel';
@@ -55,7 +55,7 @@ export default defineComponent({
     const bem = createBEM(ns.b);
     const controlNs = useNamespace('control');
     const config = useConfig();
-    const field = useField();
+    const field = useFieldControl(() => range.value ? undefined : inputRefs.value[0]?.id);
     const form = inject(formKey, undefined);
     const disabledOf = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
     const validate = (trigger: 'blur' | 'change') => {
@@ -217,6 +217,7 @@ export default defineComponent({
         aria-expanded={open.value}
         aria-controls={open.value ? ids.panelId : undefined}
         aria-disabled={disabledOf() || undefined}
+        aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
         aria-label={props.ariaLabel}
         name={props.name}
         tabindex={props.tabindex}
@@ -261,7 +262,7 @@ export default defineComponent({
     onBeforeUnmount(() => document.removeEventListener('mousedown', onOutside));
     expose({ focus: () => inputRefs.value[activeIndex.value]?.focus(), blur: () => inputRefs.value[activeIndex.value]?.blur(), handleOpen: () => setOpen(true), handleClose: close });
     return () => {
-      const ids = getPickerIds(baseId.value, range.value, props.id, field?.id);
+      const ids = getPickerIds(baseId.value, range.value, props.id, field?.id, field?.availableId);
       const panel = open.value ? (
         <div ref={floating} id={ids.panelId} role='dialog' class={[bem('dropdown'), panelTheme.value.scopeClass, props.popperClass]} data-theme={panelTheme.value.theme} style={[panelTheme.value.style, position.style.value, props.popperStyle as Record<string, string>]}>
           {props.arrowControl && <div class={bem('arrows')}>

@@ -1,3 +1,5 @@
+import { useId } from '../../hooks/use-id';
+import { createSlotIds, reserveSlotIds, avoidIdCollision } from '../../../src/utils/slot-ids';
 import { useNamespace } from '../../hooks/use-namespace';
 import {
   computed,
@@ -7,11 +9,13 @@ import {
   onBeforeUnmount,
   provide,
   ref,
+  shallowReactive,
+  shallowRef,
   watch,
   type PropType
 } from 'vue';
 import Schema, { type RuleItem, type ValidateError, type ValidateResult } from 'async-validator';
-import { formKey, fieldKey, getFieldPathIdentity, getFieldPathParts, getFieldValue, nextFieldId, normalizeFieldPath, cloneFormValue, setFieldValue, type Field } from '../form/context';
+import { formKey, fieldKey, getFieldPathIdentity, getFieldPathParts, getFieldValue, normalizeFieldPath, cloneFormValue, setFieldValue, type Field } from '../form/context';
 import type { FormItemProp, FormRule, FormValidateState } from '../form/types';
 
 function normalizeRule(rule: FormRule): RuleItem {
@@ -59,6 +63,7 @@ function normalizeRule(rule: FormRule): RuleItem {
 export default defineComponent({
   name: 'i-form-item',
   props: {
+    for: String,
     prop: [String, Array] as PropType<FormItemProp>,
     label: String,
     required: Boolean,
@@ -71,12 +76,14 @@ export default defineComponent({
     inlineMessage: Boolean,
     size: String as PropType<'small' | 'default' | 'large'>
   },
-  setup(props, { slots, expose }) {
+  setup(props, { attrs, slots, expose }) {
     const ns = useNamespace('form-item');
     const form = inject(formKey);
-    const id = nextFieldId();
-    const labelId = computed(() => (props.label || slots.label ? `${id}-label` : undefined));
-    const errorId = `${id}-error`;
+    const id = useId();
+    const controls = shallowReactive(new Map<symbol, string | undefined>());
+    const reserved = shallowRef(createSlotIds());
+    const labelId = () => props.label || slots.label ? avoidIdCollision(`${id.value}-label`, reserved.value) : undefined;
+    const errorId = () => avoidIdCollision(`${id.value}-error`, reserved.value);
     const error = ref('');
     const validateState = ref<FormValidateState>(props.validateStatus ?? '');
     let internalValidationPending = false;
@@ -163,10 +170,11 @@ export default defineComponent({
     };
     const validate: Field['validate'] = async (trigger) => (await check(trigger)) === true;
     provide(fieldKey, {
-      id,
-      labelId: undefined,
-      getLabelId: () => labelId.value,
-      errorId,
+      setControl: (key, nativeId) => controls.set(key, nativeId),
+      removeControl: (key) => controls.delete(key),
+      availableId: candidate => avoidIdCollision(candidate, reserved.value),
+      getLabelId: labelId,
+      getErrorId: () => props.showMessage && displayError.value ? errorId() : undefined,
       invalid: () => !!displayError.value || validateState.value === 'error',
       disabled: () => !!form?.disabled?.(),
       size: () => props.size ?? form?.size?.(),
@@ -230,6 +238,26 @@ export default defineComponent({
       setInitialValue: field.setInitialValue
     });
     return () => {
+      const content = slots.default?.();
+      const label = slots.label?.();
+      const message = displayError.value && props.showMessage ? slots.error?.({ error: displayError.value }) : undefined;
+      const ids = createSlotIds(attrs.id);
+      reserveSlotIds(ids, content);
+      reserveSlotIds(ids, label);
+      reserveSlotIds(ids, message);
+      for (const value of ids.explicit) {
+        if (Array.isArray(value)) {
+          ids.explicit.delete(value);
+          for (const part of value) ids.explicit.add(part);
+        }
+      }
+      const previous = reserved.value;
+      if (ids.explicit.size !== previous.explicit.size || [...ids.explicit].some(value => !previous.explicit.has(value))
+        || ids.encoded.size !== previous.encoded.size || [...ids.encoded].some(([key, value]) => previous.encoded.get(key) !== value)) {
+        reserved.value = ids;
+      }
+      const labelFor = props.for ?? (controls.size === 1 ? controls.values().next().value : undefined);
+      const group = !labelFor && !!labelId();
       const labelPosition = props.labelPosition ?? form?.labelPosition?.() ?? 'right';
       const labelWidth = props.labelWidth ?? form?.labelWidth?.();
       const hideAsterisk = !!form?.hideRequiredAsterisk?.();
@@ -244,6 +272,8 @@ export default defineComponent({
       return (
         <div
           ref={root}
+          role={group ? 'group' : undefined}
+          aria-labelledby={group && !attrs['aria-label'] ? labelId() : undefined}
           class={[
             ns.b(),
             ns.m(`label-${labelPosition}`),
@@ -254,15 +284,15 @@ export default defineComponent({
             [ns.cssVarName('form-item-label-width')]: typeof labelWidth === 'number' ? `${labelWidth}px` : labelWidth
           }}>
           {(props.label || slots.label) && (
-            <label id={labelId.value} class={ns.e('label')} for={id}>
+            <label id={labelId()} class={ns.e('label')} for={labelFor}>
               {asteriskPosition === 'left' && asterisk}
-              {slots.label?.() ?? props.label}
+              {label ?? props.label}
               {asteriskPosition === 'right' && asterisk}
               {form?.labelSuffix?.()}
             </label>
           )}
           <div class={ns.e('content')}>
-            {slots.default?.()}
+            {content}
             {statusIcon && (displayError.value || validateState.value === 'error' || validateState.value === 'success') && (
               <span
                 aria-hidden='true'
@@ -271,8 +301,8 @@ export default defineComponent({
               </span>
             )}
             {displayError.value && props.showMessage && (
-              <div class={[ns.e('error'), inlineMessage && 'is-inline-message']} id={errorId} role='alert'>
-                {slots.error?.({ error: displayError.value }) ?? displayError.value}
+              <div class={[ns.e('error'), inlineMessage && 'is-inline-message']} id={errorId()} role='alert'>
+                {message ?? displayError.value}
               </div>
             )}
           </div>

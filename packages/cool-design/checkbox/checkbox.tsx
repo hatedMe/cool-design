@@ -1,6 +1,6 @@
 import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, inject, nextTick, type PropType } from 'vue';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { useConfig } from '../config-provider/context';
 import { checkboxGroupKey, checkboxValueEqual, type CheckboxValue } from './group';
 export default defineComponent({
@@ -24,7 +24,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, slots }) {
     const ns = useNamespace('checkbox');
-    const field = useField();
+    const field = useFieldControl((fallback) => group ? undefined : (attrs.id as string) || fallback);
     const form = inject(formKey, undefined);
     const config = useConfig();
     const group = inject(checkboxGroupKey, undefined);
@@ -51,6 +51,7 @@ export default defineComponent({
           <input
             {...attrs}
             id={(attrs.id as string) || field?.id}
+            aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
             type='checkbox'
             class={size !== 'default' && size ? `is-${size}` : undefined}
             checked={checked}

@@ -1,7 +1,7 @@
 import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, getCurrentInstance, inject, nextTick, onBeforeUnmount, ref, type PropType } from 'vue';
 import { createBEM, createNamespace } from '../../../src/utils/create';
-import { useField, formKey } from '../form/context';
+import { fieldDescription, useFieldControl, formKey } from '../form/context';
 import { useConfig } from '../config-provider/context';
 import { radioGroupKey } from './group';
 const [name] = createNamespace('radio');
@@ -23,7 +23,7 @@ export default defineComponent({
   setup(props, { attrs, emit, slots }) {
     const ns = useNamespace('radio');
     const bem = createBEM(ns.b);
-    const field = useField();
+    const field = useFieldControl((fallback) => group ? undefined : (attrs.id as string) || fallback);
     const config = useConfig();
     const form = inject(formKey, undefined);
     const group = inject(radioGroupKey, undefined);
@@ -61,7 +61,7 @@ export default defineComponent({
           disabled={disabled}
           tabindex={group ? group.tabstopFor(uid) : undefined}
           aria-invalid={field?.invalid() || undefined}
-          aria-describedby={field?.invalid() ? field.errorId : undefined}
+          aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
           onChange={() => {
             if (disabled || value === undefined) return;
             if (group) {

@@ -2,7 +2,7 @@ import { computed, defineComponent, getCurrentInstance, inject, nextTick, ref, w
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useNamespace } from '../../hooks/use-namespace';
 import { useConfig, type Size } from '../config-provider/context';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { createBEM } from '../../../src/utils/create';
 import { useFloating, useFloatingTheme } from '../../../src/utils/use-floating';
 
@@ -32,7 +32,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change', 'active-change', 'clear'],
   setup(props, { attrs, emit, slots, expose }) {
-    const field = useField();
+    const field = useFieldControl((fallback) => (attrs.id as string) || fallback);
     const form = inject(formKey, undefined);
     const config = useConfig();
     const ns = useNamespace('color-picker');
@@ -108,9 +108,9 @@ export default defineComponent({
     };
     expose({ show, hide: close, focus: () => trigger.value?.focus(), blur: () => trigger.value?.blur() });
     // id 绑定在触发按钮上以关联表单标签，根节点不重复携带。
-    const rootAttrs: Record<string, unknown> = { ...attrs };
-    delete rootAttrs.id;
-    return () => (
+    return () => {
+      const { id, 'aria-label': label, 'aria-labelledby': labelledBy, ...rootAttrs } = attrs;
+      return (
       <span
         {...rootAttrs}
         class={[bem(), ns.m(size.value), ns.is('disabled', isDisabled())]}
@@ -121,14 +121,15 @@ export default defineComponent({
           ref={trigger}
           type='button'
           class={bem('trigger')}
-          id={(attrs.id as string) || field?.id}
+          id={(id as string) || field?.id}
           disabled={isDisabled()}
           tabindex={props.tabindex}
-          aria-label='选择颜色'
+          aria-labelledby={(labelledBy as string) || (label ? undefined : field?.getLabelId?.())}
+          aria-label={(label as string) || (labelledBy || field?.getLabelId?.() ? undefined : '选择颜色')}
           aria-expanded={open.value}
           aria-haspopup='dialog'
           aria-invalid={field?.invalid() || undefined}
-          aria-describedby={field?.invalid() ? field.errorId : undefined}
+          aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
           style={{ backgroundColor: open.value ? currentColor.value : modelColor() || undefined }}
           onClick={() => open.value ? close() : show()}
         >
@@ -151,6 +152,7 @@ export default defineComponent({
           </Teleport>
         )}
       </span>
-    );
+      );
+    };
   }
 });

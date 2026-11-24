@@ -108,8 +108,9 @@ describe('ColorPicker', () => {
       })
     );
     const trigger = wrapper.find('.i-color-picker__trigger');
+    await flushPromises();
     const fieldId = trigger.attributes('id');
-    expect(fieldId).toMatch(/^i-field-/);
+    expect(fieldId).toMatch(/^i-id-/);
     expect(wrapper.find('label').attributes('for')).toBe(fieldId);
 
     await trigger.trigger('click');
@@ -123,7 +124,7 @@ describe('ColorPicker', () => {
 
     expect(wrapper.text()).toContain('禁止选择红色');
     expect(trigger.attributes('aria-invalid')).toBe('true');
-    expect(trigger.attributes('aria-describedby')).toBe(`${fieldId}-error`);
+    expect(trigger.attributes('aria-describedby')).toBe(wrapper.get('[role=alert]').attributes('id'));
     wrapper.unmount();
 
     const disabledWrapper = mount(

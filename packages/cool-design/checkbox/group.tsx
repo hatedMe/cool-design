@@ -3,7 +3,7 @@ import { defineComponent, h, inject, nextTick, provide, type InjectionKey, type 
 import Button from './button';
 import Checkbox from './checkbox';
 import { useConfig } from '../config-provider/context';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 export type CheckboxValue = string | number | boolean | Record<string, unknown>;
 export type CheckboxOptionProps = {
   value?: string | ((option: Record<string, unknown>) => CheckboxValue);
@@ -30,6 +30,7 @@ export interface CheckboxGroupContext {
 export const checkboxGroupKey: InjectionKey<CheckboxGroupContext> = Symbol('checkbox-group');
 export default defineComponent({
   name: 'i-checkbox-group',
+  inheritAttrs: false,
   props: {
     modelValue: { type: Array as unknown as PropType<CheckboxValue[]>, default: () => [] },
     fill: String,
@@ -47,7 +48,7 @@ export default defineComponent({
   emits: ['update:modelValue', 'change'],
   setup(props, { attrs, emit, slots }) {
     const ns = useNamespace('checkbox-group');
-    const field = useField();
+    const field = useFieldControl();
     const form = inject(formKey, undefined);
     const config = useConfig();
     const disabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
@@ -101,7 +102,13 @@ export default defineComponent({
         });
       return h(
         props.tag,
-        { ...attrs, class: [ns.b(), `is-${size()}`], role: 'group' },
+        {
+          role: 'group',
+          'aria-labelledby': attrs['aria-label'] ? undefined : field?.getLabelId?.(),
+          ...attrs,
+          class: [ns.b(), `is-${size()}`, attrs.class],
+          'aria-describedby': fieldDescription(field, attrs['aria-describedby'])
+        },
         children
       );
     };

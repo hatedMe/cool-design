@@ -5,7 +5,7 @@ import { createBEM } from '../../../src/utils/create';
 import dayjs from 'dayjs';
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useConfig, type Size } from '../config-provider/context';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { emitValue, formatDate, getPickerIds, getWeekStart, parseFormattedDate, parseTimeParts, toDate, type DateModelValue, type DateValue, type TimeParts } from './date';
 import DatePickerPanel, { type DatePanelType } from './date-picker-panel';
 import TimePickerPanel, { type TimeUnit } from './time-picker-panel';
@@ -79,7 +79,7 @@ const createDatePicker = (inline: boolean) => defineComponent({
     const controlNs = useNamespace('control');
     const panelNs = useNamespace('date-picker-panel');
     const config = useConfig();
-    const field = useField();
+    const field = useFieldControl(() => inline || isRange.value ? undefined : inputRef.value?.id);
     const form = inject(formKey, undefined);
     const disabledOf = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
     const validate = (trigger: 'blur' | 'change') => {
@@ -423,7 +423,7 @@ const createDatePicker = (inline: boolean) => defineComponent({
     const renderInput = (ids: ReturnType<typeof getPickerIds>, value: DateValue | null | undefined, index?: number) => (
       <>
         {index === 0 && props.prefixIcon && <span class={bem('prefix-icon')}>{renderIcon(props.prefixIcon as string | Component, bem('icon'))}</span>}
-        <input {...attrs} ref={index === 0 || index == null ? inputRef : undefined} class={bem('input')} type='text' value={value != null ? formatDate(value, formatValue.value) : ''} placeholder={index === 0 ? props.startPlaceholder || props.placeholder : props.endPlaceholder || props.placeholder} disabled={disabledOf()} id={index === 1 ? ids.endId : ids.inputId} name={props.name} readonly={props.readonly || !props.editable} role='combobox' aria-haspopup='dialog' aria-expanded={open.value} aria-controls={open.value ? ids.panelId : undefined} aria-disabled={disabledOf() || undefined} onClick={() => { if (index != null) activeIndex.value = index; setOpen(true); }} onInput={(event: Event) => updateInput(index, (event.target as HTMLInputElement).value)} onChange={() => commitInput(index)} onFocus={(event: FocusEvent) => emit('focus', event)} onBlur={(event: FocusEvent) => { commitInput(index); emit('blur', event); validate('blur'); }} onKeydown={(event: KeyboardEvent) => { if (event.key === 'Escape') close(); if (event.key === 'Enter') setOpen(!open.value); }} />
+        <input {...attrs} ref={index === 0 || index == null ? inputRef : undefined} class={bem('input')} type='text' value={value != null ? formatDate(value, formatValue.value) : ''} placeholder={index === 0 ? props.startPlaceholder || props.placeholder : props.endPlaceholder || props.placeholder} disabled={disabledOf()} id={index === 1 ? ids.endId : ids.inputId} aria-describedby={fieldDescription(field, attrs['aria-describedby'])} name={props.name} readonly={props.readonly || !props.editable} role='combobox' aria-haspopup='dialog' aria-expanded={open.value} aria-controls={open.value ? ids.panelId : undefined} aria-disabled={disabledOf() || undefined} onClick={() => { if (index != null) activeIndex.value = index; setOpen(true); }} onInput={(event: Event) => updateInput(index, (event.target as HTMLInputElement).value)} onChange={() => commitInput(index)} onFocus={(event: FocusEvent) => emit('focus', event)} onBlur={(event: FocusEvent) => { commitInput(index); emit('blur', event); validate('blur'); }} onKeydown={(event: KeyboardEvent) => { if (event.key === 'Escape') close(); if (event.key === 'Enter') setOpen(!open.value); }} />
       </>
     );
     const clear = clearValue;
@@ -522,7 +522,7 @@ const createDatePicker = (inline: boolean) => defineComponent({
     }
     expose({ focus: () => inputRef.value?.focus(), blur: () => inputRef.value?.blur(), handleOpen: () => { manualOpen.value = true; setOpen(true); }, handleClose: close });
     return () => {
-      const ids = baseId && getPickerIds(baseId.value, isRange.value, props.id, field?.id);
+      const ids = baseId && getPickerIds(baseId.value, isRange.value, props.id, field?.id, field?.availableId);
       const value = model.value;
       const panel = open.value ? <div {...inline ? attrs : { role: 'dialog' }} id={inline ? (typeof props.id === 'string' ? props.id : undefined) : ids?.panelId} ref={floating} class={[inline ? panelNs.b() : bem('dropdown'), panelTheme.value.scopeClass, props.popperClass, inline && attrs.class, inline && disabledOf() && 'is-disabled']} data-theme={inline ? attrs['data-theme'] : panelTheme.value.theme} style={[panelTheme.value.style, inline ? attrs.style as StyleValue : position.style.value, props.popperStyle]} aria-disabled={inline && disabledOf() || undefined}>
         {inline && props.shortcuts?.length ? <div class={panelNs.e('shortcuts')}>{renderShortcuts()}</div> : null}

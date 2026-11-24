@@ -1,6 +1,6 @@
 import { useNamespace } from '../../hooks/use-namespace';
 import { computed, defineComponent, inject, nextTick, onBeforeUnmount, type CSSProperties, type PropType, ref } from 'vue';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { useConfig } from '../config-provider/context';
 import InputNumber from '../input-number/input-number';
 
@@ -72,7 +72,7 @@ export default defineComponent({
     const ns = useNamespace('slider');
     const activeHandle = ref(0);
     const focusedHandle = ref<number | null>(null);
-    const field = useField();
+    const field = useFieldControl();
     const form = inject(formKey, undefined);
     const config = useConfig();
     const isDisabled = computed(() => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.()));
@@ -235,6 +235,7 @@ export default defineComponent({
               <span
                 class={ns.e('handle')}
                 role='slider'
+                aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
                 tabindex={isDisabled.value ? -1 : 0}
                 aria-valuemin={bounds.value.min}
                 aria-valuemax={bounds.value.max}
@@ -271,7 +272,7 @@ export default defineComponent({
                   controls={props.showInputControls}
                   disabled={isDisabled.value}
                   validateEvent={false}
-                  id={field ? `${field.id}-input-${index}` : undefined}
+                  id={field?.availableId?.(`${field.id}-input-${index}`)}
                   ariaLabel={props.range
                     ? (index === 0 ? props.rangeStartLabel || '起始值' : props.rangeEndLabel || '结束值')
                     : props.ariaLabel || props.label || '滑块值'}

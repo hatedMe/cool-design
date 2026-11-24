@@ -1,7 +1,7 @@
 import { useNamespace } from '../../hooks/use-namespace';
 import { defineComponent, getCurrentInstance, inject, normalizeStyle, onBeforeUnmount, ref, type CSSProperties, type PropType, type StyleValue } from 'vue';
 import { useConfig } from '../config-provider/context';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { radioGroupKey } from '../radio/group';
 import type { RadioValue } from '../radio/radio';
 import { createBEM, createNamespace } from '../../../src/utils/create';
@@ -23,7 +23,7 @@ export default defineComponent({
   setup(props, { attrs, emit, slots }) {
     const ns = useNamespace('radio-button');
     const bem = createBEM(ns.b);
-    const field = useField();
+    const field = useFieldControl((fallback) => group ? undefined : fallback);
     const form = inject(formKey, undefined);
     const config = useConfig();
     const group = inject(radioGroupKey, undefined);
@@ -69,7 +69,9 @@ export default defineComponent({
           class={[bem({ 'is-checked': checked, 'is-disabled': disabled }), size ? ns.m(size) : undefined, labelClass]}
           style={style}>
           <input
+            aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
             ref={input}
+            id={field?.id}
             type='radio'
             value={String(value ?? '')}
             name={props.name || group?.name}

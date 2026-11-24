@@ -11,6 +11,7 @@
 | 参数            | 说明                                                       | 类型                            | 默认值 |
 | --------------- | ---------------------------------------------------------- | ------------------------------- | ------ |
 | `prop`          | 字段路径，支持 `a.b[0].c` 或 `['a', 'b', '0', 'c']`，省略时仅用于布局 | `string \| string[]`            | —      |
+| `for` | 显式关联的原生控件 ID | `string` | — |
 | `label`         | 字段标签，显示 Form 的 `labelSuffix` 后缀                  | `string`                        | —      |
 | `rules`         | 单项校验规则，优先于 Form 的同名字段规则                   | `FormRule \| FormRule[]`        | —      |
 | `validateStatus` | 校验状态，可选 `''` / `validating` / `success` / `error` | `FormValidateState` | `''` |

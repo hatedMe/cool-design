@@ -16,7 +16,7 @@ import {
 import Icon from '../icon';
 import { Teleport } from 'vue';
 import { inject } from 'vue';
-import { formKey, useField } from '../form/context';
+import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import { useConfig, useLocale, type Size } from '../config-provider/context';
 import { useNamespace } from '../../hooks/use-namespace';
 import { useFloating, useFloatingTheme, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
@@ -117,7 +117,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear', 'visible-change', 'remove-tag', 'popup-scroll', 'end-reached'],
   setup(props, { slots, attrs, emit, expose }) {
-    const field = useField();
+    const field = useFieldControl(undefined, () => !slots.control);
     const form = inject(formKey, undefined);
     const config = useConfig();
     const ns = useNamespace('select');
@@ -474,6 +474,8 @@ export default defineComponent({
           {slots.control ? slots.control({ open: open.value, toggle: () => setOpen(!open.value) }) : <div
             {...attrs}
             id={(attrs.id as string) || field?.id}
+            aria-labelledby={(attrs['aria-labelledby'] as string) || (attrs['aria-label'] ? undefined : field?.getLabelId?.())}
+            aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
             role='combobox'
             tabindex={isDisabled() ? -1 : 0}
             aria-expanded={open.value}
