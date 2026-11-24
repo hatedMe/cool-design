@@ -1,6 +1,7 @@
 import { mount, flushPromises } from '@vue/test-utils';
-import { nextTick } from 'vue';
-import { afterEach, describe, expect, test } from 'vitest';
+import { h, nextTick, ref } from 'vue';
+import { afterEach, describe, expect, test, vi } from 'vitest';
+import ConfigProvider from '../../config-provider';
 import Tour from '..';
 import type { TourStep } from '../types';
 
@@ -17,6 +18,97 @@ afterEach(() => {
 });
 
 describe('test `Tour` component', () => {
+  test('配置变更后重新测量当前目标且保持原滚动位置', async () => {
+    const namespace = ref('i');
+    const theme = ref<'dark' | 'light'>('dark');
+    const size = ref<'large' | 'small'>('large');
+    const open = ref(true);
+    const anchoredSteps: TourStep[] = [{ target: '#config-target', title: '目标步骤' }];
+    const gap = { offset: 5 };
+    const wrapper = mount({
+      setup: () => () => h(ConfigProvider, { namespace: namespace.value, size: size.value, theme: theme.value }, () => [
+        h('button', { id: 'config-target' }),
+        h(Tour, { modelValue: open.value, steps: anchoredSteps, gap, scrollIntoViewOptions: true })
+      ])
+    }, { attachTo: document.body });
+
+    try {
+      const target = wrapper.get('#config-target').element;
+      const provider = target.parentElement!;
+      const scrollIntoView = vi.fn();
+      const measureTarget = vi.fn(() => fakeRect(
+        120 + (provider.classList.contains('acme-config-provider') ? 10 : 0)
+        + (provider.dataset.theme === 'light' ? 10 : 0)
+        + (provider.style.getPropertyValue('--acme-control-height') === '28px' ? 10 : 0)
+      ));
+      Object.defineProperties(target, {
+        scrollIntoView: { value: scrollIntoView },
+        getBoundingClientRect: { value: measureTarget }
+      });
+      await flushPromises();
+      const spotlight = document.querySelector<HTMLElement>('.i-tour__spotlight')!;
+      expect(spotlight.style.top).toBe('115px');
+      expect(scrollIntoView).toHaveBeenCalled();
+      scrollIntoView.mockClear();
+
+      namespace.value = 'acme';
+      await flushPromises();
+      expect(spotlight.classList.contains('acme-tour__spotlight')).toBe(true);
+      expect(spotlight.style.top).toBe('125px');
+      theme.value = 'light';
+      await flushPromises();
+      expect(spotlight.style.top).toBe('135px');
+      size.value = 'small';
+      await flushPromises();
+      expect(spotlight.style.top).toBe('145px');
+      expect(scrollIntoView).not.toHaveBeenCalled();
+
+      open.value = false;
+      await flushPromises();
+      measureTarget.mockClear();
+      namespace.value = 'i';
+      await flushPromises();
+      expect(spotlight.isConnected).toBe(false);
+      expect(measureTarget).not.toHaveBeenCalled();
+      expect(scrollIntoView).not.toHaveBeenCalled();
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  test('外置浮层跟随最近 Provider，切换前缀后保留步骤和用户样式', async () => {
+    const namespace = ref('acme');
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const wrapper = mount({
+      setup: () => () => h(ConfigProvider, { namespace: 'outer', themeVars: { '--user-outer': '7px' } }, () =>
+        h(ConfigProvider, { namespace: namespace.value, size: 'large', theme: 'dark' }, () =>
+          h(Tour, { modelValue: true, steps, appendTo: host, mask: { style: { '--acme-control-height': '44px' } } })))
+    }, { attachTo: document.body });
+
+    try {
+      await nextTick();
+      const panel = host.querySelector<HTMLElement>('[role="dialog"]')!;
+      expect(panel.classList.contains('acme-tour')).toBe(true);
+      expect(panel.dataset.theme).toBe('dark');
+      expect(panel.style.getPropertyValue('--acme-control-height')).toBe('44px');
+      expect(panel.style.getPropertyValue('--user-outer')).toBe('7px');
+      expect(host.querySelector('.acme-tour__mask')?.classList.contains('acme-theme-scope')).toBe(true);
+
+      host.querySelector<HTMLButtonElement>('.acme-tour__next')!.click();
+      namespace.value = '3d';
+      await nextTick();
+      expect(host.querySelector('[role="dialog"]')).toBe(panel);
+      expect(panel.classList.contains('3d-tour')).toBe(true);
+      expect(panel.style.getPropertyValue('--3d-control-height')).toBe('40px');
+      expect(panel.textContent).toContain('第二步');
+      expect(panel.querySelector('.is-active')?.classList.contains('3d-tour__dot')).toBe(true);
+    } finally {
+      wrapper.unmount();
+    }
+    expect(host.children).toHaveLength(0);
+  });
+
   test('步骤导航、完成与关闭事件流', async () => {
     const wrapper = mount(Tour, {
       props: { modelValue: true, current: 0, steps },

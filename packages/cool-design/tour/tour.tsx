@@ -13,7 +13,9 @@ import {
   watch,
   type PropType
 } from 'vue';
-import { useFloating, type Placement } from '../../../src/utils/use-floating';
+import { useFloating, useFloatingTheme, type Placement } from '../../../src/utils/use-floating';
+import { useNamespace } from '../../hooks/use-namespace';
+import { useConfig } from '../config-provider/context';
 import TourStepComponent from '../tour-step';
 import Button from '../button';
 import Icon from '../icon';
@@ -47,6 +49,8 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'update:current', 'change', 'prev', 'next', 'finish', 'close'],
   setup(props, { emit, expose, slots }) {
+    const ns = useNamespace('tour');
+    const config = useConfig();
     const floating = ref<HTMLElement>();
     const reference = ref<HTMLElement>();
     const spotlight = ref<{ top: number; left: number; width: number; height: number }>();
@@ -101,6 +105,7 @@ export default defineComponent({
       closeOnOutside: () => false,
       options: () => ({ offset: 12 })
     });
+    const floatingTheme = useFloatingTheme(position.target, () => true);
 
     const syncTarget = (scroll = true) => {
       if (typeof document === 'undefined') return;
@@ -123,11 +128,16 @@ export default defineComponent({
         spotlight.value = undefined;
       }
     };
-    const refresh = () => {
-      syncTarget();
+    const refresh = (scroll = true) => {
+      syncTarget(scroll);
       position.update();
     };
 
+    watch(
+      [ns.namespace, position.target, () => config.value.theme, () => config.value.size],
+      () => { if (props.modelValue) refresh(false); },
+      { flush: 'post' }
+    );
     watch(
       () => [props.modelValue, innerCurrent.value, props.steps, props.gap, step().target, props.target],
       () => {
@@ -138,7 +148,7 @@ export default defineComponent({
     onUpdated(() => {
       if (props.modelValue && (resolveTarget() ?? undefined) !== reference.value) refresh();
     });
-    const onScroll = () => { syncTarget(false); position.update(); };
+    const onScroll = () => refresh(false);
     const onResize = () => refresh();
     watch(() => props.modelValue, (visible, previouslyVisible, cleanup) => {
       if (!visible) {
@@ -217,6 +227,7 @@ export default defineComponent({
       const showMask = maskValue !== false;
       const maskColor = maskConfig?.color ?? 'rgba(0, 0, 0, 0.5)';
       const maskStyle = maskConfig?.style;
+      const { scopeClass, theme, style: themeStyle } = floatingTheme.value;
       const showClose = currentStep.showClose ?? props.showClose;
       const showArrow = (currentStep.showArrow ?? currentStep.arrow ?? props.showArrow ?? props.arrow) && !isCenter() && !!spotlight.value;
       return (
@@ -224,8 +235,9 @@ export default defineComponent({
           {showMask &&
             (spotlight.value ? (
               <div
-                class='i-tour__spotlight'
-                style={{
+                class={[ns.e('spotlight'), scopeClass]}
+                data-theme={theme}
+                style={[themeStyle, {
                   top: `${spotlight.value.top}px`,
                   left: `${spotlight.value.left}px`,
                   width: `${spotlight.value.width}px`,
@@ -235,15 +247,21 @@ export default defineComponent({
                   pointerEvents: props.targetAreaClickable ? 'none' : 'auto',
                   borderRadius: typeof props.gap === 'object' ? `${props.gap.radius ?? 2}px` : undefined,
                   ...maskStyle
-                }}
+                }]}
               />
             ) : (
-              <div class='i-tour__mask' style={{ background: maskColor, zIndex: props.zIndex, ...maskStyle }} />
+              <div
+                class={[ns.e('mask'), scopeClass]}
+                data-theme={theme}
+                style={[themeStyle, { background: maskColor, zIndex: props.zIndex, ...maskStyle }]}
+              />
             ))}
           <div
             ref={floating}
-            class={['i-tour', `i-tour--${currentStep.type ?? props.type}`]}
+            class={[ns.b(), ns.m(currentStep.type ?? props.type), scopeClass]}
+            data-theme={theme}
             style={[
+              themeStyle,
               isCenter()
                 ? {
                     position: 'fixed',
@@ -258,9 +276,9 @@ export default defineComponent({
             tabindex={-1}
             role='dialog'
             aria-modal='true'>
-            {showArrow && <div class='i-tour__arrow' style={position.arrowStyle.value} />}
+            {showArrow && <div class={ns.e('arrow')} style={position.arrowStyle.value} />}
             {showClose && (
-              <button type='button' class='i-tour__close' aria-label='关闭引导' onClick={() => close(true)}>
+              <button type='button' class={ns.e('close')} aria-label='关闭引导' onClick={() => close(true)}>
                 {slots.close?.({ current: activeIndex() }) ??
                   ((currentStep.closeIcon ?? props.closeIcon) ? <Icon icon={currentStep.closeIcon ?? props.closeIcon} aria-hidden='true' /> : '×')}
               </button>
@@ -269,24 +287,24 @@ export default defineComponent({
               provided
             ) : (
               <>
-                {(stepSlots?.header || currentStep.title) && <div class='i-tour__title'>{stepSlots?.header?.() ?? currentStep.title}</div>}
-                {(stepSlots?.default || currentStep.description) && <div class='i-tour__description'>{stepSlots?.default?.() ?? currentStep.description}</div>}
+                {(stepSlots?.header || currentStep.title) && <div class={ns.e('title')}>{stepSlots?.header?.() ?? currentStep.title}</div>}
+                {(stepSlots?.default || currentStep.description) && <div class={ns.e('description')}>{stepSlots?.default?.() ?? currentStep.description}</div>}
               </>
             )}
-            <div class='i-tour__footer'>
+            <div class={ns.e('footer')}>
               {(slots.indicators ?? slots.indicator)?.({ current: activeIndex(), total: stepCount() }) ?? (
-                <span class='i-tour__indicators' aria-hidden='true'>
+                <span class={ns.e('indicators')} aria-hidden='true'>
                   {Array.from({ length: stepCount() }, (_, index) =>
-                    <span key={index} class={['i-tour__dot', index === activeIndex() && 'is-active']} />)}
+                    <span key={index} class={[ns.e('dot'), ns.is('active', index === activeIndex())]} />)}
                 </span>
               )}
               {activeIndex() > 0 && (
-                <Button {...buttonAttributes(currentStep.prevButtonProps)} class='i-tour__prev' onClick={prev}>
+                <Button {...buttonAttributes(currentStep.prevButtonProps)} class={ns.e('prev')} onClick={prev}>
                   {slots['prev-btn']?.({ current: activeIndex() }) ??
                     (currentStep.prevButtonProps?.children ?? currentStep.prevButtonText ?? props.prevButtonText ?? '上一步')}
                 </Button>
               )}
-              <Button {...buttonAttributes(currentStep.nextButtonProps)} class='i-tour__next' onClick={next}>
+              <Button {...buttonAttributes(currentStep.nextButtonProps)} class={ns.e('next')} onClick={next}>
                 {slots['next-btn']?.({ current: activeIndex() }) ??
                   (currentStep.nextButtonProps?.children ?? currentStep.nextButtonText ?? props.nextButtonText ?? (isLast() ? '完成' : '下一步'))}
               </Button>
