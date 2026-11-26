@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, ref, watchEffect } from 'vue';
-import { ConfigProvider, version } from '../packages/cool-design/index';
+import { version } from '../package.json';
+import ConfigProvider from '../packages/cool-design/config-provider';
 import { navigationGroups, pages } from './site/catalog';
 import { renderMarkdown } from './site/markdown';
 import { highlightCode } from './site/highlight';
 import DemoBlock from './site/DemoBlock.vue';
 import HomePage from './site/HomePage.vue';
+import '../packages/cool-design/style/index.scss';
 import './site/style.scss';
 
 const UserManagement = defineAsyncComponent(() => import('../examples/user-management/index.vue'));

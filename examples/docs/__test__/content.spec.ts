@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { App } from 'vue';
-import { mount } from '@vue/test-utils';
+import { h, type App, type Component } from 'vue';
+import { flushPromises, mount } from '@vue/test-utils';
 import { install } from '../../../packages/cool-design/index';
 import { pages } from '../../../doc/site/catalog';
+import DemoBlock from '../../../doc/site/DemoBlock.vue';
 import { renderMarkdown } from '../../../doc/site/markdown';
 
 describe('文档内容与组件覆盖', () => {
@@ -24,12 +25,114 @@ describe('文档内容与组件覆盖', () => {
     }
   });
 
-  it.each(pages.filter((page) => page.demos.length))('$title 的示例可挂载', (page) => {
+  it.each(pages.filter((page) => page.demos.length))('$title 的示例可挂载', async (page) => {
     for (const demo of page.demos) {
-      const wrapper = mount(demo.component);
-      expect(wrapper.html()).not.toBe('');
-      expect(demo.source).toContain("from 'cool-design'");
-      expect(demo.source).not.toContain("from '../../index'");
+      const name = `${page.id}/${demo.name}`;
+      expect(demo.loadComponent, name).toBeTypeOf('function');
+      expect(demo.loadSource, name).toBeTypeOf('function');
+      const [component, source] = await Promise.all([demo.loadComponent(), demo.loadSource()]);
+      const wrapper = mount(component);
+      try {
+        expect(wrapper.html(), name).not.toBe('');
+        expect(source, name).toContain("from 'cool-design'");
+        expect(source, name).not.toContain("from '../../index'");
+      } finally {
+        wrapper.unmount();
+      }
+    }
+  });
+
+  it('预览就绪后挂载真实组件，源码就绪前禁用复制', async () => {
+    let resolvePreview!: (component: Component) => void;
+    let resolveSource!: (source: string) => void;
+    const preview = new Promise<Component>((resolve) => (resolvePreview = resolve));
+    const source = new Promise<string>((resolve) => (resolveSource = resolve));
+    const wrapper = mount(DemoBlock, {
+      props: {
+        id: 'demo-test',
+        demo: {
+          name: 'test',
+          title: '异步示例',
+          description: '',
+          loadComponent: () => preview,
+          loadSource: () => source
+        }
+      }
+    });
+    try {
+      const copy = wrapper.get('button[data-action="copy"]');
+      expect(wrapper.text()).toContain('正在加载示例');
+      expect(copy.attributes()).toHaveProperty('disabled');
+
+      resolvePreview(() => h('button', { class: 'test-preview' }, '示例已挂载'));
+      await flushPromises();
+      expect(wrapper.get('.test-preview').text()).toBe('示例已挂载');
+      expect(copy.attributes()).toHaveProperty('disabled');
+
+      resolveSource('<template><button>示例已挂载</button></template>');
+      await flushPromises();
+      expect(copy.attributes()).not.toHaveProperty('disabled');
+      await wrapper.get('button[aria-controls="demo-test-source"]').trigger('click');
+      expect(wrapper.get('.hljs-tag').exists()).toBe(true);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  it('源码加载失败后局部重试，保留已挂载的预览', async () => {
+    let sourceFailed = true;
+    const wrapper = mount(DemoBlock, {
+      props: {
+        id: 'demo-test',
+        demo: {
+          name: 'test',
+          title: '异步示例',
+          description: '',
+          loadComponent: async () => () => h('button', { class: 'test-preview' }, '示例已挂载'),
+          loadSource: async () => {
+            if (sourceFailed) throw new Error('请求失败');
+            return '<template><button>示例已挂载</button></template>';
+          }
+        }
+      }
+    });
+    try {
+      await flushPromises();
+      expect(wrapper.text()).toContain('源码加载失败');
+      const preview = wrapper.get('.test-preview').element;
+      expect(wrapper.get('button[data-action="copy"]').attributes()).toHaveProperty('disabled');
+      sourceFailed = false;
+      await wrapper.get('.demo-toolbar button[data-action="retry-source"]').trigger('click');
+      await flushPromises();
+      expect(wrapper.text()).not.toContain('源码加载失败');
+      expect(wrapper.get('.test-preview').element).toBe(preview);
+      expect(wrapper.get('button[data-action="copy"]').attributes()).not.toHaveProperty('disabled');
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  it('示例资源加载失败时提示重新加载当前页', async () => {
+    const wrapper = mount(DemoBlock, {
+      props: {
+        id: 'demo-test',
+        demo: {
+          name: 'test',
+          title: '异步示例',
+          description: '',
+          loadComponent: async () => {
+            throw new Error('样式加载失败');
+          },
+          loadSource: async () => '<template><button>异步示例</button></template>'
+        }
+      }
+    });
+    try {
+      await flushPromises();
+      expect(wrapper.get('.demo-preview [role="alert"]').text()).toBe('示例加载失败。');
+      expect(wrapper.get('.demo-preview button').text()).toBe('重新加载当前页');
+      expect(wrapper.get('button[data-action="copy"]').attributes()).not.toHaveProperty('disabled');
+    } finally {
       wrapper.unmount();
     }
   });

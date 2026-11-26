@@ -3,12 +3,18 @@ import { flushPromises, mount } from '@vue/test-utils';
 import App from '../../../doc/App.vue';
 
 const wrappers: ReturnType<typeof mount>[] = [];
+async function settleDemos() {
+  await flushPromises();
+  await vi.dynamicImportSettled();
+  await flushPromises();
+}
+
 async function open(hash = '#/components/button') {
   window.location.hash = hash;
   vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   const wrapper = mount(App, { attachTo: document.body });
   wrappers.push(wrapper);
-  await flushPromises();
+  await settleDemos();
   return wrapper;
 }
 afterEach(() => {
@@ -53,12 +59,12 @@ describe('PC 组件文档站', () => {
     const wrapper = await open();
     window.location.hash = '#/components/table';
     window.dispatchEvent(new HashChangeEvent('hashchange'));
-    await flushPromises();
+    await settleDemos();
     expect(wrapper.get('h1').text()).toBe('Table 表格');
     expect(wrapper.find('.i-table').exists()).toBe(true);
     window.location.hash = '#/components/button';
     window.dispatchEvent(new HashChangeEvent('hashchange'));
-    await flushPromises();
+    await settleDemos();
     expect(wrapper.get('h1').text()).toBe('Button 按钮');
     expect(wrapper.find('.demo-source').exists()).toBe(false);
   });

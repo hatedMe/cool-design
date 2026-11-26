@@ -37,7 +37,13 @@ describe('Breadcrumb 路由集成', () => {
     });
     const link = wrapper.find('a.i-breadcrumb__inner');
     expect(link.attributes('href')).toBe('/home');
+    const preventNativeNavigation = vi.fn((event: Event) => {
+      expect(event.defaultPrevented).toBe(false);
+      event.preventDefault();
+    });
+    wrapper.element.addEventListener('click', preventNativeNavigation, { once: true });
     await link.trigger('click');
+    expect(preventNativeNavigation).toHaveBeenCalledOnce();
     expect(wrapper.findComponent(BreadcrumbItem).emitted('click')).toHaveLength(1);
   });
 });

@@ -336,6 +336,7 @@ body {
   border-top: 1px solid var(--i-border);
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
   padding: 0 12px;
   span {
@@ -350,7 +351,11 @@ body {
     padding: 10px 8px;
     font-size: 12px;
   }
-  button:hover {
+  button:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+  button:not(:disabled):hover {
     color: var(--i-primary);
   }
 }

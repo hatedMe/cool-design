@@ -4,8 +4,8 @@ export interface Demo {
   name: string;
   title: string;
   description: string;
-  component: Component;
-  source: string;
+  loadComponent: () => Promise<Component>;
+  loadSource: () => Promise<string>;
 }
 export interface Page {
   imports?: string[];
@@ -18,28 +18,31 @@ export interface Page {
 const readmes = import.meta.glob<string>('../../packages/cool-design/*/README.md', { eager: true, as: 'raw' });
 const guides = import.meta.glob<string>('../markdown/guide/*.md', { eager: true, as: 'raw' });
 const sources = import.meta.glob<string>(['../../packages/cool-design/*/demo/*.vue', '../demos/*.vue'], {
-  eager: true,
-  as: 'raw'
+  query: '?raw',
+  import: 'default'
 });
-const components = import.meta.glob<{ default: Component }>(
+const components = import.meta.glob<Component>(
   ['../../packages/cool-design/*/demo/*.vue', '../demos/*.vue'],
-  {
-    eager: true
-  }
+  { import: 'default' }
 );
 
 function demo(path: string, name: string, title: string, description: string): Demo {
+  const loadComponent = components[path];
+  const loadSource = sources[path];
+  if (!loadComponent || !loadSource) throw new Error(`缺少文档演示组件或源码：${path}`);
+
   return {
     name,
     title,
     description,
-    source: sources[path]
-      .trim()
-      .replaceAll('from "../../index"', "from 'cool-design'")
-      .replaceAll('from "../../packages/cool-design/index"', "from 'cool-design'")
-      .replaceAll("from '../../index'", "from 'cool-design'")
-      .replaceAll("from '../../packages/cool-design/index'", "from 'cool-design'"),
-    component: components[path].default
+    loadComponent,
+    loadSource: async () =>
+      (await loadSource())
+        .trim()
+        .replaceAll('from "../../index"', "from 'cool-design'")
+        .replaceAll('from "../../packages/cool-design/index"', "from 'cool-design'")
+        .replaceAll("from '../../index'", "from 'cool-design'")
+        .replaceAll("from '../../packages/cool-design/index'", "from 'cool-design'")
   };
 }
 
