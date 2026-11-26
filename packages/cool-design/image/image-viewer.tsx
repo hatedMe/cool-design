@@ -63,6 +63,8 @@ export default defineComponent({
     const target = computed(() => props.teleported ? 'body' : undefined);
     const theme = useFloatingTheme(target, () => !!target.value);
     const token = Symbol('image-viewer');
+    const contentEl = ref<HTMLElement>();
+    const stageEl = ref<HTMLElement>();
     const stackZIndex = ref(2000);
     const index = ref(0);
     const scaleValue = ref(props.scale);
@@ -76,6 +78,8 @@ export default defineComponent({
     let dragStartY = 0;
     let dragOriginX = 0;
     let dragOriginY = 0;
+    let pointerDownTarget: EventTarget | null = null;
+    let pointerUpTarget: EventTarget | null = null;
 
     const total = computed(() => props.urlList.length);
     const currentUrl = computed(() => props.urlList[index.value] ?? '');
@@ -123,6 +127,16 @@ export default defineComponent({
       rotation.value = (rotation.value + (clockwise ? 90 : -90)) % 360;
     };
     const close = () => emit('close');
+
+    const onBackgroundClick = (event: MouseEvent) => {
+      const { target, currentTarget, detail } = event;
+      const onMask = target === currentTarget;
+      const onBackground = onMask || target === contentEl.value || target === stageEl.value;
+      // 从图片拖到空白处时，浏览器可以把 click 派给两者共同的内容层。
+      const sameTarget = detail === 0 ? onMask : target === pointerDownTarget && target === pointerUpTarget;
+      pointerDownTarget = pointerUpTarget = null;
+      if (props.hideOnClickModal && onBackground && sameTarget && isTopOverlay(token)) close();
+    };
 
     // 滚轮缩放：向上放大、向下缩小，跟随 zoomRate 步进。
     const onWheel = (event: WheelEvent) => {
@@ -241,13 +255,16 @@ export default defineComponent({
         'aria-modal': 'true',
         'aria-label': '图片预览',
         onWheel,
-        onClick: (event: MouseEvent) => {
-          if (event.target === event.currentTarget && props.hideOnClickModal) close();
-        }
+        onPointerdownCapture: (event: PointerEvent) => {
+          pointerDownTarget = event.target;
+          pointerUpTarget = null;
+        },
+        onPointerupCapture: (event: PointerEvent) => { pointerUpTarget = event.target; },
+        onClick: onBackgroundClick
       }, attrs);
       return (
         <div {...maskProps}>
-          <div class={ns.e('content')}>
+          <div ref={contentEl} class={ns.e('content')}>
             <button type='button' class={ns.e('close')} aria-label='关闭预览' onClick={close}>
               ×
             </button>
@@ -261,7 +278,7 @@ export default defineComponent({
                 ‹
               </button>
             )}
-            <div class={ns.e('stage')}>
+            <div ref={stageEl} class={ns.e('stage')}>
               {slots.default?.({
                 url: currentUrl.value,
                 src: currentUrl.value,

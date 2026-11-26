@@ -100,6 +100,44 @@ test('ImageViewer 无限循环可关闭，遮罩点击与禁用态符合预期',
   w.unmount();
 });
 
+test.each(['content', 'stage'])('ImageViewer 在 %s 背景点击时按属性关闭', async (part) => {
+  const w = mount(ImageViewer, {
+    attachTo: document.body,
+    props: { urlList: ['a.jpg'], hideOnClickModal: false }
+  });
+  const background = w.get(`.i-image-viewer__${part}`);
+  const click = async () => {
+    await background.trigger('pointerdown');
+    await background.trigger('pointerup');
+    background.element.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
+  };
+  try {
+    await click();
+    expect(w.emitted('close')).toBeUndefined();
+    await w.setProps({ hideOnClickModal: true });
+    await click();
+    expect(w.emitted('close')).toHaveLength(1);
+  } finally {
+    w.unmount();
+  }
+});
+
+test('ImageViewer 从图片拖到空白处松手时保持打开', async () => {
+  const w = mount(ImageViewer, {
+    attachTo: document.body,
+    props: { urlList: ['a.jpg'], hideOnClickModal: true }
+  });
+  try {
+    const content = w.get('.i-image-viewer__content');
+    await w.get('img').trigger('pointerdown');
+    await content.trigger('pointerup');
+    content.element.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
+    expect(w.emitted('close')).toBeUndefined();
+  } finally {
+    w.unmount();
+  }
+});
+
 test('fit 默认空值，预览占位/失败、工具栏与 teleport 转发', async () => {
   const w = mount(Image, { props: { src: 'a.jpg' } });
   expect(w.props('fit')).toBe('');

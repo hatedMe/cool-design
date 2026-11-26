@@ -90,6 +90,8 @@
 
 事件：`switch`（索引）、`close`。
 
+设置 `hide-on-click-modal` 后，点击预览背景的空白区域会触发 `close`。独立使用 `ImageViewer` 时，可以在 `@close` 中更新 `v-if` 来关闭预览。
+
 ### ImageViewer 插槽
 
 | 名称 | 说明 | 作用域 |
