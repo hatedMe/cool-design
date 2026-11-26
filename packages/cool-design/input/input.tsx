@@ -8,6 +8,7 @@ export default defineComponent({
   inheritAttrs: false,
   props: {
     modelValue: { type: [String, Number], default: '' },
+    id: String,
     modelModifiers: { type: Object as PropType<{ trim?: boolean; number?: boolean; lazy?: boolean }>, default: () => ({}) },
     clearable: Boolean,
     disabled: Boolean,
@@ -51,7 +52,7 @@ export default defineComponent({
   setup(props, { attrs, emit, expose, slots }) {
     const ns = useNamespace('input');
     const controlNs = useNamespace('control');
-    const field = useFieldControl((fallback) => (attrs.id as string) || fallback);
+    const field = useFieldControl((fallback) => props.id || fallback);
     const form = inject(formKey, undefined);
     const disabled = computed(() => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.()));
     const config = useConfig();
@@ -158,13 +159,14 @@ export default defineComponent({
     };
     return () => {
       const { class: outerClass, style: outerStyle, ...controlAttrs } = attrs;
+      const id = props.id || field?.id;
       const isTextarea = props.type === 'textarea';
       const inputType =
         props.type === 'password' && !passwordVisible.value ? 'password' : props.type === 'search' ? 'search' : 'text';
       const control = isTextarea ? (
         <textarea
           {...controlAttrs}
-          id={(attrs.id as string) || field?.id}
+          id={id}
           ref={input}
           value={displayValue.value}
           style={textareaStyle.value.map(style => style ?? {})}
@@ -207,7 +209,7 @@ export default defineComponent({
       ) : (
         <input
           {...controlAttrs}
-          id={(attrs.id as string) || field?.id}
+          id={id}
           ref={input}
           type={inputType}
           value={displayValue.value}

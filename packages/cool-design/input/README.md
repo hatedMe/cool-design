@@ -45,6 +45,7 @@
 | 参数                    | 说明                                     | 类型                      | 默认值       |
 | ----------------------- | ---------------------------------------- | ------------------------- | ------------ |
 | modelValue / v-model    | 输入内容                                 | `string` / `number`       | `''`         |
+| `id`                    | 原生 `input` 或 `textarea` 的 ID。省略或传入空字符串时使用表单项生成的 ID（若有） | `string` | — |
 | placeholder             | 占位提示                                 | `string`                  | —            |
 | clearable               | 允许清空                                 | `boolean`                 | `false`      |
 | disabled                | 禁止输入和清空                           | `boolean`                 | `false`      |

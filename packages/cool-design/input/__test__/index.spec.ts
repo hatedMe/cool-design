@@ -189,6 +189,19 @@ test('透传原生属性并发出键盘和组合输入事件', async () => {
   expect(w.emitted('compositionupdate')).toHaveLength(1);
 });
 
+test.each(['text', 'textarea'] as const)('公开 id 绑定到 %s 控件并响应更新和清空', async (type) => {
+  const wrapper = mount(Input, { props: { id: 'first', type }, attrs: { name: 'field' } });
+  const control = wrapper.get(type === 'textarea' ? 'textarea' : 'input');
+
+  expect(wrapper.props()).toHaveProperty('id', 'first');
+  expect(control.attributes()).toMatchObject({ id: 'first', name: 'field' });
+  expect(wrapper.attributes('id')).toBeUndefined();
+  await wrapper.setProps({ id: 'second' });
+  expect(control.attributes('id')).toBe('second');
+  await wrapper.setProps({ id: '' });
+  expect(control.attributes('id')).toBeUndefined();
+});
+
 test('change 仅在值变化后由 Enter 或失焦触发一次', async () => {
   const w = mount(Input, { props: { modelValue: '' } });
   await w.get('input').setValue('新值');
