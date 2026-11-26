@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { expect, test, vi } from 'vitest';
 import Switch from '../index';
 import { fieldKey } from '../../form/context';
@@ -20,6 +20,128 @@ test('beforeChange 拒绝时不修改模型', async () => {
   const wrapper = mount(Switch, { props: { modelValue: false, beforeChange: () => false } });
   await wrapper.find('input').setValue(true);
   expect(wrapper.emitted('update:modelValue')?.length ?? 0).toBe(0);
+});
+
+test.each(['Enter', 'NumpadEnter'])('%s 在原生键盘事件结束前通过守卫并按顺序更新模型', async (code) => {
+  const calls: unknown[] = [];
+  const model = ref('off');
+  const onKeydown = vi.fn();
+  const validate = vi.fn();
+  const wrapper = mount({
+    setup: () => () => h(Switch, {
+      modelValue: model.value,
+      activeValue: 'on',
+      inactiveValue: 'off',
+      beforeChange: () => { calls.push('guard'); return true; },
+      onKeydown,
+      'onUpdate:modelValue': (value: string) => { model.value = value; calls.push(['update', value]); },
+      onInput: (value: string) => calls.push(['input', value]),
+      onChange: (value: string) => calls.push(['change', value])
+    })
+  }, { global: { provide: { [fieldKey as symbol]: { id: 'field', validate } } } });
+  const input = wrapper.get('input');
+  const nativeChange = vi.fn();
+  input.element.addEventListener('change', nativeChange);
+
+  for (const value of ['on', 'off']) {
+    const event = new KeyboardEvent('keydown', { key: 'Enter', code, bubbles: true, cancelable: true });
+    input.element.dispatchEvent(event);
+    expect(model.value).toBe(value);
+    expect(event.defaultPrevented).toBe(false);
+    expect(onKeydown).toHaveBeenLastCalledWith(event);
+    expect(calls.splice(0)).toEqual(['guard', ['update', value], ['input', value], ['change', value]]);
+    await flushPromises();
+    expect(input.element.checked).toBe(value === 'on');
+    expect(input.attributes('aria-checked')).toBe(String(value === 'on'));
+  }
+  expect(nativeChange).not.toHaveBeenCalled();
+  expect(validate.mock.calls).toEqual([['change'], ['change']]);
+  wrapper.unmount();
+});
+
+test.each([
+  ['返回 false', () => false],
+  ['同步抛错', () => { throw new Error('cancel'); }],
+  ['异步返回 false', () => Promise.resolve(false)],
+  ['异步拒绝', () => Promise.reject(new Error('cancel'))]
+])('Enter 守卫%s时维持关闭状态和焦点', async (_, beforeChange) => {
+  const guard = vi.fn(beforeChange);
+  const validate = vi.fn();
+  const wrapper = mount(Switch, {
+    props: { beforeChange: guard },
+    attachTo: document.body,
+    global: { provide: { [fieldKey as symbol]: { id: 'field', validate } } }
+  });
+  const input = wrapper.get('input');
+  input.element.focus();
+  await input.trigger('keydown', { key: 'Enter' });
+  await flushPromises();
+  expect(guard).toHaveBeenCalledTimes(1);
+  expect(wrapper.emitted('change')).toBeUndefined();
+  expect(validate).not.toHaveBeenCalled();
+  expect(input.element.checked).toBe(false);
+  expect(document.activeElement).toBe(input.element);
+  wrapper.unmount();
+});
+
+test('两次待决的 Enter 分别执行守卫并在分次通过后各切换一次', async () => {
+  const approvals: Array<(value: boolean) => void> = [];
+  const beforeChange = vi.fn(() => new Promise<boolean>((resolve) => { approvals.push(resolve); }));
+  const model = ref(false);
+  const updates = vi.fn((value: boolean) => { model.value = value; });
+  const wrapper = mount({
+    setup: () => () => h(Switch, { beforeChange, modelValue: model.value, 'onUpdate:modelValue': updates })
+  });
+  const input = wrapper.get('input');
+  await input.trigger('keydown', { key: 'Enter' });
+  await input.trigger('keydown', { key: 'Enter', code: 'NumpadEnter' });
+  expect(beforeChange).toHaveBeenCalledTimes(2);
+  expect(updates).not.toHaveBeenCalled();
+  expect(input.element.checked).toBe(false);
+  approvals[0](true);
+  await flushPromises();
+  expect(updates.mock.calls).toEqual([[true]]);
+  approvals[1](true);
+  await flushPromises();
+  expect(updates.mock.calls).toEqual([[true], [false]]);
+  expect(input.element.checked).toBe(false);
+  wrapper.unmount();
+});
+
+test('待决期间父组件更新模型时，Enter 守卫通过后切换当前值', async () => {
+  let approve!: (value: boolean) => void;
+  const beforeChange = vi.fn(() => new Promise<boolean>((resolve) => { approve = resolve; }));
+  const wrapper = mount(Switch, { props: { beforeChange } });
+  const input = wrapper.get('input');
+  await input.trigger('keydown', { key: 'Enter' });
+  expect(beforeChange).toHaveBeenCalledTimes(1);
+  await wrapper.setProps({ modelValue: true });
+  expect(input.element.checked).toBe(true);
+  approve(true);
+  await flushPromises();
+  expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
+  wrapper.unmount();
+});
+
+test.each(['禁用', '卸载'])('Enter 守卫在%s后完成时忽略结果', async (reason) => {
+  let approve!: (value: boolean) => void;
+  const beforeChange = vi.fn(() => new Promise<boolean>((resolve) => { approve = resolve; }));
+  const validate = vi.fn();
+  const wrapper = mount(Switch, {
+    props: { beforeChange },
+    global: { provide: { [fieldKey as symbol]: { id: 'field', validate } } }
+  });
+  const input = wrapper.get('input');
+  await input.trigger('keydown', { key: 'Enter' });
+  expect(beforeChange).toHaveBeenCalledTimes(1);
+  if (reason === '禁用') await wrapper.setProps({ disabled: true });
+  if (reason === '卸载') wrapper.unmount();
+  approve(true);
+  await flushPromises();
+  expect(wrapper.emitted('change')).toBeUndefined();
+  expect(validate).not.toHaveBeenCalled();
+  expect(input.element.checked).toBe(false);
+  if (reason !== '卸载') wrapper.unmount();
 });
 
 test('支持宽度、加载态和 inlinePrompt 文本', () => {

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Switch 支持用 `Enter` 和数字键盘的 `Enter` 切换。同步守卫通过时，原生表单提交会读取切换后的值。
+
 - TableV2 的 `expanded-rows-change` 现在接收展开的键数组 `(keys)`。需要继续接收 `(rows, keys)` 的旧页面可改用 `expanded-row-data-change`。
 
 - InputOtp 的 `finish(value)` 接收完整验证码字符串。将一个完整值改为另一个完整值时会再次触发。在输入格之间移动焦点时，整体的 `focus` 和 `blur` 事件保持静默。

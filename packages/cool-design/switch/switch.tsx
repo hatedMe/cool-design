@@ -54,6 +54,36 @@ export default defineComponent({
       },
       { immediate: true }
     );
+    const requestChange = (target: HTMLInputElement, nativeValue?: typeof props.modelValue) => {
+      if (disabledOf()) return;
+      const fromKeyboard = nativeValue === undefined;
+      const restoreNativeChecked = () => {
+        if (!fromKeyboard) target.checked = props.modelValue === props.activeValue;
+      };
+      const complete = (allowed: boolean) => {
+        if (!allowed || disabledOf() || (fromKeyboard && input.value !== target)) {
+          restoreNativeChecked();
+          return;
+        }
+        const next = nativeValue ?? (props.modelValue === props.activeValue ? props.inactiveValue : props.activeValue);
+        emit('update:modelValue', next);
+        emit('input', next);
+        emit('change', next);
+        if (props.validateEvent) nextTick(() => {
+          if (!fromKeyboard || input.value === target) field?.validate('change');
+        });
+      };
+      let guard: boolean | Promise<boolean>;
+      try {
+        guard = props.beforeChange?.() ?? true;
+      } catch {
+        restoreNativeChecked();
+        return;
+      }
+      // Enter may submit the form immediately after keydown.
+      if (fromKeyboard && typeof guard === 'boolean') complete(guard);
+      else Promise.resolve(guard).then(complete).catch(restoreNativeChecked);
+    };
     expose({ focus: () => input.value?.focus() });
     return () => {
       const componentClass = attrs.class;
@@ -102,31 +132,11 @@ export default defineComponent({
             checked={active}
             disabled={disabled}
             onChange={(event: Event) => {
-              if (disabled) return;
               const target = event.target as HTMLInputElement;
-              const value = target.checked;
-              const next = value ? props.activeValue : props.inactiveValue;
-              let guard: boolean | Promise<boolean>;
-              try {
-                guard = props.beforeChange?.() ?? true;
-              } catch {
-                target.checked = props.modelValue === props.activeValue;
-                return;
-              }
-              Promise.resolve(guard)
-                .then((allowed) => {
-                  if (!allowed || disabledOf()) {
-                    target.checked = props.modelValue === props.activeValue;
-                    return;
-                  }
-                  emit('update:modelValue', next);
-                  emit('input', next);
-                  emit('change', next);
-                  if (props.validateEvent) nextTick(() => field?.validate('change'));
-                })
-                .catch(() => {
-                  target.checked = props.modelValue === props.activeValue;
-                });
+              requestChange(target, target.checked ? props.activeValue : props.inactiveValue);
+            }}
+            onKeydown={(event: KeyboardEvent) => {
+              if (event.key === 'Enter') requestChange(event.currentTarget as HTMLInputElement);
             }}
           />
           {!props.inlinePrompt && inactiveContent && (
