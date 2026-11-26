@@ -15,7 +15,8 @@ describe('Slider', () => {
     expect(wrapper.emitted('change')).toBeUndefined();
 
     await wrapper.get('[role="slider"]').trigger('keydown', { key: 'ArrowRight' });
-    expect(wrapper.emitted('input')?.at(-1)).toEqual([10]);
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+    expect(wrapper.emitted('input')).toBeUndefined();
     expect(wrapper.emitted('change')?.at(-1)).toEqual([10]);
 
     const range = mount(Slider, {
@@ -23,6 +24,59 @@ describe('Slider', () => {
     });
     expect(range.findAll('[role="slider"]')[0].attributes('aria-valuenow')).toBe('2');
     expect(range.findAll('[role="slider"]')[1].attributes('aria-valuenow')).toBe('9');
+  });
+
+  test('Page 键按四倍步长移动，边界键只提交 change', async () => {
+    const events: [string, number | number[]][] = [];
+    const wrapper = mount(Slider, { props: {
+      modelValue: 30,
+      step: 5,
+      'onUpdate:modelValue': (value: number | number[]) => {
+        events.push(['update', value]);
+        void wrapper.setProps({ modelValue: value });
+      },
+      onInput: (value: number | number[]) => events.push(['input', value]),
+      onChange: (value: number | number[]) => events.push(['change', value])
+    } });
+    const handle = wrapper.get('[role="slider"]');
+    await handle.trigger('keydown', { key: 'PageUp' });
+    await handle.trigger('keydown', { key: 'PageDown' });
+    await handle.trigger('keydown', { key: 'Home' });
+    expect(events).toEqual([
+      ['update', 50], ['input', 50], ['change', 50],
+      ['update', 30], ['input', 30], ['change', 30],
+      ['update', 0], ['input', 0], ['change', 0]
+    ]);
+    const home = new KeyboardEvent('keydown', { key: 'Home', cancelable: true });
+    const unknown = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+    handle.element.dispatchEvent(home);
+    handle.element.dispatchEvent(unknown);
+    expect(home.defaultPrevented).toBe(true);
+    expect(unknown.defaultPrevented).toBe(false);
+    expect(events.slice(9)).toEqual([['change', 0]]);
+  });
+
+  test('End 保留无法被步长整除的最大值', async () => {
+    const wrapper = mount(Slider, { props: { modelValue: 6, max: 10, step: 3 } });
+    await wrapper.get('[role="slider"]').trigger('keydown', { key: 'End' });
+    expect(wrapper.emitted('update:modelValue')).toEqual([[10]]);
+    expect(wrapper.emitted('input')).toEqual([[10]]);
+    expect(wrapper.emitted('change')).toEqual([[10]]);
+    await wrapper.setProps({ modelValue: 10 });
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuenow')).toBe('10');
+  });
+
+  test('范围键盘越过另一端时保留另一端，每个值事件共用结果', async () => {
+    const wrapper = mount(Slider, { props: { modelValue: [20, 80], range: true, step: 5 } });
+    const handles = wrapper.findAll('[role="slider"]');
+    await handles[0].trigger('keydown', { key: 'End' });
+    const result = wrapper.emitted('update:modelValue')?.[0][0];
+    expect(result).toEqual([80, 100]);
+    expect(wrapper.emitted('input')?.[0][0]).toBe(result);
+    expect(wrapper.emitted('change')?.[0][0]).toBe(result);
+    await wrapper.setProps({ modelValue: [80, 100] });
+    await handles[1].trigger('keydown', { key: 'Home' });
+    expect(wrapper.emitted('change')?.at(-1)).toEqual([[0, 80]]);
   });
 
   test('支持键盘边界、范围滑块和 disabled', async () => {
@@ -97,6 +151,32 @@ describe('Slider', () => {
 
     const emptyRange = mount(Slider, { props: { modelValue: [], range: true } });
     expect(emptyRange.findAll('[role="slider"]')).toHaveLength(2);
+  });
+
+  test('垂直拖动保留抓点偏移，取消时结束拖动', async () => {
+    const wrapper = mount(Slider, { props: { modelValue: 30, vertical: true, height: 200, step: 5 } });
+    const track = wrapper.get('.i-slider__track');
+    track.element.getBoundingClientRect = () => ({ left: 20, top: 10, width: 6, height: 200, right: 26, bottom: 210, x: 20, y: 10, toJSON: () => ({}) });
+    await wrapper.get('[role="slider"]').trigger('pointerdown', { clientX: 23, clientY: 144, pointerId: 1 });
+    await track.trigger('pointermove', { clientX: 98, clientY: 92, pointerId: 1 });
+    expect(wrapper.emitted('input')).toEqual([[55]]);
+    expect(wrapper.emitted('change')).toBeUndefined();
+    await wrapper.setProps({ modelValue: 55 });
+    await track.trigger('pointercancel', { pointerId: 1 });
+    await track.trigger('pointermove', { clientY: 40, pointerId: 1 });
+    expect(wrapper.emitted('input')).toEqual([[55]]);
+    expect(wrapper.emitted('change')).toEqual([[55]]);
+  });
+
+  test('垂直手柄释放后的点击不会再次按轨道坐标更新', async () => {
+    const wrapper = mount(Slider, { props: { modelValue: 55, vertical: true, height: 200, step: 5 } });
+    const track = wrapper.get('.i-slider__track');
+    track.element.getBoundingClientRect = () => ({ left: 20, top: 10, width: 6, height: 200, right: 26, bottom: 210, x: 20, y: 10, toJSON: () => ({}) });
+    await wrapper.get('[role="slider"]').trigger('click', { clientY: 92 });
+    expect(wrapper.emitted('input')).toBeUndefined();
+    expect(wrapper.emitted('change')).toBeUndefined();
+    await track.trigger('click', { clientY: 92 });
+    expect(wrapper.emitted('change')).toEqual([[60]]);
   });
 
   test('show-input 仅在单值模式显示，Tooltip 仅在交互时显示', async () => {
@@ -193,6 +273,51 @@ describe('Slider', () => {
     expect(wrapper.find('.i-input-number').exists()).toBe(false);
   });
 
+  test('刻度键盘保留吸附到同一刻度的事件与边界判定', () => {
+    const events: [string, number][] = [];
+    const wrapper = mount(Slider, { props: {
+      modelValue: 40,
+      step: 'mark',
+      marks: { 0: '零', 40: '中点', 100: '满' },
+      'onUpdate:modelValue': (value: number) => events.push(['update', value]),
+      onInput: (value: number) => events.push(['input', value]),
+      onChange: (value: number) => events.push(['change', value])
+    } });
+    const handle = wrapper.get('[role="slider"]');
+    const pageUp = new KeyboardEvent('keydown', { key: 'PageUp', cancelable: true });
+    const arrowRight = new KeyboardEvent('keydown', { key: 'ArrowRight', cancelable: true });
+    handle.element.dispatchEvent(pageUp);
+    handle.element.dispatchEvent(arrowRight);
+    expect(pageUp.defaultPrevented).toBe(true);
+    expect(arrowRight.defaultPrevented).toBe(true);
+    expect(events).toEqual([
+      ['update', 40], ['input', 40], ['change', 40],
+      ['update', 40], ['input', 40], ['change', 40]
+    ]);
+  });
+
+  test('刻度键盘在 Home 目标等于当前值时保持默认动作', () => {
+    const wrapper = mount(Slider, { props: { modelValue: 0, step: 'mark', marks: { 0: '零', 100: '满' } } });
+    const event = new KeyboardEvent('keydown', { key: 'Home', cancelable: true });
+    wrapper.get('[role="slider"]').element.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+    expect(wrapper.emitted('change')).toBeUndefined();
+  });
+
+  test('刻度区间键盘沿用原交叉处理', async () => {
+    const wrapper = mount(Slider, { props: {
+      modelValue: [20, 80], range: true, step: 'mark', marks: { 20: '起点', 80: '结束', 100: '满' }
+    } });
+    await wrapper.findAll('[role="slider"]')[0].trigger('keydown', { key: 'End' });
+    expect(wrapper.emitted('change')).toEqual([[[100, 100]]]);
+  });
+
+  test('未提供刻度时保留刻度模式的默认步长取整', async () => {
+    const wrapper = mount(Slider, { props: { modelValue: 1, min: 0.25, max: 3.4, step: 'mark' } });
+    await wrapper.get('[role="slider"]').trigger('keydown', { key: 'End' });
+    expect(wrapper.emitted('change')).toEqual([[3]]);
+  });
+
   test('拖动结束时触发表单校验', async () => {
     const validate = vi.fn();
     const wrapper = mount(Slider, {
@@ -264,7 +389,7 @@ describe('Slider', () => {
     expect(slider.classes()).toContain('is-disabled');
     expect(slider.classes()).toContain('i-slider--large');
     expect(wrapper.find('.i-slider__input-wrap--large').exists()).toBe(true);
-    expect(wrapper.get('[role="slider"]').attributes('tabindex')).toBe('-1');
+    expect(wrapper.get('[role="slider"]').attributes('tabindex')).toBeUndefined();
     await wrapper.get('[role="slider"]').trigger('keydown', { key: 'ArrowRight' });
     expect(wrapper.emitted('input')).toBeUndefined();
     expect(wrapper.get('.i-input-number input').attributes('disabled')).toBeDefined();

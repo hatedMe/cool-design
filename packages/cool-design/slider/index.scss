@@ -147,6 +147,7 @@
     }
 
     .#{config.$namespace}-slider__handle {
+      top: auto;
       left: 50% !important;
       transform: translate(-50%, 50%);
     }

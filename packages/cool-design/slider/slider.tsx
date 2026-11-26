@@ -93,12 +93,19 @@ export default defineComponent({
     const normalizeNumber = (value: number) => {
       const { min, max, step } = bounds.value;
       const numeric = Number.isFinite(value) ? value : min;
-      if (props.step === 'mark') {
+      const byMark = props.step === 'mark';
+      if (byMark) {
         const markValues = Object.keys(props.marks || {}).map(Number).filter((mark) => mark >= min && mark <= max);
         if (markValues.length) return markValues.reduce((nearest, mark) => Math.abs(mark - numeric) < Math.abs(nearest - numeric) ? mark : nearest);
+      } else {
+        if (numeric <= min) return min;
+        if (numeric >= max) return max;
       }
       const stepped = min + Math.round((numeric - min) / step) * step;
-      return precision(Math.min(max, Math.max(min, stepped)));
+      if (byMark) return precision(Math.min(max, Math.max(min, stepped)));
+      if (stepped <= min) return min;
+      if (stepped >= max) return max;
+      return precision(stepped);
     };
 
     const values = computed(() => {
@@ -118,6 +125,12 @@ export default defineComponent({
       emit('change', result);
       if (props.validateEvent) nextTick(() => field?.validate('change'));
     };
+    const emitValue = (next: number[], commit: boolean) => {
+      const result = output(next);
+      emit('update:modelValue', result);
+      emit('input', result);
+      if (commit) commitValue(result);
+    };
 
     const update = (value: number, handle = activeHandle.value, commit = true) => {
       if (isDisabled.value) return;
@@ -129,19 +142,21 @@ export default defineComponent({
           else next[0] = next[1];
         }
       }
-      const result = output(next);
-      emit('update:modelValue', result);
-      emit('input', result);
-      if (commit) commitValue(result);
+      emitValue(next, commit);
     };
 
     let dragging = false;
+    let dragStartY = 0;
+    let dragStartValue = 0;
     const handlePointerMove = (event: PointerEvent) => {
       if (!dragging || isDisabled.value) return;
       const target = event.currentTarget as HTMLElement;
       const rect = target.getBoundingClientRect();
-      const ratio = props.vertical ? 1 - (event.clientY - rect.top) / rect.height : (event.clientX - rect.left) / rect.width;
-      update(bounds.value.min + ratio * (bounds.value.max - bounds.value.min), activeHandle.value, false);
+      const { min, max } = bounds.value;
+      const value = props.vertical
+        ? dragStartValue + (dragStartY - event.clientY) / rect.height * (max - min)
+        : min + (event.clientX - rect.left) / rect.width * (max - min);
+      update(value, activeHandle.value, false);
     };
     const stopDragging = () => {
       const shouldCommit = dragging && !isDisabled.value;
@@ -151,33 +166,66 @@ export default defineComponent({
     const startDragging = (event: PointerEvent, handle: number) => {
       if (isDisabled.value) return;
       activeHandle.value = handle;
+      focusedHandle.value = handle;
       dragging = true;
+      dragStartY = event.clientY;
+      dragStartValue = values.value[handle];
       (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
     };
 
     const updateFromKeyboard = (event: KeyboardEvent, handle: number) => {
       if (isDisabled.value) return;
+      const { min, max, step } = bounds.value;
       const current = values.value[handle];
-      const distance = bounds.value.max - bounds.value.min;
-      const jump = event.key === 'PageUp' || event.key === 'PageDown' ? bounds.value.step * 10 : bounds.value.step;
-      let next = current;
-      if (event.key === 'ArrowRight' || (!props.vertical && event.key === 'ArrowUp')) next += jump;
-      if (event.key === 'ArrowLeft' || (!props.vertical && event.key === 'ArrowDown')) next -= jump;
-      if (props.vertical && event.key === 'ArrowUp') next += jump;
-      if (props.vertical && event.key === 'ArrowDown') next -= jump;
-      if (event.key === 'PageUp') next += distance / 10;
-      if (event.key === 'PageDown') next -= distance / 10;
-      if (event.key === 'Home') next = bounds.value.min;
-      if (event.key === 'End') next = bounds.value.max;
-      if (next !== current) {
-        event.preventDefault();
-        activeHandle.value = handle;
-        update(next, handle);
+      const byMark = props.step === 'mark';
+      const pageStep = byMark ? (max - min) / 10 : step * 4;
+      let target: number;
+      switch (event.key) {
+        case 'ArrowRight':
+        case 'ArrowUp':
+          target = current + step;
+          break;
+        case 'ArrowLeft':
+        case 'ArrowDown':
+          target = current - step;
+          break;
+        case 'PageUp':
+          target = current + pageStep;
+          break;
+        case 'PageDown':
+          target = current - pageStep;
+          break;
+        case 'Home':
+          target = min;
+          break;
+        case 'End':
+          target = max;
+          break;
+        default:
+          return;
       }
+      if (byMark && target === current) return;
+      event.preventDefault();
+      activeHandle.value = handle;
+      if (byMark) {
+        update(target, handle);
+        return;
+      }
+      const value = normalizeNumber(target);
+      const next = [...values.value];
+      if (value === current) {
+        commitValue(output(next));
+        return;
+      }
+      next[handle] = value;
+      if (props.range) next.sort((a, b) => a - b);
+      emitValue(next, true);
     };
 
     const handleTrackClick = (event: MouseEvent) => {
       if (isDisabled.value) return;
+      // Pointer capture can send the release click to the thumb even off the track.
+      if (props.vertical && (event.target as Element).closest('[role="slider"]')?.parentElement === event.currentTarget) return;
       const target = event.currentTarget as HTMLElement;
       const rect = target.getBoundingClientRect();
       const ratio = props.vertical ? 1 - (event.clientY - rect.top) / rect.height : (event.clientX - rect.left) / rect.width;
@@ -236,7 +284,7 @@ export default defineComponent({
                 class={ns.e('handle')}
                 role='slider'
                 aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
-                tabindex={isDisabled.value ? -1 : 0}
+                tabindex={isDisabled.value ? undefined : 0}
                 aria-valuemin={bounds.value.min}
                 aria-valuemax={bounds.value.max}
                 aria-valuenow={value}
@@ -249,7 +297,7 @@ export default defineComponent({
                 style={props.vertical ? { bottom: `${percentage(value)}%` } : { left: `${percentage(value)}%` }}
                 onFocus={() => { activeHandle.value = index; focusedHandle.value = index; }}
                 onBlur={() => { focusedHandle.value = null; }}
-                onPointerdown={(event: PointerEvent) => { focusedHandle.value = index; startDragging(event, index); }}
+                onPointerdown={(event: PointerEvent) => startDragging(event, index)}
                 onPointerup={() => { focusedHandle.value = null; }}
                 onKeydown={(event: KeyboardEvent) => updateFromKeyboard(event, index)}
               >
