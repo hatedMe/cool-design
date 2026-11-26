@@ -1,5 +1,5 @@
 import { mount, flushPromises } from '@vue/test-utils';
-import { Fragment, h, ref } from 'vue';
+import { defineComponent, Fragment, h, ref } from 'vue';
 import { afterEach, expect, test, vi } from 'vitest';
 import { ConfigProvider } from '../../config-provider';
 import { Carousel, CarouselItem } from '..';
@@ -186,4 +186,63 @@ test('切换最近 Provider 的命名空间时保留 Fragment 子项、激活索
   expect(slide.getAttribute('aria-hidden')).toBe('true');
   expect(w.get('[aria-current="true"]').classes()).toContain('3d-carousel__indicator');
   expect(w.getComponent(Carousel).emitted('change')).toEqual([[0, 1]]);
+});
+
+test('带键列表增删重排后重新应用 initialIndex，导航跟随渲染顺序', async () => {
+  const ids = ref(['A', 'B', 'C']);
+  const w = mount(Carousel, {
+    props: { autoplay: false, initialIndex: 1 },
+    slots: { default: () => h(Fragment, ids.value.map(id => h(CarouselItem, { key: id, name: id }, () => id))) }
+  });
+  wrappers.push(w);
+  const vm = w.vm as unknown as { setActiveItem: (name: string) => void };
+  await flushPromises();
+  vm.setActiveItem('C');
+  await flushPromises();
+  const slide = w.get('.is-active[role="group"]').element;
+  ids.value = ['C', 'A', 'B'];
+  await flushPromises();
+  expect(activeText(w)).toBe('A');
+  expect(w.get('[role="group"]').element).toBe(slide);
+  expect(slide.getAttribute('aria-hidden')).toBe('true');
+  vm.setActiveItem('B');
+  await flushPromises();
+  expect(activeText(w)).toBe('B');
+  ids.value = ['X', 'C'];
+  await flushPromises();
+  expect(activeText(w)).toBe('C');
+  expect(w.emitted('change')).toEqual([[2, 1], [1, 2], [2, 1], [1, 2]]);
+});
+
+test('同名包装只为已注册子项生成导航，独立更新时同步顺序', async () => {
+  const ids = ref<string[]>([]);
+  const Wrapped = defineComponent({
+    name: CarouselItem.name,
+    setup: () => () => ids.value.length
+      ? h(Fragment, ids.value.map(id => h(CarouselItem, { key: id, name: id }, () => id)))
+      : h('span')
+  });
+  const w = mount(Carousel, {
+    props: { autoplay: false },
+    slots: { default: () => [h(CarouselItem, { name: 'A' }, () => 'A'), h(Wrapped)] }
+  });
+  wrappers.push(w);
+  const vm = w.vm as unknown as { next: () => void; setActiveItem: (name: string) => void };
+  await flushPromises();
+  expect(w.findAll('ul button')).toHaveLength(1);
+  vm.next();
+  expect(activeText(w)).toBe('A');
+  for (const order of [['B', 'C'], ['C', 'B'], ['X'], []]) {
+    ids.value = order;
+    await flushPromises();
+    expect(w.findAll('ul button')).toHaveLength(order.length + 1);
+    expect(activeText(w)).toBe('A');
+    if (order.length) {
+      vm.setActiveItem(order[0]);
+      await flushPromises();
+      expect(activeText(w)).toBe(order[0]);
+      expect(w.findAll('ul button')[1].attributes('aria-current')).toBe('true');
+    }
+  }
+  expect(w.emitted('change')).toEqual([[1, 0], [0, 1], [1, 0], [0, 1], [1, 0], [0, 1]]);
 });

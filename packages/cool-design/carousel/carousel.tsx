@@ -3,11 +3,14 @@ import {
   Fragment,
   computed,
   defineComponent,
+  getCurrentInstance,
+  h,
   onBeforeUnmount,
   provide,
   reactive,
   ref,
   watch,
+  type ComponentInternalInstance,
   type PropType,
   type VNode
 } from 'vue';
@@ -61,6 +64,10 @@ export default defineComponent({
     const timer = ref<ReturnType<typeof setInterval>>();
     const order = ref<number[]>([]);
     const states = reactive(new Map<number, { name?: string | number; label?: string | number }>());
+    const instances = new Map<number, ComponentInternalInstance>();
+    let trackElement: HTMLElement;
+    let observer: MutationObserver | undefined;
+    let mounted = false;
     let initialized = false;
 
     const items = computed(() =>
@@ -74,19 +81,35 @@ export default defineComponent({
     const card = computed(() => props.type === 'card');
 
     const clampIndex = (index: number, value: number) => Math.min(Math.max(index, 0), Math.max(value - 1, 0));
-    watch(
-      count,
-      (value) => {
-        if (value <= 0) return;
-        if (!initialized) {
-          initialized = true;
-          active.value = clampIndex(props.initialIndex, value);
-          return;
+    const syncOrder = () => {
+      const uids = [...instances.values()]
+        .filter(item => item.vnode.el && trackElement.contains(item.vnode.el as Node))
+        .sort((a, b) => {
+          const position = a.vnode.el!.compareDocumentPosition(b.vnode.el);
+          return position & trackElement.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+        })
+        .map(item => item.uid);
+      if (mounted && uids.length === order.value.length && uids.every((uid, i) => uid === order.value[i])) return;
+      mounted = true;
+      order.value = uids;
+      if (!uids.length) return;
+      const previous = active.value;
+      active.value = clampIndex(props.initialIndex, uids.length);
+      if (initialized && active.value !== previous) emit('change', active.value, previous);
+      initialized = true;
+    };
+    const syncTrack = (track: VNode) => {
+      trackElement = track.el as HTMLElement;
+      // A slot wrapper can move or replace registered slides without updating the track VNode.
+      if (!mounted) {
+        const Observer = trackElement.ownerDocument.defaultView?.MutationObserver;
+        if (Observer) {
+          observer = new Observer(syncOrder);
+          observer.observe(trackElement, { childList: true, subtree: true });
         }
-        if (active.value > value - 1) active.value = value - 1;
-      },
-      { immediate: true }
-    );
+      }
+      syncOrder();
+    };
 
     const stop = () => {
       if (timer.value) {
@@ -100,7 +123,10 @@ export default defineComponent({
       timer.value = setInterval(() => go(active.value + 1), props.interval);
     };
     watch([() => props.autoplay, () => props.interval, count, paused], start, { immediate: true });
-    onBeforeUnmount(stop);
+    onBeforeUnmount(() => {
+      observer?.disconnect();
+      stop();
+    });
 
     const go = (index: number) => {
       const value = count.value;
@@ -131,11 +157,13 @@ export default defineComponent({
       card,
       cardScale: computed(() => props.cardScale),
       register: (uid, itemProps) => {
-        if (!order.value.includes(uid)) order.value.push(uid);
+        // Seed item indices during initial rendering and hydration.
+        if (!mounted) order.value.push(uid);
+        instances.set(uid, getCurrentInstance()!);
         states.set(uid, itemProps);
       },
       unregister: (uid) => {
-        order.value = order.value.filter((item) => item !== uid);
+        instances.delete(uid);
         states.delete(uid);
       }
     });
@@ -173,9 +201,12 @@ export default defineComponent({
           onMouseleave={() => props.pauseOnHover && (paused.value = false)}
           onKeydown={onKeydown}>
           <div class={bem('stage')} style={props.height ? { height: props.height } : undefined}>
-            <div class={bem('track')} style={trackStyle}>
-              {children}
-            </div>
+            {h('div', {
+              class: bem('track'),
+              style: trackStyle,
+              onVnodeMounted: syncTrack,
+              onVnodeUpdated: syncTrack
+            }, [children])}
             {showPrev && (
               <button
                 type='button'
@@ -198,7 +229,7 @@ export default defineComponent({
           {props.indicatorPosition !== 'none' && count.value > 0 && (
             <ul class={bem('indicators')}>
               {items.value.map((item) => (
-                <li key={item.name} class={{ 'is-active': item.index === active.value }}>
+                <li key={item.uid} class={{ 'is-active': item.index === active.value }}>
                   <button
                     type='button'
                     class={bem('indicator')}

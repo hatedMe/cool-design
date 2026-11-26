@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Carousel 在子项增删或重排后按新顺序重新应用 `initialIndex`。活动索引变化会触发 `change(current, prev)`，依赖该事件的页面需考虑列表更新。
+
 - Loading 服务指定非 `body` 目标时仅遮罩该区域，包含显式传入 `fullscreen: true` 的调用。需要全屏时，请移除 `target` 或改传 `document.body`。
 
 - Menu 在水平空间不足时将末尾菜单项收进「更多」，支持鼠标和键盘选择，保留原菜单项状态与选择路径。默认水平布局新增列表包装，使用直接子选择器的自定义样式需更新选择器。设置 `ellipsis=false` 可沿用原水平布局。
