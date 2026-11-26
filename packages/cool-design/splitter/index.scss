@@ -47,12 +47,16 @@
 .#{config.$namespace}-splitter__collapse.is-end {
   right: -18px;
 }
-.#{config.$namespace}-splitter--vertical .#{config.$namespace}-splitter__collapse.is-start {
+.#{config.$namespace}-splitter--vertical
+  > .#{config.$namespace}-splitter__divider
+  > .#{config.$namespace}-splitter__collapse.is-start {
   top: -18px;
   left: 50%;
   transform: translateX(-50%);
 }
-.#{config.$namespace}-splitter--vertical .#{config.$namespace}-splitter__collapse.is-end {
+.#{config.$namespace}-splitter--vertical
+  > .#{config.$namespace}-splitter__divider
+  > .#{config.$namespace}-splitter__collapse.is-end {
   top: auto;
   right: auto;
   bottom: -18px;
