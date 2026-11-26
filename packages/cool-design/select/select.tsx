@@ -73,6 +73,7 @@ export default defineComponent({
     clearable: Boolean,
     disabled: Boolean,
     placeholder: String,
+    ariaLabel: String,
     size: String as PropType<Size>,
     multiple: Boolean,
     multipleLimit: { type: Number, default: 0 },
@@ -524,7 +525,8 @@ export default defineComponent({
             {...attrs}
             ref={trigger}
             id={triggerId}
-            aria-labelledby={(attrs['aria-labelledby'] as string) || (attrs['aria-label'] ? undefined : field?.getLabelId?.())}
+            aria-label={props.ariaLabel}
+            aria-labelledby={(attrs['aria-labelledby'] as string) || (props.ariaLabel ? undefined : field?.getLabelId?.())}
             aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
             role='combobox'
             tabindex={isDisabled() ? -1 : 0}

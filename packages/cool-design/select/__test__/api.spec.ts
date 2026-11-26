@@ -1,7 +1,9 @@
-import { h, nextTick } from 'vue';
+import { h, nextTick, ref } from 'vue';
 import { DOMWrapper, mount } from '@vue/test-utils';
 import { beforeEach, expect, test } from 'vitest';
 import Select from '../index';
+import Form from '../../form';
+import FormItem from '../../form-item';
 import SelectOption from '../../select-option';
 import SelectOptionGroup from '../../select-option-group';
 
@@ -10,6 +12,30 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 const doc = () => new DOMWrapper(document.body);
+
+test('ariaLabel 命名主 combobox，并在清空后恢复字段标签', async () => {
+  const name = ref('选择状态');
+  const wrapper = mount(Form, {
+    props: { model: {} },
+    slots: { default: () => h(FormItem, { label: '账号状态' }, () => h(Select, { ariaLabel: name.value })) }
+  });
+  try {
+    const select = wrapper.getComponent(Select);
+    const combobox = select.get('[role="combobox"]');
+    expect(combobox.attributes('aria-label')).toBe('选择状态');
+    expect(combobox.attributes('aria-labelledby')).toBeUndefined();
+
+    name.value = '更新状态';
+    await nextTick();
+    expect(combobox.attributes('aria-label')).toBe('更新状态');
+
+    name.value = '';
+    await nextTick();
+    expect(combobox.attributes('aria-labelledby')).toBe(wrapper.get('label').attributes('id'));
+  } finally {
+    wrapper.unmount();
+  }
+});
 
 test('SelectOptionGroup 渲染分组标题，禁用整组不可选', async () => {
   const wrapper = mount(Select, {
