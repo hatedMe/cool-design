@@ -77,7 +77,7 @@ describe('布局与展示组件的命名空间', () => {
     }
   });
 
-  test('Space 保留显式包装类、插槽分组及用户类', () => {
+  test('Space 逐项排列 Fragment，保留显式包装类、命名空间及用户类', () => {
     const wrapper = mount(ConfigProvider, {
       props: { namespace: 'acme' },
       slots: { default: () => h(Space, { prefixCls: 'custom', spacer: '|', class: 'user' }, () => [
@@ -87,8 +87,8 @@ describe('布局与展示组件的命名空间', () => {
     });
     try {
       const space = wrapper.get('.acme-space.user');
-      expect(space.findAll('.custom__item').map((item) => item.text())).toEqual(['甲乙', '丙']);
-      expect(space.get('.acme-space__spacer').text()).toBe('|');
+      expect(space.findAll('.custom__item').map((item) => item.text())).toEqual(['甲', '乙', '丙']);
+      expect(space.findAll('.acme-space__spacer').map((spacer) => spacer.text())).toEqual(['|', '|']);
     } finally {
       wrapper.unmount();
     }

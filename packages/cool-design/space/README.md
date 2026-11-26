@@ -26,7 +26,7 @@
 
 | 名称    | 说明                                     |
 | ------- | ---------------------------------------- |
-| default | 要排列的内容。每个顶层子项占一个包装元素，顶层 Fragment 中的元素共用一个包装元素。 |
+| default | 要排列的内容。Fragment（包括 `v-for` 生成的 Fragment）中的子项分别参与布局，普通元素或组件整体占一项。 |
 
 ### 事件与实例方法
 
@@ -39,6 +39,8 @@ Space 无专用事件或公开实例方法。
 - `alignment`（兼容别名 `align`）：`normal` / `start` / `end` / `center` / `baseline` / `stretch`，默认 `center`。
 - `wrap`：默认 `false`，需要换行的布局请显式传 `wrap`。
 - `fill`：开启后子项按 `fillRatio` 撑满容器并自动换行。
+
+Fragment 内的子项分别应用间距、方向、换行和分隔符。需要把多段内容作为一个整体排列时，可以在外面套一层显式容器，例如 `div`。
 
 未指定 `size` 时继承 ConfigProvider 的全局尺寸，组件在全局尺寸也为空时回退 `small`。
 

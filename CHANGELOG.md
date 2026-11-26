@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Space 逐项排列默认插槽 Fragment 的内容，`v-for` 等场景中的子项分别应用间距、方向、换行及分隔符。需要延续原有分组布局时，可在组外添加显式容器。
+
 - Upload 手动模式在调用 `submit()` 时执行 `before-upload`。依赖选择时校验的页面可通过 `change` 读取原文件。批量文件独立等待各自的钩子，自动上传的进度与状态会同步到列表，单个回调绑定每次只调用一次。
 
 - Dropdown 在 `role="navigation"` 时为菜单项使用 `link` 角色。菜单内按 `Tab` 或 `Shift+Tab` 会关闭菜单并将焦点还给触发器。
