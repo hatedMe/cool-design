@@ -4,6 +4,7 @@ import {
   menuKey, menuPopperProps,
   type MenuItemClicked, type MenuItemData, type MenuMode, type MenuRoute, type MenuRouterResult, type MenuTrigger
 } from './context';
+import Overflow from './overflow';
 import IMenuItem from './menu-item';
 import ISubMenu from './sub-menu';
 
@@ -48,6 +49,7 @@ export default defineComponent({
   },
   setup(props, { emit, slots, expose }) {
     const ns = useNamespace('menu');
+    const overflow = ref<{ handleResize(): void; close(): void }>();
     const instance = getCurrentInstance();
     const internalActive = ref(props.modelValue ?? props.defaultActive ?? '');
     const opened = ref<string[]>(props.collapse && props.mode === 'vertical' ? [] : [...props.defaultOpeneds]);
@@ -111,6 +113,7 @@ export default defineComponent({
       emit('update:modelValue', index);
     };
     const handleSelect = (item: MenuItemClicked) => {
+      overflow.value?.close();
       const currentSelection = ++selection;
       const { index, indexPath } = item;
       if (props.mode === 'horizontal' || props.collapse) opened.value = [];
@@ -174,9 +177,7 @@ export default defineComponent({
         internalActive.value = props.modelValue ?? props.defaultActive ?? '';
       }
     };
-    const handleResize = () => {
-      // 兼容标准方法名：本库使用 CSS 响应式，无需手动计算
-    };
+    const handleResize = () => overflow.value?.handleResize();
 
     expose({ open, close, updateActiveIndex, handleResize });
 
@@ -249,7 +250,7 @@ export default defineComponent({
       items.map((item) => {
         if (item.children?.length) {
           return (
-            <ISubMenu index={item.index} disabled={item.disabled}>
+            <ISubMenu key={item.index} index={item.index} disabled={item.disabled}>
               {{
                 title: () => item.label,
                 default: () => renderItems(item.children ?? [])
@@ -258,14 +259,15 @@ export default defineComponent({
           );
         }
         return (
-          <IMenuItem index={item.index} disabled={item.disabled} route={item.route} to={item.to}>
+          <IMenuItem key={item.index} index={item.index} disabled={item.disabled} route={item.route} to={item.to}>
             {{ default: () => item.label }}
           </IMenuItem>
         );
       });
 
     return () => {
-      const hasSlot = !!slots.default;
+      const children = () => slots.default?.() ?? renderItems(props.items);
+      const listClass = { [ns.e('list')]: true, 'no-transition': !props.collapseTransition };
       return (
         <nav
           class={{
@@ -275,12 +277,12 @@ export default defineComponent({
             'is-ellipsis': props.ellipsis
           }}
           style={themeStyle.value}>
-          <ul
-            class={{ [ns.e('list')]: true, 'no-transition': !props.collapseTransition }}
+          {props.mode === 'horizontal' && props.ellipsis ? <Overflow ref={overflow} class={listClass}>{children}</Overflow> : <ul
+            class={listClass}
             role='menubar'
             aria-orientation={props.mode === 'horizontal' ? 'horizontal' : 'vertical'}>
-            {hasSlot ? slots.default?.() : renderItems(props.items)}
-          </ul>
+            {children()}
+          </ul>}
         </nav>
       );
     };

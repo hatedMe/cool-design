@@ -131,3 +131,32 @@
   color: var(--#{config.$namespace}-text-muted);
   cursor: default;
 }
+
+.#{config.$namespace}-menu__entry {
+  flex: none;
+}
+.#{config.$namespace}-menu .#{config.$namespace}-menu__entry-list,
+.#{config.$namespace}-menu__entry-list {
+  display: flex;
+  width: max-content;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.#{config.$namespace}-menu__parked {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+.#{config.$namespace}-sub-menu__popup .#{config.$namespace}-menu__entry-list {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.#{config.$namespace}-menu__destination {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}

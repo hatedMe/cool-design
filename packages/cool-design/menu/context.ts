@@ -61,6 +61,7 @@ export interface MenuContext {
 }
 
 interface MenuBranch {
+  overflow?: Ref<boolean>;
   expanded: Ref<boolean>;
   hold: () => void;
   leave: (event: MouseEvent) => void;

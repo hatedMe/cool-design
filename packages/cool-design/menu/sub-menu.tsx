@@ -38,13 +38,13 @@ export default defineComponent({
     const firstLevel = !parentPath;
     const horizontal = computed(() => menu?.mode === 'horizontal');
     const popupMode = computed(() => horizontal.value || menu?.collapse === true);
-    const bottomPopup = computed(() => horizontal.value && firstLevel);
+    const bottomPopup = computed(() => horizontal.value && firstLevel && !parentBranch?.overflow?.value);
     const expandIcons = computed(() => bottomPopup.value || !popupMode.value);
     const hover = computed(() => popupMode.value && menu?.menuTrigger === 'hover' && !props.disabled);
     const opened = computed(() => menu?.isOpened(props.index) ?? false);
     const expanded = computed(() => opened.value && (parentBranch?.expanded.value ?? true));
     const popper = computed(() => menu?.popperProps);
-    const teleported = computed(() => props.teleported ?? popper.value?.teleported ?? firstLevel);
+    const teleported = computed(() => props.teleported ?? popper.value?.teleported ?? (firstLevel && !parentBranch?.overflow?.value));
     const icon = computed(() => {
       const close = expandIcons.value ? props.expandCloseIcon : props.collapseCloseIcon;
       const open = expandIcons.value ? props.expandOpenIcon : props.collapseOpenIcon;

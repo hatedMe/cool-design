@@ -70,7 +70,7 @@ Menu 用于页面导航和分组操作，支持水平/垂直模式、折叠、�
 | `text-color` | 文字颜色 | `string` | — |
 | `active-text-color` | 激活文字颜色 | `string` | — |
 | `router` | 开启后点击菜单项通过 vue-router 导航（目标取 `route`/`to`，缺省用 `index`） | `boolean` | `false` |
-| `ellipsis` | 控制样式类 `is-ellipsis`，当前无溢出重排 | `boolean` | `true` |
+| `ellipsis` | 水平模式下将放不下的末尾菜单项收进「更多」。关闭后沿用原水平布局 | `boolean` | `true` |
 | `popper-offset` | 浮层与触发器的间距，单位 px | `number` | `6` |
 | `popper-effect` | 浮层主题，内置 `light` / `dark` | `string` | `light` |
 | `popper-class` | 浮层的自定义类名 | `MenuPopperClass` | — |
@@ -106,7 +106,7 @@ Menu 用于页面导航和分组操作，支持水平/垂直模式、折叠、�
 | `open` | 展开子菜单 | `index: string` |
 | `close` | 收起子菜单 | `index: string` |
 | `updateActiveIndex` | 手动更新激活项 | `index?: string` |
-| `handleResize` | 兼容方法（无操作） | — |
+| `handleResize` | 重新测量水平菜单的可用宽度 | — |
 
 如果 `persistent` 为 `false` 且插槽中的嵌套子菜单已经卸载，调用 `open` 时先展开父级使子菜单重新挂载。
 
@@ -176,3 +176,5 @@ Menu 用于页面导航和分组操作，支持水平/垂直模式、折叠、�
 | ------ | ---- |
 | `title` | 自定义标题 |
 | `default` | 分组内菜单项 |
+
+水平菜单可点击「更多」，或在入口按 `Enter`、空格、方向下键进入溢出项。选择事件沿用业务菜单的 `indexPath`。默认插槽中返回多个根节点的自定义组件会作为一组移动，保留组件状态。测量时会将浮层中的原节点同步移回根菜单，再放回浮层。浏览器支持 `moveBefore` 时使用保留状态的移动；较旧浏览器中，自定义元素可能触发重新连接，内嵌 iframe 可能重新载入。
