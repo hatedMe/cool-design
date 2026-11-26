@@ -68,6 +68,7 @@ export default defineComponent({
     const tooltip = shallowRef<TooltipInstance>();
     const splitReference = shallowRef<HTMLElement>();
     const menu = ref<HTMLElement>();
+    let leavingByTab = false;
 
     const handleOpen = () => tooltip.value?.onOpen();
     const handleClose = () => tooltip.value?.onClose();
@@ -98,15 +99,32 @@ export default defineComponent({
       if (event?.type === 'keydown' && open.value) (menuItems()[0] ?? menu.value)?.focus();
     };
 
-    const handleBeforeHide = (event?: Event) => {
-      if (event?.type !== 'keydown' || (event as KeyboardEvent).key !== 'Escape') return;
+    const focusTrigger = () => {
       const reference = tooltip.value?.popperRef.triggerRef;
       if (reference instanceof HTMLElement) reference.focus();
+    };
+
+    const restoreMenuFocus = () => {
+      const panel = menu.value;
+      if (panel?.contains(panel.ownerDocument.activeElement)) focusTrigger();
+    };
+
+    const handleBeforeHide = (event?: Event) => {
+      const keyboardEvent = event?.type === 'keydown' ? event as KeyboardEvent : undefined;
+      leavingByTab = (keyboardEvent?.code || keyboardEvent?.key) === 'Tab';
+      if (keyboardEvent?.key === 'Escape') focusTrigger();
+      else if (leavingByTab) restoreMenuFocus();
     };
 
     const handleMenuKeydown = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.isComposing) return;
       const key = event.code || event.key;
+      if (key === 'Tab' && open.value) {
+        event.preventDefault();
+        tooltip.value?.onClose(event);
+        focusTrigger();
+        return;
+      }
       if (key !== 'ArrowDown' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
       const items = menuItems();
       if (!items.length) return;
@@ -127,6 +145,7 @@ export default defineComponent({
         tabindex={-1}
         style={{ maxHeight: typeof props.maxHeight === 'number' || /^\d+(\.\d+)?$/.test(props.maxHeight)
           ? `${props.maxHeight}px` : props.maxHeight }}
+        onFocusin={() => { if (leavingByTab && !open.value) restoreMenuFocus(); }}
         onKeydown={handleMenuKeydown}>
         {slots.dropdown?.() ?? (
           <IDropdownMenu>
@@ -190,6 +209,7 @@ export default defineComponent({
             appendTo={props.appendTo}
             persistent={props.persistent}
             onShow={handleShow}
+            onHide={() => { leavingByTab = false; }}
             {...{
               'onBefore-hide': handleBeforeHide,
               'onVisible-change': (visible: boolean) => {

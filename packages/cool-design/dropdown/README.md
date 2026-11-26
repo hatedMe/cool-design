@@ -18,7 +18,7 @@ Dropdown 将多个操作收纳到下拉菜单中，支持悬停/点击/右键触
 </Dropdown>
 ```
 
-触发方式支持 `hover`、`click`、`contextmenu` 和数组组合。单独使用 `hover` 时，打开、关闭各延迟 `150` 毫秒，可通过 `show-timeout` 和 `hide-timeout` 修改。其他触发配置即时响应。键盘按 `KeyboardEvent.code` 匹配，仍接受原有 `enter` 和 `space`。方向键在可用菜单项间移动，`Escape` 关闭并将焦点还给触发器。
+触发方式支持 `hover`、`click`、`contextmenu` 和数组组合。单独使用 `hover` 时，打开、关闭各延迟 `150` 毫秒，可通过 `show-timeout` 和 `hide-timeout` 修改。其他触发配置即时响应。键盘按 `KeyboardEvent.code` 匹配，仍接受原有 `enter` 和 `space`。方向键在可用菜单项间移动。菜单内按 `Tab`、`Shift+Tab` 或 `Escape` 会关闭菜单并将焦点还给触发器。
 
 ## 分裂按钮与数据驱动
 
@@ -54,7 +54,7 @@ Dropdown 将多个操作收纳到下拉菜单中，支持悬停/点击/右键触
 | `popper-style` | 菜单浮层自定义样式 | `string` / `CSSProperties` / `CSSProperties[]` | — |
 | `popper-options` | Popper 定位配置，支持 `strategy`、`modifiers` 和 `onFirstUpdate` | `PopperOptions` | — |
 | `effect` | 菜单主题：`light` / `dark` | `string` | `light` |
-| `role` | 菜单无障碍角色 | `string` | `menu` |
+| `role` | 菜单无障碍角色。设为 `navigation` 时，菜单项使用 `link` 角色，默认使用 `menuitem` | `string` | `menu` |
 | `tabindex` | 触发器 Tab 顺序 | `string` / `number` | `0` |
 | `id` | 触发器 ID，同时用于标记菜单的无障碍名称 | `string` | — |
 | `loop` | 方向键是否在首尾菜单项之间循环 | `boolean` | `true` |

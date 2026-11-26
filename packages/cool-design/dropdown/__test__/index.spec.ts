@@ -16,6 +16,105 @@ const mountDropdown = (
 const mountDropdownBase = mount;
 
 describe('Dropdown', () => {
+  test.each([
+    { content: 'slot', role: 'navigation', itemRole: 'link', shiftKey: false },
+    { content: 'items', role: 'navigation', itemRole: 'link', shiftKey: true },
+    { content: 'slot', role: undefined, itemRole: 'menuitem', shiftKey: true },
+    { content: 'items', role: undefined, itemRole: 'menuitem', shiftKey: false }
+  ])('$content 模式的 $itemRole 按 Tab（Shift=$shiftKey）关闭并回焦', async ({
+    content, role, itemRole, shiftKey
+  }) => {
+    const wrapper = mountDropdown({
+      props: {
+        trigger: 'click',
+        ...(role ? { role } : {}),
+        ...(content === 'items' ? { items: [{ command: 'edit', label: '编辑' }] } : {})
+      },
+      slots: content === 'slot' ? {
+        dropdown: () => h(DropdownMenu, null, () => h(DropdownItem, { command: 'edit' }, () => '编辑'))
+      } : undefined,
+      attachTo: document.body
+    });
+    try {
+      const trigger = wrapper.get('.i-dropdown__trigger');
+      await trigger.trigger('click');
+      const item = wrapper.get<HTMLButtonElement>('.i-dropdown__item-button');
+      item.element.focus();
+      expect(document.activeElement).toBe(item.element);
+      expect.soft(item.attributes('role')).toBe(itemRole);
+      const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Tab', code: 'Tab', shiftKey });
+      item.element.dispatchEvent(event);
+      await wrapper.vm.$nextTick();
+      expect.soft(event.defaultPrevented).toBe(true);
+      expect.soft(document.activeElement).toBe(trigger.element);
+      expect(wrapper.emitted('visible-change')).toEqual([[true], [false]]);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  test.each(['click', 'hover'] as const)('从 %s 菜单按 Tab 关闭时恢复再次进入菜单的焦点', async (triggerMode) => {
+    vi.useFakeTimers();
+    const wrapper = mount(Dropdown, {
+      props: {
+        trigger: triggerMode, teleported: false, showTimeout: 0, hideTimeout: 500,
+        items: [{ command: 'edit', label: '编辑' }]
+      },
+      slots: { default: () => h('button', '更多') },
+      global: { stubs: { transition: false } },
+      attachTo: document.body
+    });
+    try {
+      wrapper.vm.handleOpen();
+      await wrapper.vm.$nextTick();
+      const trigger = wrapper.get<HTMLButtonElement>('.i-dropdown__trigger').element;
+      const item = wrapper.get<HTMLButtonElement>('.i-dropdown__item-button').element;
+      item.focus();
+      await wrapper.get('.i-dropdown__item-button').trigger('keydown', { key: 'Tab', code: 'Tab' });
+      expect(document.activeElement).toBe(trigger);
+      item.focus();
+      if (triggerMode === 'hover') {
+        expect(document.activeElement).toBe(item);
+        expect(wrapper.emitted('visible-change')).toEqual([[true]]);
+        await vi.advanceTimersByTimeAsync(500);
+      }
+      expect(document.activeElement).toBe(trigger);
+      expect(wrapper.emitted('visible-change')).toEqual([[true], [false]]);
+    } finally {
+      wrapper.unmount();
+      vi.useRealTimers();
+    }
+  });
+
+  test('Tab 离场期间保留菜单项监听器转移到菜单外的焦点', async () => {
+    const after = document.createElement('button');
+    document.body.append(after);
+    const wrapper = mount(Dropdown, {
+      props: { trigger: 'click', teleported: false },
+      slots: {
+        default: () => h('button', '更多'),
+        dropdown: () => h(DropdownMenu, null, () => h(DropdownItem, { command: 'edit' }, () => '编辑'))
+      },
+      global: { stubs: { transition: false } },
+      attachTo: document.body
+    });
+    try {
+      const trigger = wrapper.get<HTMLButtonElement>('.i-dropdown__trigger');
+      await trigger.trigger('click');
+      const item = wrapper.get<HTMLButtonElement>('.i-dropdown__item-button');
+      item.element.focus();
+      await item.trigger('keydown', { key: 'Tab', code: 'Tab' });
+      expect(document.activeElement).toBe(trigger.element);
+      item.element.addEventListener('focusin', () => after.focus(), { once: true });
+      item.element.focus();
+      expect(document.activeElement).toBe(after);
+      expect(wrapper.emitted('visible-change')).toEqual([[true], [false]]);
+    } finally {
+      wrapper.unmount();
+      after.remove();
+    }
+  });
+
   test('鼠标取消默认操作时保留菜单，键盘激活依次触发 Item click 与命令', async () => {
     const events: Array<[string, Event]> = [];
     const command = { value: 'edit' };

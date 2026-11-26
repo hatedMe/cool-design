@@ -43,7 +43,7 @@ const DropdownItem = defineComponent({
         <button
           type='button'
           class={ns.e('item-button')}
-          role='menuitem'
+          role={parent?.role === 'navigation' ? 'link' : 'menuitem'}
           disabled={props.disabled}
           tabindex={props.disabled ? -1 : 0}
           aria-disabled={props.disabled || undefined}

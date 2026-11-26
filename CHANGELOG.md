@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Dropdown 在 `role="navigation"` 时为菜单项使用 `link` 角色。菜单内按 `Tab` 或 `Shift+Tab` 会关闭菜单并将焦点还给触发器。
+
 - Switch 支持用 `Enter` 和数字键盘的 `Enter` 切换。同步守卫通过时，原生表单提交会读取切换后的值。
 
 - TableV2 的 `expanded-rows-change` 现在接收展开的键数组 `(keys)`。需要继续接收 `(rows, keys)` 的旧页面可改用 `expanded-row-data-change`。
