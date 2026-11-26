@@ -277,6 +277,7 @@ export default defineComponent({
           class={[
             ns.b(),
             ns.m(`label-${labelPosition}`),
+            form?.inline?.() && ns.m('inline'),
             { [ns.m('error')]: !!displayError.value || validateState.value === 'error' },
             validateState.value && `is-${validateState.value}`
           ]}

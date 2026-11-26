@@ -93,6 +93,7 @@ export interface FormContext {
   labelSuffix?: () => string | undefined;
   labelPosition?: () => 'left' | 'right' | 'top' | undefined;
   labelWidth?: () => string | number | undefined;
+  inline?: () => boolean;
   emitValidate?: (prop: FormItemProp, isValid: boolean, message?: string) => void;
   hideRequiredAsterisk?: () => boolean;
   requireAsteriskPosition?: () => 'left' | 'right';

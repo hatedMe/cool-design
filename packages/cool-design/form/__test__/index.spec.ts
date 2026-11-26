@@ -5,6 +5,7 @@ import Form from '../index';
 import type { FormInstance, FormRule } from '../index';
 import FormItem from '../../form-item';
 import Input from '../../input';
+import ConfigProvider from '../../config-provider';
 
 function createForm(rules: FormRule[] = [{ required: true, message: '姓名必填' }]) {
   const formRef = ref<FormInstance>();
@@ -445,12 +446,35 @@ test('labelPosition 表单项可覆盖表单级布局', () => {
   w.unmount();
 });
 
-test('inline 表单渲染 is-inline 类', () => {
-  const model = reactive({ name: 'x' });
-  const w = mount(Form, {
-    props: { model, inline: true },
-    slots: { default: () => h(FormItem, { prop: 'name', label: '姓名' }, () => h('input')) }
-  });
-  expect(w.classes()).toContain('is-inline');
-  w.unmount();
+test('行内布局随所属表单与最近命名空间更新', async () => {
+  const inline = ref(false);
+  const namespace = ref('acme');
+  const w = mount(defineComponent({
+    setup: () => () => h(Form, { id: 'outer', model: {}, inline: inline.value }, () => [
+      h(ConfigProvider, { namespace: namespace.value }, () => h(FormItem, { id: 'owned', class: 'custom' })),
+      h(Form, { model: {} }, () => h(FormItem, { id: 'nested' }))
+    ])
+  }));
+  try {
+    const outer = w.get('#outer');
+    const owned = w.get('#owned');
+    const nested = w.get('#nested');
+    expect(outer.classes()).not.toContain('is-inline');
+    expect(owned.classes()).not.toContain('acme-form-item--inline');
+    inline.value = true;
+    await nextTick();
+    expect(outer.classes()).toContain('is-inline');
+    expect(owned.classes()).toEqual(expect.arrayContaining(['acme-form-item--inline', 'custom']));
+    expect(nested.classes()).not.toContain('i-form-item--inline');
+    namespace.value = '3d';
+    await nextTick();
+    expect(owned.classes()).toContain('3d-form-item--inline');
+    expect(owned.classes()).not.toContain('acme-form-item--inline');
+    inline.value = false;
+    await nextTick();
+    expect(outer.classes()).not.toContain('is-inline');
+    expect(owned.classes()).not.toContain('3d-form-item--inline');
+  } finally {
+    w.unmount();
+  }
 });

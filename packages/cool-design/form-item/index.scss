@@ -57,11 +57,17 @@
   line-height: 1.5;
   text-align: left;
 }
-.#{config.$namespace}-form--inline .#{config.$namespace}-form-item {
+.#{config.$namespace}-form-item--inline {
   display: inline-flex;
-  margin-right: 32px;
-  margin-bottom: 0;
+  flex-wrap: nowrap;
+  vertical-align: top;
 }
-.#{config.$namespace}-form--inline .#{config.$namespace}-form-item__content {
-  width: auto;
+.#{config.$namespace}-form-item--inline > .#{config.$namespace}-form-item__label {
+  flex-shrink: 0;
+}
+.#{config.$namespace}-form-item--inline:not(:last-child) {
+  margin-right: 32px;
+}
+.#{config.$namespace}-form-item--inline.#{config.$namespace}-form-item--label-top {
+  flex-direction: column;
 }

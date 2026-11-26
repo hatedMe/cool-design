@@ -10,7 +10,7 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 
 ## 行内表单与对齐
 
-通过 `inline` 使用紧凑布局；`labelPosition` 支持 `left` / `right` / `top`，`labelWidth` 控制标签宽度（数字按 `px` 处理），`labelSuffix` 追加到每个字段标签之后。`size` 和 `disabled` 可统一影响内部控件。
+开启 `inline` 后，表单项会在可用空间内并排，空间不足时自动换行。`labelPosition` 支持 `left` / `right` / `top`，`labelWidth` 控制标签宽度（数字按 `px` 处理），`labelSuffix` 追加到每个字段标签之后。`size` 和 `disabled` 可统一影响内部控件。
 
 ## 表单校验
 

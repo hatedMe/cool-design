@@ -98,6 +98,7 @@ export default defineComponent({
       labelSuffix: () => props.labelSuffix,
       labelPosition: () => props.labelPosition,
       labelWidth: () => props.labelWidth,
+      inline: () => props.inline,
       emitValidate: (prop, isValid, message) => emit('validate', prop, isValid, message),
       hideRequiredAsterisk: () => props.hideRequiredAsterisk,
       requireAsteriskPosition: () => props.requireAsteriskPosition,
