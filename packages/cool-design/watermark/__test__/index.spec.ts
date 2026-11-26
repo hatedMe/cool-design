@@ -90,6 +90,44 @@ describe('test `Watermark` component', () => {
       wrapper.unmount();
     }
   });
+  test('背景曾恢复后，连续更新内容仍恢复同批次被改回的旧背景', async () => {
+    const content = ref('INITIAL');
+    let layer: HTMLElement;
+    let previousBackground: string;
+    let patchedBackground = '';
+    const Harness = defineComponent({
+      setup() {
+        watch(
+          content,
+          () => {
+            patchedBackground = layer.style.backgroundImage;
+            layer.style.backgroundImage = previousBackground;
+          },
+          { flush: 'post' }
+        );
+        return () => h(Watermark, { content: content.value });
+      }
+    });
+    const wrapper = mount(Harness, { attachTo: document.body });
+    try {
+      layer = wrapper.get<HTMLElement>('.i-watermark__layer').element;
+      const initialBackground = layer.style.backgroundImage;
+      layer.style.backgroundImage = 'none';
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(layer.style.backgroundImage).toBe(initialBackground);
+
+      for (const nextContent of ['UPDATED', 'FINAL']) {
+        previousBackground = layer.style.backgroundImage;
+        content.value = nextContent;
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(decodeURIComponent(patchedBackground)).toContain(`>${nextContent}<`);
+        expect(layer.style.backgroundImage).toBe(patchedBackground);
+        expect(wrapper.get('.i-watermark__layer').element).toBe(layer);
+      }
+    } finally {
+      wrapper.unmount();
+    }
+  });
   test('水印层被篡改或移除时自动恢复', async () => {
     const wrapper = mount(Watermark, { props: { content: '水印' }, attachTo: document.body });
     const layer = wrapper.find('.i-watermark__layer').element as HTMLElement;

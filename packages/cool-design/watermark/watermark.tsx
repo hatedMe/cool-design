@@ -76,8 +76,8 @@ export default defineComponent({
     });
     // 防篡改：水印层样式或类名被外部改动、节点被移除时，恢复到期望状态。
     // 部分环境的 CSSOM 会重排 url() 引号等序列化细节，直接与期望值比较会形成回写循环，
-    // 因此记录“自身写入后的序列化值”，回调读到一致时视为自身回声直接跳过。
-    let lastSerializedBackgroundImage: string | undefined;
+    // 记录当前期望值及写回后的序列化值，两者都匹配时才跳过写回。
+    let lastBackgroundImage: { expected: string; serialized: string } | undefined;
     const restore = () => {
       const layer = layerRef.value;
       const root = rootRef.value;
@@ -85,9 +85,13 @@ export default defineComponent({
       if (layer.parentElement !== root) root.appendChild(layer);
       const layerClass = ns.e('layer');
       if (!layer.classList.contains(layerClass)) layer.classList.add(layerClass);
-      if (layer.style.backgroundImage !== lastSerializedBackgroundImage) {
-        layer.style.backgroundImage = layerStyle.value.backgroundImage;
-        lastSerializedBackgroundImage = layer.style.backgroundImage;
+      const expectedBackgroundImage = layerStyle.value.backgroundImage;
+      if (
+        lastBackgroundImage?.expected !== expectedBackgroundImage ||
+        layer.style.backgroundImage !== lastBackgroundImage.serialized
+      ) {
+        layer.style.backgroundImage = expectedBackgroundImage;
+        lastBackgroundImage = { expected: expectedBackgroundImage, serialized: layer.style.backgroundImage };
       }
       if (layer.style.backgroundPosition !== layerStyle.value.backgroundPosition)
         layer.style.backgroundPosition = layerStyle.value.backgroundPosition;
