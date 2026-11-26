@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from 'vitest';
+import { afterEach, expect, test, vi } from 'vitest';
 import { createApp, h, nextTick, ref, withDirectives } from 'vue';
 import Loading, { vLoading } from '..';
 
@@ -32,6 +32,25 @@ test('全屏单例复用同一实例', () => {
   expect(document.querySelector('.i-loading')).toBeNull();
 });
 
+test('目标元素优先于全屏选项和已有全屏实例', () => {
+  const target = document.createElement('section');
+  target.id = 'loading-target';
+  document.body.appendChild(target);
+  const full = Loading.service();
+  const local = Loading.service({ target });
+  const selector = Loading.service({ target: '#loading-target', fullscreen: true });
+  closers.push(full, local, selector);
+  expect(target.querySelectorAll('.i-loading--overlay')).toHaveLength(2);
+  expect(Loading.service({ target: '#missing-target' })).toBe(full);
+  expect(Loading.service({ target: document.body })).toBe(full);
+  local.close();
+  expect(target.querySelectorAll('.i-loading--overlay')).toHaveLength(1);
+  const body = Loading.service({ target: document.body, fullscreen: false });
+  closers.push(body);
+  expect(body).not.toBe(full);
+  expect(document.body.querySelector(':scope > .i-loading-service > .i-loading--overlay')).toBeTruthy();
+});
+
 test('支持 target 与 body 挂载', () => {
   const target = document.createElement('div');
   target.textContent = '内容';
@@ -49,6 +68,32 @@ test('支持 target 与 body 挂载', () => {
   expect(target2.querySelector('.i-loading')).toBeNull();
   expect(document.body.querySelector('.i-loading')).not.toBeNull();
   inst2.close();
+});
+
+test('挂到 body 的区域遮罩等待目标显示后测量，提前关闭可取消测量', async () => {
+  const shown = ref(false);
+  const host = document.createElement('div');
+  document.body.append(host);
+  const app = createApp(() => h('section', { style: { display: shown.value ? 'block' : 'none' } }));
+  app.mount(host);
+  const target = host.firstElementChild as HTMLElement;
+  const rect = vi.spyOn(target, 'getBoundingClientRect').mockImplementation(() =>
+    new DOMRect(0, 0, target.style.display === 'none' ? 0 : 200, 80)
+  );
+  try {
+    shown.value = true;
+    const cancelled = Loading.service({ target, body: true, lock: true });
+    cancelled.close();
+    const shownMask = Loading.service({ target, body: true, lock: true });
+    closers.push(shownMask);
+    await nextTick();
+    expect(rect).toHaveBeenCalledTimes(1);
+    expect(document.querySelector<HTMLElement>('.i-loading-service')!.style.width).toBe('200px');
+    expect(document.body.style.overflow).toBe('hidden');
+  } finally {
+    app.unmount();
+    rect.mockRestore();
+  }
 });
 
 test('lock 锁定滚动并在关闭后恢复', () => {

@@ -30,11 +30,12 @@ const inst = Loading.service({ text: '正在加载…', background: 'rgba(0,0,0,
 inst.close();
 ```
 
-`fullscreen` 默认为 `true`，全屏实例为单例，重复调用返回同一实例。指定 `target` 且 `fullscreen: false` 时遮罩目标元素，`body: true` 时将遮罩挂载到 `body`。`lock: true` 锁定页面滚动，关闭后恢复。
+指定非 `body` 目标时，服务仅遮罩该目标，即使显式传入 `fullscreen: true`。要沿用全屏效果，请省略 `target` 或传入 `document.body`。选择器未匹配时回退到 `document.body`。全屏调用在同一应用内复用实例。
+`body: true` 时将遮罩挂载到 `body`。`lock: true` 锁定页面滚动，关闭后恢复。
 
 ```ts
 // 区域加载
-const targetInst = Loading.service({ target: document.querySelector('#list') as HTMLElement, fullscreen: false, text: '加载中…' });
+const targetInst = Loading.service({ target: document.querySelector('#list') as HTMLElement, text: '加载中…' });
 targetInst.close();
 
 // 挂载到 body 但覆盖目标（避免 overflow 裁剪）
@@ -82,9 +83,9 @@ Loading.service({ text: '加载中…' }, getCurrentInstance()?.appContext ?? nu
 
 | 参数 | 说明 | 类型 | 默认值 |
 | ---- | ---- | ---- | ------ |
-| `target` | 遮罩目标元素或选择器，`fullscreen: false` 时生效 | `HTMLElement \| string` | `document.body` |
+| `target` | 遮罩目标元素或选择器，非 `body` 目标始终使用区域遮罩 | `HTMLElement \| string` | `document.body` |
 | `body` | 是否挂载到 `body`（非全屏时可避免裁剪） | `boolean` | `false` |
-| `fullscreen` | 是否全屏，全屏为单例 | `boolean` | `true` |
+| `fullscreen` | 目标为 `document.body` 时是否全屏 | `boolean` | `true` |
 | `lock` | 是否锁定滚动 | `boolean` | `false` |
 | `text` | 提示文字 | `string` | `正在加载…` |
 | `background` | 背景色 | `string` | — |

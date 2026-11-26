@@ -1,5 +1,5 @@
 import { provideServiceIds } from '../../hooks/use-id';
-import { computed, createVNode, defineComponent, getCurrentInstance, getCurrentScope, inject, provide, render, type AppContext } from 'vue';
+import { computed, createVNode, defineComponent, getCurrentInstance, getCurrentScope, inject, nextTick, provide, render, type AppContext } from 'vue';
 import { configKey, defaultConfig, getAppConfig, getThemeStyle } from '../config-provider/context';
 import { namespaceKey, useNamespace } from '../../hooks/use-namespace';
 import { sizeKey } from '../../hooks/use-size';
@@ -38,34 +38,39 @@ export function service(
   appContext?: AppContext | null
 ): LoadingInstance {
   if (typeof document === 'undefined') return { close: () => {}, setText: () => {} };
-  const fullscreen = options.fullscreen ?? true;
+  const target = resolveTarget(options.target);
+  const fullscreen = target === document.body && (options.fullscreen ?? true);
   const caller = getCurrentInstance();
   const context = appContext === undefined ? caller?.appContext ?? null : appContext;
   const localConfig = caller && caller.appContext === context ? inject(configKey, undefined) : undefined;
   const callerScope = localConfig && getCurrentScope();
   const existing = fullscreen && fullscreenInstances.get(context);
   if (existing) return existing;
-  const target = resolveTarget(options.target);
   const useBody = fullscreen || options.body || target === document.body;
   const parent = useBody ? document.body : target;
   const releasePosition = useBody ? undefined : retainPosition(target);
   const locked = options.lock;
   if (locked) lockScroll();
   const container = document.createElement('div');
-  if (!useBody) {
+  let closed = false;
+  parent.appendChild(container);
+  if (!fullscreen) {
     container.style.position = 'absolute';
     container.style.inset = '0';
     container.style.zIndex = '1000';
-  } else if (!fullscreen && options.body && target !== document.body) {
-    const rect = target.getBoundingClientRect();
-    container.style.position = 'fixed';
-    container.style.top = `${rect.top}px`;
-    container.style.left = `${rect.left}px`;
-    container.style.width = `${rect.width}px`;
-    container.style.height = `${rect.height}px`;
-    container.style.zIndex = '1000';
+    if (useBody) {
+      nextTick(() => {
+        if (closed) return;
+        const rect = target.getBoundingClientRect();
+        const origin = container.getBoundingClientRect();
+        container.style.inset = 'auto';
+        container.style.top = `${rect.top - origin.top}px`;
+        container.style.left = `${rect.left - origin.left}px`;
+        container.style.width = `${rect.width}px`;
+        container.style.height = `${rect.height}px`;
+      });
+    }
   }
-  parent.appendChild(container);
   let currentText = options.text ?? '正在加载…';
   const Root = defineComponent({
     props: { text: String },
@@ -85,10 +90,10 @@ export function service(
         return createVNode(LoadingComponent, {
           class: owner.value && ns.namespace.value + '-theme-scope',
           'data-theme': owner.value?.theme,
-          style: owner.value && {
+          style: [!fullscreen && { minHeight: 0 }, owner.value && {
             ...getThemeStyle(owner.value, ns.cssVarName),
             ...(options.background && ns.cssVarBlock({ background: options.background }))
-          },
+          }],
           loading: true,
           text: props.text,
           background: options.background ?? '',
@@ -109,7 +114,6 @@ export function service(
     render(vnode, container);
   };
   draw();
-  let closed = false;
   const instance: LoadingInstance = {
     close() {
       if (closed) return;
