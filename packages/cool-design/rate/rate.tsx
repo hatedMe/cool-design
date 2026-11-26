@@ -59,9 +59,6 @@ export default defineComponent({
     const effectiveSize = computed(() => props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size);
     const currentValue = ref(normalizeValue(props.modelValue, props.max));
     const hoverValue = ref(0);
-    watch(() => [props.modelValue, props.max], () => {
-      currentValue.value = normalizeValue(props.modelValue, props.max);
-    });
 
     const setCurrentValue = (value: number) => {
       currentValue.value = normalizeValue(value, props.max);
@@ -70,18 +67,18 @@ export default defineComponent({
       hoverValue.value = 0;
       currentValue.value = normalizeValue(props.modelValue, props.max);
     };
-    const commitValue = (value: number) => {
-      if (isDisabled.value) return;
-      const normalized = normalizeValue(interactionValue(value, props.allowHalf), props.max);
-      const next = props.clearable && normalized === props.modelValue ? 0 : normalized;
-      const changed = next !== props.modelValue;
+    watch(() => [props.modelValue, props.max], resetCurrentValue);
+
+    const commitValue = (next: number, changedFromPreview = false) => {
+      const changed = changedFromPreview || next !== props.modelValue;
+      hoverValue.value = 0;
       currentValue.value = next;
       emit('update:modelValue', next);
       if (changed) emit('change', next);
     };
     expose({ setCurrentValue, resetCurrentValue });
 
-    const activeValue = computed(() => hoverValue.value || currentValue.value);
+    const activeValue = computed(() => isDisabled.value ? currentValue.value : hoverValue.value || currentValue.value);
     const displayText = computed(() => {
       const scoreValue = isDisabled.value ? props.modelValue : activeValue.value;
       const textValue = isDisabled.value ? currentValue.value : activeValue.value;
@@ -121,14 +118,30 @@ export default defineComponent({
       if (!selected && !half) return isDisabled.value ? props.disabledVoidIcon : props.voidIcon;
       return resolveThreshold(props.icons, activeValue.value, 'icon-collection_fill');
     };
+    const getPointerValue = (event: MouseEvent, value: number) => {
+      if (!props.allowHalf) return value;
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      return event.clientX - rect.left < rect.width / 2 ? value - 0.5 : value;
+    };
+    const selectValue = (event: MouseEvent, value: number) => {
+      if (isDisabled.value) return;
+      const normalized = normalizeValue(interactionValue(getPointerValue(event, value), props.allowHalf), props.max);
+      commitValue(props.clearable && normalized === props.modelValue ? 0 : normalized);
+    };
+    const previewValue = (event: MouseEvent, value: number) => {
+      if (isDisabled.value) return;
+      hoverValue.value = normalizeValue(getPointerValue(event, value), props.max);
+    };
     const handleKeydown = (event: KeyboardEvent) => {
       if (isDisabled.value) return;
       const direction = ['ArrowRight', 'ArrowUp'].includes(event.key) ? 1 : ['ArrowLeft', 'ArrowDown'].includes(event.key) ? -1 : 0;
       if (!direction) return;
-      const nextValue = normalizeValue(interactionValue(currentValue.value + direction * (props.allowHalf ? 0.5 : 1), props.allowHalf), props.max);
-      if (nextValue === currentValue.value) return;
+      const from = activeValue.value;
+      const nextValue = normalizeValue(interactionValue(from + direction * (props.allowHalf ? 0.5 : 1), props.allowHalf), props.max);
+      if (nextValue === from) return;
       event.preventDefault();
-      commitValue(nextValue);
+      event.stopPropagation();
+      commitValue(nextValue, hoverValue.value > 0);
     };
 
     return () => (
@@ -143,7 +156,7 @@ export default defineComponent({
         title={props.label}
         data-role='rate-slider'
         aria-valuetext={(props.showText || props.showScore) && displayText.value ? displayText.value : undefined}
-        aria-valuenow={currentValue.value}
+        aria-valuenow={activeValue.value}
         aria-valuemin='0'
         aria-valuemax={Math.max(0, Number(props.max) || 0)}
         aria-disabled={isDisabled.value ? 'true' : undefined}
@@ -161,21 +174,10 @@ export default defineComponent({
               class={bem('item')}
               aria-disabled={isDisabled.value ? 'true' : undefined}
               data-half={half ? 'true' : undefined}
-              onClick={(event: MouseEvent) => {
-                const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-                const value = props.allowHalf && event.clientX - rect.left < rect.width / 2 ? itemValue - 0.5 : itemValue;
-                commitValue(value);
-              }}
-              onMouseenter={(event: MouseEvent) => {
-                if (!isDisabled.value) {
-                  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-                  hoverValue.value = props.allowHalf && event.clientX - rect.left < rect.width / 2 ? itemValue - 0.5 : itemValue;
-                }
-              }}
-              onMouseleave={() => {
-                hoverValue.value = 0;
-                currentValue.value = normalizeValue(props.modelValue, props.max);
-              }}
+              onClick={(event: MouseEvent) => selectValue(event, itemValue)}
+              onMouseenter={(event: MouseEvent) => previewValue(event, itemValue)}
+              onMousemove={(event: MouseEvent) => previewValue(event, itemValue)}
+              onMouseleave={resetCurrentValue}
               onKeydown={() => undefined}>
               <Icon
                 class={bem('icon', { filled: filled || selected, half: half || partial, partial: partial && !half })}

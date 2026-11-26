@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { defineComponent, h, provide } from 'vue';
+import { defineComponent, h, nextTick, provide, ref } from 'vue';
 import { describe, expect, test } from 'vitest';
 import { formKey } from '../../form/context';
 import FormItem from '../../form-item';
@@ -214,6 +214,138 @@ describe('Rate', () => {
     Object.defineProperty(thirdItem.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
     await thirdItem.trigger('click', { clientX: 0 });
     expect(wrapper.emitted('change')).toContainEqual([2.5]);
+  });
+
+  test('updates the preview while moving across the same star', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 1, allowHalf: true, showScore: true, scoreTemplate: '{value}/5' } });
+    const slider = wrapper.get('[role="slider"]');
+    const third = wrapper.findAll('.i-rate__item')[2];
+    Object.defineProperty(third.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
+    await third.trigger('mouseenter', { clientX: 25 });
+    expect(wrapper.get('.i-rate__score').text()).toBe('2.5/5');
+    expect(third.attributes('data-half')).toBe('true');
+    const leftAria = slider.attributes('aria-valuenow');
+
+    await third.trigger('mousemove', { clientX: 75 });
+    expect(wrapper.get('.i-rate__score').text()).toBe('3/5');
+    expect(third.attributes('data-half')).toBeUndefined();
+    expect(slider.attributes('aria-valuenow')).toBe('3');
+    expect(leftAria).toBe('2.5');
+    expect(slider.attributes('aria-valuetext')).toBe('3/5');
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  });
+
+  test('shows selection and clearing immediately while the pointer stays on the same star', async () => {
+    const model = ref(1);
+    const events: [string, number][] = [];
+    const Host = defineComponent({
+      setup: () => () => h(Rate, {
+        modelValue: model.value,
+        allowHalf: true,
+        clearable: true,
+        showScore: true,
+        'onUpdate:modelValue': (value: number) => {
+          events.push(['update', value]);
+          model.value = value;
+        },
+        onChange: (value: number) => events.push(['change', value])
+      })
+    });
+    const wrapper = mount(Host);
+    const third = wrapper.findAll('.i-rate__item')[2];
+    Object.defineProperty(third.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
+    await third.trigger('mouseenter', { clientX: 75 });
+    for (const value of [3, 0]) {
+      await third.trigger('click', { clientX: 75 });
+      expect(model.value).toBe(value);
+      expect(wrapper.get('.i-rate__score').text()).toBe(String(value));
+      expect(wrapper.get('[role="slider"]').attributes('aria-valuenow')).toBe(String(value));
+    }
+    expect(events).toEqual([['update', 3], ['change', 3], ['update', 0], ['change', 0]]);
+  });
+
+  test('shows external model changes during hover', async () => {
+    const wrapper = mount(Rate, { props: { modelValue: 1, allowHalf: true, showText: true, texts: ['一', '二', '三', '四'] } });
+    const third = wrapper.findAll('.i-rate__item')[2];
+    Object.defineProperty(third.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
+    await third.trigger('mouseenter', { clientX: 25 });
+    expect(wrapper.get('.i-rate__text').text()).toBe('三');
+
+    await wrapper.setProps({ modelValue: 4 });
+    expect(wrapper.get('.i-rate__text').text()).toBe('四');
+    expect(wrapper.get('[role="slider"]').attributes('aria-valuenow')).toBe('4');
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  });
+
+  test('consumes handled half-step arrows and lets Tab bubble', async () => {
+    const model = ref(2.5);
+    const events: [string, number][] = [];
+    const parentKeys: string[] = [];
+    const Host = defineComponent({
+      setup: () => () => h('div', { onKeydown: (event: KeyboardEvent) => parentKeys.push(event.key) }, [
+        h(Rate, {
+          modelValue: model.value,
+          allowHalf: true,
+          'onUpdate:modelValue': (value: number) => {
+            events.push(['update', value]);
+            model.value = value;
+          },
+          onChange: (value: number) => events.push(['change', value])
+        })
+      ])
+    });
+    const wrapper = mount(Host);
+    const slider = wrapper.get('[role="slider"]');
+    for (const [key, value] of [['ArrowRight', 3], ['ArrowLeft', 2.5]] as const) {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      slider.element.dispatchEvent(event);
+      await nextTick();
+      expect(event.defaultPrevented).toBe(true);
+      expect(slider.attributes('aria-valuenow')).toBe(String(value));
+    }
+    const tab = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    slider.element.dispatchEvent(tab);
+    expect(tab.defaultPrevented).toBe(false);
+    expect(parentKeys).toEqual(['Tab']);
+    expect(events).toEqual([['update', 3], ['change', 3], ['update', 2.5], ['change', 2.5]]);
+  });
+
+  test.each([
+    { model: 1, item: 3, x: 25, preview: 2.5, display: 3, events: [['update', 3], ['change', 3]], handled: true },
+    { model: 1, item: 5, x: 75, preview: 5, display: 5, events: [], handled: false },
+    { model: 5, item: 3, x: 25, preview: 2.5, display: 3, events: [['update', 3], ['change', 3]], handled: true },
+    { model: 3, item: 3, x: 25, preview: 2.5, display: 3, events: [['update', 3], ['change', 3]], handled: true }
+  ])('uses the preview $preview for ArrowRight with model $model', async ({ model, item, x, preview, display, events, handled }) => {
+    const recordedEvents: [string, number][] = [];
+    const wrapper = mount(Rate, {
+      props: {
+        modelValue: model,
+        allowHalf: true,
+        clearable: true,
+        showScore: true,
+        'onUpdate:modelValue': (value: number) => recordedEvents.push(['update', value]),
+        onChange: (value: number) => recordedEvents.push(['change', value])
+      }
+    });
+    const slider = wrapper.get('[role="slider"]');
+    const star = wrapper.findAll('.i-rate__item')[item - 1];
+    Object.defineProperty(star.element, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) });
+    await star.trigger('mousemove', { clientX: x });
+    expect(slider.attributes('aria-valuenow')).toBe(String(preview));
+
+    const parent = document.createElement('div');
+    parent.append(slider.element);
+    const keys: string[] = [];
+    parent.addEventListener('keydown', (event) => keys.push(event.key));
+    const arrow = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true });
+    slider.element.dispatchEvent(arrow);
+    await nextTick();
+
+    expect(recordedEvents).toEqual(events);
+    expect(slider.attributes('aria-valuenow')).toBe(String(display));
+    expect(wrapper.get('.i-rate__score').text()).toBe(String(display));
+    expect(arrow.defaultPrevented).toBe(handled);
+    expect(keys).toEqual(handled ? [] : ['ArrowRight']);
   });
 
   test('applies void colors to empty items and disabled void colors when disabled', async () => {
