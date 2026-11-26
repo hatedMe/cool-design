@@ -126,6 +126,79 @@ createPage(pageData.initial).mount('#app')
 
 此约定适用于使用 `useId` 的组件，例如 TimeSelect。组件实例之外也可调用该工具；此时自动 ID 使用本地随机前缀，跨端复用请传入显式 ID。
 
+### 服务端渲染浮层
+
+在 Vue `3.2.47` 和 `3.4.15` 中，如果两个 Teleport 在水合时共享同一个目标，一个浮层初始内联，另一个浮层带有延迟渲染的过渡内容，那么前者的面板在内联和外置之间往返后，后者首次打开可能插入错误的容器。共享目标为默认的 `body` 或同一个专用容器时，都可能出现这种情况。遇到这类组合时，请为每个受影响的浮层指定独立且稳定的初始目标。 [Vue SSR 的 Teleport 说明](https://vuejs.org/guide/scaling-up/ssr.html#teleports)
+
+下面的两个 Tooltip 通过 `appendTo` 分别指定 `#ssr-a` 和 `#ssr-b`。A 初始内联且可见，点击按钮可将原面板移到 `#external`，再次点击移回内联。B 在首次悬停时打开，面板进入 `#ssr-b`。两端共用同一个工厂，每次调用创建新应用并复制数字 ID 种子。
+
+```js
+// app.js
+import { createSSRApp, h, ref } from 'vue'
+import { ConfigProvider, Tooltip } from 'cool-design'
+import { idKey } from 'cool-design/hooks'
+
+export function createPage(initial) {
+  const app = createSSRApp({
+    setup() {
+      const moved = ref(false)
+      return () => h(ConfigProvider, null, () => [
+        h('button', { type: 'button', onClick: () => { moved.value = !moved.value } }, '切换 A 的挂载位置'),
+        h('section', { id: 'a-frame' }, h(Tooltip, {
+          content: '说明 A', visible: true, persistent: true, placement: 'right',
+          teleported: moved.value,
+          appendTo: moved.value ? '#external' : '#ssr-a',
+        }, () => h('button', { type: 'button', id: 'a-trigger' }, 'A'))),
+        h('section', { id: 'b-frame' }, h(Tooltip, {
+          content: '说明 B', appendTo: '#ssr-b',
+        }, () => h('button', { type: 'button', id: 'b-trigger' }, 'B'))),
+      ])
+    },
+  })
+  app.provide(idKey, { ...initial })
+  return app
+}
+```
+
+在服务端请求处理函数中调用 `renderPage()`。把 Vue 生成的主树 HTML 放进 `#app`，并将 `ctx.teleports` 中各选择器的 HTML 原样写入对应容器，保留其中的注释锚点。页面在客户端入口执行前就应包含这些容器。
+
+```js
+// server.js
+import { renderToString } from 'vue/server-renderer'
+import { createPage } from './app.js'
+
+export async function renderPage() {
+  const initial = { prefix: 42, current: 10 }
+  const ctx = {}
+  const html = await renderToString(createPage(initial), ctx)
+  const teleports = ctx.teleports ?? {}
+
+  // 以下是服务端页面模板中各段 Vue 渲染结果的位置。
+  return `<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/client.css">
+<div id="app" data-prefix="${initial.prefix}" data-current="${initial.current}">${html}</div>
+<div id="ssr-a">${teleports['#ssr-a'] ?? ''}</div>
+<div id="ssr-b">${teleports['#ssr-b'] ?? ''}</div>
+<div id="external">${teleports['#external'] ?? ''}</div>
+<script type="module" src="/client.js"></script>`
+}
+```
+
+在浏览器入口读取服务端传来的初始数字，使用相同的初始组件树和目标水合。示例模板中的资源路径对应客户端入口及其样式的构建输出。
+
+```js
+// client.js
+import { createPage } from './app.js'
+import 'cool-design/style.css'
+
+const container = document.querySelector('#app')
+createPage({
+  prefix: Number(container.dataset.prefix),
+  current: Number(container.dataset.current),
+}).mount(container)
+```
+
 ### 空值工具迁移
 
 使用 `cool-design/hooks` 的 `useEmptyValues` 时，`valueOnClear.value` 现在表示原始配置，可能是函数。执行清空操作时调用 `getValueOnClear(defaultValue)` 取得结果。清空工厂返回 `undefined` 时，该结果会直接传回。

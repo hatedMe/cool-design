@@ -204,6 +204,8 @@ Dialog、Tooltip、Popconfirm 和声明式 MessageBox 默认使用最近 ConfigP
 
 声明式弹窗放在 ConfigProvider 内即可。组合式 `useMessageBox()` 则应在 ConfigProvider **后代组件**的 setup 中调用；在渲染 ConfigProvider 的同一个组件 setup 中调用，无法读取这个组件将要提供的配置。
 
+服务端渲染时，初始内联并会在水合后迁移的浮层，与首次打开时才渲染面板的浮层共享目标，可能使后者打开在错误容器。为受影响的浮层设置各自的初始目标，并把服务端生成的 Teleport HTML 写入对应容器。 [ConfigProvider 的「服务端渲染浮层」示例](#/components/config-provider)
+
 通过插件安装得到的 `$message`、`$notify` 和 `$confirm` 从所属应用读取顶层配置。独立调用 `MessageBox.confirm()` 时，未传应用上下文则使用默认的 `i` 前缀和浅色配置。需要继承局部配置时，使用声明式组件或在后代组件中调用 `useMessageBox()`。 [MessageBox](#/components/message-box)
 
 下面的演示可直接切换局部主题与尺寸；[ConfigProvider 文档](#/components/config-provider)提供完整配置 API。
