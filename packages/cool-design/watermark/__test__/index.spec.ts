@@ -1,5 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, test } from 'vitest';
+import { defineComponent, h, ref, watch } from 'vue';
 
 import Watermark from '..';
 
@@ -47,6 +48,47 @@ describe('test `Watermark` component', () => {
     expect(svg).toContain(`height='200'`);
     const layer = wrapper.find('.i-watermark__layer').element as HTMLElement;
     expect(layer.style.backgroundPosition).toBe('40px 30px');
+  });
+  test('首次删除水印层背景属性时恢复原图层的背景', async () => {
+    const wrapper = mount(Watermark, { props: { content: '水印' }, attachTo: document.body });
+    const layer = wrapper.get<HTMLElement>('.i-watermark__layer').element;
+    try {
+      const before = layer.style.backgroundImage;
+      expect(before).toContain('data:image/svg+xml');
+      layer.style.removeProperty('background-image');
+      expect(layer.style.backgroundImage).toBe('');
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(layer.style.backgroundImage).toBe(before);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+  test('首次更新内容时恢复同批次被改回的旧背景', async () => {
+    const content = ref('INITIAL');
+    let layer: HTMLElement;
+    let initialBackground: string;
+    let patchedBackground = '';
+    const Harness = defineComponent({
+      setup() {
+        watch(content, () => {
+          patchedBackground = layer.style.backgroundImage;
+          layer.style.backgroundImage = initialBackground;
+        }, { flush: 'post' });
+        return () => h(Watermark, { content: content.value });
+      }
+    });
+    const wrapper = mount(Harness, { attachTo: document.body });
+    try {
+      layer = wrapper.get<HTMLElement>('.i-watermark__layer').element;
+      initialBackground = layer.style.backgroundImage;
+      expect(initialBackground).toContain('INITIAL');
+      content.value = 'UPDATED';
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(patchedBackground).toContain('UPDATED');
+      expect(layer.style.backgroundImage).toBe(patchedBackground);
+    } finally {
+      wrapper.unmount();
+    }
   });
   test('水印层被篡改或移除时自动恢复', async () => {
     const wrapper = mount(Watermark, { props: { content: '水印' }, attachTo: document.body });

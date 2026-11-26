@@ -77,7 +77,7 @@ export default defineComponent({
     // 防篡改：水印层样式或类名被外部改动、节点被移除时，恢复到期望状态。
     // 部分环境的 CSSOM 会重排 url() 引号等序列化细节，直接与期望值比较会形成回写循环，
     // 因此记录“自身写入后的序列化值”，回调读到一致时视为自身回声直接跳过。
-    let lastSerializedBackgroundImage = '';
+    let lastSerializedBackgroundImage: string | undefined;
     const restore = () => {
       const layer = layerRef.value;
       const root = rootRef.value;
