@@ -1,7 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { h, nextTick, ref } from 'vue';
 import { expect, test, vi } from 'vitest';
-import Upload, { type UploadFile, type UploadFiles, type UploadRawFile, type UploadStatus, type UploadUserFile } from '..';
+import Upload, { type UploadFile, type UploadFiles, type UploadRawFile, type UploadRequestOptions, type UploadStatus, type UploadUserFile } from '..';
 import { UploadDragger } from '..';
 import Form from '../../form';
 import ConfigProvider from '../../config-provider';
@@ -14,6 +14,126 @@ const select = async (wrapper: ReturnType<typeof mount>, files: File[]) => {
   Object.defineProperty(input.element, 'files', { value: files, configurable: true });
   await input.trigger('change');
 };
+
+const submit = (wrapper: ReturnType<typeof mount>) => (wrapper.vm as unknown as { submit: () => Promise<unknown> }).submit();
+
+test('同批自动上传分别等待守卫，后选文件可先完成', async () => {
+  let rejectFirst!: (value: boolean) => void;
+  const beforeUpload = vi.fn((file: UploadRawFile) => file.name === 'A' ? new Promise<boolean>((done) => { rejectFirst = done; }) : true);
+  const httpRequest = vi.fn().mockResolvedValue('ok');
+  const wrapper = mount(Upload, { props: { beforeUpload, httpRequest, multiple: true } });
+  await select(wrapper, [new File(['a'], 'A'), new File(['b'], 'B')]);
+  await flushPromises();
+  expect(beforeUpload).toHaveBeenCalledTimes(2);
+  expect(wrapper.get('li:last-child').text()).toContain('success');
+  rejectFirst(false);
+  await flushPromises();
+  expect(wrapper.findAll('li')).toHaveLength(1);
+  expect(httpRequest).toHaveBeenCalledOnce();
+});
+
+test('自动上传进度和完成状态更新当前列表项', async () => {
+  let request!: UploadRequestOptions;
+  const onProgress = vi.fn();
+  const wrapper = mount(Upload, { props: { onProgress, httpRequest: (options: UploadRequestOptions) => { request = options; } } });
+  await select(wrapper, [new File(['a'], 'a.txt')]);
+  for (const percent of [42, 67]) {
+    request.onProgress(Object.assign(new ProgressEvent('progress'), { percent }));
+    await nextTick();
+    expect(wrapper.get('progress').element.value).toBe(percent);
+  }
+  expect(onProgress.mock.calls.map(([event]) => event.percent)).toEqual([42, 67]);
+  request.onSuccess('ok');
+  await flushPromises();
+  expect(wrapper.get('li').text()).toContain('success');
+});
+
+test('分别派发显式的 kebab 回调、事件和一次性事件', async () => {
+  const handler = vi.fn();
+  const once = vi.fn();
+  const wrapper = mount(() => h(Upload, { limit: 1, 'on-exceed': handler, onExceed: handler, onExceedOnce: once }));
+  const files = [new File(['a'], 'A'), new File(['b'], 'B')];
+  await select(wrapper, files);
+  await select(wrapper, files);
+  expect(handler).toHaveBeenCalledTimes(4);
+  expect(once).toHaveBeenCalledOnce();
+});
+
+test.each([false, true])('重试转换当前源文件，父级原地替换 raw 为 %s', async (replace) => {
+  const original = new File(['a'], 'a.bin');
+  const beforeUpload = vi.fn((raw: UploadRawFile) => new File([raw, 'x'], 'converted.bin'));
+  const request = vi.fn<[UploadRequestOptions], Promise<unknown>>()
+    .mockRejectedValueOnce(new Error('retry')).mockResolvedValue('ok');
+  const files = ref<UploadFiles>([]);
+  const replacement = new File(['new-file-content'], 'new.bin') as UploadRawFile;
+  const wrapper = mount(() => h(Upload, {
+    fileList: files.value, 'onUpdate:file-list': (value: UploadFiles) => { files.value = value; },
+    beforeUpload, httpRequest: request
+  }));
+  await select(wrapper, [original]);
+  await flushPromises();
+  if (replace) {
+    files.value[0].raw = replacement;
+    await nextTick();
+  }
+  await wrapper.get('li button').trigger('click');
+  await flushPromises();
+  expect(request.mock.calls.map(([options]) => options.file.size)).toEqual([2, replace ? 17 : 2]);
+  expect(beforeUpload.mock.calls.map(([raw]) => raw)).toEqual([original, replace ? replacement : original]);
+  expect(wrapper.get('li').text()).toContain('success');
+});
+
+test('同步进度中取消后取得的底层句柄只取消一次', async () => {
+  const abort = vi.fn();
+  let resolve!: (value: string) => void;
+  const promise = new Promise<string>((done) => { resolve = done; });
+  const wrapper = mount(Upload, { props: {
+    autoUpload: false,
+    onProgress: (_event, file) => wrapper.vm.abort(file),
+    httpRequest: (options: UploadRequestOptions) => {
+      options.onProgress(Object.assign(new ProgressEvent('progress'), { percent: 1 }));
+      return { promise, abort };
+    }
+  } });
+  await select(wrapper, [new File(['a'], 'a.bin')]);
+  await submit(wrapper);
+  wrapper.vm.abort();
+  resolve('late');
+  await flushPromises();
+  expect(abort).toHaveBeenCalledOnce();
+  expect(wrapper.get('li').text()).toContain('ready');
+  expect(wrapper.emitted('success')).toBeUndefined();
+});
+
+test.each([undefined, '/preview.png', '/old.png'])('传输中更改受控名称或预览地址 %s 后仍通知当前项', async (url) => {
+  const files = ref<UploadFiles>([]);
+  let request!: UploadRequestOptions;
+  const progress = vi.fn();
+  const success = vi.fn();
+  const wrapper = mount(() => h(Upload, {
+    fileList: files.value, 'onUpdate:file-list': (value: UploadFiles) => { files.value = value; },
+    httpRequest: (options: UploadRequestOptions) => { request = options; }, onProgress: progress, onSuccess: success
+  }));
+  await select(wrapper, [new File(['a'], 'a.bin')]);
+  files.value = files.value.map(file => ({ ...file, name: 'renamed', url }));
+  await nextTick();
+  if (url === '/old.png') {
+    files.value = files.value.map(file => { const copy = { ...file }; delete copy.url; return copy; });
+    await nextTick();
+  }
+  request.onProgress(Object.assign(new ProgressEvent('progress'), { percent: 42 }));
+  await nextTick();
+  expect(wrapper.get('progress').element.value).toBe(42);
+  request.onSuccess('ok');
+  await flushPromises();
+  for (const handler of [progress, success]) {
+    const [, file, list] = handler.mock.calls[0];
+    expect(file).toBe(list[0]);
+    expect(file.name).toBe('renamed');
+    expect(file.url).toBe(url === '/old.png' ? undefined : url);
+  }
+  expect(files.value[0]).toMatchObject({ name: 'renamed', status: 'success', percentage: 42 });
+});
 
 test.each([Upload, UploadDragger])('$name 切换最近命名空间后保留选择和列表节点', async (Component) => {
   const namespace = ref('acme');
@@ -357,6 +477,9 @@ test('父组件复制列表后仍能收到转换后的 raw 和 size', async () =
   const request = vi.fn().mockResolvedValue(undefined);
   const wrapper = mount(Upload, { props: { fileList: parentList, autoUpload: false, beforeUpload: () => converted, httpRequest: request, 'onUpdate:fileList': (list: UploadFile[]) => { parentList = list.map((file) => ({ ...file })); } } });
   await select(wrapper, [new File(['source'], 'source.txt')]);
+  expect(parentList[0]).toMatchObject({ status: 'ready', size: 6 });
+  expect(parentList[0]?.raw?.name).toBe('source.txt');
+  await submit(wrapper);
   await vi.waitFor(() => expect(parentList[0]?.raw).toBe(converted));
   expect(parentList[0]?.size).toBe(converted.size);
 });
@@ -368,16 +491,21 @@ test('before-upload 转换后保留展示名称且不额外触发 change', async
   await select(wrapper, [new File(['source'], 'source.txt')]);
   const changes = wrapper.emitted('change') || [];
   expect(changes).toHaveLength(1);
+  await submit(wrapper);
+  expect(request.mock.calls[0][0].file).toBe(converted);
+  expect(wrapper.emitted('change')).toHaveLength(2);
   expect((changes[0][0] as UploadFile).name).toBe('source.txt');
   expect((wrapper.vm as unknown as { handleStart: (file: File) => void }).handleStart).toBeTypeOf('function');
 });
 
 test('before-upload 返回 Blob 时保留目录元数据', async () => {
-  const wrapper = mount(Upload, { props: { directory: true, autoUpload: false, beforeUpload: () => new Blob(['converted'], { type: 'text/plain' }) } });
+  const wrapper = mount(Upload, { props: { directory: true, autoUpload: false, httpRequest: vi.fn().mockResolvedValue(undefined), beforeUpload: () => new Blob(['converted'], { type: 'text/plain' }) } });
   const raw = new File(['source'], 'a.txt') as UploadRawFile;
   Object.defineProperty(raw, 'webkitRelativePath', { value: 'folder/a.txt' });
   await select(wrapper, [raw as unknown as File]);
   const file = wrapper.emitted('change')?.[0]?.[0] as UploadFile;
+  expect(file.raw).toBe(raw);
+  await submit(wrapper);
   expect(file.raw?.webkitRelativePath).toBe('folder/a.txt');
   expect(file.raw?.isDirectory).toBe(true);
   expect(file.raw?.size).toBe(9);
@@ -388,6 +516,8 @@ test('before-upload 拒绝后先经历 ready 再移除并触发 remove', async (
   const wrapper = mount(Upload, { props: { autoUpload: false, beforeUpload: () => false, onRemove } });
   await select(wrapper, [new File(['x'], 'rejected.txt')]);
   expect(wrapper.emitted('change')?.map((event) => (event[0] as UploadFile).status)).toEqual(['ready']);
+  expect(wrapper.emitted('remove')).toBeUndefined();
+  await submit(wrapper);
   await vi.waitFor(() => expect(wrapper.emitted('remove')).toBeTruthy());
   expect(onRemove).toHaveBeenCalledWith(expect.objectContaining({ name: 'rejected.txt' }), []);
   expect(wrapper.findAll('li')).toHaveLength(0);
@@ -415,6 +545,7 @@ test('limit 超出不部分加入且触发 prop 与 emit，multiple=false 只接
   await select(wrapper, [new File(['1'], 'one.txt'), new File(['2'], 'two.txt')]);
   expect(wrapper.findAll('li')).toHaveLength(0);
   expect(wrapper.emitted('exceed')).toHaveLength(1);
+  expect(onExceed).toHaveBeenCalledOnce();
   expect(onExceed).toHaveBeenCalled();
 });
 
@@ -468,6 +599,8 @@ test('before-upload 和 before-remove reject 被捕获，onPreview 可触发且�
   const onPreview = vi.fn();
   const wrapper = mount(Upload, { props: { autoUpload: false, beforeUpload: () => Promise.reject(new Error('blocked')), beforeRemove: () => Promise.reject(new Error('blocked')), onPreview } });
   await select(wrapper, [new File(['x'], 'x.txt')]);
+  expect(wrapper.findAll('li')).toHaveLength(1);
+  await submit(wrapper);
   expect(wrapper.findAll('li')).toHaveLength(0);
   const onRemove = vi.fn();
   const preview = mount(Upload, { props: { modelValue: [{ name: 'x.txt', uid: 1, status: 'ready' }], onPreview, beforeRemove: () => Promise.reject(new Error('blocked')), onRemove } });

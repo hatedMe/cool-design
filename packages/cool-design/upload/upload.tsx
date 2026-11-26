@@ -1,6 +1,6 @@
 import { useNamespace } from '../../hooks/use-namespace';
 import { createBEM } from '../../../src/utils/create';
-import { computed, defineComponent, inject, onBeforeUnmount, ref, watch, type PropType } from 'vue';
+import { computed, defineComponent, getCurrentInstance, inject, onBeforeUnmount, ref, watch, type PropType } from 'vue';
 import { formKey } from '../form/context';
 
 export type UploadStatus = 'ready' | 'uploading' | 'success' | 'fail';
@@ -59,7 +59,7 @@ type UploadChangeHandler = (file: UploadFile, files: UploadFiles) => void | Prom
 type UploadExceedHandler = (files: UploadRawFile[], fileList: UploadUserFile[]) => void | Promise<boolean | void>;
 let uid = 0;
 
-const createUploadFile = (raw: File): UploadFile => {
+const createUploadFile = (raw: File | UploadRawFile): UploadFile => {
   const file = raw as UploadRawFile;
   file.uid = ++uid;
   return { name: raw.name, uid: file.uid, status: 'ready', size: raw.size, raw: file };
@@ -105,6 +105,7 @@ export default defineComponent({
     const disabled = computed(() => props.disabled || !!form?.disabled?.());
     const input = ref<HTMLInputElement>();
     const files = ref<UploadFiles>([]);
+    const originalFiles = new Map<number, { original: UploadRawFile; payload: UploadRawFile }>();
     const generatedUids = new WeakMap<object, number>();
     const generatedKeys = new Map<string, number>();
     const requests = new Map<number, { abort?: () => void }>();
@@ -115,6 +116,7 @@ export default defineComponent({
       objectUrls.delete(file.uid);
     };
     onBeforeUnmount(() => {
+      originalFiles.clear();
       requests.forEach((request) => request.abort?.());
       objectUrls.forEach((entry) => URL.revokeObjectURL(entry.url));
     });
@@ -135,17 +137,24 @@ export default defineComponent({
         generatedKeys.set(stableKey, stableUid);
         return { ...file, uid: stableUid, status: file.status ?? 'ready' } as UploadFile;
       });
-      const nextUids = new Set(normalized.map((file) => file.uid));
       files.value.forEach((file) => {
         const nextFile = normalized.find((item) => item.uid === file.uid);
-        if (!nextUids.has(file.uid) || nextFile?.raw !== file.raw || nextFile?.url !== file.url) {
+        const prepared = originalFiles.get(file.uid);
+        if (prepared && prepared.payload !== nextFile?.raw) originalFiles.delete(file.uid);
+        if (!nextFile || nextFile.raw !== file.raw) {
           requests.get(file.uid)?.abort?.();
           revokeObjectUrl(file);
-        }
+        } else if (nextFile.url !== file.url) revokeObjectUrl(file);
       });
       files.value = normalized.map((file) => {
         const active = files.value.find((item) => item.uid === file.uid);
-        if (active && active.raw === file.raw && active.name === file.name && active.status === file.status && active.url === file.url) return active;
+        if (active && active.raw === file.raw) {
+          if (requests.has(file.uid)) {
+            if (!('url' in file)) delete active.url;
+            return Object.assign(active, { ...file, status: active.status, percentage: active.percentage, response: active.response });
+          }
+          if (active.name === file.name && active.status === file.status && active.url === file.url) return active;
+        }
         return file;
       });
     };
@@ -157,25 +166,25 @@ export default defineComponent({
       if (isControlled()) emit('update:file-list', list);
       else emit('update:modelValue', list);
     };
-    const callback = (name: keyof typeof props, ...args: unknown[]) => {
-      const handler = props[name] as unknown as UploadHandler | undefined;
-      void Promise.resolve(handler?.(...args)).catch(() => undefined);
+    const instance = getCurrentInstance();
+    const notify = (name: 'change' | 'progress' | 'success' | 'error' | 'remove' | 'exceed', ...args: unknown[]) => {
+      // Vue 的 emit 读取 onChange 等监听键，单独派发模板保留的 on-change 属性。
+      const hook = instance?.vnode.props?.[`on-${name}`] as UploadHandler | undefined;
+      void Promise.resolve(hook?.(...args)).catch(() => undefined);
+      emit(name, ...args);
     };
     const change = (file: UploadFile) => {
       updateList();
-      callback('onChange', file, files.value);
-      emit('change', file, files.value);
+      notify('change', file, files.value);
     };
     const upload = async (file: UploadFile) => {
-      if (props.disabled || !file.raw || file.status === 'success') return;
-      file.status = 'uploading';
+      if (props.disabled || !file.raw || file.status === 'success' || requests.has(file.uid) || !files.value.includes(file)) return;
       const progress = (event: ProgressEvent | { percent: number }) => {
         if (settled || cancelled) return;
         const percent = 'percent' in event ? event.percent : event.lengthComputable && event.total > 0 ? event.loaded / event.total * 100 : 0;
         file.percentage = percent;
         const progressEvent = Object.assign(event, { percent }) as UploadProgressEvent;
-        callback('onProgress', progressEvent, file, files.value);
-        emit('progress', progressEvent, file, files.value);
+        notify('progress', progressEvent, file, files.value);
       };
       let settled = false;
       let cancelled = false;
@@ -191,6 +200,7 @@ export default defineComponent({
         settled = true;
         releasePending?.();
         file.status = 'ready';
+        requests.delete(file.uid);
         change(file);
         abortUnderlying?.();
       };
@@ -200,21 +210,51 @@ export default defineComponent({
         releasePending?.();
         file.status = 'success';
         file.response = response;
-        callback('onSuccess', response, file, files.value);
-        emit('success', response, file, files.value);
+        notify('success', response, file, files.value);
       };
       const error = (reason: unknown) => {
-      const normalizedReason = reason instanceof Error ? reason : new Error(String(reason));
+        const normalizedReason = reason instanceof Error ? reason : new Error(String(reason));
         if (settled) return;
         settled = true;
         releasePending?.();
         file.status = 'fail';
-        callback('onError', normalizedReason, file, files.value);
-        emit('error', normalizedReason, file, files.value);
+        notify('error', normalizedReason, file, files.value);
       };
+      const request = { abort: finishCancelled };
+      requests.set(file.uid, request);
       try {
+        const prepared = originalFiles.get(file.uid);
+        const original = prepared?.payload === file.raw ? prepared.original : file.raw;
+        let payload = original;
+        if (props.beforeUpload) {
+          let result: Awaited<UploadBeforeResult> | symbol;
+          try {
+            result = await Promise.race([props.beforeUpload(original), pending.then(() => cancelledToken)]);
+          } catch {
+            result = false;
+          }
+          if (cancelled) return;
+          if (result === false) {
+            requests.delete(file.uid);
+            await remove(file, false);
+            return;
+          }
+          if (result instanceof File || result instanceof Blob) {
+            const converted = result instanceof File ? result as UploadRawFile : new File([result], original.name, { type: result.type, lastModified: original.lastModified }) as UploadRawFile;
+            Object.defineProperty(converted, 'uid', { value: file.uid, writable: true, configurable: true });
+            if (original.webkitRelativePath) Object.defineProperty(converted, 'webkitRelativePath', { value: original.webkitRelativePath, configurable: true });
+            if (original.isDirectory) converted.isDirectory = true;
+            originalFiles.set(file.uid, { original, payload: converted });
+            payload = converted;
+          }
+        }
+        if (file.raw !== payload) {
+          file.raw = payload;
+          file.size = payload.size;
+          updateList();
+        }
+        file.status = 'uploading';
         if (props.httpRequest) {
-          requests.set(file.uid, { abort: finishCancelled });
           const dataResult = typeof props.data === 'function' ? props.data(file.raw) : props.data;
           const data = await Promise.race([Promise.resolve(dataResult), pending.then(() => cancelledToken)]);
           if (data === cancelledToken || cancelled || settled) return;
@@ -232,13 +272,12 @@ export default defineComponent({
             onError: error
           });
           if (result && typeof (result as Promise<unknown>).then === 'function') {
-            requests.set(file.uid, { abort: finishCancelled });
             const response = await Promise.race([Promise.resolve(result), pending.then(() => undefined)]);
             if (!settled && !cancelled) success(response);
           } else if (result && typeof result === 'object') {
             const handle = result as UploadRequestHandle;
             abortUnderlying = handle.abort || handle.cancel;
-            requests.set(file.uid, { abort: finishCancelled });
+            if (cancelled) abortUnderlying?.();
             if (handle.promise) {
               const response = await Promise.race([handle.promise, pending.then(() => undefined)]);
               if (!settled && !cancelled) success(response);
@@ -246,7 +285,6 @@ export default defineComponent({
           }
           if (!settled && !cancelled && result === undefined) await pending;
         } else {
-          requests.set(file.uid, { abort: finishCancelled });
           const body = new FormData();
           const dataResult = typeof props.data === 'function' ? props.data(file.raw) : props.data;
           const data = await Promise.race([Promise.resolve(dataResult), pending.then(() => cancelledToken)]);
@@ -270,14 +308,12 @@ export default defineComponent({
             xhr.onerror = () => error(new Error('Upload request failed'));
             xhr.onabort = () => { cancelled = true; finishCancelled(); };
           };
-          requests.set(file.uid, {
-            abort: () => {
-              cancelled = true;
-              controller.abort();
-              xhr.abort();
-              if (!settled) finishCancelled();
-            }
-          });
+          request.abort = () => {
+            cancelled = true;
+            controller.abort();
+            xhr.abort();
+            if (!settled) finishCancelled();
+          };
           xhr.upload.onprogress = progress;
           xhr.open(props.method, props.action, true);
           if (props.headers instanceof Headers) {
@@ -305,7 +341,7 @@ export default defineComponent({
       } catch (reason) {
         if (!cancelled && (reason as { name?: string })?.name !== 'AbortError') error(reason);
       } finally {
-        requests.delete(file.uid);
+        if (requests.get(file.uid) === request) requests.delete(file.uid);
         if (settled && !cancelled) change(file);
       }
     };
@@ -318,38 +354,16 @@ export default defineComponent({
         return directoryFile;
       });
       if (props.limit && files.value.length + incoming.length > props.limit) {
-        callback('onExceed', incoming, files.value);
-        emit('exceed', incoming, files.value);
+        notify('exceed', incoming, files.value);
         return;
       }
       if (!props.multiple && incoming.length > 1) incoming = incoming.slice(0, 1);
-      for (const raw of incoming) {
-        const file = createUploadFile(raw as File);
-        files.value.push(file);
+      await Promise.all(incoming.map((raw) => {
+        files.value.push(createUploadFile(raw));
+        const file = files.value[files.value.length - 1];
         change(file);
-        if (props.beforeUpload) {
-          try {
-            const result = await props.beforeUpload(file.raw as UploadRawFile);
-            if (result === false) {
-              await remove(file, false);
-              continue;
-            }
-            if (result instanceof File || result instanceof Blob) {
-              const converted = result instanceof File ? result as UploadRawFile : new File([result], file.name, { type: result.type, lastModified: file.raw?.lastModified }) as UploadRawFile;
-              Object.defineProperty(converted, 'uid', { value: file.uid, writable: true, configurable: true });
-              if (file.raw?.webkitRelativePath) Object.defineProperty(converted, 'webkitRelativePath', { value: file.raw.webkitRelativePath, configurable: true });
-              if (file.raw?.isDirectory) converted.isDirectory = true;
-              file.raw = converted;
-              file.size = converted.size;
-              updateList();
-            }
-          } catch {
-            await remove(file, false);
-            continue;
-          }
-        }
-        if (props.autoUpload && files.value.some((item) => item.uid === file.uid)) await upload(file);
-      }
+        if (props.autoUpload) return upload(file);
+      }));
     };
     const remove = async (file: UploadFile, checkBeforeRemove = true) => {
       if (props.disabled && checkBeforeRemove) return;
@@ -363,17 +377,18 @@ export default defineComponent({
         }
       }
       requests.get(target.uid)?.abort?.();
+      originalFiles.delete(target.uid);
       revokeObjectUrl(target);
       files.value = files.value.filter((item) => item !== target && item.uid !== target.uid);
       updateList();
-      callback('onRemove', target, files.value);
-      emit('remove', target, files.value);
+      notify('remove', target, files.value);
     };
     const handleStart = (file: File) => add([file]);
     const clearFiles = () => {
       requests.forEach((request) => {
         request.abort?.();
       });
+      originalFiles.clear();
       files.value.forEach(revokeObjectUrl);
       files.value = [];
       updateList();
@@ -412,7 +427,7 @@ export default defineComponent({
       return url;
     };
     const renderTrigger = () => slots.trigger?.({ choose }) ?? <button type='button' disabled={disabled.value} onClick={choose}>{slots.default?.() ?? '选择文件'}</button>;
-    const renderFile = (file: UploadFile, index: number) => slots.file?.({ file, index }) ?? <>{props.listType !== 'text' && <img src={getFileUrl(file)} alt={file.name} crossorigin={props.crossorigin || undefined} />}{props.listType === 'text' && <span>{file.name}</span>}<em class={{ [ns.e('status')]: true, 'is-success': file.status === 'success', 'is-fail': file.status === 'fail' }}>{file.status}</em>{file.status === 'uploading' && <progress max='100' value={file.percentage ?? 0} />}{file.status === 'fail' && <button type='button' disabled={disabled.value} onClick={() => { if (!disabled.value) void upload(file); }}>重试</button>}{props.onPreview && <button type='button' onClick={() => callback('onPreview', file)}>预览</button>}{!disabled.value && <button type='button' class={ns.e('remove')} onClick={() => { if (!disabled.value) void remove(file); }}>删除</button>}</>;
+    const renderFile = (file: UploadFile, index: number) => slots.file?.({ file, index }) ?? <>{props.listType !== 'text' && <img src={getFileUrl(file)} alt={file.name} crossorigin={props.crossorigin || undefined} />}{props.listType === 'text' && <span>{file.name}</span>}<em class={{ [ns.e('status')]: true, 'is-success': file.status === 'success', 'is-fail': file.status === 'fail' }}>{file.status}</em>{file.status === 'uploading' && <progress max='100' value={file.percentage ?? 0} />}{file.status === 'fail' && <button type='button' disabled={disabled.value} onClick={() => { if (!disabled.value) void upload(file); }}>重试</button>}{props.onPreview && <button type='button' onClick={() => void Promise.resolve(props.onPreview?.(file)).catch(() => undefined)}>预览</button>}{!disabled.value && <button type='button' class={ns.e('remove')} onClick={() => { if (!disabled.value) void remove(file); }}>删除</button>}</>;
     // 拖拽悬停高亮：dragenter/dragleave 计数处理子元素穿行，drop 后复位。
     const dragover = ref(false);
     let dragDepth = 0;

@@ -32,7 +32,7 @@ const files = ref<UploadFiles>([]);
 
 ### 手动上传
 
-设置 `auto-upload="false"`，选择文件后调用 `submit()` 提交所有处于 `ready` 状态的文件。模板 ref 可以调用 `submit()`、`abort()`、`clearFiles()`、`handleStart()` 和 `handleRemove()`。
+设置 `:auto-upload="false"`，选择文件后调用 `submit()` 提交所有处于 `ready` 状态的文件。手动模式在选择时保留原文件和 `ready` 状态，调用 `submit()` 时才执行 `before-upload`。依赖选择时校验或转换的页面应调整调用时机，也可以在 `change` 中读取原文件。一次提交多个文件时，各文件独立等待自己的钩子。模板 ref 可以调用 `submit()`、`abort()`、`clearFiles()`、`handleStart()` 和 `handleRemove()`。
 
 ```vue
 <script setup lang="ts">
@@ -246,7 +246,7 @@ const beforeUpload = (file: UploadRawFile) => file.type.startsWith('image/') && 
 | remove | 文件移除 | `file: UploadFile, files: UploadFiles` |
 | exceed | 超出数量限制 | `files: UploadRawFile[], fileList: UploadFiles` |
 
-短名事件与同名 `on-*` 属性回调会同时触发；`on-*` 属性回调属于兼容的便捷写法。
+单独使用 `@change`、`:on-change` 或 `:on-change.camel` 时，每次变化调用一次。显式同时绑定 `:on-change` 和 `@change` 时，先调用属性回调，再派发事件。`@change.once` 只接收第一次变化。其他同名事件和回调遵循相同规则。
 
 ### 插槽
 

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Upload 手动模式在调用 `submit()` 时执行 `before-upload`。依赖选择时校验的页面可通过 `change` 读取原文件。批量文件独立等待各自的钩子，自动上传的进度与状态会同步到列表，单个回调绑定每次只调用一次。
+
 - Dropdown 在 `role="navigation"` 时为菜单项使用 `link` 角色。菜单内按 `Tab` 或 `Shift+Tab` 会关闭菜单并将焦点还给触发器。
 
 - Switch 支持用 `Enter` 和数字键盘的 `Enter` 切换。同步守卫通过时，原生表单提交会读取切换后的值。
