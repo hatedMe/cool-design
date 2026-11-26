@@ -37,6 +37,71 @@ const openDropdown = async (wrapper: ReturnType<typeof mount>) => {
 const dropdownVisible = () => doc().find('.i-tree-select__dropdown:not([aria-hidden=true])').exists();
 
 describe('test `TreeSelect` component', () => {
+  test('节点文字按下时保留焦点，选择仍由 click 触发', async () => {
+    const wrapper = mount(TreeSelect, {
+      props: { data: [data[1]], modelValue: '', teleported: false },
+      slots: { default: ({ data: node }) => h('span', { onMousedown: (event: MouseEvent) => event.stopPropagation() }, node.label) }
+    });
+    await openDropdown(wrapper);
+    const text = wrapper.get('[role="treeitem"]').get('.i-tree__text span');
+    const press = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+    text.element.dispatchEvent(press);
+    expect(press.defaultPrevented).toBe(true);
+    expect(wrapper.emitted('node-click')).toBeUndefined();
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+    await text.trigger('click');
+    expect(wrapper.emitted('node-click')).toHaveLength(1);
+    expect(wrapper.emitted('update:modelValue')).toEqual([['b']]);
+    wrapper.unmount();
+  });
+
+  test('自定义节点和下拉插槽的原生控件保留按下行为', async () => {
+    const wrapper = mount(TreeSelect, {
+      props: { data: [data[1]], filterable: true, showCheckbox: true, teleported: false },
+      slots: {
+        header: () => h('button', { type: 'button', 'data-test': 'header-action' }, 'Header'),
+        default: () => h('div', [
+          h('button', { type: 'button' }, h('span', 'Button')),
+          h('a', { href: '#target' }, h('span', 'Link')),
+          h('label', [h('input', { type: 'checkbox' }), h('span', 'Checkbox')]),
+          h('span', { tabindex: -1 }, 'Focusable'),
+          h('span', { contenteditable: 'true' }, 'Editable')
+        ])
+      }
+    });
+    await openDropdown(wrapper);
+    const targets = [
+      wrapper.get('input[placeholder="筛选"]'),
+      wrapper.get('[role="treeitem"] > div > input[type="checkbox"]'),
+      wrapper.get('[data-test="header-action"]'),
+      ...wrapper.findAll('.i-tree__text span')
+    ];
+    expect(targets).toHaveLength(8);
+    for (const target of targets) {
+      const press = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+      target.element.dispatchEvent(press);
+      expect(press.defaultPrevented).toBe(false);
+    }
+    wrapper.unmount();
+  });
+
+  test.each([
+    { draggable: undefined, defaultPrevented: false },
+    { draggable: true, defaultPrevented: false },
+    { draggable: false, defaultPrevented: true }
+  ])('自定义节点图片按原生 draggable 状态处理按下 %o', async ({ draggable, defaultPrevented }) => {
+    const wrapper = mount(TreeSelect, {
+      props: { data: [data[1]], teleported: false },
+      slots: { default: () => h('img', { draggable, alt: '节点图片' }) }
+    });
+    await openDropdown(wrapper);
+    const press = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+    wrapper.get('img[alt="节点图片"]').element.dispatchEvent(press);
+    expect(press.defaultPrevented).toBe(defaultPrevented);
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+    wrapper.unmount();
+  });
+
   test('多选时点击叶节点文字切换模型值', async () => {
     const wrapper = mount(TreeSelect, { props: { data, multiple: true, modelValue: [] } });
     await openDropdown(wrapper);

@@ -267,6 +267,24 @@ export default defineComponent({
       } else treeRef.value?.filter(value);
     });
 
+    const onTreeMousedown = (event: MouseEvent) => {
+      const target = event.target;
+      if (event.button !== 0 || !(target instanceof Element) || target.closest('[role="tree"]') !== event.currentTarget) return;
+      const item = target.closest<HTMLElement>('[role="treeitem"]');
+      const content = item?.firstElementChild;
+      if (!content?.classList.contains(treeNs.e('content')) || !content.contains(target)) return;
+      if (target instanceof HTMLImageElement && target.draggable) return;
+      const control = target.closest('a[href], area[href], audio[controls], button, iframe, input, label, select, summary, textarea, video[controls], [tabindex], [contenteditable], [draggable="true"]');
+      if (control && control !== content && content.contains(control)) return;
+      if (content.getAttribute('draggable') === 'true') {
+        // 可拖动行需要保留原生按下行为，允许焦点落到树项目上。
+        if (item && item.ownerDocument.activeElement !== item.ownerDocument.body) item.tabIndex = -1;
+        return;
+      }
+      // 节点文字的默认按下行为会让触发器失焦，导致真实 click 到达前收起下拉。
+      event.preventDefault();
+    };
+    const treePointerListeners = { onMousedownCapture: onTreeMousedown };
     const focusTreeNode = (step: number) => {
       const tree = treeRef.value as (TreeExposed & { $el?: HTMLElement }) | undefined;
       const candidates = tree?.$el?.querySelectorAll<HTMLElement>('[role="treeitem"]:not([aria-disabled="true"])');
@@ -448,6 +466,7 @@ export default defineComponent({
                 )}
                 {props.loading && <div role='status'>{slots.loading?.() ?? props.loadingText ?? '加载中…'}</div>}
                 <Tree
+                  {...treePointerListeners}
                   ref={treeRef}
                   data={props.data as unknown as TreeData[]}
                   nodeKey={nodeKey.value}
