@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- TableV2 的 `expanded-rows-change` 现在接收展开的键数组 `(keys)`。需要继续接收 `(rows, keys)` 的旧页面可改用 `expanded-row-data-change`。
+
+- InputOtp 的 `finish(value)` 接收完整验证码字符串。将一个完整值改为另一个完整值时会再次触发。在输入格之间移动焦点时，整体的 `focus` 和 `blur` 事件保持静默。
+
 - 修复 Skeleton 的自定义模板跨 ConfigProvider 命名空间时占位项的底色和动画。`--i-skeleton-color` 和 `--i-skeleton-shimmer` 仍可显式覆盖。自定义 CSS 若直接读取默认色，请分别添加 `--i-bg-subtle` 和 `--i-bg` 作为回退。
 
 - Popover、Popconfirm 与 `v-popover` 支持最近一级 ConfigProvider 的命名空间、主题与浮层宿主。
@@ -66,7 +70,7 @@
 | 组件 | 变更 | 迁移说明 |
 | --- | --- | --- |
 | `Tree` / `TreeV2` | `check-on-click-leaf` 默认值由 `false` 改为 `true`，显示复选框时点击叶节点默认切换勾选 | 依赖原默认行为的页面请显式传 `:check-on-click-leaf="false"` |
-| `Table` | `maxHeight` 默认值 `440` → 不设默认：未显式传入时不再限制滚动区高度 | 依赖默认 4px 高度上限的页面请显式传 `:max-height="440"` |
+| `Table` | `maxHeight` 默认值 `440` → 不设默认：未显式传入时不再限制滚动区高度 | 依赖默认 440px 高度上限的页面请显式传 `:max-height="440"` |
 | `TableV2` | `headerHeight` 和 `rowHeight` 默认值由 40px 改为 50px | 原布局可显式传 `:header-height="40" :row-height="40"` |
 | `Rate` | `texts` 默认文案由英文改为中文：`['极差', '失望', '一般', '满意', '惊喜']` | 依赖英文文案的场景请显式传 `:texts` |
 | `Space` | `wrap` 默认值 `true` → `false`；内置尺寸 4/8/12px → 8/12/16px；数组 `size` 语义改为 `[列间距, 行间距]`；每个子项包装在 `.i-space__item` 中 | 依赖默认换行的布局请显式传 `wrap`；依赖旧间距像素的样式需复查；自定义子项选择器改用 `.i-space__item` |

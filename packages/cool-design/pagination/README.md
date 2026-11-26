@@ -37,7 +37,7 @@
 | pager-count | 页码按钮数量，收敛为 5~21 之间的奇数 | `number` | `7` |
 | page-sizes | 每页条数选项 | `number[]` | `[10, 20, 30, 40, 50, 100]` |
 | layout | 功能模块组合，逗号分隔 | `string` | `prev, pager, next, jumper, ->, total` |
-| size | 分页尺寸，默认继承 ConfigProvider | `'large' \| 'default' \| 'small'` | `'default'` |
+| size | 分页尺寸，旧版 `small` 开启时优先使用 `small` | `'large' \| 'default' \| 'small'` | 继承 ConfigProvider，根级 `'default'` |
 | small | 兼容属性，开启时强制使用小尺寸 | `boolean` | `false` |
 | background | 页码按钮背景样式 | `boolean` | `false` |
 | disabled | 禁用全部交互 | `boolean` | `false` |

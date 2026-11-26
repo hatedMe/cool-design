@@ -34,3 +34,9 @@
 ## 使用说明
 
 CheckboxButton 可独立使用，也可作为 CheckboxGroup 的子项；在 Group 中使用 `value` 作为数组成员。
+
+```vue
+<CheckboxGroup v-model="selected">
+  <CheckboxButton value="email">邮件通知</CheckboxButton>
+</CheckboxGroup>
+```

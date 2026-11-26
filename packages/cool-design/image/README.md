@@ -70,7 +70,7 @@
 | `viewer` | 自定义整体预览内容 | `{ urlList, close }` |
 | `default` | 自定义预览图片（转发到预览） | `{ url, src, index, activeIndex }` |
 | `progress` | 自定义预览进度 | `{ activeIndex, index, total }` |
-| `toolbar` | 自定义预览工具栏 | `{ actions, prev, next, reset, setActiveItem, activeIndex, index, total, scale, rotation, zoomIn, zoomOut, rotate, close }` |
+| `toolbar` | 自定义预览工具栏 | `ImageViewerToolbarActions` |
 | `viewer-placeholder` | 预览图片加载占位 | `{ activeIndex, src, url, index }` |
 | `viewer-error` | 预览图片加载失败 | `{ activeIndex, src, url, index }` |
 
@@ -90,6 +90,18 @@
 
 事件：`switch`（索引）、`close`。
 
-插槽：`default`（`{ url, src, index, activeIndex }`）、`progress`（`{ activeIndex, total }`）、`toolbar`（`{ actions, prev, next, reset, setActiveItem, activeIndex }`）、`placeholder` / `viewer-placeholder`（`{ activeIndex, src }`）、`error` / `viewer-error`（`{ activeIndex, src }`）。
+### ImageViewer 插槽
 
-Expose：`prev`、`next`、`setActiveItem`、`zoomIn`、`zoomOut`、`reset`、`rotate`、`close`、`index`、`activeIndex`。
+| 名称 | 说明 | 作用域 |
+| --- | --- | --- |
+| `default` | 自定义图片内容 | `{ url, src, index, activeIndex }` |
+| `progress` | 启用 `show-progress` 时自定义进度 | `{ activeIndex, index, total }` |
+| `toolbar` | 自定义工具栏 | `ImageViewerToolbarActions` |
+| `placeholder` / `viewer-placeholder` | 加载占位 | `{ activeIndex, src, url, index }` |
+| `error` / `viewer-error` | 加载失败内容 | `{ activeIndex, src, url, index }` |
+
+`ImageViewerToolbarActions` 可从 `cool-design` 或 `cool-design/image` 导入。它包含数值状态 `index`、`activeIndex`、`total`、`scale` 和 `rotation`。`zoomIn()`、`zoomOut()`、`reset()`、`rotate(clockwise?: boolean)`、`prev()`、`next()`、`close()` 和 `setActiveItem(index: number)` 可直接调用，也可从 `actions` 获取。
+
+### ImageViewer 实例
+
+实例提供 `prev()`、`next()`、`setActiveItem(index: number)`、`zoomIn()`、`zoomOut()`、`reset()`、`rotate(clockwise?: boolean)` 和 `close()`。`index` 和 `activeIndex` 是只读索引，从 `0` 开始。

@@ -70,18 +70,29 @@
 | visible-change | 下拉展开/收起 | `visible: boolean` |
 | remove-tag | 多选删除标签 | `value`，被删项的值 |
 | clear | 清空 | — |
+| `focus` | 聚焦输入框 | `event: FocusEvent` |
+| `blur` | 输入框失焦 | `event: FocusEvent` |
 
 ### 插槽
 
 | 插槽名 | 说明 | 作用域 |
 | --- | --- | --- |
-| default | 自定义选中项文本 | `{ data, node }` |
+| default | 自定义选中项文本与下拉节点 | `{ data, node }` |
 | empty | 无匹配数据 | — |
 
 单选默认清空为 `undefined`，依赖原清空值 `null` 的代码可设置 `:value-on-clear="null"`。
 
 多选可通过 `tag({ data, deleteTag })` 替换默认标签列表，`data` 为 `CascaderTag[]`，调用 `deleteTag(tag)` 删除单个标签。建议项可通过 `suggestion-item({ item })` 自定义，其中 `item` 包含级联节点字段及 `text`、`checked`。`prefix`、`header` 和 `footer` 分别渲染在输入区域起始处和下拉内容两端。
 
-`togglePopperVisible(visible?)` 切换下拉面板，可继续使用原 `togglePopperVisibility(visible?)` 方法。`contentRef` 是下拉面板元素，`presentText` 是当前单选显示文本。
+### 实例方法
 
-`show-checked-strategy` 为 `child` 或 `parent`，默认 `child`。切换策略只改变多选标签，模型仍保留实际选中值。实例的 `cascaderPanelRef` 指向下拉中的 CascaderPanel。
+| 方法 | 说明 |
+| --- | --- |
+| `focus()` / `blur()` | 聚焦输入框或取消聚焦 |
+| `getCheckedNodes(leafOnly?: boolean)` | 返回已选节点 `CascaderNode[]` |
+| `togglePopperVisible(visible?: boolean)` | 设置下拉面板的显隐，省略参数时切换 |
+| `togglePopperVisibility(visible?: boolean)` | 兼容方法，作用同 `togglePopperVisible()` |
+
+`CascaderInstance` 的 `cascaderPanelRef`、`contentRef` 和 `presentText` 均为只读，分别提供内嵌 CascaderPanel 实例、下拉面板元素与当前单选显示文本。
+
+`show-checked-strategy` 为 `child` 或 `parent`，默认 `child`。切换策略只改变多选标签，模型仍保留实际选中值。

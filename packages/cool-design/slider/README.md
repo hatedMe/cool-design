@@ -34,7 +34,7 @@
 | input-size           | 输入框尺寸，未设置时继承 `size`                              | `large` / `default` / `small`          | —            |
 | show-stops           | 是否显示步进点                                               | `boolean`                              | `false`      |
 | show-tooltip         | 交互期间显示 Tooltip                                         | `boolean`                              | `true`       |
-| persistent           | Tooltip 隐藏时是否保留节点                                   | `boolean`                              | `false`      |
+| persistent           | Tooltip 隐藏时是否保留节点                                   | `boolean`                              | `true` |
 | format-tooltip       | Tooltip 文本格式化                                           | `(value: number) => string`           | —            |
 | format-value-text    | 数值无障碍文本格式化                                         | `(value: number) => string`           | —            |
 | placement            | Tooltip 位置：`top` / `bottom` / `left` / `right`            | `string`                               | `top`        |
@@ -43,7 +43,7 @@
 | range-end-label      | 区间终点无障碍名称                                           | `string`                               | —            |
 | marks                | 刻度标记                                                     | `Record<number, string \| { style?: CSSProperties; label?: string }>` | — |
 | size                 | 尺寸：`large` / `default` / `small`                          | `string`                               | 继承 FormItem、Form 或 ConfigProvider |
-| debounce             | 输入更新节流（毫秒），`0` 为即时                             | `number`                               | `300`        |
+| debounce | 数字输入更新的防抖延迟，单位毫秒，`0` 为即时更新 | `number` | `0` |
 | validate-event       | 值变化时触发表单校验                                         | `boolean`                              | `true`       |
 | ariaLabel           | 无障碍名称（兼容属性，推荐标准 `aria-label`）               | `string`                               | —            |
 

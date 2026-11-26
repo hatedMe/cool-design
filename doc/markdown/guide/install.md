@@ -36,7 +36,7 @@ pnpm add vue@3
 
 ## 引入样式
 
-在应用入口引入一次组件样式，局部引入与全局注册都需要此步骤：
+全量注册时，在应用入口引入一次全量样式。局部引入可以使用同一份全量样式，也可以导入组件的 `/style.css`，例如 `cool-design/button/style.css`。
 
 ```ts
 import 'cool-design/style.css';
@@ -74,11 +74,7 @@ pnpm build
 pnpm pack
 ```
 
-然后在应用目录安装生成的 `.tgz` 文件。路径和文件名按实际输出调整：
-
-```sh
-pnpm add ../meganeui/cool-design-3.0.0.tgz
-```
+然后在应用目录执行 `pnpm add`，参数填入 `pnpm pack` 输出的实际 `.tgz` 路径。
 
 安装后仍从 `cool-design` 和 `cool-design/style.css` 引入。
 
@@ -86,7 +82,7 @@ pnpm add ../meganeui/cool-design-3.0.0.tgz
 
 ### 组件没有样式
 
-检查应用入口是否已引入 `cool-design/style.css`。直接从源码演示复制组件时，也需要保留应用入口的样式导入。
+检查应用是否已引入全量 `cool-design/style.css` 或所用组件的 `/style.css`。
 
 ### 安装后找不到某个组件
 
@@ -94,4 +90,4 @@ pnpm add ../meganeui/cool-design-3.0.0.tgz
 
 ### 全局组件名称无法识别
 
-全局注册使用 `app.use(CoolDesign)`，模板名称为 `i-` 前缀，例如 `<i-button>`。局部引入可直接使用 `<Button>`，具体写法见 [快速上手](#/guide/quickstart)。
+全局注册使用 `app.use(CoolDesign)`。模板可使用 `<i-button>` 或兼容名 `<el-button>`，局部引入可直接使用 `<Button>`。父子组件的按需注册见 [快速上手](#/guide/quickstart)。

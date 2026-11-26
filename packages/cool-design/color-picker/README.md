@@ -25,7 +25,7 @@
 />
 ```
 
-预览颜色、透明度或预定义颜色时仅触发 `active-change`，点击“确定”后才更新 `v-model` 并触发 `change`。点击“清空”默认提交 `null`；关闭面板会放弃未确认的预览。面板默认传送到 `body`，可通过 `append-to` 指定容器，或设置 `:teleported="false"` 在原位置渲染。
+预览颜色、透明度或预定义颜色时仅触发 `active-change`，点击“确定”后才更新 `v-model` 并触发 `change`。点击“清空”默认提交 `null`；关闭面板会放弃未确认的预览。面板默认传送到 ConfigProvider 的浮层宿主，未配置宿主时挂载到 `body`。可通过 `append-to` 指定容器，或设置 `:teleported="false"` 在原位置渲染。
 
 ### 禁用状态
 
@@ -39,12 +39,12 @@
 
 | 属性 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| `modelValue` | 当前颜色值，默认清空为 `null` | `string \| number \| boolean \| null` | `#409eff` |
+| `modelValue` | 当前颜色值，显式绑定 `undefined` 时按空值处理 | `string \| number \| boolean \| null` | 省略时为 `#409eff` |
 | `emptyValues` | 视为空的模型值 | `unknown[]` | 继承 ConfigProvider |
 | `valueOnClear` | 清空值或工厂 | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider，根级 `null` |
 | `clearable` | 是否显示清空按钮 | `boolean` | `true` |
 | `teleported` | 是否传送面板 | `boolean` | `true` |
-| `append-to` | 面板挂载目标，选择器或元素 | `string` / `HTMLElement` | `body` |
+| `append-to` | 面板挂载目标，选择器或元素 | `string` / `HTMLElement` | ConfigProvider 浮层宿主或 `body` |
 | `show-alpha` | 是否支持透明度 | `boolean` | `false` |
 | `disabled` | 是否禁用；表单内继承 FormItem 的禁用状态 | `boolean` | `false` |
 | `color-format` | 输出颜色格式：`hex` / `rgb` / `hsl` / `hsv` | `string` | `hex` |

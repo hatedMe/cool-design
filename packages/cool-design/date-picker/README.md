@@ -27,6 +27,10 @@ DatePicker 用于选择日期、月份、年份、周、多个日期和日期范
 
 未设置 `value-format` 时返回 `Date` 或 `Date[]`；设置 `value-format="x"` / `timestamp` 时返回毫秒时间戳。
 
+`DateModelValue` 为 `string` / `number` / `Date` / `null` 或由这些值组成的数组。
+
+聚焦输入框时触发 `focus` 事件。设为 `:automatic-dropdown="false"` 可关闭自动展开，并通过实例的 `handleOpen()` 打开面板。
+
 ## API
 
 ### 属性
@@ -40,20 +44,20 @@ DatePicker 用于选择日期、月份、年份、周、多个日期和日期范
 | placeholder         | 占位文本                                                       | `string`                               | —              |
 | start-placeholder   | 范围开始占位                                                   | `string`                               | —              |
 | end-placeholder     | 范围结束占位                                                   | `string`                               | —              |
-| range-separator     | 范围分隔符                                                     | `string`                               | —              |
+| range-separator     | 范围分隔符                                                     | `string`                               | `'-'` |
 | range               | 是否为范围选择                                                 | `boolean`                              | `false`        |
 | disabled-date       | 禁用日期（季度按季度内日期整体判断）                           | `(date: Date) => boolean`             | —              |
 | disabled            | 禁用                                                           | `boolean`                              | `false`        |
 | readonly            | 只读                                                           | `boolean`                              | `false`        |
 | editable            | 是否允许手动输入                                               | `boolean`                              | `true`         |
-| clearable           | 是否可清空                                                     | `boolean`                              | `false`        |
+| clearable           | 是否可清空                                                     | `boolean`                              | `true` |
 | size                | 尺寸                                                           | `string`                               | 继承 FormItem、Form 或 ConfigProvider   |
 | shortcuts           | 快捷选项                                                       | `Array<{ text: string; value: ... }>`  | —              |
-| default-value       | 初始值                                                         | `Date` / `Date[]`                      | —              |
+| default-value | 无选中值时面板的初始日期 | `DateModelValue` | `null` |
 | default-time         | 选择日期时的初始时间                                           | `string` / `number` / `Date` / `Array<string \| number \| Date>` | — |
 | show-confirm        | 确认流程扩展，开启后需点击确认提交                             | `boolean`                              | `false`        |
 | show-now             | 是否显示"此刻"按钮                                             | `boolean`                              | `false`        |
-| show-footer          | 是否显示底部栏                                                 | `boolean`                              | —              |
+| show-footer          | 是否显示底部栏                                                 | `boolean`                              | `true` |
 | show-week-number     | 是否显示周数列                                                 | `boolean`                              | `false`        |
 | single-panel        | 范围选择使用单面板                                             | `boolean`                              | `false`        |
 | unlink-panels       | 范围双面板取消联动                                             | `boolean`                              | `false`        |
@@ -62,13 +66,13 @@ DatePicker 用于选择日期、月份、年份、周、多个日期和日期范
 | empty-values        | 视为空的输入值                                                 | `unknown[]`             | —              |
 | value-on-clear      | 清空时的回退值                                                 | `DateModelValue` / `boolean` / `() => unknown` | 继承 ConfigProvider              |
 | validate-event      | 值变化时触发表单校验                                           | `boolean`                              | `true`         |
-| automatic-dropdown  | 聚焦即展开                                                     | `boolean`                              | `false`        |
+| automatic-dropdown | 点击输入框或按回车时自动展开 | `boolean` | `true` |
 | prefix-icon         | 前置图标                                                       | `string` / `Component`                 | —              |
 | clear-icon          | 清空图标                                                       | `string` / `Component`                 | —              |
 | id                  | 原生 id                                                        | `string` / `string[]`                  | —              |
 | name                | 原生名称                                                       | `string`                               | —              |
 | teleported          | 弹层是否传送到 body                                            | `boolean`                              | `true`         |
-| placement           | 弹层位置                                                       | `string`                               | `bottom-start` |
+| placement           | 弹层位置                                                       | `string`                               | `bottom` |
 | popper-class        | 弹层自定义类名                                                 | `string`                               | —              |
 | popper-style        | 弹层自定义样式                                                 | `string` / `CSSProperties`             | —              |
 | popper-options      | 浮层参数覆盖                                                   | `object`                               | —              |

@@ -72,16 +72,16 @@
 
 | 事件名            | 说明               | 回调参数          |
 | ----------------- | ------------------ | ----------------- |
-| update:modelValue | 输入或清空         | value: string     |
-| change            | 原生 change 或清空 | value: string     |
-| blur              | 输入框失焦         | event: FocusEvent |
-| input             | 输入内容变化       | value: string     |
-| focus             | 输入框聚焦         | event: FocusEvent |
+| `update:modelValue` | 输入或清空 | `value: string \| number` |
+| `change` | 原生 `change` 或清空，清空只传空字符串 | `value: string \| number, event?: Event` |
+| blur              | 输入框失焦         | `event: FocusEvent` |
+| `input` | 输入内容变化 | `value: string \| number` |
+| focus             | 输入框聚焦         | `event: FocusEvent` |
 | clear             | 点击清空           | —                 |
-| keydown           | 键盘按下           | event: KeyboardEvent |
-| mouseenter        | 鼠标移入           | event: MouseEvent |
-| mouseleave        | 鼠标移出           | event: MouseEvent |
-| compositionstart / compositionupdate / compositionend | 输入法组字过程 | event: CompositionEvent |
+| keydown           | 键盘按下           | `event: KeyboardEvent` |
+| mouseenter        | 鼠标移入           | `event: MouseEvent` |
+| mouseleave        | 鼠标移出           | `event: MouseEvent` |
+| compositionstart / compositionupdate / compositionend | 输入法组字过程 | `event: CompositionEvent` |
 
 ### 插槽
 
@@ -97,20 +97,21 @@
 
 | 方法    | 说明       | 返回值 |
 | ------- | ---------- | ------ |
-| focus()  | 聚焦输入框 | void   |
-| blur()   | 取消聚焦   | void   |
-| select() | 选择输入内容 | void   |
-| resize() | 重新计算文本域高度 | void   |
-| clear()  | 清空输入框 | void   |
+| `focus()`  | 聚焦输入框 | `void` |
+| `blur()`   | 取消聚焦   | `void` |
+| `select()` | 选择输入内容 | `void` |
+| `resizeTextarea()` | 重新测量文本域自动高度 | `void` |
+| `resize()` | 重新计算文本域高度 | `void` |
+| `clear()`  | 清空输入框 | `void` |
 
 ## 使用说明
 
-`v-model` 为字符串，默认空字符串。属性：clearable、disabled、readonly、placeholder、size。id、name、maxlength、aria-label 等原生属性透传到 input。
+`v-model` 默认是空字符串。启用 `v-model.number` 后，可将可解析的输入转为数值。
 
-事件：`update:modelValue(value: string)` 在输入和清空时触发；`change(value: string)` 在原生 change 或清空时触发；`blur(event: FocusEvent)`。实例方法 focus()。禁用、只读不能编辑和清空。在 FormItem 内自动关联标签和错误。
+禁用或只读时无法编辑和清空。FormItem 内会自动关联标签和错误。
 
 示例：`<Input v-model="name" clearable placeholder="请输入姓名" />`。`formatter` 只改变展示值，`parser` 将用户输入转换为模型值；文本域设置 `autosize` 可根据内容自动调整高度。
 
 Input 支持 `v-model.trim`、`v-model.number` 和 `v-model.lazy`。也可通过 `modelModifiers` 传入 `{ trim?: boolean; number?: boolean; lazy?: boolean }`。启用 `lazy` 时，键入期间仍触发 `input`，原生 `change` 时提交模型值。
 
-容器接收 `class` 和 `style`，原生输入元素接收 `name`、`autocomplete` 等属性。`textareaStyle` 提供文本域样式，`input`、`textarea` 和 `ref` 提供原生元素引用。`resizeTextarea()` 可重新测量自动高度。
+容器接收 `class` 和 `style`，原生输入元素接收 `name`、`autocomplete` 等属性。`textareaStyle` 提供文本域样式，`input`、`textarea` 和 `ref` 提供原生元素引用。实例的 `input`、`textarea`、`ref`、`textareaStyle`、`autosize`、`isComposing` 和 `passwordVisible` 均为只读属性。后两项分别表示正在组字和密码可见状态，类型为 `boolean`。

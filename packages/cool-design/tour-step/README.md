@@ -28,6 +28,7 @@
 | `showClose` | 显示关闭按钮 | `boolean` | 继承 Tour |
 | `scrollIntoViewOptions` | 滚动目标配置 | `boolean` / `ScrollIntoViewOptions` | 继承 Tour |
 | `nextButtonProps` / `prevButtonProps` | 设置按钮文本、禁用状态和回调 | `object` | — |
+| `close-icon` | 覆盖 Tour 的关闭图标 | `string \| Component` | 继承 Tour |
 
 ### 事件
 

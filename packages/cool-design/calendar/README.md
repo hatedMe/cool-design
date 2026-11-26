@@ -50,6 +50,7 @@
 | `update:modelValue` | 选中日期变化 | `Date` |
 | `select` | 选择日期 | `Date` |
 | `change` | 选中日期变化（兼容） | `Date` |
+| `input` | 选中日期变化（兼容） | `date: Date` |
 | `panel-change` | 面板月份变化 | `Date` |
 
 ### 插槽

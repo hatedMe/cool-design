@@ -390,7 +390,7 @@ const columns = [
 - `height` 与 `maxHeight` 同时设置时 `height` 优先。
 - 筛选面板默认使用 ConfigProvider 的浮层宿主，独立表格默认保留表头内挂载。多选经确认或重置生效，单选点击即生效。无 `filterMethod` 的列确认后仅发出事件。
 - 默认文本单元格实际溢出时显示 Tooltip。`tooltipFormatter` 可返回字符串或 Vue VNode。
-- `tooltipOptions` 和对象形式的 `showOverflowTooltip` 支持 `placement`、`offset`、`popperClass`、`effect`、`disabled`、`trigger`、`showAfter`、`hideAfter`、`enterable`、`showArrow`、`fallbackPlacements`、`teleported`、`appendTo`、`popperStyle`、`zIndex`。选项按 Provider、表格、列分层合并。每层中 `tooltipOptions.effect` 优先于 `tooltipEffect`，对象形式的 `showOverflowTooltip` 再覆盖该层选项。对象类型的 `popperClass` 和 `popperStyle` 按字段合并。设置 `showOverflowTooltip: false` 可关闭对应级别的提示。实际定位选项以 [Tooltip API](../tooltip/README.md) 为准。
+- `tooltipOptions` 和对象形式的 `showOverflowTooltip` 支持 `placement`、`offset`、`popperClass`、`effect`、`disabled`、`trigger`、`showAfter`、`hideAfter`、`enterable`、`showArrow`、`fallbackPlacements`、`teleported`、`appendTo`、`popperStyle`、`zIndex`、`strategy`、`popperOptions`、`gpuAcceleration`、`arrowOffset`、`transition`、`triggerKeys` 和 `persistent`。选项按 Provider、表格、列分层合并。每层中 `tooltipOptions.effect` 优先于 `tooltipEffect`，对象形式的 `showOverflowTooltip` 再覆盖该层选项。对象类型的 `popperClass` 和 `popperStyle` 按字段合并，`popperOptions.modifiers` 按层拼接。设置 `showOverflowTooltip: false` 可关闭对应级别的提示。实际定位选项以 [Tooltip API](#/components/tooltip) 为准。
 - `select` / `select-all` 仅用户点击触发；编程式选择方法只触发 `selection-change`。
 - 排序与筛选仅作用于根行，`rowKey` 在树形中必须全局唯一。
 - 拖拽列宽最小 `40px`，手柄支持鼠标拖拽与方向键调整，拖拽中禁选文本；隐藏列不参与筛选/排序/合计；`moveColumn` 移动顶层列或分组。

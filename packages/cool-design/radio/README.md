@@ -29,6 +29,15 @@ Radio 用于在互斥选项中选择一个值；RadioGroup 用于管理同一组
 | border     | 显示边框                                   | `boolean`                              | `false` |
 | size       | 尺寸：`small` / `default` / `large`        | `string`                               | —      |
 
+### Radio 事件
+
+| 事件名 | 说明 | 回调参数 |
+| --- | --- | --- |
+| `update:modelValue` | 独立使用时更新选中值 | `value: string \| number \| boolean` |
+| `change` | 独立使用时选中值变化 | `value: string \| number \| boolean` |
+
+在 RadioGroup 内由 RadioGroup 更新绑定值并发出对应事件。
+
 ### Radio 插槽
 
 | 名称     | 说明       |

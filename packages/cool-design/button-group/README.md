@@ -21,3 +21,10 @@ ButtonGroup 用于将多个 Button 组合为一组相近操作。
 ## 使用说明
 
 从 `cool-design` 导入 `ButtonGroup`，并在默认插槽中放置 `Button`。
+
+```vue
+<ButtonGroup>
+  <Button>上一步</Button>
+  <Button>下一步</Button>
+</ButtonGroup>
+```

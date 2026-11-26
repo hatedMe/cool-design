@@ -27,13 +27,15 @@ const time = ref(null);
 
 范围默认返回两个 `Date` 值。设置 `value-format` 后按端点格式化，启用 `show-confirm` 时在确认后提交两个端点。
 
+`DateModelValue` 为 `string` / `number` / `Date` / `null` 或由这些值组成的数组。
+
 ## API
 
 ### 属性
 
 | 参数                | 说明                                     | 类型                                   | 默认值         |
 | ------------------- | ---------------------------------------- | -------------------------------------- | -------------- |
-| modelValue          | 绑定值                                   | `string` / `number` / `Date` / `Date[]` / `null` | —     |
+| model-value | 绑定值，布尔值按空值处理 | `DateModelValue \| boolean` | `null` |
 | format              | 显示格式：`HH:mm` / `HH:mm:ss`           | `string`                               | `HH:mm:ss`     |
 | value-format         | 绑定值格式，未设置时返回 `Date`          | `string`                               | —              |
 | placeholder         | 占位文本                                 | `string`                               | —              |
@@ -44,7 +46,7 @@ const time = ref(null);
 | disabled            | 禁用                                     | `boolean`                              | `false`        |
 | readonly            | 只读                                     | `boolean`                              | `false`        |
 | editable            | 是否允许手动输入                         | `boolean`                              | `true`         |
-| clearable           | 是否可清空                               | `boolean`                              | `false`        |
+| clearable           | 是否可清空                               | `boolean`                              | `true` |
 | size                | 尺寸：`large` / `default` / `small`      | `string`                               | 继承 FormItem、Form 或 ConfigProvider   |
 | disabled-hours       | 禁用小时列表                             | `() => number[]`                       | —              |
 | disabled-minutes    | 禁用分钟列表                             | `(hour: number) => number[]`           | —              |
@@ -52,16 +54,18 @@ const time = ref(null);
 | arrow-control       | 面板方向键选择                           | `boolean`                              | `false`        |
 | show-confirm        | 草稿确认扩展                             | `boolean`                              | `false`        |
 | save-on-blur        | 失焦时保存草稿                           | `boolean`                              | `true`         |
-| default-value       | 初始值                                   | `string` / `number` / `Date`           | —              |
-| empty-values        | 视为空的输入值                           | `Array<string \| number>`             | —              |
-| value-on-clear      | 清空时的回退值                           | `string` / `number` / `null`           | —              |
+| default-value | 无选中值时面板的初始时间 | `DateModelValue` | `null` |
+| empty-values | 视为空的模型值 | `unknown[]` | 继承 ConfigProvider |
+| value-on-clear | 清空时的回退值 | `DateModelValue \| boolean \| (() => unknown)` | 继承 ConfigProvider |
+| id | 原生输入元素 ID，范围模式可指定两个 | `string \| string[]` | — |
+| validate-event | 值变化时触发表单校验 | `boolean` | `true` |
 | name                | 原生名称                                 | `string`                               | —              |
 | tabindex            | Tab 顺序                                 | `string` / `number`                    | —              |
 | aria-label          | 无障碍名称                               | `string`                               | —              |
 | prefix-icon         | 前置图标                                 | `string` / `Component`                 | —              |
 | clear-icon          | 清空图标                                 | `string` / `Component`                 | —              |
 | teleported          | 弹层是否传送到 body                      | `boolean`                              | `true`         |
-| placement           | 弹层位置                                 | `string`                               | `bottom-start` |
+| placement           | 弹层位置                                 | `string`                               | `bottom` |
 | popper-class        | 弹层自定义类名                           | `string`                               | —              |
 | popper-style        | 弹层自定义样式                           | `string` / `CSSProperties`             | —              |
 | popper-options      | 浮层参数覆盖                             | `object`                               | —              |

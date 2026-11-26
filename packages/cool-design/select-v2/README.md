@@ -38,7 +38,7 @@
 | `multiple`      | 多选                                       | `boolean`                              | `false`  |
 | `multipleLimit` | 多选数量上限，`0` 不限                     | `number`                               | `0`      |
 | `collapseTags` / `collapseTagsTooltip` / `maxCollapseTags` | 标签折叠     | `boolean` / `boolean` / `number`       | `false` / `false` / `1` |
-| `tagType`       | 标签类型：`primary` / `success` / `warning` / `danger` / `info` | `string`                    | —        |
+| `tagType`       | 标签类型：`primary` / `success` / `warning` / `danger` / `info` | `string`                    | `info` |
 | `clearable`     | 可清空                                     | `boolean`                              | `false`  |
 | `disabled`      | 禁用                                       | `boolean`                              | `false`  |
 | `loading`       | 加载态                                     | `boolean`                              | `false`  |

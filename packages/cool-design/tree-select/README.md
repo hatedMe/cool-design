@@ -43,6 +43,9 @@
 | `indent` | 层级缩进，单位像素 | `number` | `18` |
 | `render-after-expand` | 首次展开后才渲染子节点 | `boolean` | `false` |
 | `filter-node-method` | 自定义节点过滤方法 | `TreeFilterMethod` | — |
+| `show-checkbox` | 显示复选框，显式设置时覆盖多选模式的默认值 | `boolean` | 跟随 `multiple` |
+| `check-on-click-node` | 显示复选框时，点击节点触发勾选 | `boolean` | `false` |
+| `check-on-click-leaf` | 显示复选框时，点击叶节点触发勾选 | `boolean` | `true` |
 | `multiple`      | 是否多选                                   | `boolean`                                  | `false`  |
 | `checkStrictly` | 父子勾选是否解耦                           | `boolean`                                  | `false`  |
 | `filterable`    | 是否显示筛选框                             | `boolean`                                  | `false`  |
@@ -75,6 +78,14 @@
 | `visible-change`    | 下拉展开/收起        | `visible: boolean`        |
 | `remove-tag`        | 删除标签             | `value`                   |
 | `clear`             | 清空                 | —                         |
+| `focus` | 控件获得焦点 | `event: FocusEvent` |
+| `blur` | 控件失去焦点 | `event: FocusEvent` |
+| `node-click` | 点击树节点 | `data: TreeData, node: TreeNode, component: unknown` |
+| `check` | 用户操作导致勾选变化 | `data: TreeData, info: TreeCheckedInfo` |
+| `popup-scroll` | 下拉面板滚动 | `{ scrollTop: number, scrollLeft: number }` |
+| `end-reached` | 滚动到面板边缘 | `direction: 'top' \| 'bottom' \| 'left' \| 'right'` |
+
+组件透传 `node-contextmenu`、`current-change`、`check-change`、`node-expand`、`node-collapse`、`node-drag-start`、`node-drag-enter`、`node-drag-leave`、`node-drag-over`、`node-drag-end`、`node-drop`。参数见 [Tree 事件](#/components/tree)。
 
 ### 实例方法
 
@@ -82,18 +93,28 @@
 | --------- | -------------- |
 | `focus()` | 聚焦触发器按钮 |
 | `blur()`  | 取消聚焦       |
+| `filter()` / `getNode()` | 过滤、查询节点 |
+| `getCheckedKeys()` / `getCheckedNodes()` / `getHalfCheckedKeys()` / `getHalfCheckedNodes()` | 查询勾选和半选 |
+| `setCheckedKeys()` / `setCheckedNodes()` / `setChecked()` | 设置勾选 |
+| `getCurrentKey()` / `getCurrentNode()` / `setCurrentKey()` / `setCurrentNode()` | 查询和设置当前节点 |
+| `updateKeyChildren()` / `append()` / `remove()` / `insertBefore()` / `insertAfter()` | 修改树节点 |
 
+`TreeSelectInstance` 的树方法参数见 [Tree 暴露方法](#/components/tree)。`selectRef`、`treeRef` 和 `selectedLabel` 均为只读属性，分别为内嵌 Select 实例、Tree 实例和当前标签（`string | string[]`）。面板尚未挂载时，树方法可能还没有可操作的节点。
 
 ### 插槽
 
-默认插槽接收 `{ node, data }`，适合自定义树节点。控件还提供 `prefix`、`header`、`footer`、`loading` 和 `empty` 插槽。
+| 名称 | 说明 | 作用域 |
+| --- | --- | --- |
+| `default` | 自定义树节点 | `{ node, data }` |
+| `label` | 自定义已选标签 | `{ value, label }` |
+| `prefix` / `suffix` | 控件前缀或后缀 | — |
+| `header` / `footer` | 面板头部或尾部 | — |
+| `loading` / `empty` | 加载或空状态 | — |
 
-级联多选提交叶节点键，并保留尚未加载的已选键。若原代码从模型读取父节点键，可改用 `getCheckedKeys()` 查询树的完整勾选状态。通过 `selectRef` 和 `treeRef` 可访问内部实例。
-
-实例还提供 `selectedLabel`、`filter()`、`getNode()`、勾选和半选的查询及设置方法、当前项的查询及设置方法，以及 `updateKeyChildren()`、`append()`、`remove()`、`insertBefore()`、`insertAfter()`。
+级联多选提交叶节点键，并保留尚未加载的已选键。若原代码从模型读取父节点键，可改用 `getCheckedKeys()` 查询树的完整勾选状态。
 
 单选清空默认提交 `undefined`。依赖原默认值 `null` 的页面可以显式设置 `:value-on-clear="null"`。布尔清空值可用于双向绑定，树节点的键继续使用字符串或数字。
 
 `valueKey` 在缺少 `nodeKey` 时提供节点键。设置 `name` 后，表单会按名称提交所选节点键。可用 `appendTo` 指定浮层容器。
 
-`clear-icon` 与 `suffix-icon` 接受 `string | Component`。`tag-effect` 接受 `'light' | 'dark' | 'plain'`。`label({ value, label })` 可自定义已选标签。搜索输入接受 `autocomplete`，远程过滤支持 `debounce`（默认 `300` 毫秒）和 `remote-show-suffix`。下拉滚动触发 `popup-scroll({ scrollTop, scrollLeft })`，抵达边缘触发 `end-reached(direction)`。通过真实 Select 实例的 `selectRef.selectedLabel` 读取当前标签。
+`clear-icon` 与 `suffix-icon` 接受 `string | Component`。`tag-effect` 接受 `'light' | 'dark' | 'plain'`。搜索输入接受 `autocomplete`，远程过滤支持 `debounce`（默认 `300` 毫秒）和 `remote-show-suffix`。

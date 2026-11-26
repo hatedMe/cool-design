@@ -44,6 +44,16 @@
 
 ## 使用说明
 
-在 Form 中使用，默认插槽放一个输入控件。自动关联标签、ID、aria-invalid、错误描述及规则，错误使用 alert 角色。
+在 Form 中使用，默认插槽放表单控件。单个受支持控件在挂载后注册其 ID，FormItem 自动生成带 `for` 的原生标签。在服务端渲染或未提供单一入口的复合控件中，有标签的字段使用 `role="group"` 提供组名称，组内选项仍使用各自的标签。
+
+需要在 SSR 首屏就有可点击的原生标签时，设置 `for`，其值与目标控件原生输入元素的 `id` 一致。
+
+```vue
+<FormItem label="年龄" prop="age" for="profile-age">
+  <InputNumber id="profile-age" v-model="model.age" />
+</FormItem>
+```
+
+控件显式传入的 ARIA 属性优先。错误消息显示时，支持该关联的控件通过 `aria-describedby` 引用消息，消息使用 `role="alert"`。
 
 动态增删数组行时，可按行的稳定 ID 设置组件 `key`，并用当前索引生成 `prop`。字段路径变化时，当前值成为重置初值，旧路径的异步校验结果失效。

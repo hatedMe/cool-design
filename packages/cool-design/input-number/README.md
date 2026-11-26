@@ -41,13 +41,19 @@ const value = ref(1);
 | `max` | 最大值 | `number` | `Number.MAX_SAFE_INTEGER` |
 | `step` | 步长 | `number` | `1` |
 | `step-strictly` | 是否限制为步长的倍数 | `boolean` | `false` |
+| `strictly` | `step-strictly` 的兼容别名，任一开启即限制为步长倍数 | `boolean` | `false` |
 | `precision` | 小数精度 | `number` | 根据 `step` 推导 |
 | `controls` | 是否显示控制按钮 | `boolean` | `true` |
-| `controls-position` | 控制按钮位置：`default` / `right` | `string` | `default` |
+| `controls-position` | 控制按钮位置，空字符串表示两侧 | `'' \| 'right'` | `''` |
 | `disabled` | 是否禁用 | `boolean` | `false` |
 | `readonly` | 是否只读 | `boolean` | `false` |
 | `size` | 尺寸：`large` / `default` / `small` | `string` | 继承 FormItem、Form 或 ConfigProvider |
 | `placeholder` | 输入框占位文本 | `string` | — |
+| `name` | 转发至原生输入框的名称 | `string` | — |
+| `id` | 转发至原生输入框的 ID | `string` | — |
+| `inputmode` | 转发至原生输入框的虚拟键盘类型 | `'text' \| 'search' \| 'none' \| 'email' \| 'tel' \| 'url' \| 'numeric' \| 'decimal'` | — |
+| `tabindex` | 转发至原生输入框的 Tab 顺序 | `string \| number` | — |
+| `aria-label` | 转发至原生输入框的无障碍名称 | `string` | — |
 | `formatter` | 格式化展示值 | `(value) => string` | — |
 | `parser` | 将展示文本解析为数值 | `(value) => number \| null` | — |
 | `value-on-clear` | 清空时的值：`min` / `max` / 数值 / `null` | `number \| null \| string` | `null` |

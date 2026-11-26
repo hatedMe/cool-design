@@ -51,6 +51,7 @@
 | 名称      | 说明                                     |
 | --------- | ---------------------------------------- |
 | `default` | 自定义节点文本，作用域 `{ node, data }`  |
+| `empty` | 自定义空状态，无参数 |
 
 ### 实例方法
 
@@ -58,4 +59,4 @@
 | ------------------------- | -------------------------------- |
 | `getCheckedNodes(leafOnly?)` | 获取选中节点数据（多选勾选态） |
 
-实例还公开 `clearCheckedNodes()`、`getFlattedNodes(leafOnly?)`、`scrollToExpandingNode()` 和 `handleKeyDown(event)`。
+实例还公开 `clearCheckedNodes()`、`getFlattedNodes(leafOnly?)`、`scrollToExpandingNode()` 、`loadLazyRootNodes()` 和 `handleKeyDown(event)`。`loadLazyRootNodes()` 加载懒加载模式的根节点。

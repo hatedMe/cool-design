@@ -13,6 +13,7 @@ import { Button, ConfigProvider, Input, Space } from 'cool-design';
 import 'cool-design/style.css';
 
 const name = ref('');
+const nameInput = { id: 'user-name' };
 const result = ref('请输入姓名后查询');
 function search() {
   result.value = name.value.trim() ? `正在查询：${name.value.trim()}` : '正在查询全部用户';
@@ -27,7 +28,7 @@ function reset() {
   <ConfigProvider>
     <form class="search-form" @submit.prevent="search">
       <label for="user-name">用户姓名</label>
-      <Input id="user-name" v-model="name" clearable placeholder="请输入姓名" />
+      <Input v-model="name" v-bind="nameInput" clearable placeholder="请输入姓名" />
       <Space>
         <Button type="primary" native-type="submit">查询</Button>
         <Button @click="reset">重置</Button>
@@ -69,6 +70,30 @@ import 'cool-design/button/style.css';
 
 每个组件子路径都提供 `/style.css`，包含主题变量和组件内建依赖。插槽中另用的组件需引入各自样式。组合 Tag、Image 和 Cascader 时，依次引入三者的 CSS，可保持与全量样式相同的按钮优先级。
 
+### 兼容命名的根入口
+
+根包提供 `El*` 组件别名。下面的例子使用 `ElSelect`、`ElOption` 和全量样式。
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue';
+import { ElOption, ElSelect } from 'cool-design';
+import 'cool-design/style.css';
+
+const city = ref('chengdu');
+const cityControl = { 'aria-label': '城市' };
+</script>
+
+<template>
+  <ElSelect v-model="city" v-bind="cityControl">
+    <ElOption value="chengdu" label="成都" />
+    <ElOption value="chongqing" label="重庆" />
+  </ElSelect>
+</template>
+```
+
+`cool-design/button` 的默认导出是 `Button`，其具名导出包含 `Button` 和 `ButtonGroup`。如果只全局安装这组组件，通过 `app.use(Button).use(ButtonGroup)` 分别注册父子组件。`app.use(Avatar)` 会一并注册 `AvatarGroup`。
+
 ## 全局注册
 
 在应用的 `main.ts` 中注册组件库并导入样式：
@@ -82,7 +107,7 @@ import App from './App.vue';
 createApp(App).use(CoolDesign).mount('#app');
 ```
 
-全局注册后，模板使用 `i-` 前缀：
+全局注册后，模板可使用 `i-` 品牌前缀。已提供 `El*` 兼容名的组件也可使用 kebab-case，例如 `<el-button>`。
 
 ```vue
 <template>
@@ -92,7 +117,11 @@ createApp(App).use(CoolDesign).mount('#app');
 </template>
 ```
 
-同时会注册全局服务属性：`$message`、`$notify`、`$msgbox`（以及 `$alert` / `$confirm` / `$prompt`）、`$loading`，均携带当前应用上下文，可直接在模板或选项式组件中使用：
+全量安装还会注册携带当前应用上下文的全局服务属性，可在模板或选项式组件中调用 `$message`、`$notify`、`$msgbox`、`$alert`、`$confirm`、`$prompt` 和 `$loading`。
+
+需要直接导入服务时，从根包导入 `ElMessage`、`ElNotification`、`ElMessageBox` 或 `ElLoading`。例如 `ElMessage.success('已保存')` 与 `ElLoading.service(options)`。声明式形态使用库原名，如 `Message` 和 `Notification`。库扩展 `DateTimePicker` 也使用原名。
+
+选项式组件可以使用以下应用级服务。
 
 ```ts
 export default {
@@ -130,13 +159,31 @@ import 'cool-design/button/style.css';
 | 场景       | 写法与行为                                                     |
 | ---------- | -------------------------------------------------------------- |
 | 文本输入   | `v-model` 绑定字符串，Input 支持 `clearable`                   |
-| 单项选择   | Select 的 `v-model` 支持字符串或数字，清空为 `undefined`       |
-| 开关与勾选 | Switch、Checkbox 的 `v-model` 为布尔值                         |
+| 单项选择 | 通常绑定 `string` 或 `number`，也支持 `boolean` 或配置 `value-key` 的对象，详见 Select API |
+| 开关与勾选 | 单个 Switch 或 Checkbox 默认绑定 `boolean`，可配置自定义选中与未选中值 |
 | 分页       | `v-model:current-page` 绑定页码，从 1 开始                     |
 | 表单提交   | Button 默认是普通按钮，提交时设置 `native-type="submit"`       |
 | 字段校验   | Form 的 `validate()` 返回 `Promise<boolean>`，通过后由页面保存 |
 | 表格排序   | `sort-change` 通知排序状态，页面更新数据，组件不自动请求接口   |
 | 消息关闭   | Message 的 `close` 事件通知页面，由页面移除消息组件            |
+
+Switch 通过 `active-value` / `inactive-value` 配置自定义值，独立 Checkbox 通过 `true-value` / `false-value` 配置。初始模型值使用相同的类型。
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue';
+import { Checkbox, Switch } from 'cool-design';
+import 'cool-design/style.css';
+
+const status = ref('disabled');
+const consent = ref(0);
+</script>
+
+<template>
+  <Switch v-model="status" active-value="enabled" inactive-value="disabled" />
+  <Checkbox v-model="consent" :true-value="1" :false-value="0">同意</Checkbox>
+</template>
+```
 
 ## 类型提示
 

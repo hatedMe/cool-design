@@ -23,3 +23,9 @@
 ## 使用说明
 
 在 Select 内使用。默认插槽优先于 `label`，均省略时显示 `value`。不独立管理选中状态。
+
+```vue
+<Select v-model="city">
+  <SelectOption value="chengdu" label="成都" />
+</Select>
+```
