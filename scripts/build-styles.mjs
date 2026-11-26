@@ -28,7 +28,7 @@ const dependencies = {
   radio: ['radio-group'], 'radio-group': ['radio', 'radio-button'], rate: ['icon'], result: ['icon'],
   select: ['icon'], 'select-v2': ['tooltip'], slider: ['input-number'], steps: ['icon'],
   switch: ['icon'], table: ['checkbox', 'loading', 'empty', 'tooltip'], 'time-select': ['icon'],
-  tour: ['button'], 'tree-select': ['select', 'tree']
+  tour: ['button'], 'tree-select': ['select', 'tree', 'tooltip']
 };
 
 function componentModules(entry) {

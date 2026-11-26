@@ -26,6 +26,26 @@
   text-align: left;
   cursor: pointer;
 }
+.#{config.$namespace}-tree-select > .#{config.$namespace}-select:has(> .#{config.$namespace}-tree-select__selection) {
+  display: grid;
+}
+.#{config.$namespace}-tree-select__selection,
+.#{config.$namespace}-tree-select__control {
+  grid-area: 1 / 1;
+  align-self: stretch;
+}
+.#{config.$namespace}-tree-select__selection {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 9px;
+  pointer-events: none;
+}
+.#{config.$namespace}-tree-select__selection :is(button, a, input, [tabindex], .#{config.$namespace}-tooltip__trigger) {
+  pointer-events: auto;
+}
 .#{config.$namespace}-tree-select.is-open .#{config.$namespace}-tree-select__control {
   border-color: var(--#{config.$namespace}-color-primary, #409eff);
 }

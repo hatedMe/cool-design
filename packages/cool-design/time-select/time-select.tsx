@@ -177,6 +177,9 @@ export default defineComponent({
       <span
         {...attrs}
         id={undefined}
+        aria-label={undefined}
+        aria-labelledby={undefined}
+        aria-describedby={undefined}
         ref={root}
         class={[
           ns.b(),
@@ -189,6 +192,8 @@ export default defineComponent({
           type='text'
           class={ns.e('control')}
           role='combobox'
+          aria-label={attrs['aria-label'] as string}
+          aria-labelledby={attrs['aria-labelledby'] as string}
           disabled={isDisabled()}
           readonly={!props.editable}
           aria-describedby={fieldDescription(field, attrs['aria-describedby'])}

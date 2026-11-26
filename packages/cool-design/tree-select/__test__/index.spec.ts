@@ -411,11 +411,29 @@ test('uses Select control options through the public TreeSelect interface', asyn
   });
   expect(wrapper.get('.selected-label').text()).toBe('One');
   expect(wrapper.get('.i-tree-select__tag').classes()).toContain('i-select__tag--dark');
-  expect(wrapper.get('.i-tree-select__control .icon-clock').exists()).toBe(true);
+  expect(wrapper.get('.i-tree-select__selection .icon-clock').exists()).toBe(true);
   expect(wrapper.get('.i-tree-select__clear .icon-close').exists()).toBe(true);
   expect(wrapper.vm.selectRef?.selectedLabel).toEqual(['One']);
   await wrapper.get('.i-tree-select__control').trigger('click');
   expect(wrapper.get('.i-tree-select__filter').attributes('autocomplete')).toBe('name');
   await wrapper.get('.i-select__dropdown').trigger('scroll');
   expect(wrapper.emitted('popup-scroll')).toEqual([[{ scrollTop: 0, scrollLeft: 0 }]]);
+});
+
+test('折叠标签的移除按钮独立于组合框，提示使用隐藏项 label 插槽', async () => {
+  const wrapper = mount(TreeSelect, { attachTo: document.body, props: {
+    data, multiple: true, collapseTags: true, collapseTagsTooltip: true, modelValue: ['a', 'b']
+  }, slots: { label: ({ label }) => h('i', label) } });
+  const trigger = wrapper.get<HTMLButtonElement>('[role=combobox]');
+  const remove = wrapper.get<HTMLButtonElement>('button[aria-label="移除 节点A"]');
+  expect(trigger.element.contains(remove.element)).toBe(false);
+  await wrapper.get('.i-tooltip__trigger').trigger('mouseenter');
+  await flushPromises();
+  expect(doc().get('[role=tooltip] i').text()).toBe('节点B');
+  await remove.trigger('click');
+  expect(document.activeElement).toBe(trigger.element);
+  expect(trigger.attributes('aria-expanded')).toBe('false');
+  expect(wrapper.emitted('remove-tag')).toEqual([['a']]);
+  wrapper.unmount();
+  expect(doc().find('[role=tooltip]').exists()).toBe(false);
 });

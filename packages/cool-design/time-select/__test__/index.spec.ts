@@ -165,3 +165,13 @@ test('formats options and submits keyboard selection from the raw grid', async (
   expect(model.time).toBe('01:10 下午');
   expect(new FormData(wrapper.get('form').element).getAll('time')).toEqual(['01:10 下午']);
 });
+
+test('独立输入框接收显式名称和 IDREF', () => {
+  const wrapper = mount(TimeSelect, { attrs: { id: 'time', 'aria-label': 'Appointment', 'aria-labelledby': 'title', class: 'outer' } });
+  expect(wrapper.classes()).toContain('outer');
+  expect(wrapper.attributes('aria-label')).toBeUndefined();
+  const control = wrapper.get('input[role=combobox]');
+  expect(control.attributes('id')).toBe('time');
+  expect(control.attributes('aria-label')).toBe('Appointment');
+  expect(control.attributes('aria-labelledby')).toBe('title');
+});

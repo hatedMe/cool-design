@@ -2,8 +2,9 @@ import { computed, defineComponent, h, inject, nextTick, onBeforeUnmount, ref, w
 import { Teleport } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useComposition } from '../../hooks/use-composition';
-import { formKey, useField } from '../form/context';
+import { getFieldValue, formKey, useField } from '../form/context';
 import { useConfig, type Size } from '../config-provider/context';
+import { useId } from '../../hooks/use-id';
 import { useNamespace } from '../../hooks/use-namespace';
 import Tooltip from '../tooltip';
 import { useFloating, useFloatingTheme, type FloatingOptions, type Placement } from '../../../src/utils/use-floating';
@@ -15,6 +16,7 @@ type FlatRow =
 
 export default defineComponent({
   name: 'i-select-v2',
+  inheritAttrs: false,
   props: {
     modelValue: [String, Number, Boolean, Array, Object] as PropType<SelectV2Value>,
     options: { type: Array as PropType<SelectV2Option[]>, default: () => [] },
@@ -68,7 +70,7 @@ export default defineComponent({
     effect: { type: String as PropType<'light' | 'dark'>, default: 'light' }
   },
   emits: ['update:modelValue', 'change', 'focus', 'blur', 'clear', 'visible-change', 'remove-tag', 'end-reached'],
-  setup(props, { emit, slots, expose }) {
+  setup(props, { attrs, emit, slots, expose }) {
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
@@ -79,6 +81,7 @@ export default defineComponent({
       valueOnClear: computed(() => props.valueOnClear)
     });
     const root = ref<HTMLElement>();
+    const listId = useId();
     const input = ref<HTMLInputElement>();
     const listRef = ref<HTMLElement>();
     const dropdown = ref<HTMLElement>();
@@ -110,7 +113,10 @@ export default defineComponent({
       fallbackPlacements: () => props.fallbackPlacements,
       offset: () => props.popperOptions?.offset ?? props.offset,
       appendTo: () => props.appendTo,
-      close: () => setOpen(false)
+      close: (event) => {
+        if (event?.type === 'pointerdown') blur();
+        setOpen(false);
+      }
     });
     const panelTheme = useFloatingTheme(position.target, () => props.teleported);
 
@@ -119,9 +125,19 @@ export default defineComponent({
     const disabledKey = computed(() => props.props?.disabled || 'disabled');
     const optionsKey = computed(() => props.props?.options || 'options');
 
+    const valuePath = computed(() => {
+      const path = props.valueKey;
+      const parts: string[] = path.startsWith('.') ? [''] : [];
+      // 点号、数组下标、带转义的引号键及连续分隔符中的空键。
+      const tokens = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
+      for (const match of path.matchAll(tokens)) {
+        parts.push(match[2] ? match[3].replace(/\\(\\)?/g, '$1') : match[1] ?? match[0]);
+      }
+      return parts;
+    });
     const keyOf = (value: SelectV2Value): unknown =>
       value !== null && typeof value === 'object'
-        ? (value as Record<string, unknown>)[props.valueKey]
+        ? (props.valueKey in value ? (value as Record<string, unknown>)[props.valueKey] : getFieldValue(value, valuePath.value))
         : value;
     const sameValue = (left: SelectV2Value, right: SelectV2Value) => keyOf(left) === keyOf(right);
     const isDisabled = () => props.disabled || !!(field?.disabled?.() ?? form?.disabled?.());
@@ -240,7 +256,7 @@ export default defineComponent({
             );
         nextTick(() => {
           syncScrollToHighlighted();
-          input.value?.focus();
+
         });
       } else cancelSearch();
     };
@@ -389,20 +405,42 @@ export default defineComponent({
       }
     };
 
+    const containsFocus = (target: EventTarget | null) =>
+      target instanceof Node && (root.value?.contains(target) || dropdown.value?.contains(target));
+    const onFocusIn = (event: FocusEvent) => {
+      if (containsFocus(event.relatedTarget)) return;
+      emit('focus', event);
+      if (props.automaticDropdown && containsFocus(document.activeElement)) setOpen(true);
+    };
+    const onFocusOut = (event: FocusEvent) => {
+      if (containsFocus(event.relatedTarget)) return;
+      setOpen(false);
+      emit('blur', event);
+      if (props.validateEvent) nextTick(() => field?.validate('blur'));
+    };
+    const blur = () => {
+      const active = root.value?.ownerDocument.activeElement;
+      if (active instanceof HTMLElement && containsFocus(active)) active.blur();
+    };
+
     expose({
       focus: () => input.value?.focus(),
-      blur: () => input.value?.blur(),
+      blur,
       selectedLabel,
       scrollTo
     });
 
+    let openBeforeMouseDown: boolean | undefined;
     return () => {
+      const { 'aria-label': ariaLabel, 'aria-labelledby': labelledBy, ...rootAttrs } = attrs;
+      const active = windowRows.value.items[highlighted.value - windowRows.value.start];
       const shown = props.collapseTags
         ? selectedOptions.value.slice(0, Math.max(0, props.maxCollapseTags))
         : selectedOptions.value;
       const rest = selectedOptions.value.length - shown.length;
       return (
         <span
+          {...rootAttrs}
           ref={root}
           class={[
             ns.b(),
@@ -410,21 +448,19 @@ export default defineComponent({
             { 'is-open': open.value, 'is-disabled': isDisabled() }
           ]}>
           <div
-            role='combobox'
-            aria-disabled={isDisabled() || undefined}
-            tabindex={isDisabled() ? -1 : 0}
-            aria-expanded={open.value}
-            aria-haspopup='listbox'
             class={ns.e('control')}
-            onClick={() => setOpen(!open.value)}
-            onFocus={(event: FocusEvent) => {
-              emit('focus', event);
-              if (props.automaticDropdown) setOpen(true);
+            onMousedown={(event: MouseEvent) => {
+              if (event.button === 0 && !(event.target as Element).closest('button, input')) event.preventDefault();
+              openBeforeMouseDown = open.value;
             }}
-            onBlur={(event: FocusEvent) => {
-              emit('blur', event);
-              if (props.validateEvent) nextTick(() => field?.validate('blur'));
+            onClick={() => {
+              const expand = !(openBeforeMouseDown ?? open.value);
+              openBeforeMouseDown = undefined;
+              setOpen(expand);
+              input.value?.focus();
             }}
+            onFocusin={onFocusIn}
+            onFocusout={onFocusOut}
             onKeydown={onKeydown}>
             {props.multiple && slots.tag
               ? slots.tag({ data: selectedOptions.value.map((option, index) => option ?? { [valueKey.value]: selectedValues.value[index], [labelKey.value]: selectedLabels.value[index] }), deleteTag, selectDisabled: isDisabled() })
@@ -482,7 +518,14 @@ export default defineComponent({
               placeholder={selectedOptions.value.length ? '' : props.placeholder}
               readonly={!props.filterable}
               disabled={isDisabled()}
-              aria-label='筛选选项'
+              role='combobox'
+              aria-label={(ariaLabel as string) ?? (labelledBy ? undefined : '筛选选项')}
+              aria-labelledby={labelledBy as string}
+              aria-disabled={isDisabled() || undefined}
+              aria-expanded={open.value}
+              aria-haspopup='listbox'
+              aria-controls={open.value ? listId.value : undefined}
+              aria-activedescendant={open.value && !props.loading && active?.type === 'option' ? `${listId.value}-${highlighted.value}` : undefined}
               onCompositionstart={handleCompositionStart}
               onCompositionend={(event: CompositionEvent) => {
                 handleCompositionEnd();
@@ -524,6 +567,9 @@ export default defineComponent({
               <div
                 ref={dropdown}
                 class={[ns.e('dropdown'), ns.em('dropdown', props.effect), panelTheme.value.scopeClass, props.popperClass]}
+                id={listId.value}
+                onFocusin={onFocusIn}
+                onFocusout={onFocusOut}
                 role='listbox'
                 aria-hidden={kept ? 'true' : undefined}
                 data-theme={panelTheme.value.theme}
@@ -556,6 +602,7 @@ export default defineComponent({
                         return (
                           <div
                             key={rowIndex}
+                            id={`${listId.value}-${rowIndex}`}
                             role='option'
                             aria-selected={selected}
                             aria-disabled={Boolean(option[disabledKey.value]) || undefined}
@@ -568,6 +615,7 @@ export default defineComponent({
                                 'is-disabled': Boolean(option[disabledKey.value])
                               }
                             ]}
+                            onMousedown={(event: MouseEvent) => event.preventDefault()}
                             onClick={() => choose(row)}>
                             {slots.default?.({ item: option, index: rowIndex }) ?? optionLabel(option)}
                           </div>

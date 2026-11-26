@@ -2,7 +2,7 @@ import { useNamespace } from '../../hooks/use-namespace';
 import { createBEM } from '../../../src/utils/create';
 import Panel from './panel';
 import type { TransferPanelInstance } from './types';
-import { computed, defineComponent, nextTick, ref, watch, type PropType } from 'vue';
+import { computed, h, defineComponent, nextTick, ref, watch, type PropType } from 'vue';
 import { inject } from 'vue';
 import { fieldDescription, formKey, useFieldControl } from '../form/context';
 import type {
@@ -11,6 +11,7 @@ import type {
   TransferFormat,
   TransferItem,
   TransferKey,
+  TransferProps,
   TransferPropsMap,
   TransferRenderContent,
   TransferTargetOrder
@@ -55,10 +56,16 @@ export default defineComponent({
     disabled: Boolean,
     noDataText: { type: String, default: '无数据' },
     noMatchText: { type: String, default: '无匹配数据' },
-    renderContent: Function as PropType<TransferRenderContent>,
+    renderContent: Function as PropType<NonNullable<TransferProps['renderContent']>>,
     validateEvent: { type: Boolean, default: true }
   },
-  emits: ['update:modelValue', 'change', 'left-check-change', 'right-check-change'],
+  emits: {
+    'update:modelValue': (keys: TransferKey[]) => Array.isArray(keys),
+    change: (keys: TransferKey[], direction: TransferDirection, moved: TransferKey[]) =>
+      Array.isArray(keys) && (direction === 'left' || direction === 'right') && Array.isArray(moved),
+    'left-check-change': (keys: TransferKey[], changed: TransferKey[]) => Array.isArray(keys) && Array.isArray(changed),
+    'right-check-change': (keys: TransferKey[], changed: TransferKey[]) => Array.isArray(keys) && Array.isArray(changed)
+  },
   setup(props, { attrs, emit, slots, expose }) {
     const ns = useNamespace('transfer');
     const bem = createBEM(ns.b);
@@ -94,9 +101,19 @@ export default defineComponent({
     });
     const sideKeys = (side: number) => new Set((side ? right.value : left.value).map((item) => keyOf(item, map.value)));
     const checked = ref<[Set<TransferKey>, Set<TransferKey>]>([
-      new Set(props.leftDefaultChecked.filter((key) => sideKeys(0).has(key))),
-      new Set(props.rightDefaultChecked.filter((key) => sideKeys(1).has(key)))
+      new Set(), new Set()
     ]);
+    [() => props.leftDefaultChecked, () => props.rightDefaultChecked].forEach((defaults, side) => {
+      let previous = new Set<TransferKey>();
+      watch(defaults, (keys) => {
+        const next = new Set(keys);
+        if (next.size === previous.size && [...next].every((key) => previous.has(key))) return;
+        previous = next;
+        const items = side ? right.value : left.value;
+        const valid = new Set(items.filter((item) => !disabledOf(item, map.value)).map((item) => keyOf(item, map.value)));
+        checked.value[side] = new Set(keys.filter((key) => valid.has(key)));
+      }, { immediate: true, deep: true });
+    });
     const pruneChecked = () => {
       checked.value.forEach((set, side) => {
         const valid = sideKeys(side);
@@ -116,14 +133,18 @@ export default defineComponent({
       return items.filter((item) => labelOf(item, map.value).toLowerCase().includes(lower));
     };
     const selectable = (items: TransferItem[]) => items.filter((item) => !isDisabled() && !disabledOf(item, map.value));
-    const emitChecked = (side: number) => emit(side ? 'right-check-change' : 'left-check-change', [...checked.value[side]]);
+    const emitChecked = (side: number, changedKeys: TransferKey[]) => {
+      const keys = [...checked.value[side]];
+      if (side) emit('right-check-change', keys, changedKeys);
+      else emit('left-check-change', keys, changedKeys);
+    };
 
     const toggle = (side: number, key: TransferKey, itemDisabled: boolean) => {
       if (isDisabled() || itemDisabled) return;
       const set = checked.value[side];
       if (set.has(key)) set.delete(key);
       else set.add(key);
-      emitChecked(side);
+      emitChecked(side, [key]);
     };
     const toggleAll = (side: number, items: TransferItem[]) => {
       if (isDisabled()) return;
@@ -131,11 +152,12 @@ export default defineComponent({
       if (!keys.length) return;
       const set = checked.value[side];
       const shouldCheck = keys.some((key) => !set.has(key));
-      keys.forEach((key) => {
+      const changed = [...new Set(keys)].filter((key) => set.has(key) !== shouldCheck);
+      changed.forEach((key) => {
         if (shouldCheck) set.add(key);
         else set.delete(key);
       });
-      emitChecked(side);
+      emitChecked(side, changed);
     };
 
     const moveKeys = (side: number) => {
@@ -177,7 +199,7 @@ export default defineComponent({
       emit('update:modelValue', next);
       emit('change', next, direction, moved);
       if (props.validateEvent) nextTick(() => field?.validate('change'));
-      emitChecked(side);
+      emitChecked(side, []);
     };
 
     const clearQuery = (which?: 'left' | 'right' | 0 | 1) => {
@@ -208,6 +230,13 @@ export default defineComponent({
       const count = available.filter((item) => checked.value[side].has(keyOf(item, map.value))).length;
       return { shown, available, count };
     }));
+
+    const renderItem = (item: TransferItem) => {
+      const render = props.renderContent;
+      if (!render) return slots.default?.({ option: item }) ?? slots.item?.({ option: item }) ?? labelOf(item, map.value);
+      if (render.length < 2) return (render as TransferRenderContent)(item);
+      return (render as (factory: typeof h, option: TransferItem) => unknown)(h, item);
+    };
 
     const panel = (items: TransferItem[], side: number) => {
       const { shown, available, count } = panelStates[side].value;
@@ -240,7 +269,7 @@ export default defineComponent({
               onChange={() => toggleAll(side, items)}
             />
             <span class={ns.e('title')}>{titleOf(side)}</span>
-            <span class={ns.e('count')}>{formatCount(count, items.length)}</span>
+            <span class={ns.e('count')}>{formatCount(checked.value[side].size, items.length)}</span>
           </header>), default: () => <>
           <div class={ns.e('items')} role="listbox" aria-multiselectable="true" aria-label={titleOf(side)}
             ref={(element) => { listElements.value[side] = element as HTMLElement | undefined; }}
@@ -262,7 +291,7 @@ export default defineComponent({
                       aria-disabled={itemDisabled ? 'true' : undefined}
                     >
                       <input type="checkbox" checked={isChecked} disabled={itemDisabled} onChange={() => toggle(side, key, itemDisabled)} />
-                      {props.renderContent ? props.renderContent(item) : slots.default?.({ option: item }) ?? slots.item?.({ option: item }) ?? labelOf(item, map.value)}
+                      {renderItem(item)}
                     </label>
                   );
                 })}

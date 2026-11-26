@@ -39,4 +39,3 @@ test('五个公开组件响应最近命名空间并复用原有节点', async ()
     wrapper.unmount();
   }
 });
-

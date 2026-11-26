@@ -69,7 +69,7 @@ describe('Transfer', () => {
     await toRight(wrapper).trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[[1, 2]]]);
     expect(wrapper.emitted('change')).toEqual([[[1, 2], 'right', [1, 2]]]);
-    expect(wrapper.emitted('left-check-change')?.at(-1)).toEqual([[]]);
+    expect(wrapper.emitted('left-check-change')?.at(-1)).toEqual([[], []]);
   });
 
   test('移动选中到左侧', async () => {
@@ -121,7 +121,7 @@ describe('Transfer', () => {
     await itemsOf(wrapper, 0)[3].get('input').setValue(true);
     expect(wrapper.emitted('left-check-change')).toBeUndefined();
     await selectAll(wrapper, 0).trigger('change');
-    expect(wrapper.emitted('left-check-change')).toEqual([[[1, 2, 3]]]);
+    expect(wrapper.emitted('left-check-change')).toEqual([[[1, 2, 3], [1, 2, 3]]]);
     expect(countText(wrapper, 0)).toBe('3/4');
     await toRight(wrapper).trigger('click');
     expect(wrapper.emitted('change')).toEqual([[[1, 2, 3], 'right', [1, 2, 3]]]);
@@ -240,9 +240,9 @@ describe('Transfer', () => {
   test('check-change 事件参数', async () => {
     const wrapper = mount(Transfer, { props: { modelValue: [3], data: basicData() } });
     await itemsOf(wrapper, 0)[0].get('input').setValue(true);
-    expect(wrapper.emitted('left-check-change')).toEqual([[[1]]]);
+    expect(wrapper.emitted('left-check-change')).toEqual([[[1], [1]]]);
     await itemsOf(wrapper, 1)[0].get('input').setValue(true);
-    expect(wrapper.emitted('right-check-change')).toEqual([[[3]]]);
+    expect(wrapper.emitted('right-check-change')).toEqual([[[3], [3]]]);
   });
 
   test('空态与底部插槽', () => {
@@ -401,4 +401,63 @@ test('bounds both virtual panels while select-all uses all filtered data', async
   expect(wrapper.findAll('[role="option"]').length).toBeLessThan(60);
   await wrapper.findAll('.i-transfer__select-all')[0].setValue(true);
   expect(wrapper.findAll('.i-transfer__count')[0].text()).toBe('2000/2000');
+});
+
+test.each([false, true])('普通与虚拟面板兼容两种渲染函数 (%s)', async (virtualScroll) => {
+  const wrapper = mount(Transfer, { props: {
+    data: basicData(), virtualScroll, renderContent: (factory, option) => factory('b', option.label)
+  } });
+  expect(wrapper.get('b').text()).toBe('选项一');
+  await wrapper.setProps({ renderContent: (option: TransferItem) => h('i', option.label) });
+  expect(wrapper.get('i').text()).toBe('选项一');
+});
+
+test('两侧替换默认数组只同步有效键，搜索和移动保留正确计数', async () => {
+  const wrapper = mount(Transfer, { props: { data: basicData(), modelValue: [3], filterable: true } });
+  await wrapper.setProps({ leftDefaultChecked: [1, 3, 4], rightDefaultChecked: [1, 3] });
+  expect(countText(wrapper, 0)).toBe('1/3');
+  expect(countText(wrapper, 1)).toBe('1/1');
+  expect(wrapper.emitted('left-check-change')).toBeUndefined();
+  expect(wrapper.emitted('right-check-change')).toBeUndefined();
+  await panels(wrapper)[0].get('.i-transfer__filter').setValue('选项二');
+  expect(countText(wrapper, 0)).toBe('1/3');
+  await selectAll(wrapper, 0).trigger('change');
+  await selectAll(wrapper, 0).trigger('change');
+  expect(wrapper.emitted('left-check-change')).toEqual([[[1, 2], [2]], [[1], [2]]]);
+  await toRight(wrapper).trigger('click');
+  expect(wrapper.emitted('change')).toEqual([[[1, 3], 'right', [1]]]);
+  expect(countText(wrapper, 0)).toBe('3');
+});
+
+test('等值默认集合与顺序变化保留两侧用户选择，原地更新按新集合生效', async () => {
+  const keys = reactive([1, 2]);
+  const wrapper = mount(Transfer, { props: {
+    data: [1, 2, 3, 4, 5, 6].map(key => ({ key })), modelValue: [4, 5, 6],
+    leftDefaultChecked: keys, rightDefaultChecked: [4, 5]
+  } });
+  await itemsOf(wrapper, 0)[2].get('input').setValue(true);
+  await itemsOf(wrapper, 1)[2].get('input').setValue(true);
+  keys.reverse();
+  await wrapper.setProps({ rightDefaultChecked: [5, 4] });
+  expect(countText(wrapper, 0)).toBe('3/3');
+  expect(countText(wrapper, 1)).toBe('3/3');
+  keys.pop();
+  await wrapper.setProps({ rightDefaultChecked: [5] });
+  expect(countText(wrapper, 0)).toBe('1/3');
+  expect(countText(wrapper, 1)).toBe('1/3');
+  expect(wrapper.emitted('left-check-change')).toHaveLength(1);
+  expect(wrapper.emitted('right-check-change')).toHaveLength(1);
+});
+
+test('数据池变化并传入等值默认数组时保留两侧剩余用户勾选', async () => {
+  const data = [1, 2, 3, 4].map(key => ({ key }));
+  const wrapper = mount(Transfer, { props: {
+    data, modelValue: [3, 4], leftDefaultChecked: [1], rightDefaultChecked: [3]
+  } });
+  await itemsOf(wrapper, 0)[1].get('input').setValue(true);
+  await itemsOf(wrapper, 1)[1].get('input').setValue(true);
+  await wrapper.setProps({ data: [data[1], data[3]], leftDefaultChecked: [1], rightDefaultChecked: [3] });
+  for (const side of [0, 1]) expect(itemsOf(wrapper, side)[0].get('input').element.checked).toBe(true);
+  expect(wrapper.emitted('left-check-change')).toEqual([[[1, 2], [2]]]);
+  expect(wrapper.emitted('right-check-change')).toEqual([[[3, 4], [4]]]);
 });

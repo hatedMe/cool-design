@@ -72,3 +72,5 @@
 本组件即固定时间点的 TimeSelect，动态时间范围请使用 TimePicker（`disabled-hours` 等）。
 
 `empty-values` 自定义未选中时的模型值，`value-on-clear` 接受清空值或函数。两者均继承 ConfigProvider。单选默认清空为 `undefined`。依赖原空字符串的页面可设置 `value-on-clear=""`。清空只执行一次工厂，`clear` 无参数。
+
+可通过 `aria-label` 或 `aria-labelledby` 给时间输入框提供可访问名称。

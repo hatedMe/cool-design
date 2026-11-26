@@ -163,4 +163,3 @@ export default defineComponent({
     >{{ ...slots, default: slots.default ?? slots['date-cell'] }}</DatePickerInline>;
   }
 });
-

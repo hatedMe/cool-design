@@ -1,5 +1,5 @@
 import { mount, DOMWrapper } from '@vue/test-utils';
-import { defineComponent, h, ref } from 'vue';
+import { defineComponent, h, nextTick, ref } from 'vue';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import SelectV2 from '..';
 import ConfigProvider from '../../config-provider';
@@ -38,7 +38,7 @@ describe('test `SelectV2` component', () => {
       { value: { id: 2 }, label: '二' }
     ];
     const { wrapper, value, select } = mountSelect({ options, valueKey: 'id' }, { id: 1 });
-    expect(wrapper.get('[role="combobox"]').text()).toContain('一');
+    expect(wrapper.get('.i-select-v2__control').text()).toContain('一');
     await openSelect(wrapper);
     await doc().findAll('[role="option"]')[1].trigger('click');
     expect(value.value).toEqual({ id: 2 });
@@ -336,4 +336,39 @@ test('SelectV2 默认保留浮层，并能指定挂载容器', async () => {
     wrapper.unmount();
     target.remove();
   }
+});
+
+test('独立对象按嵌套键匹配多选标签和移除事件', async () => {
+  const options = ['Alpha', 'Beta'].map((label, id) => ({ label, value: { meta: { id } } }));
+  const { wrapper, value } = mountSelect({ multiple: true, valueKey: 'meta.id', options }, [{ meta: { id: 1 } }]);
+  expect(wrapper.get('.i-select-v2__tag').text()).toContain('Beta');
+  await wrapper.get('button[aria-label="移除 Beta"]').trigger('click');
+  expect(value.value).toEqual([]);
+});
+
+test('原生组合框公开焦点和名称，内部转移只在离开时发出 blur', async () => {
+  const { wrapper, select } = mountSelect({ automaticDropdown: true, 'aria-label': 'Region', clearable: true,
+    options: [{ value: 1, label: 'A' }] }, 1);
+  const input = wrapper.get<HTMLInputElement>('input[role=combobox]');
+  input.element.focus();
+  await nextTick();
+  expect(document.activeElement).toBe(input.element);
+  expect(input.attributes('aria-label')).toBe('Region');
+  expect(document.getElementById(input.attributes('aria-activedescendant'))?.textContent).toBe('A');
+  wrapper.get<HTMLButtonElement>('button').element.focus();
+  input.element.focus();
+  expect(select.emitted('focus')).toHaveLength(1);
+  expect(select.emitted('blur')).toBeUndefined();
+  input.element.blur();
+  expect(select.emitted('blur')).toHaveLength(1);
+  wrapper.unmount();
+});
+
+test.each([
+  ['meta["record.id"]', (id: number) => ({ meta: { 'record.id': id } })],
+  ["meta[0]['record.id']", (id: number) => ({ meta: [{ 'record.id': id }] })],
+  ['meta.id', (id: number) => ({ 'meta.id': id, meta: { id: 0 } })]
+] as const)('对象值路径 %s 选择独立模型对应的行', (valueKey, valueOf) => {
+  const { wrapper } = mountSelect({ valueKey, options: [1, 2].map(id => ({ label: String(id), value: valueOf(id) })) }, valueOf(2));
+  expect(wrapper.get('.i-select-v2__tag').text()).toBe('2');
 });

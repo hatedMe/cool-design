@@ -105,3 +105,5 @@
 配置 `filterable`、`remote` 和 `remote-method` 后，回调可更新外部 `options`。外部写入由调用方管理，异步请求宜用序号避免过时结果覆盖。`remoteMethod` 也可直接返回选项数组或相应的 Promise，组件只采纳当前查询的结果。旧的双参数 `filterMethod` 保留逐项过滤语义，新代码可显式使用 `optionFilterMethod`。
 
 原先使用 `label` 插槽渲染下拉选项的代码可迁移到默认插槽。多选 `tag` 插槽一次接收整个选项数组。
+
+原生输入框承担 `combobox` 角色，支持 `aria-label` 和 `aria-labelledby`。对象值的 `valueKey` 支持直接字段和嵌套路径（如 `meta.id`、`meta[0]["record.id"]`）。

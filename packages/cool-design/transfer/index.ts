@@ -16,5 +16,6 @@ export type {
   TransferKey,
   TransferProps,
   TransferPropsMap,
+  TransferRenderContent,
   TransferTargetOrder
 } from './types';

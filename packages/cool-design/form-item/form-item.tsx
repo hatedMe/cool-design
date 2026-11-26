@@ -14,9 +14,12 @@ import {
   watch,
   type PropType
 } from 'vue';
-import Schema, { type RuleItem, type ValidateError, type ValidateResult } from 'async-validator';
+import AsyncValidator, { type RuleItem, type ValidateError, type ValidateResult } from 'async-validator';
 import { formKey, fieldKey, getFieldPathIdentity, getFieldPathParts, getFieldValue, normalizeFieldPath, cloneFormValue, setFieldValue, type Field } from '../form/context';
 import type { FormItemProp, FormRule, FormValidateState } from '../form/types';
+
+// Node 和浏览器打包器对 async-validator 的默认导出采用不同包装。
+const Schema = (AsyncValidator as typeof AsyncValidator & { default?: typeof AsyncValidator }).default ?? AsyncValidator;
 
 function normalizeRule(rule: FormRule): RuleItem {
   const { validator, asyncValidator } = rule;
@@ -289,7 +292,7 @@ export default defineComponent({
               {asteriskPosition === 'left' && asterisk}
               {label ?? props.label}
               {asteriskPosition === 'right' && asterisk}
-              {form?.labelSuffix?.()}
+              {form?.labelSuffix?.() || null}
             </label>
           )}
           <div class={ns.e('content')}>
@@ -301,7 +304,7 @@ export default defineComponent({
                 {displayError.value || validateState.value === 'error' ? '✗' : '✓'}
               </span>
             )}
-            {displayError.value && props.showMessage && (
+            {!!displayError.value && props.showMessage && (
               <div class={[ns.e('error'), inlineMessage && 'is-inline-message']} id={errorId()} role='alert'>
                 {message ?? displayError.value}
               </div>

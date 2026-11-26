@@ -76,4 +76,3 @@ const value = ref<DatePickerPanelModelValue>(null);
 ### 实例方法
 
 独立面板通过 `v-model` 控制选择值，没有公开的实例方法。
-

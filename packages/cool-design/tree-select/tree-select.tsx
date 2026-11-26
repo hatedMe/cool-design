@@ -13,6 +13,7 @@ import {
 } from 'vue';
 import Select from '../select';
 import Icon from '../icon';
+import Tooltip from '../tooltip';
 import type { SelectTagType } from '../select';
 import type { SelectInstance } from '../select';
 import Tree from '../tree';
@@ -83,6 +84,7 @@ export default defineComponent({
     id: String,
     tabindex: [String, Number],
     collapseTags: Boolean,
+    collapseTagsTooltip: Boolean,
     maxCollapseTags: { type: Number, default: 1 },
     placeholder: { type: String, default: '请选择' },
     disabled: Boolean,
@@ -351,9 +353,52 @@ export default defineComponent({
         : selectedValues.value;
       const restCount = selectedValues.value.length - shownTags.length;
       const tagClasses = [selectNs.e('tag'), props.tagType && selectNs.em('tag', props.tagType), selectNs.em('tag', props.tagEffect)];
+      const renderContent = () => <>
+            {slots.prefix?.()}
+            {props.multiple && slots.tag ? slots.tag({ data: selectedValues.value.map((value) => ({ value, label: labelOf(value) })), deleteTag: (item: { value: string | number }) => removeTag(item.value), selectDisabled: isDisabled() }) : props.multiple ? (
+              shownTags.length ? (
+                shownTags.map((value) => (
+                  <span class={[ns.e('tag'), tagClasses]} key={String(value)}>
+                    {slots.label?.({ value, label: labelOf(value) }) ?? labelOf(value)}
+                    {!isDisabled() && (
+                      <button
+                        type='button'
+                        class={ns.e('tag-close')}
+                        aria-label={`移除 ${labelOf(value)}`}
+                        onClick={(event: MouseEvent) => {
+                          event.stopPropagation();
+                          selectRef.value?.focus();
+                          removeTag(value);
+                        }}>
+                        ×
+                      </button>
+                    )}
+                  </span>
+                ))
+              ) : (
+                <span class={ns.e('placeholder')}>{props.placeholder}</span>
+              )
+            ) : selectedValues.value.length ? (
+              <span class={ns.e('label')}>{slots.label?.({ value: selectedValues.value[0], label: labelOf(selectedValues.value[0]) }) ?? labelOf(selectedValues.value[0])}</span>
+            ) : (
+              <span class={ns.e('placeholder')}>{props.placeholder}</span>
+            )}
+            {props.multiple && !slots.tag && restCount > 0 && (props.collapseTagsTooltip ? (
+              <Tooltip disabled={open.value || isDisabled()} appendTo={props.appendTo} teleported={props.teleported}
+                effect={props.effect} persistent={false}>
+                {{
+                  default: () => <span tabindex={isDisabled() ? -1 : 0} class={[ns.e('more'), tagClasses]}>{`+${restCount}`}</span>,
+                  content: () => selectedValues.value.slice(shownTags.length).map((value) =>
+                    <span class={tagClasses} key={value}>{slots.label?.({ value, label: labelOf(value) }) ?? labelOf(value)}</span>)
+                }}
+              </Tooltip>
+            ) : <span class={[ns.e('more'), tagClasses]}>{`+${restCount}`}</span>)}
+            {slots.suffix?.() ?? ((!props.remote || !props.filterable || props.remoteShowSuffix) && (props.suffixIcon ? <Icon icon={props.suffixIcon} aria-hidden='true' /> : <span class={selectNs.e('suffix-caret')} aria-hidden='true' />))}
+      </>;
       return (
         <span
           {...attrs}
+          aria-labelledby={undefined}
           ref={root}
           class={[ns.b(), ns.m(size.value), open.value && 'is-open', isDisabled() && 'is-disabled']}
           aria-invalid={(attrs['aria-invalid'] as 'true' | 'false' | undefined) ?? (field?.invalid() ? 'true' : undefined)}
@@ -386,7 +431,8 @@ export default defineComponent({
             aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
             id={props.id || field?.id || props.id}
             tabindex={props.tabindex}
-            aria-label={props.ariaLabel}
+            aria-labelledby={(attrs['aria-labelledby'] as string) || (!props.ariaLabel ? field?.getLabelId?.() : undefined)}
+            aria-label={props.ariaLabel ?? (props.multiple && !field?.getLabelId?.() && !attrs['aria-labelledby'] ? selectedValues.value.map(labelOf).join('、') || props.placeholder : undefined)}
             onFocus={(event: FocusEvent) => emit('focus', event)}
             onBlur={(event: FocusEvent) => emit('blur', event)}
             onKeydown={(event: KeyboardEvent) => {
@@ -401,38 +447,9 @@ export default defineComponent({
             disabled={isDisabled()}
             aria-expanded={open.value}
             onClick={toggle}>
-            {slots.prefix?.()}
-            {props.multiple ? (
-              shownTags.length ? (
-                shownTags.map((value) => (
-                  <span class={[ns.e('tag'), tagClasses]} key={String(value)}>
-                    {slots.label?.({ value, label: labelOf(value) }) ?? labelOf(value)}
-                    {!isDisabled() && (
-                      <span
-                        class={ns.e('tag-close')}
-                        role='button'
-                        tabindex={0}
-                        aria-label={`移除 ${labelOf(value)}`}
-                        onClick={(event: MouseEvent) => {
-                          event.stopPropagation();
-                          removeTag(value);
-                        }}>
-                        ×
-                      </span>
-                    )}
-                  </span>
-                ))
-              ) : (
-                <span class={ns.e('placeholder')}>{props.placeholder}</span>
-              )
-            ) : selectedValues.value.length ? (
-              <span class={ns.e('label')}>{slots.label?.({ value: selectedValues.value[0], label: labelOf(selectedValues.value[0]) }) ?? labelOf(selectedValues.value[0])}</span>
-            ) : (
-              <span class={ns.e('placeholder')}>{props.placeholder}</span>
-            )}
-            {props.multiple && restCount > 0 && <span class={[ns.e('more'), tagClasses]}>+{restCount}</span>}
-            {slots.suffix?.() ?? ((!props.remote || !props.filterable || props.remoteShowSuffix) && (props.suffixIcon ? <Icon icon={props.suffixIcon} aria-hidden='true' /> : <span class={selectNs.e('suffix-caret')} aria-hidden='true' />))}
+            {!props.multiple && renderContent()}
           </button>
+          {props.multiple && <span class={ns.e('selection')}>{renderContent()}</span>}
           {props.name && (props.multiple ? selectedValues.value : [selectedValues.value[0] ?? '']).map((value, index) =>
             <input key={index} type='hidden' name={props.name} value={value} disabled={isDisabled()} />
           )}

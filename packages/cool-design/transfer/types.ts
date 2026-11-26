@@ -1,3 +1,5 @@
+import type { h } from 'vue';
+
 export type TransferKey = string | number;
 
 export interface TransferItem {
@@ -44,7 +46,7 @@ export interface TransferProps {
   disabled?: boolean;
   noDataText?: string;
   noMatchText?: string;
-  renderContent?: TransferRenderContent;
+  renderContent?: TransferRenderContent | ((factory: typeof h, option: TransferItem) => unknown);
 }
 
 export interface TransferPanelInstance {

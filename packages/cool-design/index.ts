@@ -618,7 +618,7 @@ export type { SplitterPanelInstance } from './splitter';
 export type { StatisticInstance } from './statistic';
 export type { TableV2Instance } from './table-v2';
 export type { PopperOptions, TooltipInstance, TooltipVirtualRef } from './tooltip';
-export type { TransferInstance } from './transfer';
+export type { TransferInstance, TransferItem, TransferRenderContent, TransferKey } from './transfer';
 export type { TreeV2Instance } from './tree-v2';
 export type { UploadInstance } from './upload';
 export type { TableInstance } from './table';

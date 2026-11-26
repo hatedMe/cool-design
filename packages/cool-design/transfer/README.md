@@ -59,16 +59,18 @@ Transfer 用于在两个列表之间移动和管理选项，支持搜索过滤�
 | filterable | 是否可搜索 | `boolean` | `false` |
 | filterPlaceholder | 搜索框占位文案 | `string` | `请输入搜索内容` |
 | filterMethod | 自定义搜索方法 | `(query: string, item: TransferItem) => boolean` | — |
-| renderContent | 自定义数据项渲染函数 | `(item: TransferItem) => unknown` | — |
+| renderContent | 按显式形参数量调用；双参接收 Vue 的 h 和选项，单参接收原选项 | `(h: typeof import('vue').h, option: TransferItem) => unknown` / `(option: TransferItem) => unknown` | — |
 | targetOrder | 右侧列表排序策略 | `original` / `push` / `unshift` | `original` |
 | format | 计数文案模板 | `{ noChecked?: string; hasChecked?: string }` | `${total}` / `${checked}/${total}` |
 | props | 字段映射 | `{ label?: string; key?: string; disabled?: string }` | `{}` |
-| leftDefaultChecked | 左侧初始选中 | `(string \| number)[]` | `[]` |
-| rightDefaultChecked | 右侧初始选中 | `(string \| number)[]` | `[]` |
+| leftDefaultChecked | 左侧默认选中，替换数组同步可选键 | `(string \| number)[]` | `[]` |
+| rightDefaultChecked | 右侧默认选中，替换数组同步可选键 | `(string \| number)[]` | `[]` |
 | disabled | 是否禁用；表单内继承 Form 的禁用状态 | `boolean` | `false` |
 | noDataText | 无数据文案 | `string` | `无数据` |
 | noMatchText | 无匹配数据文案 | `string` | `无匹配数据` |
 | validateEvent | 移动选项后是否触发表单校验 | `boolean` | `true` |
+
+仅使用 h、默认参数或剩余参数的双参渲染器请包装为 `(h, option) => render(h, option)`。严格模式下既有内联单参可能需要显式标注 `option: TransferItem`，或使用类型为 `TransferRenderContent` 的命名函数。父层传入的默认键集合变化时，按当前面板可选项同步。默认键相同或仅顺序变化时保留用户勾选；数据项移出面板时仅清理已移出的键。同步不触发勾选事件。
 
 `props` 字段映射支持：`label`、`key`、`disabled`；`format` 支持 `noChecked` 和 `hasChecked`。置于 `FormItem` 内时自动继承禁用状态、绑定字段 `id` / `aria-describedby`，`change` 事件联动表单校验。
 
@@ -78,8 +80,8 @@ Transfer 用于在两个列表之间移动和管理选项，支持搜索过滤�
 | --- | --- | --- |
 | update:modelValue | 右侧 `key` 集合更新 | `value: (string \| number)[]` |
 | change | 移动选项后触发 | `value: (string \| number)[]`、`direction: 'left' \| 'right'`、`movedKeys: (string \| number)[]` |
-| left-check-change | 左侧选中变化 | `keys: (string \| number)[]` |
-| right-check-change | 右侧选中变化 | `keys: (string \| number)[]` |
+| left-check-change | 左侧勾选变化；移动后额外通知的 changedKeys 为空 | `(keys: TransferKey[], changedKeys: TransferKey[])` |
+| right-check-change | 右侧勾选变化；移动后额外通知的 changedKeys 为空 | `(keys: TransferKey[], changedKeys: TransferKey[])` |
 
 ### 插槽
 

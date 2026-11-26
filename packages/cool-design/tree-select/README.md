@@ -50,6 +50,7 @@
 | `checkStrictly` | 父子勾选是否解耦                           | `boolean`                                  | `false`  |
 | `filterable`    | 是否显示筛选框                             | `boolean`                                  | `false`  |
 | `collapseTags`  | 多选时折叠标签                             | `boolean`                                  | `false`  |
+| `collapseTagsTooltip` | 悬停折叠数量可查看隐藏标签 | `boolean` | `false` |
 | `maxCollapseTags` | 折叠时显示的标签数                       | `number`                                   | `1`      |
 | `placeholder`   | 占位文本                                   | `string`                                   | `请选择` |
 | `size` | 触发器尺寸 | `small\|default\|large` | 继承 FormItem、Form 或 ConfigProvider |
@@ -106,6 +107,7 @@
 | 名称 | 说明 | 作用域 |
 | --- | --- | --- |
 | `default` | 自定义树节点 | `{ node, data }` |
+| `tag` | 自定义多选标签 | `{ data, deleteTag, selectDisabled }` |
 | `label` | 自定义已选标签 | `{ value, label }` |
 | `prefix` / `suffix` | 控件前缀或后缀 | — |
 | `header` / `footer` | 面板头部或尾部 | — |
