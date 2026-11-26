@@ -1,4 +1,4 @@
-import { h } from 'vue';
+import { h, nextTick } from 'vue';
 import { DOMWrapper, mount } from '@vue/test-utils';
 import { beforeEach, expect, test } from 'vitest';
 import Select from '../index';
@@ -61,11 +61,17 @@ test('clear 输出 value-on-clear，命中 empty-values 视为清空', async () 
 
 test('automatic-dropdown 聚焦即展开', async () => {
   const wrapper = mount(Select, {
+    attachTo: document.body,
     props: { automaticDropdown: true },
     slots: { default: () => [h(SelectOption, { value: 'a', label: '一' })] }
   });
-  await wrapper.get('[role="combobox"]').trigger('focus');
-  expect(doc().find('[role="listbox"]').exists()).toBe(true);
+  try {
+    wrapper.get<HTMLElement>('[role="combobox"]').element.focus();
+    await nextTick();
+    expect(doc().find('[role="listbox"]').exists()).toBe(true);
+  } finally {
+    wrapper.unmount();
+  }
 });
 
 test('loading-text 自定义加载文案，fit-input-width 对齐触发器宽度', async () => {

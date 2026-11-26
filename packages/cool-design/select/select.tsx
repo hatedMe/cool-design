@@ -262,9 +262,31 @@ export default defineComponent({
       );
     });
     const loading = computed(() => props.loading || props.remoteLoading);
+    let focused = false;
+    const containsFocusTarget = (target: EventTarget | null) =>
+      target instanceof Node && (root.value?.contains(target) || dropdown.value?.contains(target));
+    const onFocus = (event: FocusEvent) => {
+      if (focused) return;
+      focused = true;
+      emit('focus', event);
+    };
+    const onBlur = (event: FocusEvent) => {
+      if (!focused || containsFocusTarget(event.relatedTarget)) return;
+      focused = false;
+      emit('blur', event);
+      setOpen(false);
+    };
+    const focusListeners = { onFocusCapture: onFocus, onBlurCapture: onBlur };
+    const openOnFocus = (event: FocusEvent) => {
+      // 公开 focus 回调可能在捕获阶段同步转移焦点。
+      const target = event.currentTarget as HTMLElement;
+      const focusRoot = target.getRootNode() as Document | ShadowRoot;
+      if (focusRoot.activeElement === target) setOpen(true);
+    };
 
     const setOpen = (value: boolean) => {
       if (open.value === value || (value && isDisabled())) return;
+      const activeElement = root.value?.ownerDocument.activeElement;
       open.value = value;
       if (value) shown.value = true;
       else {
@@ -281,10 +303,12 @@ export default defineComponent({
         const firstUsable = filteredRecords.value.findIndex((item) => !item.disabled);
         highlightedIndex.value = selectedIndex >= 0 ? selectedIndex : Math.max(0, firstUsable);
         nextTick(() => {
-          if (props.fitInputWidth && root.value) {
-            dropdownMinWidth.value = `${root.value.getBoundingClientRect().width}px`;
+          const element = root.value;
+          if (!open.value || !element) return;
+          if (props.fitInputWidth) {
+            dropdownMinWidth.value = `${element.getBoundingClientRect().width}px`;
           }
-          input.value?.focus();
+          if (element.ownerDocument.activeElement === activeElement) input.value?.focus();
         });
       }
     };
@@ -486,7 +510,10 @@ export default defineComponent({
         );
       };
       return (
-        <span ref={root} class={[ns.b(), controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size), { 'is-disabled': isDisabled(), 'is-open': open.value }]}>
+        <span
+          ref={root}
+          class={[ns.b(), controlNs.m(props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size), { 'is-disabled': isDisabled(), 'is-open': open.value }]}
+          {...focusListeners}>
           {slots.control ? slots.control({ open: open.value, toggle: () => setOpen(!open.value) }) : <div
             {...attrs}
             id={triggerId}
@@ -500,10 +527,8 @@ export default defineComponent({
             aria-activedescendant={activeOptionId}
             onClick={() => setOpen(!open.value)}
             onFocus={(event: FocusEvent) => {
-              emit('focus', event);
-              if (props.automaticDropdown && !props.filterable && !props.remote) setOpen(true);
+              if (props.automaticDropdown && !props.filterable && !props.remote) openOnFocus(event);
             }}
-            onBlur={(event: FocusEvent) => emit('blur', event)}
             onKeydown={onKeydown}>
             {slots.prefix?.()}
             {loading.value && <span class={ns.e('loading')}>{loadingText.value}</span>}
@@ -520,7 +545,7 @@ export default defineComponent({
             </span>}
             {(props.filterable || props.remote) && <input ref={input} value={query.value} autocomplete={props.autocomplete} aria-label='筛选选项' disabled={isDisabled()} placeholder={!props.multiple && selectedRecords.value[0] ? selectedRecords.value[0].label : selectedRecords.value.length ? '' : placeholder.value} onClick={(event: MouseEvent) => { event.stopPropagation(); setOpen(true); }} onInput={(event: Event) => {
               if (!isDisabled() && !(event as InputEvent).isComposing) loadRemote((event.target as HTMLInputElement).value);
-            }} onCompositionend={(event: CompositionEvent) => { if (!isDisabled()) loadRemote((event.target as HTMLInputElement).value); }} onFocus={() => setOpen(true)} />}
+            }} onCompositionend={(event: CompositionEvent) => { if (!isDisabled()) loadRemote((event.target as HTMLInputElement).value); }} onFocus={openOnFocus} />}
             {props.clearable && selectedValues.value.length > 0 && <button type='button' aria-label='清空' onClick={(event) => { event.stopPropagation(); clear(); }}><Icon icon={props.clearIcon} aria-hidden='true' /></button>}
             {slots.suffix?.() ?? ((!props.remote || !props.filterable || props.remoteShowSuffix) && (props.suffixIcon ? <Icon icon={props.suffixIcon} aria-hidden='true' /> : <span class={ns.e('suffix-caret')} aria-hidden='true' />))}
           </div>}
@@ -539,8 +564,6 @@ export default defineComponent({
             }
             multiple={props.multiple}
             disabled={isDisabled()}
-            onFocus={(event: FocusEvent) => emit('focus', event)}
-            onBlur={(event: FocusEvent) => { emit('blur', event); setOpen(false); }}
             onChange={(event: Event) => {
               if (isDisabled()) return;
               const values = [...(event.target as HTMLSelectElement).selectedOptions].map((option) => resolveNativeValue(option.value));
@@ -562,6 +585,7 @@ export default defineComponent({
                 data-theme={panelTheme.value.theme}
                 data-placement={position.placement.value}
                 style={[panelTheme.value.style ?? {}, position.style.value, dropdownMinWidth.value ? { minWidth: dropdownMinWidth.value } : {}, props.popperStyle ?? {}, kept ? { display: 'none' } : {}]}
+                {...(props.teleported ? focusListeners : {})}
                 onScroll={onPopupScroll}
                 onMousedown={(event) => event.stopPropagation()}>
                 {slots.header?.()}

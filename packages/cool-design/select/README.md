@@ -100,8 +100,8 @@
 | --- | --- | --- |
 | update:modelValue | 选中或清空 | `value` |
 | change | 选中或清空 | `value` |
-| focus | 获得焦点 | `FocusEvent` |
-| blur | 失去焦点 | `FocusEvent` |
+| focus | 焦点进入选择器或其下拉面板时触发 | `FocusEvent` |
+| blur | 焦点离开选择器及其下拉面板时触发，并关闭已展开的面板 | `FocusEvent` |
 | popup-scroll | 选项面板滚动 | `{ scrollTop: number; scrollLeft: number }` |
 | end-reached | 面板滚动到边缘 | `'top' \| 'bottom' \| 'left' \| 'right'` |
 | clear | 点击清空 | — |

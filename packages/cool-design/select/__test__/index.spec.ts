@@ -1,4 +1,4 @@
-import { h } from 'vue';
+import { h, nextTick } from 'vue';
 import { DOMWrapper, mount } from '@vue/test-utils';
 import { expect, test, vi, beforeEach } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
@@ -378,6 +378,139 @@ test('Select focus 事件携带 FocusEvent', async () => {
   const wrapper = mount(Select);
   await wrapper.get('select').trigger('focus');
   expect(wrapper.emitted('focus')?.[0]?.[0]).toBeInstanceOf(FocusEvent);
+});
+
+test.each([true, false])('Select 只在焦点离开触发器与面板后关闭，teleported=%s', async (teleported) => {
+  const outside = document.createElement('button');
+  document.body.append(outside);
+  const events: unknown[][] = [];
+  const wrapper = mount(Select, {
+    attachTo: document.body,
+    props: {
+      teleported,
+      filterable: true,
+      multiple: true,
+      clearable: true,
+      modelValue: ['a'],
+      options: [{ value: 'a', label: '苹果' }],
+      onFocus: (event: FocusEvent) => events.push(['focus', event.target]),
+      onBlur: (event: FocusEvent) => events.push(['blur', event.relatedTarget]),
+      'onVisible-change': (visible: boolean) => events.push(['visible', visible])
+    },
+    slots: { header: () => h('button', { id: 'select-header-action' }, '附加操作') }
+  });
+  try {
+    const trigger = wrapper.get<HTMLElement>('[role="combobox"]');
+    trigger.element.focus();
+    await trigger.trigger('keydown', { key: 'ArrowDown' });
+    const input = wrapper.get<HTMLInputElement>('input').element;
+    expect(document.activeElement).toBe(input);
+    const slotButton = doc().get<HTMLButtonElement>('#select-header-action').element;
+    for (const element of [
+      wrapper.get<HTMLButtonElement>('[aria-label="移除 苹果"]').element,
+      wrapper.get<HTMLButtonElement>('[aria-label="清空"]').element,
+      slotButton,
+      input,
+      slotButton
+    ]) {
+      element.focus();
+      await nextTick();
+      expect(document.activeElement).toBe(element);
+      expect(trigger.attributes('aria-expanded')).toBe('true');
+    }
+    expect(events).toEqual([['focus', trigger.element], ['visible', true]]);
+
+    outside.focus();
+    await nextTick();
+    expect(document.activeElement).toBe(outside);
+    expect(trigger.attributes('aria-expanded')).toBe('false');
+    expect(doc().get('[role="listbox"]').attributes('aria-hidden')).toBe('true');
+    expect(events).toEqual([['focus', trigger.element], ['visible', true], ['blur', outside], ['visible', false]]);
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  } finally {
+    wrapper.unmount();
+    outside.remove();
+  }
+});
+
+test('Select 打开后立即离焦时不把外部焦点移回筛选输入', async () => {
+  const outside = document.createElement('button');
+  document.body.append(outside);
+  const wrapper = mount(Select, { attachTo: document.body, props: { filterable: true, persistent: false } });
+  try {
+    const trigger = wrapper.get<HTMLElement>('[role="combobox"]');
+    trigger.element.focus();
+    const opening = trigger.trigger('keydown', { key: 'ArrowDown' });
+    outside.focus();
+    await opening;
+    expect(document.activeElement).toBe(outside);
+    expect(wrapper.emitted('blur')).toHaveLength(1);
+    expect(wrapper.emitted('visible-change')).toEqual([[true], [false]]);
+    expect(doc().find('[role="listbox"]').exists()).toBe(false);
+  } finally {
+    wrapper.unmount();
+    outside.remove();
+  }
+});
+
+test.each([
+  { filterable: true, teleported: true },
+  { filterable: true, teleported: false },
+  { filterable: false, teleported: true },
+  { filterable: false, teleported: false }
+])('Select 聚焦回调同步转移焦点后保留实际焦点，%o', async ({ filterable, teleported }) => {
+  const outside = document.createElement('button');
+  document.body.append(outside);
+  let destination: HTMLElement | undefined = outside;
+  const events: unknown[][] = [];
+  const wrapper = mount(Select, {
+    attachTo: document.body,
+    props: {
+      filterable,
+      automaticDropdown: !filterable,
+      teleported,
+      clearable: true,
+      modelValue: 'a',
+      options: [{ value: 'a', label: '苹果' }],
+      onFocus: () => {
+        events.push(['focus']);
+        destination?.focus();
+      },
+      onBlur: () => events.push(['blur']),
+      'onVisible-change': (visible: boolean) => events.push(['visible', visible])
+    }
+  });
+  try {
+    const trigger = wrapper.get<HTMLElement>('[role="combobox"]');
+    const entry = filterable ? wrapper.get<HTMLInputElement>('input').element : trigger.element;
+    entry.focus();
+    await nextTick();
+    await nextTick();
+    expect(document.activeElement).toBe(outside);
+    expect(events).toEqual([['focus'], ['blur']]);
+    expect(trigger.attributes('aria-expanded')).toBe('false');
+    expect(doc().find('[role="listbox"]').exists()).toBe(false);
+
+    destination = wrapper.get<HTMLButtonElement>('[aria-label="清空"]').element;
+    entry.focus();
+    await nextTick();
+    expect(document.activeElement).toBe(destination);
+    expect(events).toEqual([['focus'], ['blur'], ['focus']]);
+    expect(trigger.attributes('aria-expanded')).toBe('false');
+
+    destination = undefined;
+    entry.focus();
+    await nextTick();
+    expect(document.activeElement).toBe(entry);
+    expect(trigger.attributes('aria-expanded')).toBe('true');
+    outside.focus();
+    await nextTick();
+    expect(trigger.attributes('aria-expanded')).toBe('false');
+    expect(events.slice(-3)).toEqual([['visible', true], ['blur'], ['visible', false]]);
+  } finally {
+    wrapper.unmount();
+    outside.remove();
+  }
 });
 
 test('Select 远程 allow-create 创建的选项可见', async () => {
