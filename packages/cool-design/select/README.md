@@ -48,7 +48,7 @@
 | props | 数组选项字段映射 | `{ value?: string; label?: string; disabled?: string; options?: string }` | 对应同名字段 |
 | value-key | 对象值的唯一标识字段 | `string` | `value` |
 | placeholder | 未选择时的提示 | `string` | `请选择` |
-| aria-label | 默认选择控件的无障碍名称，JS 属性名为 `ariaLabel`。命名依次使用显式 `aria-labelledby`、非空 `aria-label` 或 FormItem 标签 | `string` | — |
+| aria-label | 默认选择控件的无障碍名称，JS 属性名为 `ariaLabel`，严格类型检查的模板可写成 `<Select :ariaLabel="name" />`。命名依次使用显式 `aria-labelledby`、非空 `aria-label` 或 FormItem 标签 | `string` | — |
 | clearable | 显示清空按钮 | `boolean` | `false` |
 | disabled | 禁用选择器 | `boolean` | `false` |
 | size | 尺寸：`small` / `default` / `large` | `string` | 继承 FormItem、Form 或 ConfigProvider |

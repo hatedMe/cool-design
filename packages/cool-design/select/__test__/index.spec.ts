@@ -524,19 +524,20 @@ test.each([
   const outside = document.createElement('button');
   document.body.append(outside);
   let destination: HTMLElement | undefined;
-  const wrapper = mount(Select, {
-    attachTo: document.body,
-    props: {
-      filterable,
-      automaticDropdown: !filterable,
-      teleported,
-      clearable: true,
-      modelValue: 'a',
-      options: [{ value: 'a', label: '苹果' }],
-      onFocus: () => destination?.focus()
-    }
-  });
+  let wrapper: ReturnType<typeof mount> | undefined;
   try {
+    wrapper = mount(Select, {
+      attachTo: document.body,
+      props: {
+        filterable,
+        automaticDropdown: !filterable,
+        teleported,
+        clearable: true,
+        modelValue: 'a',
+        options: [{ value: 'a', label: '苹果' }],
+        onFocus: () => destination?.focus()
+      }
+    });
     const trigger = wrapper.get<HTMLElement>('[role="combobox"]');
     const entry = filterable ? wrapper.get<HTMLInputElement>('input').element : trigger.element;
     entry.focus();
@@ -564,7 +565,7 @@ test.each([
     expect(trigger.attributes('aria-expanded')).toBe('true');
     expect(wrapper.emitted('focus')).toHaveLength(3);
   } finally {
-    wrapper.unmount();
+    wrapper?.unmount();
     outside.remove();
     clock.mockRestore();
   }

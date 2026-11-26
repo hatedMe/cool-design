@@ -31,7 +31,9 @@ test('ariaLabel 命名主 combobox，并在清空后恢复字段标签', async (
 
     name.value = '';
     await nextTick();
-    expect(combobox.attributes('aria-labelledby')).toBe(wrapper.get('label').attributes('id'));
+    const labelId = wrapper.get('label').attributes('id');
+    expect(labelId).toMatch(/\S/);
+    expect(combobox.attributes('aria-labelledby')).toBe(labelId);
   } finally {
     wrapper.unmount();
   }
