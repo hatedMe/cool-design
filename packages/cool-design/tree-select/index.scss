@@ -7,6 +7,9 @@
   color: var(--#{config.$namespace}-text-color, #303133);
   font-size: 14px;
 }
+.#{config.$namespace}-tree-select > .#{config.$namespace}-select {
+  border: 0;
+}
 .#{config.$namespace}-tree-select__control {
   display: flex;
   flex-wrap: wrap;
