@@ -513,6 +513,63 @@ test.each([
   }
 });
 
+test.each([
+  { filterable: true, teleported: true },
+  { filterable: true, teleported: false },
+  { filterable: false, teleported: true },
+  { filterable: false, teleported: false }
+])('Select 挂载同毫秒的真实焦点按实际入口展开，%o', async ({ filterable, teleported }) => {
+  await nextTick();
+  const clock = vi.spyOn(Date, 'now').mockReturnValue(1700000000000);
+  const outside = document.createElement('button');
+  document.body.append(outside);
+  let destination: HTMLElement | undefined;
+  const wrapper = mount(Select, {
+    attachTo: document.body,
+    props: {
+      filterable,
+      automaticDropdown: !filterable,
+      teleported,
+      clearable: true,
+      modelValue: 'a',
+      options: [{ value: 'a', label: '苹果' }],
+      onFocus: () => destination?.focus()
+    }
+  });
+  try {
+    const trigger = wrapper.get<HTMLElement>('[role="combobox"]');
+    const entry = filterable ? wrapper.get<HTMLInputElement>('input').element : trigger.element;
+    entry.focus();
+    expect(document.activeElement).toBe(entry);
+    await nextTick();
+    expect(trigger.attributes('aria-expanded')).toBe('true');
+
+    outside.focus();
+    await nextTick();
+    destination = outside;
+    entry.focus();
+    expect(document.activeElement).toBe(outside);
+    await nextTick();
+    expect(trigger.attributes('aria-expanded')).toBe('false');
+
+    destination = wrapper.get<HTMLButtonElement>('[aria-label="清空"]').element;
+    entry.focus();
+    expect(document.activeElement).toBe(destination);
+    await nextTick();
+    expect(trigger.attributes('aria-expanded')).toBe('false');
+    destination = undefined;
+    entry.focus();
+    expect(document.activeElement).toBe(entry);
+    await nextTick();
+    expect(trigger.attributes('aria-expanded')).toBe('true');
+    expect(wrapper.emitted('focus')).toHaveLength(3);
+  } finally {
+    wrapper.unmount();
+    outside.remove();
+    clock.mockRestore();
+  }
+});
+
 test('Select 远程 allow-create 创建的选项可见', async () => {
   const wrapper = mount(Select, {
     props: { remote: true, filterable: true, debounce: 0, allowCreate: true, remoteMethod: () => [] }

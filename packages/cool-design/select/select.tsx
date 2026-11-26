@@ -2,7 +2,9 @@ import {
   defineComponent,
   Comment,
   Fragment,
+  createTextVNode,
   h,
+  isVNode,
   nextTick,
   onBeforeUnmount,
   type Component,
@@ -134,6 +136,7 @@ export default defineComponent({
       return typeof value === 'function' ? value() : value;
     };
     const root = ref<HTMLElement>();
+    const trigger = ref<HTMLDivElement>();
     const select = ref<HTMLSelectElement>();
     const input = ref<HTMLInputElement>();
     const query = ref('');
@@ -185,24 +188,27 @@ export default defineComponent({
     const isGroup = (vnode: VNode) => (vnode.type as { name?: string } | null)?.name === 'i-select-option-group';
     const slotOptions = (): Array<{ vnode: VNode; group?: string; groupDisabled?: boolean }> => {
       const flatten = (
-        nodes: VNode[],
+        children: unknown,
         group?: string,
         groupDisabled = false
-      ): Array<{ vnode: VNode; group?: string; groupDisabled?: boolean }> =>
-        nodes
-          .filter((item) => item.type !== Comment)
-          .flatMap((item) =>
-            item.type === Fragment
-              ? flatten((item.children ?? []) as VNode[], group, groupDisabled)
-              : isGroup(item)
-              ? flatten(
-                  ((item.children as SlotContent | undefined)?.default?.() ?? []) as VNode[],
-                  (item.props?.label as string | undefined) ?? undefined,
-                  groupDisabled || Boolean(item.props?.disabled)
-                )
-              : [{ vnode: item, group, groupDisabled }]
+      ): Array<{ vnode: VNode; group?: string; groupDisabled?: boolean }> => {
+        if (Array.isArray(children)) return children.flatMap((child) => flatten(child, group, groupDisabled));
+        const item = isVNode(children) ? children :
+          typeof children === 'string' || typeof children === 'number' ? createTextVNode(String(children)) : undefined;
+        if (!item || item.type === Comment) return [];
+        if (item.type === Fragment) return flatten(item.children, group, groupDisabled);
+        if (isGroup(item)) {
+          // 分组尚未挂载，直接调用原始插槽时返回值可能是单个 VNode。
+          const slot = item.children as SlotContent | null;
+          return flatten(
+            typeof slot?.default === 'function' ? slot.default() : item.children,
+            (item.props?.label as string | undefined) ?? undefined,
+            groupDisabled || Boolean(item.props?.disabled)
           );
-      return flatten((slots.default?.() ?? []) as VNode[]);
+        }
+        return [{ vnode: item, group, groupDisabled }];
+      };
+      return flatten(slots.default?.());
     };
     const dataOptions = (items: Record<string, unknown>[], group?: string, groupDisabled = false): OptionRecord[] => {
       const mapping = { value: 'value', label: 'label', disabled: 'disabled', options: 'options', ...props.props };
@@ -266,9 +272,15 @@ export default defineComponent({
     const containsFocusTarget = (target: EventTarget | null) =>
       target instanceof Node && (root.value?.contains(target) || dropdown.value?.contains(target));
     const onFocus = (event: FocusEvent) => {
-      if (focused) return;
-      focused = true;
-      emit('focus', event);
+      if (!focused) {
+        focused = true;
+        emit('focus', event);
+      }
+      // 在同一个捕获回调里检查焦点，避免 Vue 跳过同毫秒绑定的目标监听器。
+      const target = input.value ?? (props.automaticDropdown && !props.filterable && !props.remote ? trigger.value : undefined);
+      if (target && event.target === target && (target.getRootNode() as Document | ShadowRoot).activeElement === target) {
+        setOpen(true);
+      }
     };
     const onBlur = (event: FocusEvent) => {
       if (!focused || containsFocusTarget(event.relatedTarget)) return;
@@ -277,12 +289,6 @@ export default defineComponent({
       setOpen(false);
     };
     const focusListeners = { onFocusCapture: onFocus, onBlurCapture: onBlur };
-    const openOnFocus = (event: FocusEvent) => {
-      // 公开 focus 回调可能在捕获阶段同步转移焦点。
-      const target = event.currentTarget as HTMLElement;
-      const focusRoot = target.getRootNode() as Document | ShadowRoot;
-      if (focusRoot.activeElement === target) setOpen(true);
-    };
 
     const setOpen = (value: boolean) => {
       if (open.value === value || (value && isDisabled())) return;
@@ -516,6 +522,7 @@ export default defineComponent({
           {...focusListeners}>
           {slots.control ? slots.control({ open: open.value, toggle: () => setOpen(!open.value) }) : <div
             {...attrs}
+            ref={trigger}
             id={triggerId}
             aria-labelledby={(attrs['aria-labelledby'] as string) || (attrs['aria-label'] ? undefined : field?.getLabelId?.())}
             aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
@@ -526,9 +533,6 @@ export default defineComponent({
             aria-disabled={isDisabled() || undefined}
             aria-activedescendant={activeOptionId}
             onClick={() => setOpen(!open.value)}
-            onFocus={(event: FocusEvent) => {
-              if (props.automaticDropdown && !props.filterable && !props.remote) openOnFocus(event);
-            }}
             onKeydown={onKeydown}>
             {slots.prefix?.()}
             {loading.value && <span class={ns.e('loading')}>{loadingText.value}</span>}
@@ -545,7 +549,7 @@ export default defineComponent({
             </span>}
             {(props.filterable || props.remote) && <input ref={input} value={query.value} autocomplete={props.autocomplete} aria-label='筛选选项' disabled={isDisabled()} placeholder={!props.multiple && selectedRecords.value[0] ? selectedRecords.value[0].label : selectedRecords.value.length ? '' : placeholder.value} onClick={(event: MouseEvent) => { event.stopPropagation(); setOpen(true); }} onInput={(event: Event) => {
               if (!isDisabled() && !(event as InputEvent).isComposing) loadRemote((event.target as HTMLInputElement).value);
-            }} onCompositionend={(event: CompositionEvent) => { if (!isDisabled()) loadRemote((event.target as HTMLInputElement).value); }} onFocus={openOnFocus} />}
+            }} onCompositionend={(event: CompositionEvent) => { if (!isDisabled()) loadRemote((event.target as HTMLInputElement).value); }} />}
             {props.clearable && selectedValues.value.length > 0 && <button type='button' aria-label='清空' onClick={(event) => { event.stopPropagation(); clear(); }}><Icon icon={props.clearIcon} aria-hidden='true' /></button>}
             {slots.suffix?.() ?? ((!props.remote || !props.filterable || props.remoteShowSuffix) && (props.suffixIcon ? <Icon icon={props.suffixIcon} aria-hidden='true' /> : <span class={ns.e('suffix-caret')} aria-hidden='true' />))}
           </div>}
