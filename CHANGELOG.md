@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Splitter 支持按当前顺序拖动或折叠 `v-for` 和重排后的相邻面板。折叠会收起到 0，并把空间交给相邻面板。原来依赖折到 `min` 的页面需调整。折叠事件保留分隔条索引，并追加方向和当前尺寸数组。
+
 - Carousel 在子项增删或重排后按新顺序重新应用 `initialIndex`。活动索引变化会触发 `change(current, prev)`，依赖该事件的页面需考虑列表更新。
 
 - Loading 服务指定非 `body` 目标时仅遮罩该区域，包含显式传入 `fullscreen: true` 的调用。需要全屏时，请移除 `target` 或改传 `document.body`。

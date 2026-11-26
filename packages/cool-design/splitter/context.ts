@@ -16,6 +16,7 @@ export interface SplitterContext {
   lazy: () => boolean;
   /** 注册面板，返回面板唯一 id */
   register: (
+    id: number,
     meta: () => SplitterPanelMeta,
     emitSize: (size: number) => void,
     slots: { start?: () => unknown; end?: () => unknown },

@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { h, nextTick, ref } from 'vue';
+import { Fragment, h, nextTick, ref, renderSlot, type VNode } from 'vue';
 import { afterEach, describe, expect, test } from 'vitest';
 import Splitter from '..';
 import ConfigProvider from '../../config-provider';
@@ -124,12 +124,12 @@ describe('test `Splitter` component', () => {
 
     await wrapper.find('.i-splitter__collapse.is-end').trigger('click');
     await nextTick();
-    expect(wrapper.emitted('collapse')).toEqual([[0]]);
-    expect(wrapper.findAllComponents(SplitterPanel)[1].emitted('update:size')).toEqual([[40]]);
+    expect(wrapper.emitted('collapse')).toEqual([[0, 'end', [300, 0]]]);
+    expect(wrapper.findAllComponents(SplitterPanel)[1].emitted('update:size')).toEqual([[0]]);
 
     await wrapper.find('.i-splitter__collapse.is-end').trigger('click');
     await nextTick();
-    expect(wrapper.findAllComponents(SplitterPanel)[1].emitted('update:size')).toEqual([[40], [200]]);
+    expect(wrapper.findAllComponents(SplitterPanel)[1].emitted('update:size')).toEqual([[0], [200]]);
     wrapper.unmount();
   });
 
@@ -191,10 +191,111 @@ describe('test `Splitter` component', () => {
     expect(host.findAll('.i-splitter__collapse')).toHaveLength(2);
     await host.find('.i-splitter__collapse.is-end').trigger('click');
     await nextTick();
-    expect(splitter.emitted('collapse')).toEqual([[0]]);
+    expect(splitter.emitted('collapse')).toEqual([[0, 'end', [400, 0]]]);
     const outer = host.findAllComponents(SplitterPanel);
-    expect(outer[0].emitted('update:size')).toBeUndefined();
-    expect(outer[1].emitted('update:size')).toEqual([[60]]);
+    expect(outer[0].emitted('update:size')).toEqual([[400]]);
+    expect(outer[1].emitted('update:size')).toEqual([[0]]);
     host.unmount();
   });
+});
+
+test('v-for 重排后操作新邻居，拖动中插入面板时丢弃延迟提交', async () => {
+  const host = mount({
+    components: { Splitter, SplitterPanel },
+    data: () => ({ list: ['A', 'B', 'C'] }),
+    template: `<Splitter lazy><SplitterPanel v-for="id in list" :key="id" :size="100" :data-id="id">{{id}}</SplitterPanel></Splitter>`
+  });
+  try {
+    await host.setData({ list: ['B', 'C', 'A'] });
+    const splitter = host.getComponent(Splitter);
+    const bars = host.findAll('[role="separator"]');
+    expect(bars).toHaveLength(2);
+    await bars[0].trigger('mousedown', { clientX: 0 });
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 30 }));
+    document.dispatchEvent(new MouseEvent('mouseup'));
+    await nextTick();
+    expect(host.get('[data-id=B]').attributes('style')).toContain('130px');
+    expect(host.get('[data-id=C]').attributes('style')).toContain('70px');
+    await bars[0].trigger('mousedown', { clientX: 0 });
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 15 }));
+    await host.setData({ list: ['B', 'X', 'C', 'A'] });
+    document.dispatchEvent(new MouseEvent('mouseup'));
+    expect(splitter.emitted('resize-end')).toHaveLength(1);
+    expect(host.get('[data-id=B]').attributes('style')).toContain('130px');
+    expect(host.get('[data-id=X]').attributes('style')).toContain('100px');
+  } finally {
+    host.unmount();
+  }
+});
+
+test('单根包装面板按实际顺序折叠，并接受外部尺寸更新', async () => {
+  const WrappedPanel = (props: { size: number }) =>
+    h(SplitterPanel, { size: props.size, collapsible: true });
+  const size = ref(100);
+  const host = mount(() => h(Splitter, {}, () => [
+    h(WrappedPanel, { size: size.value }),
+    h(SplitterPanel, { size: 200 })
+  ]));
+  try {
+    await nextTick();
+    await host.get('button.is-start').trigger('click');
+    expect(host.getComponent(Splitter).emitted('collapse')).toEqual([[0, 'start', [0, 300]]]);
+    size.value = 60;
+    await nextTick();
+    expect(host.findAllComponents(SplitterPanel)[0].attributes('style')).toContain('60px');
+  } finally {
+    host.unmount();
+  }
+});
+
+test('相同键在不同 Fragment 内独立匹配，保留转发插槽的作用域', async () => {
+  const sequence = ref([1, '1']);
+  const host = mount(() => h(Splitter, {}, () => sequence.value.map(key => {
+    const slot = renderSlot({ default: () => [h(SplitterPanel, { key: 'same' }, () => String(key))] }, 'default');
+    const fragment = h(Fragment, { key }, [slot]) as VNode & { slotScopeIds: string[] };
+    fragment.slotScopeIds = ['data-v-splitter-s'];
+    return fragment;
+  })));
+  try {
+    const original = host.findAll('[data-v-splitter-s]').filter(n => n.classes().includes('i-splitter__panel'));
+    expect(original).toHaveLength(2);
+    sequence.value = ['1', 1];
+    await nextTick();
+    const next = host.findAll('.i-splitter__panel');
+    expect(next[0].element).toBe(original[1].element);
+    expect(next[1].element).toBe(original[0].element);
+    expect(host.findAll('[role=separator]')).toHaveLength(1);
+  } finally {
+    host.unmount();
+  }
+});
+
+test.each(['0px', '0%'])('受控尺寸回写 %s 后可反向恢复并保留按钮', async (zero) => {
+  const sizes = ref(['100px', '200px']);
+  const host = mount(() => h(Splitter, {}, () => sizes.value.map((size, index) =>
+    h(SplitterPanel, {
+      key: index, size, collapsible: true,
+      'onUpdate:size': (value: number) => { sizes.value[index] = value === 0 ? zero : value + 'px'; }
+    })
+  )));
+  try {
+    await nextTick();
+    for (const side of ['start', 'end']) {
+      const start = side === 'start';
+      const button = host.get('button.is-' + side);
+      await button.trigger('click');
+      expect(button.attributes('aria-label')).toBe(start ? '恢复起始面板' : '恢复结束面板');
+      expect(button.text()).toBe(start ? '▶' : '◀');
+      await button.trigger('click');
+      expect(sizes.value).toEqual(['100px', '200px']);
+      expect(host.get('button.is-' + side).element).toBe(button.element);
+      expect(button.text()).toBe(start ? '◀' : '▶');
+    }
+    expect(host.getComponent(Splitter).emitted('collapse')).toEqual([
+      [0, 'start', [0, 300]], [0, 'end', [100, 200]],
+      [0, 'end', [300, 0]], [0, 'start', [100, 200]]
+    ]);
+  } finally {
+    host.unmount();
+  }
 });

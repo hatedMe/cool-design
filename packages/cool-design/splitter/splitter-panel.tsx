@@ -1,4 +1,4 @@
-import { defineComponent, inject, onBeforeUnmount, ref, type PropType } from 'vue';
+import { defineComponent, getCurrentInstance, inject, onBeforeUnmount, ref, type PropType } from 'vue';
 import { useNamespace } from '../../hooks/use-namespace';
 import { splitterKey, type SplitterSize } from './context';
 
@@ -16,9 +16,9 @@ export default defineComponent({
     const ns = useNamespace('splitter');
     const splitter = inject(splitterKey, undefined);
     const element = ref<HTMLElement>();
-    // 注册返回面板唯一 id，父组件按注册顺序解析分隔条相邻面板
     const id =
       splitter?.register(
+        getCurrentInstance()!.uid,
         () => ({
           size: props.size,
           min: props.min,

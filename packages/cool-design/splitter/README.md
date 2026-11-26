@@ -33,7 +33,9 @@
 | `resize-start` | 开始调整大小                        | `index: number, sizes: number[]` |
 | `resize`      | 调整过程中触发                       | `index: number, sizes: number[]` |
 | `resize-end`  | 调整结束                             | `index: number, sizes: number[]` |
-| `collapse`    | 面板折叠或恢复                       | `index: number`（分隔条索引） |
+| `collapse`    | 面板折叠或恢复                       | `index: number, type: 'start' \| 'end', sizes: number[]` |
+
+`index` 为分隔条在当前面板顺序中的索引。`type` 表示分隔条的移动方向，折叠起始面板时为 `start`，恢复时为 `end`；折叠结束面板时方向相反。折叠时目标面板收起到 0，空间交给相邻面板。再次操作可恢复折叠前的大小，最多占用相邻面板的可用空间。`min` / `max` 约束拖拽。仅接收 `index` 的监听器可继续使用。
 
 ### SplitterPanel 属性
 
