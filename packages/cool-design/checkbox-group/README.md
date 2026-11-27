@@ -32,6 +32,9 @@ CheckboxGroup 管理一组 Checkbox 的数组值，并支持 `min`、`max`、整
 | type       | options 渲染类型：`checkbox` / `button`    | `string`                                  | `checkbox` |
 | options    | 自动生成子项的数据                         | `array`                                   | —          |
 | props      | options 字段映射                           | `object`                                  | —          |
+| fill | 选中按钮背景色，仅 CheckboxButton 生效 | `string` | — |
+| text-color | 选中按钮文字色，仅 CheckboxButton 生效 | `string` | — |
+| validate-event | 值变化时触发表单校验 | `boolean` | `true` |
 
 ### 事件
 
