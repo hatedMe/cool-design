@@ -66,6 +66,7 @@
   background: transparent;
 }
 .#{config.$namespace}-select-v2__dropdown {
+  box-sizing: border-box;
   position: fixed;
   z-index: 2000;
   overflow: auto;
