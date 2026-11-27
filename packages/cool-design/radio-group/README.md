@@ -26,6 +26,9 @@ RadioGroup 管理一组 Radio 的受控值、原生名称和整体禁用状态�
 | fill       | 选中按钮背景色（仅按钮形态生效） | `string` | — |
 | text-color | 选中按钮文字色（仅按钮形态生效） | `string` | — |
 | validate-event | 值变化时触发表单校验 | `boolean` | `true` |
+| options | 数据驱动选项，字段默认是 value / label / disabled | `Record<string, unknown>[]` | — |
+| props | options 字段映射，配置对象键使用 value / label / disabled | `{ value?: string; label?: string; disabled?: string }` | — |
+| type | options 渲染形态 | `radio` / `button` | `radio` |
 
 ### 事件
 
