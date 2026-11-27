@@ -95,3 +95,17 @@ test('内容宽度模式滚动不重复扫描全部标签', async () => {
   expect(reads).toBeLessThan(200);
   wrapper.unmount();
 });
+
+test('越界滚动索引仍将实际高度较大的最后一行完整滚入视口', async () => {
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+    return { width: 200, height: this.textContent === 'last' ? 80 : 20 } as DOMRect;
+  });
+  const wrapper = mount(SelectV2, { props: { estimatedOptionHeight: 20, height: 100, options: ['first', 'second', 'last'].map(value => ({ value, label: value })) } });
+  await wrapper.get('input').trigger('click'); await nextTick();
+  const panel = doc().get('[role=listbox]').element as HTMLElement;
+  Object.defineProperty(panel, 'clientHeight', { value: 100 });
+  panel.scrollTop = 0;
+  wrapper.vm.scrollTo(99);
+  expect(panel.scrollTop).toBe(20);
+  wrapper.unmount();
+});

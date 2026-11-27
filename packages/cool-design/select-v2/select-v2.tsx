@@ -351,11 +351,12 @@ export default defineComponent({
     const scrollTo = (index: number) => {
       const view = dropdown.value;
       if (!view || !visibleRows.value.length || !Number.isFinite(index) || index < 0) return;
+      const targetIndex = Math.min(Math.floor(index), visibleRows.value.length - 1);
       const contentTop = listRef.value?.offsetTop ?? (parseFloat(getComputedStyle(view).paddingTop) || 0);
-      const target = offsets.value[Math.min(Math.floor(index), visibleRows.value.length - 1)] + contentTop;
+      const target = offsets.value[targetIndex] + contentTop;
       if (target < view.scrollTop) view.scrollTop = target;
-      else if (target + rowSize(Math.floor(index)) > view.scrollTop + view.clientHeight)
-        view.scrollTop = target + rowSize(Math.min(Math.floor(index), visibleRows.value.length - 1)) - view.clientHeight;
+      else if (target + rowSize(targetIndex) > view.scrollTop + view.clientHeight)
+        view.scrollTop = target + rowSize(targetIndex) - view.clientHeight;
       scrollTop.value = view.scrollTop;
     };
     const syncScrollToHighlighted = () => scrollTo(highlighted.value);
