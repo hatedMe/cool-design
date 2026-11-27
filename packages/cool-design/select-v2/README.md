@@ -6,7 +6,7 @@
 
 ## 基础用法
 
-`options` 传扁平数组或分组数组（分组对象含 `options` 子集，`props` 可映射字段名）。列表按 `item-height` 虚拟滚动，仅渲染可视窗口。
+`options` 传扁平数组或分组数组（分组对象含 `options` 子集，`props` 可映射字段名）。未设置 `estimated-option-height` 时按 `item-height` 固定高度虚拟滚动；设置估计高度后测量实际行高，均仅渲染可视窗口。
 
 ```vue
 <SelectV2 v-model="value" :options="options" placeholder="请选择" />
@@ -42,8 +42,8 @@
 | `clearable`     | 可清空                                     | `boolean`                              | `false`  |
 | `disabled`      | 禁用                                       | `boolean`                              | `false`  |
 | `loading`       | 加载态                                     | `boolean`                              | `false`  |
-| `placeholder`   | 占位文本                                   | `string`                               | `请选择` |
-| `no-data-text` / `no-match-text` | 空/无匹配文案                     | `string`                               | `暂无数据` / `无匹配数据` |
+| `placeholder` | 占位文本 | `string` | 继承 locale，中文为 `请选择` |
+| `no-data-text` / `no-match-text` | 空数据 / 无匹配文案 | `string` | 继承 locale，中文为 `暂无数据` / `无匹配数据` |
 | `size`          | 尺寸：`small` / `default` / `large`        | `string`                               | 继承 FormItem、Form 或 ConfigProvider |
 | `height`        | 面板高度（px）                             | `number`                               | `240`    |
 | `item-height`    | 选项行高（px，虚拟滚动依据）               | `number`                               | `34`     |
@@ -53,18 +53,21 @@
 | `teleported`     | 下拉面板是否传送到 body                   | `boolean`                              | `true`   |
 | `persistent`     | 关闭后是否保留面板节点                    | `boolean`                              | `true`  |
 | `append-to` | 浮层目标容器 | `string \| HTMLElement` | `body` |
-| `loading-text` | 加载文案 | `string` | 加载中… |
+| `loading-text` | 加载文案 | `string` | 继承 locale，中文为 `加载中…` |
 | `show-arrow` / `offset` | 显示箭头和浮层距离 | `boolean` / `number` | `true` / `12` |
 | `suffix-icon` / `clear-icon` | 后缀和清空图标 | `string \| Component` | — |
 | `remote-show-suffix` | 远程筛选时显示后缀 | `boolean` | `false` |
 | `tag-effect` | 标签主题 | `light` / `dark` / `plain` | `light` |
 | `tag-tooltip` | 折叠标签提示配置 | `SelectV2TagTooltipOptions` | — |
 | `placement`      | 面板位置及 `-start` / `-end` 变体        | `string`                               | `bottom-start` |
-| `fallback-placements` | 主位置放不下时的候选位置              | `Placement[]`                          | `['top-start', 'bottom', 'top']` |
+| `fallback-placements` | 主位置放不下时的候选位置              | `Placement[]`                          | `['bottom-start', 'top-start', 'right', 'left']` |
 | `popper-options`  | 浮层参数覆盖（`offset` / `placement`）     | `{ offset?: number; placement?: Placement }` | — |
 | `popper-class`    | 面板自定义 class                          | `string` / `string[]` / `object`       | —        |
 | `popper-style`    | 面板自定义样式                            | `string` / `CSSProperties`             | —        |
 | `effect`         | 面板主题：`light` / `dark`                | `string`                               | `light`  |
+| estimated-option-height | 启用动态高度，以该值估算未测量选项；内容尺寸变化后重新测量 | `number` | — |
+| fit-input-width | 跟随输入宽度、根据标签内容计算宽度或指定像素宽度 | `boolean` / `number` | `true` |
+| scrollbar-always-on | 始终显示下拉滚动条 | `boolean` | `false` |
 
 `SelectV2Option`：`{ label?, value?, disabled?, options?, ... }`。
 
@@ -87,6 +90,7 @@
 | `default` | 自定义下拉选项，作用域 `{ item, index }` |
 | `label` | 自定义选中标签，作用域 `{ index, label, value }` |
 | `tag`     | 自定义全部多选标签，作用域 `{ data, deleteTag, selectDisabled }`     |
+| `prefix` | 输入框前缀，不替换已选标签 |
 | `header`  | 面板顶部                              |
 | `footer`  | 面板底部                              |
 | `loading` | 自定义加载内容 |
@@ -99,8 +103,6 @@
 | `focus()` | 聚焦输入框   |
 | `blur()`  | 取消聚焦     |
 | `scrollTo(index)` | 滚动到筛选后平铺列表的索引，包含分组行 |
-| `selectedLabel` | 当前单选标签或全部多选标签，类型为 `string \| string[]` |
-
 
 配置 `filterable`、`remote` 和 `remote-method` 后，回调可更新外部 `options`。外部写入由调用方管理，异步请求宜用序号避免过时结果覆盖。`remoteMethod` 也可直接返回选项数组或相应的 Promise，组件只采纳当前查询的结果。旧的双参数 `filterMethod` 保留逐项过滤语义，新代码可显式使用 `optionFilterMethod`。
 
@@ -108,12 +110,10 @@
 
 原生输入框承担 `combobox` 角色，支持 `aria-label` 和 `aria-labelledby`。对象值的 `valueKey` 支持直接字段和嵌套路径（如 `meta.id`、`meta[0]["record.id"]`）。
 
-### 兼容参数补充
+### 实例属性
 
-| 属性 | 说明 | 类型 | 默认值 |
-| --- | --- | --- | --- |
-| estimated-option-height | 启用动态高度，以该值估算未测量选项；内容尺寸变化后重新测量 | `number` | — |
-| fit-input-width | 跟随输入宽度、根据标签内容计算宽度或指定像素宽度 | `boolean` / `number` | `true` |
-| scrollbar-always-on | 始终显示下拉滚动条 | `boolean` | `false` |
+| 名称 | 说明 | 类型 |
+| --- | --- | --- |
+| `selectedLabel` | 当前单选标签或全部多选标签 | `string \| string[]` |
 
-`prefix` 插槽用于输入框前缀，不替换已选标签。默认 placeholder、加载、空数据和无匹配文案继承 ConfigProvider locale；显式文案属性优先，语言切换实时更新。
+默认文案继承最近 ConfigProvider 的 locale；显式文案属性优先，语言切换实时更新。`option-filter-method` 是逐项过滤扩展，`remote-method` 返回数组/Promise 的用法也是本库扩展；官方式回调更新外部 `options` 仍可使用。
