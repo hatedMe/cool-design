@@ -17,6 +17,7 @@
 | false-value           | 未选中时的模型值           | `string` / `number` / `boolean` | `false` |
 | disabled             | 是否禁用                   | `boolean`                    | `false` |
 | size                 | 尺寸：`small` / `default` / `large` | `string`             | —      |
+| true-label / false-label | 兼容旧版选中/未选中值别名，未设置对应 true-value / false-value 时采用 | `string` / `number` / `boolean` | — |
 
 ### 事件
 
