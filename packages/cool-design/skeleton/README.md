@@ -59,3 +59,7 @@
 - 骨架区域带有 `role="status"` 和 `加载中` 可访问名称，占位图形对读屏隐藏。
 - 开启动画后遵循系统减少动态效果偏好。
 - 可以通过 `--i-skeleton-color` 和 `--i-skeleton-shimmer` 覆盖骨架底色和高光。自定义插槽直接读取这些变量时，请写主题回退值，例如 `var(--i-skeleton-color, var(--i-bg-subtle, #f2f3f5))` 和 `var(--i-skeleton-shimmer, var(--i-bg, #fff))`。自定义命名空间使用对应前缀。
+
+### 事件
+
+无自定义事件。

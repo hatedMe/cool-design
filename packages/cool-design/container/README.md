@@ -133,3 +133,7 @@ import 'cool-design/style.css';
 ```
 
 独立组件文档：[Header](#/components/header)、[Aside](#/components/aside)、[Main](#/components/main)、[Footer](#/components/footer)。
+
+### 事件
+
+无自定义事件。

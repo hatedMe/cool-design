@@ -104,3 +104,7 @@ Loading.service({ text: '加载中…' }, getCurrentInstance()?.appContext ?? nu
 | `instance.setText(text)` | 更新提示文字 | `(text: string) => void` |
 
 遮罩期间内容具有 `inert` 属性并阻止点击与键盘事件，结束后恢复。状态使用 `role="status"` 与 `aria-live="polite"`，减少动态效果偏好下停止旋转。
+
+### 事件
+
+无自定义事件。

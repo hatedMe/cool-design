@@ -28,3 +28,7 @@ ButtonGroup 用于将多个 Button 组合为一组相近操作。
   <Button>下一步</Button>
 </ButtonGroup>
 ```
+
+### 事件
+
+无自定义事件。

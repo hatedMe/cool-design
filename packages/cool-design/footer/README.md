@@ -24,3 +24,7 @@ Container 内的页脚，使用原生 footer 标签，不收缩；Container 自�
 | 名称 | 说明 |
 | --- | --- |
 | default | 页脚内容 |
+
+### 事件
+
+无自定义事件。

@@ -37,3 +37,7 @@ type ColSize = number | ColSizeObject;
 | 名称 | 说明 |
 | --- | --- |
 | `default` | 列内容 |
+
+### 事件
+
+无自定义事件。

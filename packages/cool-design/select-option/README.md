@@ -29,3 +29,7 @@
   <SelectOption value="chengdu" label="成都" />
 </Select>
 ```
+
+### 事件
+
+无自定义事件。
