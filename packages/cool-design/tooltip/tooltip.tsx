@@ -69,6 +69,7 @@ export const tooltipProps = {
   hideAfter: { type: Number, default: 200 },
   autoClose: { type: Number, default: 0 },
   enterable: { type: Boolean, default: true },
+  focusOnTarget: Boolean,
   hoverOnFocus: { type: Boolean, default: true },
   showArrow: { type: Boolean, default: true },
   arrowOffset: { type: Number, default: 5 },
@@ -268,6 +269,10 @@ export default defineComponent({
     };
     const onMouseenter = (event: MouseEvent) => {
       if (!triggers.value.includes('hover')) return;
+      if (props.focusOnTarget && !props.disabled) {
+        const target = reference.value;
+        if (target instanceof HTMLElement) target.focus({ preventScroll: true });
+      }
       hovered = true;
       onOpen(event);
     };

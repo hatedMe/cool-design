@@ -106,3 +106,9 @@
 | `update()` | 本库扩展，等同 `updatePopper()` |
 
 迁移时，可用顶层 `strategy="fixed"` 延续旧默认定位方式。`popper-style` 中旧的 `position: absolute` 或 `position: fixed` 仍可指定策略，显式 `strategy` 优先。`persistent` 的内容插槽从首次渲染即挂载。依赖关闭延迟的实例调用可使用 `onClose()`。
+
+### Hover 聚焦
+
+| 属性 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| focus-on-target | hover 触发时聚焦触发元素，与 trap-focus 独立 | `boolean` | `false` |

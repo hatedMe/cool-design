@@ -870,6 +870,7 @@ export const pages: Page[] = [
     ]
   },
   component('tooltip', 'Tooltip 文字提示', '反馈组件', [
+    ['compatibility', '兼容接口演示', '展示本次补齐的组件参数与交互。'],
     ['basic', '悬停与键盘聚焦', '将鼠标移到按钮上或用 Tab 聚焦，按 Esc 关闭提示。']
   ]),
   component('popconfirm', 'Popconfirm 气泡确认', '反馈组件', [
