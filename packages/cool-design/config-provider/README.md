@@ -202,3 +202,7 @@ createPage({
 ### 空值工具迁移
 
 使用 `cool-design/hooks` 的 `useEmptyValues` 时，`valueOnClear.value` 现在表示原始配置，可能是函数。执行清空操作时调用 `getValueOnClear(defaultValue)` 取得结果。清空工厂返回 `undefined` 时，该结果会直接传回。
+
+### 实验配置
+
+`experimental-features` 的类型为 `Record<string, never>`，默认为未设置，支持嵌套继承。Element Plus `2.14.8` 的该配置仍为空的预留接口，没有可启用的实验功能；不会虚构开关或改变 SelectV2 行为。

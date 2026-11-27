@@ -48,6 +48,7 @@ export interface TableConfigContext {
   tooltipFormatter?: TableTooltipFormatter;
 }
 export interface Config {
+  experimentalFeatures?: Record<string, never>;
   namespace?: string;
   button?: ButtonConfigContext;
   link?: LinkConfigContext;

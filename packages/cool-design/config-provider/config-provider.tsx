@@ -23,7 +23,8 @@ export default defineComponent({
     link: Object as PropType<Config['link']>,
     dialog: Object as PropType<Config['dialog']>,
     message: Object as PropType<Config['message']>,
-    table: Object as PropType<Config['table']>
+    table: Object as PropType<Config['table']>,
+    experimentalFeatures: Object as PropType<Config['experimentalFeatures']>
   },
   setup(props, { slots }) {
     const parent = useConfig();
@@ -44,7 +45,8 @@ export default defineComponent({
       link: mergeConfig(parent.value.link, props.link),
       dialog: mergeConfig(parent.value.dialog, props.dialog),
       message: mergeConfig(parent.value.message, props.message),
-      table: mergeConfig(parent.value.table, props.table)
+      table: mergeConfig(parent.value.table, props.table),
+      experimentalFeatures: mergeConfig(parent.value.experimentalFeatures, props.experimentalFeatures)
     }));
     const host = ref<HTMLElement>();
     const instance = getCurrentInstance();
