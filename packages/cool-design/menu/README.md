@@ -57,7 +57,7 @@ Menu 用于页面导航和分组操作，支持水平/垂直模式、折叠、�
 
 | 参数 | 说明 | 类型 | 默认值 |
 | ---- | ---- | ---- | ------ |
-| `modelValue` | 激活项索引（兼容用法），受控 | `string` | — |
+| `model-value` | 激活项索引（兼容用法），受控 | `string` | — |
 | `default-active` | 初始激活项索引 | `string` | `''` |
 | `default-openeds` | 初始展开的子菜单索引 | `string[]` | `[]` |
 | `items` | 数据驱动菜单项（兼容） | `MenuItemData[]` | `[]` |

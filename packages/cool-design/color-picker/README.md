@@ -39,9 +39,9 @@
 
 | 属性 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| `modelValue` | 当前颜色值，显式绑定 `undefined` 时按空值处理 | `string \| number \| boolean \| null` | 省略时为 `#409eff` |
-| `emptyValues` | 视为空的模型值 | `unknown[]` | 继承 ConfigProvider |
-| `valueOnClear` | 清空值或工厂 | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider，根级 `null` |
+| `model-value` | 当前颜色值，显式绑定 `undefined` 时按空值处理 | `string \| number \| boolean \| null` | 省略时为 `#409eff` |
+| `empty-values` | 视为空的模型值 | `unknown[]` | 继承 ConfigProvider |
+| `value-on-clear` | 清空值或工厂 | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider，根级 `null` |
 | `clearable` | 是否显示清空按钮 | `boolean` | `true` |
 | `teleported` | 是否传送面板 | `boolean` | `true` |
 | `append-to` | 面板挂载目标，选择器或元素 | `string` / `HTMLElement` | ConfigProvider 浮层宿主或 `body` |

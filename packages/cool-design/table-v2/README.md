@@ -84,34 +84,34 @@ function handleExpandedRows(rows: object[], keys: TableV2Key[]) {
 | --- | --- | --- | --- |
 | columns | 列定义 | `TableV2Column[]` | `[]` |
 | data | 正文数据 | `object[]` | `[]` |
-| fixedData | 跨滚动位置保留在表头下方的固定数据，使用 `rowHeight`，索引依次为 `-1`、`-2` | `object[]` | — |
+| fixed-data | 跨滚动位置保留在表头下方的固定数据，使用 `rowHeight`，索引依次为 `-1`、`-2` | `object[]` | — |
 | width | 表格宽度 | `string \| number` | `100%` |
 | height | 表格固定高度 | `number` | `400` |
-| headerHeight | 表头行高，数组每项定义一行 | `number \| number[]` | `50` |
-| footerHeight | 底部栏高度，大于 `0` 时渲染 | `number` | `0` |
-| rowHeight | 固定数据行和固定高度模式正文的行高 | `number \| (({ rowData, rowIndex }) => number)` | `50` |
-| estimatedRowHeight | 正文估计行高，传入有限正数启用内容测量 | `number` | — |
-| rowKey | 行唯一键字段名或取键函数 | `string \| ((row: object) => TableV2Key)` | `id` |
-| expandedRowKeys | 受控展开行键 | `TableV2Key[]` | — |
-| defaultExpandedRowKeys | 非受控的初始展开行键 | `TableV2Key[]` | `[]` |
-| expandColumnKey | 树形开关所在列 | `TableV2Key` | 首列 |
-| childrenKey | 子节点字段名 | `string` | `children` |
-| sortBy | 排序列与方向 | `TableV2SortBy` | — |
-| sortState | 列键映射或单列排序，优先于 `sortBy` | `TableV2SortState \| TableV2SortBy` | — |
+| header-height | 表头行高，数组每项定义一行 | `number \| number[]` | `50` |
+| footer-height | 底部栏高度，大于 `0` 时渲染 | `number` | `0` |
+| row-height | 固定数据行和固定高度模式正文的行高 | `number \| (({ rowData, rowIndex }) => number)` | `50` |
+| estimated-row-height | 正文估计行高，传入有限正数启用内容测量 | `number` | — |
+| row-key | 行唯一键字段名或取键函数 | `string \| ((row: object) => TableV2Key)` | `id` |
+| expanded-row-keys | 受控展开行键 | `TableV2Key[]` | — |
+| default-expanded-row-keys | 非受控的初始展开行键 | `TableV2Key[]` | `[]` |
+| expand-column-key | 树形开关所在列 | `TableV2Key` | 首列 |
+| children-key | 子节点字段名 | `string` | `children` |
+| sort-by | 排序列与方向 | `TableV2SortBy` | — |
+| sort-state | 列键映射或单列排序，优先于 `sortBy` | `TableV2SortState \| TableV2SortBy` | — |
 | filter | 根行过滤函数 | `(rowData: object) => boolean` | — |
-| rowEventHandlers | 行事件处理器 | `TableV2RowEventHandlers` | — |
+| row-event-handlers | 行事件处理器 | `TableV2RowEventHandlers` | — |
 | overscan | 可视窗口上下预渲染行数 | `number` | `3` |
 | cache | 预渲染行数，优先于 `overscan` | `number` | — |
-| headerClass | 表头行类名 | `string \| ((params: TableV2HeaderParams) => string)` | — |
-| rowClass | 正文及固定行类名 | `string \| ((params: TableV2RowParams) => string)` | — |
-| headerProps | 表头行附加属性 | `TableV2ElementProps<TableV2HeaderParams>` | — |
-| headerCellProps | 表头单元格附加属性 | `TableV2ElementProps<TableV2HeaderCellParams>` | — |
-| rowProps | 正文及固定行附加属性 | `TableV2ElementProps<TableV2RowParams>` | — |
-| cellProps | 正文及固定行单元格附加属性 | `TableV2ElementProps<TableV2CellParams>` | — |
-| useIsScrolling | 向单元格渲染器和插槽提供滚动状态 | `boolean` | `false` |
-| emptyText | 空态文字 | `string` | `暂无数据` |
-| fixedColumns | 自动固定的列数，列级 `fixed` 声明优先 | `number` | `0` |
-| fixedColumnsMode | 自动固定方向 | `'left' \| 'right'` | `left` |
+| header-class | 表头行类名 | `string \| ((params: TableV2HeaderParams) => string)` | — |
+| row-class | 正文及固定行类名 | `string \| ((params: TableV2RowParams) => string)` | — |
+| header-props | 表头行附加属性 | `TableV2ElementProps<TableV2HeaderParams>` | — |
+| header-cell-props | 表头单元格附加属性 | `TableV2ElementProps<TableV2HeaderCellParams>` | — |
+| row-props | 正文及固定行附加属性 | `TableV2ElementProps<TableV2RowParams>` | — |
+| cell-props | 正文及固定行单元格附加属性 | `TableV2ElementProps<TableV2CellParams>` | — |
+| use-is-scrolling | 向单元格渲染器和插槽提供滚动状态 | `boolean` | `false` |
+| empty-text | 空态文字 | `string` | `暂无数据` |
+| fixed-columns | 自动固定的列数，列级 `fixed` 声明优先 | `number` | `0` |
+| fixed-columns-mode | 自动固定方向 | `'left' \| 'right'` | `left` |
 
 `TableV2Key` 为 `string`、`number` 或 `symbol`。附加属性接受对象或返回对象的函数，可传 `class`、`style`、DOM 属性及监听器，表格维护布局样式和 ARIA 角色。行事件处理器支持 `onClick`、`onDblclick`、`onContextmenu`、`onMouseenter` 和 `onMouseleave`，参数为 `{ event, rowData, rowIndex, rowKey }`。
 

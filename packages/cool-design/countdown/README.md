@@ -24,7 +24,7 @@
 | `title`      | 标题                                       | `string`               | `''`       |
 | `prefix`     | 内容前缀                                   | `string`               | `''`       |
 | `suffix`     | 内容后缀                                   | `string`               | `''`       |
-| `valueStyle` | 内容区样式                                 | `string` / `object`    | —          |
+| `value-style` | 内容区样式                                 | `string` / `object`    | —          |
 
 ### 事件
 

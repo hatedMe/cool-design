@@ -35,7 +35,7 @@ Tabs 在多个内容面板之间切换，支持卡片样式、位置、新增/�
 
 | 参数 | 说明 | 类型 | 默认值 |
 | ---- | ---- | ---- | ------ |
-| `modelValue` | 激活页签 `name` | `string \| number` | — |
+| `model-value` | 激活页签 `name` | `string \| number` | — |
 | `default-value` | 非受控初始值 | `string \| number` | — |
 | `panes` | 数据驱动页签（兼容） | `TabPaneOption[]` | `[]` |
 | `type` | 风格 | `''` / `default` / `card` / `border-card` | `''` |

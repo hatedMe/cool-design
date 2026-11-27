@@ -20,28 +20,28 @@
 
 | 参数            | 说明                                       | 类型                                   | 默认值   |
 | --------------- | ------------------------------------------ | -------------------------------------- | -------- |
-| `modelValue`    | 输入值（`v-model`）                        | `string`                               | `''`     |
+| `model-value`    | 输入值（`v-model`）                        | `string`                               | `''`     |
 | `options`       | 候选列表                                   | `MentionOption[]`                      | `[]`     |
 | `props`         | 字段映射（`value` / `label` / `disabled`） | `MentionOptionProps`                   | —        |
 | `prefix`        | 触发符（单字符，支持数组）                 | `string` / `string[]`                  | `'@'`    |
 | `split`         | 提及后的分隔字符                           | `string`                               | `' '`    |
-| `filterOption`  | 过滤逻辑，`false` 全量展示，缺省按文本包含过滤 | `boolean` / `(pattern, option) => boolean` | `true` |
+| `filter-option`  | 过滤逻辑，`false` 全量展示，缺省按文本包含过滤 | `boolean` / `(pattern, option) => boolean` | `true` |
 | `placement`     | 下拉位置                                   | `string`                               | `bottom` |
 | `offset`        | 下拉偏移                                   | `number`                               | `0`      |
-| `showArrow`     | 下拉朝输入框一侧显示小箭头，建议配合 `offset ≥ 8` 使用 | `boolean`                  | `false`  |
+| `show-arrow`     | 下拉朝输入框一侧显示小箭头，建议配合 `offset ≥ 8` 使用 | `boolean`                  | `false`  |
 | `teleported`    | 下拉是否传送到 body                        | `boolean`                              | `true`   |
 | `persistent`    | 关闭后是否保留下拉节点                     | `boolean`                              | `false`  |
-| `fallbackPlacements` | 主位置放不下时的候选位置            | `Placement[]`                          | `['top', 'bottom']` |
-| `popperOptions` | 浮层参数覆盖（`offset` / `placement`）     | `{ offset?: number; placement?: Placement }` | — |
+| `fallback-placements` | 主位置放不下时的候选位置            | `Placement[]`                          | `['top', 'bottom']` |
+| `popper-options` | 浮层参数覆盖（`offset` / `placement`）     | `{ offset?: number; placement?: Placement }` | — |
 | `effect`        | 下拉主题：`light` / `dark`                 | `string`                               | `light`  |
 | `whole`         | 退格整体删除提及                           | `boolean`                              | `false`  |
-| `checkIsWhole`  | 自定义整体判定                             | `(pattern, prefix) => boolean`         | —        |
+| `check-is-whole`  | 自定义整体判定                             | `(pattern, prefix) => boolean`         | —        |
 | `loading`       | 下拉加载态                                 | `boolean`                              | `false`  |
-| `popperClass` / `popperStyle` | 下拉自定义类名/样式           | `string` / `object`                    | —        |
+| `popper-class` / `popper-style` | 下拉自定义类名/样式           | `string` / `object`                    | —        |
 | `type`          | 输入形态：`text` / `textarea`              | `string`                               | `text`   |
 | `rows`          | 文本域行数                                 | `number`                               | `3`      |
 | `placeholder` / `disabled` / `clearable` / `size` | 同常用输入控件        | —                                      | —        |
-| `validateEvent` | 值变化时触发表单校验                       | `boolean`                              | `true`   |
+| `validate-event` | 值变化时触发表单校验                       | `boolean`                              | `true`   |
 
 `MentionOption`：`{ value?: string; label?: string; disabled?: boolean; [key: string]: unknown }`。
 

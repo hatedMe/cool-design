@@ -28,11 +28,11 @@ import { ConfigProvider, en } from 'cool-design/config-provider';
 | --------- | ----------------------------- | ------------------------------ | ---------------------- |
 | theme     | 主题：`light` / `dark`        | `string`                       | 继承父级，根级 `light` |
 | size      | 尺寸：`small` / `default` / `large` | `string`                  | 继承父级，根级 `default` |
-| themeVars | CSS 变量，使用完整变量名      | `Record<string, string>`       | 与父级变量合并         |
+| theme-vars | CSS 变量，使用完整变量名      | `Record<string, string>`       | 与父级变量合并         |
 | locale | 语言对象，兼容 Element Plus 的 `{ name, el }` 结构 | `Language` | 继承父级，根级中文 |
-| zIndex | `useZIndex` 使用的基础层级 | `number` | 继承父级，根级 `2000` |
-| emptyValues | `useEmptyValues` 使用的空值集合 | `unknown[]` | 继承父级，未配置时 `['', undefined, null]` |
-| valueOnClear | 清空后的值，每次实际清空时调用函数一次，函数形式可返回 `undefined` | `string / number / boolean / null / (() => unknown)` | 继承父级，根级 `undefined` |
+| z-index | `useZIndex` 使用的基础层级 | `number` | 继承父级，根级 `2000` |
+| empty-values | `useEmptyValues` 使用的空值集合 | `unknown[]` | 继承父级，未配置时 `['', undefined, null]` |
+| value-on-clear | 清空后的值，每次实际清空时调用函数一次，函数形式可返回 `undefined` | `string / number / boolean / null / (() => unknown)` | 继承父级，根级 `undefined` |
 | namespace | 命名空间，供 `useNamespace` 使用 | `string` | 继承父级，根级 `i` |
 | button | Button 的默认配置 | `ButtonConfigContext` | 继承父级 |
 | link | Link 的默认配置 | `LinkConfigContext` | 继承父级 |

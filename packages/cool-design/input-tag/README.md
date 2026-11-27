@@ -20,23 +20,23 @@
 
 | 参数                  | 说明                                       | 类型                  | 默认值   |
 | --------------------- | ------------------------------------------ | --------------------- | -------- |
-| `modelValue`          | 标签数组（`v-model`）                      | `string[]`            | —        |
+| `model-value`          | 标签数组（`v-model`）                      | `string[]`            | —        |
 | `max`                 | 可添加的最大标签数                         | `number`              | —        |
-| `tagType`             | 标签类型：`primary` / `success` / `info` / `warning` / `danger` | `string` | `info` |
-| `tagEffect`           | 标签效果：`light` / `dark` / `plain`       | `string`              | `light`  |
+| `tag-type`             | 标签类型：`primary` / `success` / `info` / `warning` / `danger` | `string` | `info` |
+| `tag-effect`           | 标签效果：`light` / `dark` / `plain`       | `string`              | `light`  |
 | `trigger`             | 收为标签的按键：`Enter` / `Space`          | `string`              | `Enter`  |
 | `delimiter`           | 分隔符（字符串或正则），匹配即收为标签     | `string` / `RegExp`   | —        |
 | `draggable`           | 标签可拖拽排序                             | `boolean`             | `false`  |
 | `size`                | 尺寸：`small` / `default` / `large`        | `string`              | 继承 FormItem、Form 或 ConfigProvider |
-| `collapseTags`        | 折叠标签                                   | `boolean`             | `false`  |
+| `collapse-tags`        | 折叠标签                                   | `boolean`             | `false`  |
 | `effect` | 折叠提示主题，内置 `light` 和 `dark` | `string` | `light` |
-| `collapseTagsTooltip` | 折叠文本悬浮显示隐藏的标签                   | `boolean`             | `false`  |
-| `maxCollapseTags`     | 折叠时展示的标签数                         | `number`              | `1`      |
-| `saveOnBlur`          | 失焦时保存输入内容为标签                   | `boolean`             | `true`   |
+| `collapse-tags-tooltip` | 折叠文本悬浮显示隐藏的标签                   | `boolean`             | `false`  |
+| `max-collapse-tags`     | 折叠时展示的标签数                         | `number`              | `1`      |
+| `save-on-blur`          | 失焦时保存输入内容为标签                   | `boolean`             | `true`   |
 | `clearable`           | 显示清空按钮                               | `boolean`             | `false`  |
-| `clearIcon`           | 自定义清空图标                             | `string` / `Component` | —       |
+| `clear-icon`           | 自定义清空图标                             | `string` / `Component` | —       |
 | `disabled`            | 禁用                                       | `boolean`             | `false`  |
-| `validateEvent`       | 值变化时触发表单校验                       | `boolean`             | `true`   |
+| `validate-event`       | 值变化时触发表单校验                       | `boolean`             | `true`   |
 | `readonly`            | 只读                                       | `boolean`             | `false`  |
 | `autofocus`           | 自动聚焦                                   | `boolean`             | `false`  |
 | `id` / `tabindex` / `maxlength` / `minlength` / `placeholder` / `autocomplete` | 同原生 input | — | `autocomplete` 默认 `off` |

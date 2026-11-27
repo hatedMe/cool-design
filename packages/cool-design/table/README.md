@@ -224,54 +224,54 @@ const columns = [
 | ----------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------------- |
 | data                    | 表格数据                                                                      | `object[]`                                                             | `[]`                 |
 | columns                 | 列定义                                                                        | `TableColumn[]`                                                        | `[]`                 |
-| rowKey                  | 行唯一键字段名或取键函数，值必须稳定唯一                                      | `string \| ((row: object) => string \| number)`                        | `id`                 |
+| row-key                  | 行唯一键字段名或取键函数，值必须稳定唯一                                      | `string \| ((row: object) => string \| number)`                        | `id`                 |
 | selection               | 显示首列勾选，简写，等价于首列 `{ type: 'selection' }`                        | `boolean`                                                              | `false`              |
 | loading                 | 显示加载遮罩并禁用表格交互                                                    | `boolean`                                                              | `false`              |
 | height                  | 滚动区固定高度，设置后优先于 `maxHeight`                                      | `string \| number`                                                     | —                    |
-| maxHeight               | 滚动区最大高度，数字按 px 解析，不设默认值                                    | `string \| number`                                                     | —                    |
-| emptyText               | 空态文字                                                                      | `string`                                                               | `没有符合条件的数据` |
+| max-height               | 滚动区最大高度，数字按 px 解析，不设默认值                                    | `string \| number`                                                     | —                    |
+| empty-text               | 空态文字                                                                      | `string`                                                               | `没有符合条件的数据` |
 | stripe                  | 是否显示斑马纹                                                                | `boolean`                                                              | `false`              |
 | border                  | 是否显示单元格边框                                                            | `boolean`                                                              | `false`              |
-| showHeader              | 是否显示表头                                                                  | `boolean`                                                              | `true`               |
+| show-header              | 是否显示表头                                                                  | `boolean`                                                              | `true`               |
 | size                    | 表格尺寸                                                                      | `large` / `default` / `small`                                          | `default`            |
 | fit                     | 列宽是否自适应容器                                                            | `boolean`                                                              | `true`               |
-| highlightCurrentRow     | 是否高亮当前行                                                                | `boolean`                                                              | `false`              |
-| currentRowKey           | 当前行键值，受控                                                              | `string \| number`                                                     | —                    |
-| tableLayout             | 表格布局算法                                                                  | `fixed` / `auto`                                                       | `fixed`              |
-| showOverflowTooltip     | 内容溢出时显示 Tooltip，可传选项对象 | `boolean \| TableOverflowTooltipOptions`            | `false`              |
-| showSummary             | 是否显示合计行                                                                | `boolean`                                                              | `false`              |
-| sumText                 | 合计行首列文字                                                                | `string`                                                               | `合计`               |
-| summaryMethod           | 自定义合计行，返回每列文本                                                    | `({ columns, data }) => (string \| number)[]`                          | —                    |
-| spanMethod              | 合并单元格，返回 `[rowspan, colspan]` 或 `{ rowspan, colspan }`               | `(params) => [number, number] \| { rowspan?, colspan? } \| void`       | —                    |
-| rowClassName            | 行类名，字符串或函数                                                          | `string \| (({ row, rowIndex }) => string)`                            | —                    |
-| expandRowKeys           | 受控展开行键值                                                                | `(string \| number)[]`                                                 | —                    |
-| rowExpandable | 展开列的行资格，索引来自当前正文行 | `(row, index) => boolean` | — |
-| appendFilterPanelTo | 筛选面板宿主的 CSS 选择器或元素 | `string` / `HTMLElement` | — |
-| reserveSelection        | 替换数据时保留选择，需稳定 `rowKey`                                           | `boolean`                                                              | `false`              |
-| treeProps               | 树形字段映射与级联配置                                                        | `{ children?: string; hasChildren?: string; checkStrictly?: boolean }` | —                    |
+| highlight-current-row     | 是否高亮当前行                                                                | `boolean`                                                              | `false`              |
+| current-row-key           | 当前行键值，受控                                                              | `string \| number`                                                     | —                    |
+| table-layout             | 表格布局算法                                                                  | `fixed` / `auto`                                                       | `fixed`              |
+| show-overflow-tooltip     | 内容溢出时显示 Tooltip，可传选项对象 | `boolean \| TableOverflowTooltipOptions`            | `false`              |
+| show-summary             | 是否显示合计行                                                                | `boolean`                                                              | `false`              |
+| sum-text                 | 合计行首列文字                                                                | `string`                                                               | `合计`               |
+| summary-method           | 自定义合计行，返回每列文本                                                    | `({ columns, data }) => (string \| number)[]`                          | —                    |
+| span-method              | 合并单元格，返回 `[rowspan, colspan]` 或 `{ rowspan, colspan }`               | `(params) => [number, number] \| { rowspan?, colspan? } \| void`       | —                    |
+| row-class-name            | 行类名，字符串或函数                                                          | `string \| (({ row, rowIndex }) => string)`                            | —                    |
+| expand-row-keys           | 受控展开行键值                                                                | `(string \| number)[]`                                                 | —                    |
+| row-expandable | 展开列的行资格，索引来自当前正文行 | `(row, index) => boolean` | — |
+| append-filter-panel-to | 筛选面板宿主的 CSS 选择器或元素 | `string` / `HTMLElement` | — |
+| reserve-selection        | 替换数据时保留选择，需稳定 `rowKey`                                           | `boolean`                                                              | `false`              |
+| tree-props               | 树形字段映射与级联配置                                                        | `{ children?: string; hasChildren?: string; checkStrictly?: boolean }` | —                    |
 | lazy                    | 是否懒加载子节点                                                              | `boolean`                                                              | `false`              |
 | load                    | 懒加载方法，首次展开时调用                                                    | `(row, treeNode: { level: number }, resolve) => void`                  | —                    |
 | resizable               | 是否可拖拽调整列宽，列 `resizable` 可覆盖                                     | `boolean`                                                              | `true`               |
-| allowDragLastColumn     | 是否允许拖拽末列                                                              | `boolean`                                                              | `false`              |
-| tooltipFormatter        | 溢出提示内容格式化，列 `tooltipFormatter` 优先                                | `({ row, column, cellValue, index }) => string \| VNode`                        | —                    |
-| rowStyle                | 行内联样式，对象或函数                                                        | `object \| (({ row, rowIndex }) => object)`                            | —                    |
-| cellClassName           | 单元格类名                                                                    | `string \| (({ row, column, rowIndex, columnIndex }) => string)`       | —                    |
-| cellStyle               | 单元格内联样式                                                                | `object \| (({ row, column, rowIndex, columnIndex }) => object)`       | —                    |
-| headerRowClassName      | 表头行类名                                                                    | `string \| (({ rowIndex }) => string)`                                 | —                    |
-| headerRowStyle          | 表头行内联样式                                                                | `object \| (({ rowIndex }) => object)`                                 | —                    |
-| headerCellClassName     | 表头单元格类名                                                                | `string \| (({ rowIndex, column, columnIndex }) => string)`            | —                    |
-| headerCellStyle         | 表头单元格内联样式                                                            | `object \| (({ rowIndex, column, columnIndex }) => object)`            | —                    |
-| defaultExpandAll        | 是否默认展开全部可展开行                                                      | `boolean`                                                              | `false`              |
-| defaultSort             | 初始排序                                                                      | `{ prop: string; order: 'ascending' \| 'descending' }`                 | —                    |
+| allow-drag-last-column     | 是否允许拖拽末列                                                              | `boolean`                                                              | `false`              |
+| tooltip-formatter        | 溢出提示内容格式化，列 `tooltipFormatter` 优先                                | `({ row, column, cellValue, index }) => string \| VNode`                        | —                    |
+| row-style                | 行内联样式，对象或函数                                                        | `object \| (({ row, rowIndex }) => object)`                            | —                    |
+| cell-class-name           | 单元格类名                                                                    | `string \| (({ row, column, rowIndex, columnIndex }) => string)`       | —                    |
+| cell-style               | 单元格内联样式                                                                | `object \| (({ row, column, rowIndex, columnIndex }) => object)`       | —                    |
+| header-row-class-name      | 表头行类名                                                                    | `string \| (({ rowIndex }) => string)`                                 | —                    |
+| header-row-style          | 表头行内联样式                                                                | `object \| (({ rowIndex }) => object)`                                 | —                    |
+| header-cell-class-name     | 表头单元格类名                                                                | `string \| (({ rowIndex, column, columnIndex }) => string)`            | —                    |
+| header-cell-style         | 表头单元格内联样式                                                            | `object \| (({ rowIndex, column, columnIndex }) => object)`            | —                    |
+| default-expand-all        | 是否默认展开全部可展开行                                                      | `boolean`                                                              | `false`              |
+| default-sort             | 初始排序                                                                      | `{ prop: string; order: 'ascending' \| 'descending' }`                 | —                    |
 | indent                  | 树形每级缩进 px                                                               | `number`                                                               | `16`                 |
-| selectOnIndeterminate   | 半选时点击全选框是否全选，否则清空                                            | `boolean`                                                              | `true`               |
-| scrollbarAlwaysOn       | 滚动条占位常显                                                                | `boolean`                                                              | `false`              |
-| scrollbarTabindex       | 滚动区 `tabindex`                                                             | `number`                                                               | —                    |
+| select-on-indeterminate   | 半选时点击全选框是否全选，否则清空                                            | `boolean`                                                              | `true`               |
+| scrollbar-always-on       | 滚动条占位常显                                                                | `boolean`                                                              | `false`              |
+| scrollbar-tabindex       | 滚动区 `tabindex`                                                             | `number`                                                               | —                    |
 | flexible                | 表格宽度按内容收缩而非撑满                                                    | `boolean`                                                              | `false`              |
-| nativeScrollbar         | 使用原生滚动条，关闭则用细滚动条样式                                          | `boolean`                                                              | `true`               |
-| preserveExpandedContent | 收起时保留展开行内容（隐藏不断载）                                            | `boolean`                                                              | `false`              |
-| tooltipEffect | 溢出提示默认主题，内置 `light` 和 `dark` | `string` | `dark` |
-| tooltipOptions | 表格的溢出提示选项，支持 `appendTo`、`strategy`、`popperOptions` 等 Tooltip 定位配置 | `TableOverflowTooltipOptions` | — |
+| native-scrollbar         | 使用原生滚动条，关闭则用细滚动条样式                                          | `boolean`                                                              | `true`               |
+| preserve-expanded-content | 收起时保留展开行内容（隐藏不断载）                                            | `boolean`                                                              | `false`              |
+| tooltip-effect | 溢出提示默认主题，内置 `light` 和 `dark` | `string` | `dark` |
+| tooltip-options | 表格的溢出提示选项，支持 `appendTo`、`strategy`、`popperOptions` 等 Tooltip 定位配置 | `TableOverflowTooltipOptions` | — |
 
 ### 事件
 

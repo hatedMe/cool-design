@@ -18,16 +18,16 @@
 
 | 参数            | 说明                                       | 类型                  | 默认值 |
 | --------------- | ------------------------------------------ | --------------------- | ------ |
-| `modelValue`    | 选中值（`v-model`），多选时为数组          | `CascaderModelValue`  | —      |
+| `model-value`    | 选中值（`v-model`），多选时为数组          | `CascaderModelValue`  | —      |
 | `options`       | 层级数据                                   | `CascaderOption[]`    | `[]`   |
 | `props`         | 字段映射（`label` / `value` / `children` / `disabled` / `leaf`） | `CascaderPropsMapping` | — |
-| `emitPath`      | 值是否包含完整路径（false 时只输出节点值） | `boolean`             | `true` |
+| `emit-path`      | 值是否包含完整路径（false 时只输出节点值） | `boolean`             | `true` |
 | `multiple`      | 多选（复选框级联）                         | `boolean`             | `false` |
-| `checkStrictly` | 父子勾选解耦（单选时任意层级可选）         | `boolean`             | `false` |
+| `check-strictly` | 父子勾选解耦（单选时任意层级可选）         | `boolean`             | `false` |
 | `border`        | 显示面板边框                               | `boolean`             | `true` |
 | `lazy`          | 懒加载子级（展开无子级节点时调用 `lazyLoad`） | `boolean`          | `false` |
-| `lazyLoad`      | 懒加载回调，`resolve(children)` 注入子级   | `(node, resolve) => void` | — |
-| `expandTrigger` | 展开触发方式：`click` / `hover`            | `string`              | `click` |
+| `lazy-load`      | 懒加载回调，`resolve(children)` 注入子级   | `(node, resolve) => void` | — |
+| `expand-trigger` | 展开触发方式：`click` / `hover`            | `string`              | `click` |
 
 与 `Cascader` 共享同一份节点建树、勾选级联与展开列逻辑，行为保持一致。
 

@@ -14,13 +14,13 @@
 | `for` | 显式关联的原生控件 ID | `string` | — |
 | `label`         | 字段标签，显示 Form 的 `labelSuffix` 后缀                  | `string`                        | —      |
 | `rules`         | 单项校验规则，优先于 Form 的同名字段规则                   | `FormRule \| FormRule[]`        | —      |
-| `validateStatus` | 校验状态，可选 `''` / `validating` / `success` / `error` | `FormValidateState` | `''` |
+| `validate-status` | 校验状态，可选 `''` / `validating` / `success` / `error` | `FormValidateState` | `''` |
 | `error`         | 手动指定错误信息，优先于校验结果                           | `string`                        | —      |
 | `required`      | 是否显示必填星号（不自动添加校验规则）                     | `boolean`                       | `false` |
-| `labelPosition` | 覆盖 Form 的标签位置：`left` / `right` / `top`             | `string`                        | —      |
-| `labelWidth`    | 覆盖 Form 的标签宽度，数字按 `px` 处理                     | `string \| number`              | —      |
-| `showMessage`   | 是否显示校验错误信息                                       | `boolean`                       | `true`  |
-| `inlineMessage` | 覆盖 Form 的行内错误样式                                   | `boolean`                       | `false` |
+| `label-position` | 覆盖 Form 的标签位置：`left` / `right` / `top`             | `string`                        | —      |
+| `label-width`    | 覆盖 Form 的标签宽度，数字按 `px` 处理                     | `string \| number`              | —      |
+| `show-message`   | 是否显示校验错误信息                                       | `boolean`                       | `true`  |
+| `inline-message` | 覆盖 Form 的行内错误样式                                   | `boolean`                       | `false` |
 | `size`          | 覆盖 Form 的控件尺寸                                       | `string`                        | —      |
 
 ### 插槽

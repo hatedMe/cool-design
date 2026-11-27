@@ -53,7 +53,7 @@ describe('PC 组件文档站', () => {
     const wrapper = await open();
     expect(wrapper.get('h1').text()).toBe('Button 按钮');
     expect(wrapper.findAll('.demo-preview .i-button').length).toBeGreaterThan(4);
-    expect(wrapper.text()).toContain('nativeType');
+    expect(wrapper.text()).toContain('native-type');
     await wrapper.get('.demo-toolbar button').trigger('click');
     expect(wrapper.get('.demo-source').text()).toContain("from 'cool-design'");
     expect(wrapper.get('.demo-source .hljs-keyword').text()).toBe('import');

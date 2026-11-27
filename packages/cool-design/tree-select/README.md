@@ -29,7 +29,7 @@
 
 | 参数            | 说明                                       | 类型                                       | 默认值   |
 | --------------- | ------------------------------------------ | ------------------------------------------ | -------- |
-| `modelValue`    | 选中值，多选时为数组                       | `string \| number \| boolean \| (string \| number)[] \| null` | `null`   |
+| `model-value`    | 选中值，多选时为数组                       | `string \| number \| boolean \| (string \| number)[] \| null` | `null`   |
 | `data`          | 树形节点数据                               | `TreeSelectNode[]`                         | `[]`     |
 | `props` | 字段映射：`label` / `children` / `disabled` / `isLeaf` / `class`，与 Tree 一致 | `TreePropsMapping` | `{}` |
 | `node-key` | 节点唯一标识字段及选中值字段 | `string` | `value` |
@@ -47,25 +47,25 @@
 | `check-on-click-node` | 显示复选框时，点击节点触发勾选 | `boolean` | `false` |
 | `check-on-click-leaf` | 显示复选框时，点击叶节点触发勾选 | `boolean` | `true` |
 | `multiple`      | 是否多选                                   | `boolean`                                  | `false`  |
-| `checkStrictly` | 父子勾选是否解耦                           | `boolean`                                  | `false`  |
+| `check-strictly` | 父子勾选是否解耦                           | `boolean`                                  | `false`  |
 | `filterable`    | 是否显示筛选框                             | `boolean`                                  | `false`  |
-| `collapseTags`  | 多选时折叠标签                             | `boolean`                                  | `false`  |
-| `collapseTagsTooltip` | 悬停折叠数量可查看隐藏标签 | `boolean` | `false` |
-| `maxCollapseTags` | 折叠时显示的标签数                       | `number`                                   | `1`      |
+| `collapse-tags`  | 多选时折叠标签                             | `boolean`                                  | `false`  |
+| `collapse-tags-tooltip` | 悬停折叠数量可查看隐藏标签 | `boolean` | `false` |
+| `max-collapse-tags` | 折叠时显示的标签数                       | `number`                                   | `1`      |
 | `placeholder`   | 占位文本                                   | `string`                                   | `请选择` |
 | `size` | 触发器尺寸 | `small\|default\|large` | 继承 FormItem、Form 或 ConfigProvider |
 | `clearable`     | 是否可清空                                 | `boolean`                                  | `false`  |
-| `emptyValues` | 单选中视作未选中的值 | `unknown[]` | 继承 ConfigProvider |
-| `valueOnClear` | 单选清空值或工厂，多选清空为 `[]` | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider |
+| `empty-values` | 单选中视作未选中的值 | `unknown[]` | 继承 ConfigProvider |
+| `value-on-clear` | 单选清空值或工厂，多选清空为 `[]` | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider |
 | `disabled`      | 是否禁用                                   | `boolean`                                  | `false`  |
-| `validateEvent` | 选中变化时触发表单校验                     | `boolean`                                  | `true`   |
+| `validate-event` | 选中变化时触发表单校验                     | `boolean`                                  | `true`   |
 | `teleported`    | 下拉面板是否传送到 body                    | `boolean`                                  | `true`   |
 | `persistent`    | 关闭后是否保留面板节点（树实例状态保留）   | `boolean`                                  | `true`  |
 | `placement`     | 面板位置及 `-start` / `-end` 变体         | `string`                                   | `bottom-start` |
-| `fallbackPlacements` | 主位置放不下时的候选位置              | `Placement[]`                              | `['top-start', 'bottom', 'top']` |
-| `popperOptions` | 浮层参数覆盖（`offset` / `placement`）     | `{ offset?: number; placement?: Placement }` | — |
-| `popperClass`   | 面板自定义 class                           | `string` / `string[]` / `object`           | —        |
-| `popperStyle`   | 面板自定义样式                             | `string` / `CSSProperties`                 | —        |
+| `fallback-placements` | 主位置放不下时的候选位置              | `Placement[]`                              | `['top-start', 'bottom', 'top']` |
+| `popper-options` | 浮层参数覆盖（`offset` / `placement`）     | `{ offset?: number; placement?: Placement }` | — |
+| `popper-class`   | 面板自定义 class                           | `string` / `string[]` / `object`           | —        |
+| `popper-style`   | 面板自定义样式                             | `string` / `CSSProperties`                 | —        |
 | `effect`        | 面板主题：`light` / `dark`                 | `string`                                   | `light`  |
 
 `TreeSelectNode` 支持任意业务字段；默认结构为 `{ value: string | number; label: string; children?: TreeSelectNode[]; disabled?: boolean }`，使用其他结构时应配置 `node-key` 和 `props`。

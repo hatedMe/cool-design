@@ -10,18 +10,18 @@
 
 | 参数                 | 说明                       | 类型                      | 默认值 |
 | -------------------- | -------------------------- | ------------------------- | ------ |
-| modelValue / v-model | 是否勾选或绑定 true-value / false-value | `string` / `number` / `boolean` | — |
+| model-value / v-model | 是否勾选或绑定 true-value / false-value | `string` / `number` / `boolean` | — |
 | label                | 选项文本                   | `string`                  | —      |
-| trueLabel / falseLabel | 旧版选中与未选中值 | `string` / `number` / `boolean` | — |
-| trueValue            | 选中时的模型值             | `string` / `number` / `boolean` | `true` |
-| falseValue           | 未选中时的模型值           | `string` / `number` / `boolean` | `false` |
+| true-label / false-label | 旧版选中与未选中值 | `string` / `number` / `boolean` | — |
+| true-value            | 选中时的模型值             | `string` / `number` / `boolean` | `true` |
+| false-value           | 未选中时的模型值           | `string` / `number` / `boolean` | `false` |
 | checked              | 初始是否选中               | `boolean`                 | `false` |
 | disabled             | 是否禁用；表单内继承 Form 的禁用状态 | `boolean`       | `false` |
 | indeterminate        | 是否显示半选，不改变模型值 | `boolean`                 | `false` |
 | value                | 分组中的选项值             | `string` / `number` / `boolean` / `object` | — |
 | border               | 显示边框                   | `boolean`                 | `false` |
 | size                 | 尺寸：`small` / `default` / `large`；未指定时依次回退分组、FormItem、Form、ConfigProvider | `string` | — |
-| validateEvent        | 是否触发表单校验           | `boolean`                 | `true` |
+| validate-event        | 是否触发表单校验           | `boolean`                 | `true` |
 
 ### 事件
 
@@ -44,13 +44,13 @@
 
 | 参数                 | 说明                       | 类型                                      | 默认值 |
 | -------------------- | -------------------------- | ----------------------------------------- | ------ |
-| modelValue / v-model | 已选值数组                 | `(string \| number \| boolean \| object)[]` | `[]` |
+| model-value / v-model | 已选值数组                 | `(string \| number \| boolean \| object)[]` | `[]` |
 | fill / textColor | 选中 CheckboxButton 的背景与文字颜色 | `string` | — |
 | min                  | 最少可选数量               | `number`                                  | —      |
 | max                  | 最多可选数量               | `number`                                  | —      |
 | disabled             | 是否禁用全部子项，继承 Form 禁用状态           | `boolean`                                 | `false` |
 | size                 | 子项尺寸：`small` / `default` / `large` | `string`                   | —      |
-| validateEvent        | 是否触发表单校验           | `boolean`                                 | `true` |
+| validate-event        | 是否触发表单校验           | `boolean`                                 | `true` |
 | tag                  | Group 根元素标签           | `string`                                  | `div`  |
 | type                 | options 渲染类型：`checkbox` / `button` | `string`                    | `checkbox` |
 | options              | 自动生成子项的数据         | `array`                                   | —      |

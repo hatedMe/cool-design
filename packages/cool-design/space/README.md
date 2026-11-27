@@ -17,7 +17,7 @@
 | prefix-cls  | 子项包装类名前缀                                         | `string`                           | —            |
 | wrap        | 是否允许换行                                             | `boolean`                          | `false`      |
 | fill        | 子项是否撑满容器（自动换行）                             | `boolean`                          | `false`      |
-| fillRatio   | `fill` 时每个子项的最小宽度百分比                        | `number`                           | `100`        |
+| fill-ratio   | `fill` 时每个子项的最小宽度百分比                        | `number`                           | `100`        |
 | spacer      | 子项之间的分隔内容，文本或 VNode                         | `string` / `number` / `VNode`      | —            |
 
 内置尺寸 `small` / `default` / `large` 对应 8px / 12px / 16px。

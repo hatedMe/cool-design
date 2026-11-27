@@ -16,32 +16,32 @@
 
 | 参数            | 说明                                       | 类型      | 默认值   |
 | --------------- | ------------------------------------------ | --------- | -------- |
-| `modelValue`    | 选中时间（`v-model`），格式由 `format` 决定        | `string \| number \| boolean \| null`  | —        |
+| `model-value`    | 选中时间（`v-model`），格式由 `format` 决定        | `string \| number \| boolean \| null`  | —        |
 | `start`         | 开始时间                                   | `string`  | `09:00`  |
 | `step`          | 时间间隔                                   | `string`  | `00:30`  |
 | `end`           | 结束时间                                   | `string`  | `18:00`  |
 | `editable` | 是否允许键入并筛选选项 | `boolean` | `true` |
 | `format` | Day.js 时间格式，用于显示和模型值 | `string` | `'HH:mm'` |
-| `includeEndTime` | 结束时间未落在步长网格上时，是否追加它 | `boolean` | `false` |
-| `prefixIcon` | 输入框前置图标 | `string \| Component` | `'icon-clock'` |
-| `clearIcon` | 清空按钮图标 | `string \| Component` | `'icon-close'` |
-| `minTime`       | 最早可选时间，等于或早于该时间的选项禁用             | `string`  | —        |
-| `maxTime`       | 最晚可选时间，等于或晚于该时间的选项禁用             | `string`  | —        |
+| `include-end-time` | 结束时间未落在步长网格上时，是否追加它 | `boolean` | `false` |
+| `prefix-icon` | 输入框前置图标 | `string \| Component` | `'icon-clock'` |
+| `clear-icon` | 清空按钮图标 | `string \| Component` | `'icon-close'` |
+| `min-time`       | 最早可选时间，等于或早于该时间的选项禁用             | `string`  | —        |
+| `max-time`       | 最晚可选时间，等于或晚于该时间的选项禁用             | `string`  | —        |
 | `placeholder`   | 占位文本                                   | `string`  | `请选择` |
 | `disabled`      | 是否禁用                                   | `boolean` | `false`  |
-| `emptyValues` | 视为空的模型值 | `unknown[]` | 继承 ConfigProvider |
-| `valueOnClear` | 清空值或工厂 | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider，根级 `undefined` |
+| `empty-values` | 视为空的模型值 | `unknown[]` | 继承 ConfigProvider |
+| `value-on-clear` | 清空值或工厂 | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider，根级 `undefined` |
 | `clearable`     | 是否可清空             | `boolean` | `true`   |
 | `size`          | 尺寸：`small` / `default` / `large`        | `string`  | 继承 FormItem、Form 或 ConfigProvider |
 | `name`          | 原生表单提交字段名，提交所选值                        | `string`  | —        |
-| `validateEvent` | 值变化时触发表单校验                       | `boolean` | `true`   |
+| `validate-event` | 值变化时触发表单校验                       | `boolean` | `true`   |
 | `teleported`    | 下拉面板是否传送到 body                    | `boolean` | `true`   |
 | `persistent`    | 关闭后是否保留面板节点                      | `boolean` | `false`  |
 | `placement`     | 面板位置及 `-start` / `-end` 变体          | `string`  | `bottom-start` |
-| `fallbackPlacements` | 主位置放不下时的候选位置              | `Placement[]` | `['top-start', 'bottom', 'top']` |
-| `popperOptions` | 浮层参数覆盖（`offset` / `placement`）     | `{ offset?: number; placement?: Placement }` | — |
-| `popperClass`   | 面板自定义 class                           | `string` / `string[]` / `object` | — |
-| `popperStyle`   | 面板自定义样式                             | `string` / `CSSProperties` | — |
+| `fallback-placements` | 主位置放不下时的候选位置              | `Placement[]` | `['top-start', 'bottom', 'top']` |
+| `popper-options` | 浮层参数覆盖（`offset` / `placement`）     | `{ offset?: number; placement?: Placement }` | — |
+| `popper-class`   | 面板自定义 class                           | `string` / `string[]` / `object` | — |
+| `popper-style`   | 面板自定义样式                             | `string` / `CSSProperties` | — |
 | `effect`        | 面板主题：`light` / `dark`                 | `string`  | `light`  |
 
 ### 事件

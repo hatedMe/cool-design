@@ -43,7 +43,7 @@
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| modelValue / v-model | 当前选中值，配合 `value-key` 支持对象值 | `string` / `number` / `boolean` / `object` / `Array` | `undefined` |
+| model-value / v-model | 当前选中值，配合 `value-key` 支持对象值 | `string` / `number` / `boolean` / `object` / `Array` | `undefined` |
 | options | 通过数组提供选项及分组 | `Record<string, unknown>[]` | — |
 | props | 数组选项字段映射 | `{ value?: string; label?: string; disabled?: string; options?: string }` | 对应同名字段 |
 | value-key | 对象值的唯一标识字段 | `string` | `value` |

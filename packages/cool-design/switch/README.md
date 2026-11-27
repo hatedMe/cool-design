@@ -86,26 +86,26 @@ const beforeChange = async () => {
 
 | 属性 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| `modelValue` / `v-model` | 绑定值 | `boolean` / `string` / `number` | `false` |
+| `model-value` / `v-model` | 绑定值 | `boolean` / `string` / `number` | `false` |
 | `disabled` | 是否禁用 | `boolean` | `false` |
 | `loading` | 显示加载状态并阻止切换 | `boolean` | `false` |
 | `size` | 开关尺寸 | `small` / `default` / `large` | — |
 | `width` | 开关宽度，数字按 px 处理 | `number` / `string` | — |
-| `activeValue` | 开启状态对应的值 | `boolean` / `string` / `number` | `true` |
-| `inactiveValue` | 关闭状态对应的值 | `boolean` / `string` / `number` | `false` |
-| `activeText` | 开启状态文字 | `string` | — |
-| `inactiveText` | 关闭状态文字 | `string` | — |
-| `inlinePrompt` | 在轨道内显示状态内容，文本只显示首字符 | `boolean` | `false` |
-| `activeIcon` | 开启状态图标，优先于 `activeText` | `string` / `Component` | — |
-| `inactiveIcon` | 关闭状态图标，优先于 `inactiveText` | `string` / `Component` | — |
-| `activeActionIcon` | 开启状态动作区域图标 | `string` / `Component` | — |
-| `inactiveActionIcon` | 关闭状态动作区域图标 | `string` / `Component` | — |
-| `activeColor` | 开启状态颜色，作为 CSS 变量的兼容属性 | `string` | — |
-| `inactiveColor` | 关闭状态颜色，作为 CSS 变量的兼容属性 | `string` | — |
-| `borderColor` | 边框颜色，作为 CSS 变量的兼容属性 | `string` | — |
+| `active-value` | 开启状态对应的值 | `boolean` / `string` / `number` | `true` |
+| `inactive-value` | 关闭状态对应的值 | `boolean` / `string` / `number` | `false` |
+| `active-text` | 开启状态文字 | `string` | — |
+| `inactive-text` | 关闭状态文字 | `string` | — |
+| `inline-prompt` | 在轨道内显示状态内容，文本只显示首字符 | `boolean` | `false` |
+| `active-icon` | 开启状态图标，优先于 `activeText` | `string` / `Component` | — |
+| `inactive-icon` | 关闭状态图标，优先于 `inactiveText` | `string` / `Component` | — |
+| `active-action-icon` | 开启状态动作区域图标 | `string` / `Component` | — |
+| `inactive-action-icon` | 关闭状态动作区域图标 | `string` / `Component` | — |
+| `active-color` | 开启状态颜色，作为 CSS 变量的兼容属性 | `string` | — |
+| `inactive-color` | 关闭状态颜色，作为 CSS 变量的兼容属性 | `string` | — |
+| `border-color` | 边框颜色，作为 CSS 变量的兼容属性 | `string` | — |
 | `label` | 无障碍标签兼容属性，优先使用 `aria-label` | `string` | — |
-| `validateEvent` | 是否在值变化后触发表单校验 | `boolean` | `true` |
-| `beforeChange` | 切换前守卫，返回 `false` 或 rejected Promise 会阻止切换 | `() => boolean \| Promise<boolean>` | — |
+| `validate-event` | 是否在值变化后触发表单校验 | `boolean` | `true` |
+| `before-change` | 切换前守卫，返回 `false` 或 rejected Promise 会阻止切换 | `() => boolean \| Promise<boolean>` | — |
 | `id` | 原生输入框 id | `string` | — |
 | `name` | 原生输入框 name | `string` | — |
 | `tabindex` | 原生输入框 tabindex | `string` / `number` | — |

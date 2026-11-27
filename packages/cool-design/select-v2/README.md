@@ -20,50 +20,50 @@
 
 | 参数            | 说明                                       | 类型                                   | 默认值   |
 | --------------- | ------------------------------------------ | -------------------------------------- | -------- |
-| `modelValue`    | 选中值（`v-model`），多选时为数组          | `SelectV2Value`                        | —        |
-| `emptyValues` | 单选中视作未选中的值 | `unknown[]` | 继承 ConfigProvider |
-| `valueOnClear` | 单选清空值或工厂，多选清空为 `[]` | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider |
+| `model-value`    | 选中值（`v-model`），多选时为数组          | `SelectV2Value`                        | —        |
+| `empty-values` | 单选中视作未选中的值 | `unknown[]` | 继承 ConfigProvider |
+| `value-on-clear` | 单选清空值或工厂，多选清空为 `[]` | `string \| number \| boolean \| null \| (() => unknown)` | 继承 ConfigProvider |
 | `options`       | 选项列表（支持嵌套 `options` 分组）        | `SelectV2Option[]`                     | `[]`     |
 | `props`         | 字段映射（`label` / `value` / `disabled` / `options`） | `SelectV2PropsMapping`           | —        |
-| `valueKey`      | 对象值的唯一标识字段                       | `string`                               | `value`  |
+| `value-key`      | 对象值的唯一标识字段                       | `string`                               | `value`  |
 | `filterable`    | 本地过滤                                   | `boolean`                              | `false`  |
-| `filterMethod`  | 查询变化回调 | `(query: string) => void`           | —        |
-| `optionFilterMethod` | 本地逐项过滤 | `(query, option) => boolean` | — |
+| `filter-method`  | 查询变化回调 | `(query: string) => void`           | —        |
+| `option-filter-method` | 本地逐项过滤 | `(query, option) => boolean` | — |
 | `remote` | 使用远程选项 | `boolean` | `false` |
-| `remoteMethod` | 远程查询回调 | `SelectV2RemoteMethod` | — |
+| `remote-method` | 远程查询回调 | `SelectV2RemoteMethod` | — |
 | `debounce` | 远程查询防抖毫秒数 | `number` | `300` |
-| `allowCreate` | 允许创建不存在的选项，需开启 `filterable` | `boolean` | `false` |
-| `defaultFirstOption` | 查询后高亮首个可用选项 | `boolean` | `false` |
-| `reserveKeyword` | 多选选中后保留搜索词 | `boolean` | `true` |
+| `allow-create` | 允许创建不存在的选项，需开启 `filterable` | `boolean` | `false` |
+| `default-first-option` | 查询后高亮首个可用选项 | `boolean` | `false` |
+| `reserve-keyword` | 多选选中后保留搜索词 | `boolean` | `true` |
 | `multiple`      | 多选                                       | `boolean`                              | `false`  |
-| `multipleLimit` | 多选数量上限，`0` 不限                     | `number`                               | `0`      |
-| `collapseTags` / `collapseTagsTooltip` / `maxCollapseTags` | 标签折叠     | `boolean` / `boolean` / `number`       | `false` / `false` / `1` |
-| `tagType`       | 标签类型：`primary` / `success` / `warning` / `danger` / `info` | `string`                    | `info` |
+| `multiple-limit` | 多选数量上限，`0` 不限                     | `number`                               | `0`      |
+| `collapse-tags` / `collapse-tags-tooltip` / `max-collapse-tags` | 标签折叠     | `boolean` / `boolean` / `number`       | `false` / `false` / `1` |
+| `tag-type`       | 标签类型：`primary` / `success` / `warning` / `danger` / `info` | `string`                    | `info` |
 | `clearable`     | 可清空                                     | `boolean`                              | `false`  |
 | `disabled`      | 禁用                                       | `boolean`                              | `false`  |
 | `loading`       | 加载态                                     | `boolean`                              | `false`  |
 | `placeholder`   | 占位文本                                   | `string`                               | `请选择` |
-| `noDataText` / `noMatchText` | 空/无匹配文案                     | `string`                               | `暂无数据` / `无匹配数据` |
+| `no-data-text` / `no-match-text` | 空/无匹配文案                     | `string`                               | `暂无数据` / `无匹配数据` |
 | `size`          | 尺寸：`small` / `default` / `large`        | `string`                               | 继承 FormItem、Form 或 ConfigProvider |
 | `height`        | 面板高度（px）                             | `number`                               | `240`    |
-| `itemHeight`    | 选项行高（px，虚拟滚动依据）               | `number`                               | `34`     |
-| `automaticDropdown` | 聚焦即展开                               | `boolean`                              | `false`  |
-| `validateEvent` | 值变化时触发表单校验                       | `boolean`                              | `true`   |
+| `item-height`    | 选项行高（px，虚拟滚动依据）               | `number`                               | `34`     |
+| `automatic-dropdown` | 聚焦即展开                               | `boolean`                              | `false`  |
+| `validate-event` | 值变化时触发表单校验                       | `boolean`                              | `true`   |
 | `name`           | 原生表单提交用的隐藏输入名称，多选时值为 JSON 数组 | `string`                      | —        |
 | `teleported`     | 下拉面板是否传送到 body                   | `boolean`                              | `true`   |
 | `persistent`     | 关闭后是否保留面板节点                    | `boolean`                              | `true`  |
-| `appendTo` | 浮层目标容器 | `string \| HTMLElement` | `body` |
-| `loadingText` | 加载文案 | `string` | 加载中… |
-| `showArrow` / `offset` | 显示箭头和浮层距离 | `boolean` / `number` | `true` / `12` |
-| `suffixIcon` / `clearIcon` | 后缀和清空图标 | `string \| Component` | — |
-| `remoteShowSuffix` | 远程筛选时显示后缀 | `boolean` | `false` |
-| `tagEffect` | 标签主题 | `light` / `dark` / `plain` | `light` |
-| `tagTooltip` | 折叠标签提示配置 | `SelectV2TagTooltipOptions` | — |
+| `append-to` | 浮层目标容器 | `string \| HTMLElement` | `body` |
+| `loading-text` | 加载文案 | `string` | 加载中… |
+| `show-arrow` / `offset` | 显示箭头和浮层距离 | `boolean` / `number` | `true` / `12` |
+| `suffix-icon` / `clear-icon` | 后缀和清空图标 | `string \| Component` | — |
+| `remote-show-suffix` | 远程筛选时显示后缀 | `boolean` | `false` |
+| `tag-effect` | 标签主题 | `light` / `dark` / `plain` | `light` |
+| `tag-tooltip` | 折叠标签提示配置 | `SelectV2TagTooltipOptions` | — |
 | `placement`      | 面板位置及 `-start` / `-end` 变体        | `string`                               | `bottom-start` |
-| `fallbackPlacements` | 主位置放不下时的候选位置              | `Placement[]`                          | `['top-start', 'bottom', 'top']` |
-| `popperOptions`  | 浮层参数覆盖（`offset` / `placement`）     | `{ offset?: number; placement?: Placement }` | — |
-| `popperClass`    | 面板自定义 class                          | `string` / `string[]` / `object`       | —        |
-| `popperStyle`    | 面板自定义样式                            | `string` / `CSSProperties`             | —        |
+| `fallback-placements` | 主位置放不下时的候选位置              | `Placement[]`                          | `['top-start', 'bottom', 'top']` |
+| `popper-options`  | 浮层参数覆盖（`offset` / `placement`）     | `{ offset?: number; placement?: Placement }` | — |
+| `popper-class`    | 面板自定义 class                          | `string` / `string[]` / `object`       | —        |
+| `popper-style`    | 面板自定义样式                            | `string` / `CSSProperties`             | —        |
 | `effect`         | 面板主题：`light` / `dark`                | `string`                               | `light`  |
 
 `SelectV2Option`：`{ label?, value?, disabled?, options?, ... }`。

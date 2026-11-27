@@ -24,7 +24,7 @@ CheckboxGroup 管理一组 Checkbox 的数组值，并支持 `min`、`max`、整
 
 | 参数       | 说明                                       | 类型                                      | 默认值     |
 | ---------- | ------------------------------------------ | ----------------------------------------- | ---------- |
-| modelValue | 选中值数组                                 | `(string \| number \| boolean \| object)[]` | `[]`     |
+| model-value | 选中值数组                                 | `(string \| number \| boolean \| object)[]` | `[]`     |
 | min / max  | 最少 / 最多可选数量                        | `number`                                  | —          |
 | disabled   | 禁用整个组                                 | `boolean`                                 | `false`    |
 | size       | 子项尺寸：`small` / `default` / `large`    | `string`                                  | —          |

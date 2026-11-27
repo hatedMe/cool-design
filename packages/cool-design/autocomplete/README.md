@@ -14,34 +14,34 @@
 
 | 参数                 | 说明                                        | 类型                                                         | 默认值 |
 | -------------------- | ------------------------------------------- | ------------------------------------------------------------ | ------ |
-| `modelValue`         | 输入值                                      | `string \| number`                                                     | `''`   |
+| `model-value`         | 输入值                                      | `string \| number`                                                     | `''`   |
 | `suggestions`        | 静态建议列表                                | `(string \| AutocompleteSuggestion)[]`                       | `[]`   |
-| `fetchSuggestions`   | 建议数组，或通过回调、返回值提供建议                  | `AutocompleteFetchSuggestions`                       | —      |
+| `fetch-suggestions`   | 建议数组，或通过回调、返回值提供建议                  | `AutocompleteFetchSuggestions`                       | —      |
 | `debounce`           | 远程建议防抖延迟，单位 ms，`0` 表示不防抖   | `number`                                                     | `300`  |
 | `placeholder`        | 占位文本                                    | `string`                                                     | —      |
 | `disabled`           | 是否禁用                                    | `boolean`                                                    | `false` |
 | `clearable`          | 是否可清空                                  | `boolean`                                                    | `false` |
-| `triggerOnFocus`     | 聚焦时是否立即触发建议                      | `boolean`                                                    | `true`  |
-| `highlightFirstItem` | 是否默认高亮第一个建议项                    | `boolean`                                                    | `false` |
-| `selectWhenUnmatched` | 无匹配时回车是否选中当前输入值             | `boolean`                                                    | `false` |
-| `hideLoading`        | 隐藏远程加载状态                            | `boolean`                                                    | `false` |
+| `trigger-on-focus`     | 聚焦时是否立即触发建议                      | `boolean`                                                    | `true`  |
+| `highlight-first-item` | 是否默认高亮第一个建议项                    | `boolean`                                                    | `false` |
+| `select-when-unmatched` | 无匹配时回车是否选中当前输入值             | `boolean`                                                    | `false` |
+| `hide-loading`        | 隐藏远程加载状态                            | `boolean`                                                    | `false` |
 | `size`               | 尺寸：`small` / `default` / `large`         | `string`                                                     | 继承 FormItem、Form 或 ConfigProvider |
 | `name`               | 原生 input 名称                             | `string`                                                     | —      |
 | `maxlength` / `minlength` | 原生长度限制                           | `string \| number`                                           | —      |
-| `prefixIcon`         | 输入框前置图标                              | `string \| Component`                                        | —      |
-| `suffixIcon`         | 输入框后置图标                              | `string \| Component`                                        | —      |
-| `validateEvent`      | 值变化时触发表单校验                        | `boolean`                                                    | `true`  |
-| `valueKey` | 用于显示和选择建议的字段 | `string` | `'value'` |
-| `ariaLabel` | 原生输入框的无障碍标签 | `string` | — |
+| `prefix-icon`         | 输入框前置图标                              | `string \| Component`                                        | —      |
+| `suffix-icon`         | 输入框后置图标                              | `string \| Component`                                        | —      |
+| `validate-event`      | 值变化时触发表单校验                        | `boolean`                                                    | `true`  |
+| `value-key` | 用于显示和选择建议的字段 | `string` | `'value'` |
+| `aria-label` | 原生输入框的无障碍标签 | `string` | — |
 | `teleported` | 是否将面板挂载到外部容器 | `boolean` | `true` |
-| `appendTo` | 面板挂载容器 | `string \| HTMLElement` | `document.body` |
+| `append-to` | 面板挂载容器 | `string \| HTMLElement` | `document.body` |
 | `placement` | 面板位置 | `Placement` | `'bottom-start'` |
-| `fitInputWidth` | 将面板宽度匹配输入控制区域 | `boolean` | `false` |
-| `showArrow` | 显示面板箭头 | `boolean` | `true` |
-| `popperClass` | 面板自定义类 | `string \| string[] \| Record<string, boolean>` | — |
-| `popperStyle` | 面板自定义样式 | `string \| CSSProperties \| CSSProperties[]` | — |
-| `popperOptions` | 共享浮层的定位配置，支持 `placement` 和 `offset` | `FloatingOptions` | — |
-| `loopNavigation` | 键盘高亮跨首尾循环 | `boolean` | `true` |
+| `fit-input-width` | 将面板宽度匹配输入控制区域 | `boolean` | `false` |
+| `show-arrow` | 显示面板箭头 | `boolean` | `true` |
+| `popper-class` | 面板自定义类 | `string \| string[] \| Record<string, boolean>` | — |
+| `popper-style` | 面板自定义样式 | `string \| CSSProperties \| CSSProperties[]` | — |
+| `popper-options` | 共享浮层的定位配置，支持 `placement` 和 `offset` | `FloatingOptions` | — |
+| `loop-navigation` | 键盘高亮跨首尾循环 | `boolean` | `true` |
 
 建议对象允许自定义字段。例如设置 `value-key="label"`，可直接用 `{ label: '北京' }` 作为建议项。本地 `suggestions` 会按该字段过滤，`fetchSuggestions` 提供的结果直接用于展示。
 

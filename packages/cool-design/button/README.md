@@ -72,12 +72,12 @@ Button 用于触发提交、保存、删除、跳转等操作。组件的属性�
 | `circle`          | 是否为圆形按钮               | `boolean`             | `false`        |
 | `dashed`          | 是否使用虚线边框             | `boolean`             | `false`        |
 | `loading`         | 是否为加载状态               | `boolean`             | `false`        |
-| `loadingIcon`     | 加载图标                     | `string \| Component` | `icon-refresh` |
+| `loading-icon`     | 加载图标                     | `string \| Component` | `icon-refresh` |
 | `disabled`        | 是否禁用按钮                 | `boolean`             | `false`        |
 | `autofocus`       | 是否自动获取焦点             | `boolean`             | `false`        |
 | `icon`            | 图标                         | `string \| Component` | —              |
-| `nativeType`      | 原生按钮类型                 | `ButtonNativeType`    | `button`       |
-| `autoInsertSpace` | 按单文本节点规则插入空格     | `boolean`             | 继承全局配置，缺省为 `false` |
+| `native-type`      | 原生按钮类型                 | `ButtonNativeType`    | `button`       |
+| `auto-insert-space` | 按单文本节点规则插入空格     | `boolean`             | 继承全局配置，缺省为 `false` |
 | `color`           | 自定义按钮颜色               | `string`              | —              |
 | `dark`            | 自定义颜色的暗色模式         | `boolean`             | `false`        |
 | `tag`             | 自定义渲染标签或组件         | `string \| Component` | `button`       |

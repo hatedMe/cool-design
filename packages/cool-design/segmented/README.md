@@ -19,7 +19,7 @@
 | 参数        | 说明                                                     | 类型                                     | 默认值 |
 | ----------- | -------------------------------------------------------- | ---------------------------------------- | ------ |
 | `options`   | 选项列表                                                 | `(string \| number \| SegmentedOption)[]` | `[]`   |
-| `modelValue` | 选中值（`v-model`）                                     | `string` / `number`                      | —      |
+| `model-value` | 选中值（`v-model`）                                     | `string` / `number`                      | —      |
 | `disabled`  | 是否禁用整个组件                                         | `boolean`                                | `false` |
 | `block`     | 是否撑满容器宽度，选项均分                               | `boolean`                                | `false` |
 | `size`      | 尺寸：`small` / `default` / `large`                      | `string`                                 | 继承 FormItem、Form 或 ConfigProvider |

@@ -20,7 +20,7 @@
 
 | 参数            | 说明                                       | 类型                              | 默认值    |
 | --------------- | ------------------------------------------ | --------------------------------- | --------- |
-| `modelValue`    | 验证码值（`v-model`）                      | `string` / `number`               | —         |
+| `model-value`    | 验证码值（`v-model`）                      | `string` / `number`               | —         |
 | `length`        | 输入格数                                   | `number`                          | `6`       |
 | `validator`     | 单字符校验函数                             | `(value: string) => boolean`      | `() => true` |
 | `inputmode`     | 原生 inputmode（如 `numeric`）             | `string`                          | —         |
@@ -30,8 +30,8 @@
 | `disabled`      | 禁用                                       | `boolean`                         | `false`   |
 | `readonly`      | 只读                                       | `boolean`                         | `false`   |
 | `separator`     | 格间分隔（字符串 / VNode / 函数）          | `string` / `VNode` / `Function`   | —         |
-| `validateEvent` | 值变化时触发表单校验                       | `boolean`                         | `true`    |
-| `id` / `ariaLabel` | 原生属性                                | `string`                          | —         |
+| `validate-event` | 值变化时触发表单校验                       | `boolean`                         | `true`    |
+| `id` / `aria-label` | 原生属性                                | `string`                          | —         |
 
 ### 事件
 

@@ -23,23 +23,23 @@
 | 参数                  | 说明                                       | 类型                        | 默认值  |
 | --------------------- | ------------------------------------------ | --------------------------- | ------- |
 | `data`                | 树形数据                                   | `TreeV2Data[]`              | `[]`    |
-| `emptyText`           | 数据为空文案                               | `string`                    | `暂无数据` |
+| `empty-text`           | 数据为空文案                               | `string`                    | `暂无数据` |
 | `props`               | 字段映射（`value` / `label` / `children` / `disabled` / `class`） | `TreeV2PropsMapping` | — |
 | `height`              | 树高度（px）                               | `number`                    | `200`   |
-| `itemSize`            | 行高（px，虚拟滚动依据）                   | `number`                    | `26`    |
+| `item-size`            | 行高（px，虚拟滚动依据）                   | `number`                    | `26`    |
 | `indent`              | 层级缩进（px）                             | `number`                    | `16`    |
-| `highlightCurrent`    | 高亮当前节点                               | `boolean`                   | `false` |
-| `expandOnClickNode`   | 点击节点展开/收起                          | `boolean`                   | `true`  |
-| `checkOnClickNode`    | 点击节点切换勾选                           | `boolean`                   | `false` |
-| `checkOnClickLeaf`    | 点击叶子切换勾选                           | `boolean`                   | `true`  |
-| `showCheckbox`        | 显示复选框                                 | `boolean`                   | `false` |
-| `checkStrictly`       | 勾选父子解耦                               | `boolean`                   | `false` |
-| `defaultExpandedKeys` | 初始展开的节点 key                         | `TreeV2Key[]`               | `[]`    |
-| `defaultCheckedKeys`  | 初始勾选的节点 key                         | `TreeV2Key[]`               | `[]`    |
-| `currentNodeKey`      | 当前节点 key（受控）                       | `TreeV2Key`                 | —       |
-| `filterMethod`        | 过滤方法（配合实例 `filter()`）            | `(query, node) => boolean`  | —       |
+| `highlight-current`    | 高亮当前节点                               | `boolean`                   | `false` |
+| `expand-on-click-node`   | 点击节点展开/收起                          | `boolean`                   | `true`  |
+| `check-on-click-node`    | 点击节点切换勾选                           | `boolean`                   | `false` |
+| `check-on-click-leaf`    | 点击叶子切换勾选                           | `boolean`                   | `true`  |
+| `show-checkbox`        | 显示复选框                                 | `boolean`                   | `false` |
+| `check-strictly`       | 勾选父子解耦                               | `boolean`                   | `false` |
+| `default-expanded-keys` | 初始展开的节点 key                         | `TreeV2Key[]`               | `[]`    |
+| `default-checked-keys`  | 初始勾选的节点 key                         | `TreeV2Key[]`               | `[]`    |
+| `current-node-key`      | 当前节点 key（受控）                       | `TreeV2Key`                 | —       |
+| `filter-method`        | 过滤方法（配合实例 `filter()`）            | `(query, node) => boolean`  | —       |
 | `icon`                | 自定义展开图标                             | `string` / `Component`      | —       |
-| `scrollbarAlwaysOn`   | 滚动条常显                                 | `boolean`                   | `false` |
+| `scrollbar-always-on`   | 滚动条常显                                 | `boolean`                   | `false` |
 
 `TreeV2Node`：`{ key, level, parent?, children?, data, disabled?, label?, isLeaf?, expanded?, isEffectivelyChecked? }`。
 

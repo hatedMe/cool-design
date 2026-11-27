@@ -25,20 +25,20 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 | `model`         | 表单模型，必填，支持 `user.name`、`items[0].name` 深层路径 | `Record<string, unknown>`       | —      |
 | `rules`         | 字段校验规则                                               | `Record<string, FormRule[]>`    | `{}`   |
 | `inline`        | 是否使用行内布局                                           | `boolean`                       | `false` |
-| `labelPosition` | 标签位置：`left` / `right` / `top`                         | `string`                        | `right` |
-| `labelWidth`    | 标签宽度，数字按 `px` 处理                                 | `string \| number`              | —      |
-| `labelSuffix`   | 标签后的后缀                                               | `string`                        | —      |
+| `label-position` | 标签位置：`left` / `right` / `top`                         | `string`                        | `right` |
+| `label-width`    | 标签宽度，数字按 `px` 处理                                 | `string \| number`              | —      |
+| `label-suffix`   | 标签后的后缀                                               | `string`                        | —      |
 | `disabled`      | 是否禁用内部字段                                           | `boolean`                       | `false` |
 | `size`          | 内部控件尺寸                                               | `string`                        | —      |
-| `showMessage`   | 是否显示校验消息                                           | `boolean`                       | `true`  |
-| `hideRequiredAsterisk` | 是否隐藏必填星号                                   | `boolean`                       | `false` |
-| `requireAsteriskPosition` | 必填星号位置：`left` / `right`               | `string`                        | `left`  |
-| `inlineMessage` | 是否以行内样式显示校验消息                                 | `boolean`                       | `false` |
-| `statusIcon`    | 是否在字段后显示校验状态图标                               | `boolean`                       | `false` |
-| `scrollToError` | 校验失败时滚动到第一个错误字段                             | `boolean`                       | `false` |
-| `scrollToErrorOffset` | 滚动到错误字段时的顶部偏移量                         | `number`                        | —      |
-| `scrollIntoViewOptions` | 滚动参数 | `boolean \| ScrollIntoViewOptions` | `true` |
-| `validateOnRuleChange` | `rules` 变化后是否立即触发一次校验                 | `boolean`                       | `true`  |
+| `show-message`   | 是否显示校验消息                                           | `boolean`                       | `true`  |
+| `hide-required-asterisk` | 是否隐藏必填星号                                   | `boolean`                       | `false` |
+| `require-asterisk-position` | 必填星号位置：`left` / `right`               | `string`                        | `left`  |
+| `inline-message` | 是否以行内样式显示校验消息                                 | `boolean`                       | `false` |
+| `status-icon`    | 是否在字段后显示校验状态图标                               | `boolean`                       | `false` |
+| `scroll-to-error` | 校验失败时滚动到第一个错误字段                             | `boolean`                       | `false` |
+| `scroll-to-error-offset` | 滚动到错误字段时的顶部偏移量                         | `number`                        | —      |
+| `scroll-into-view-options` | 滚动参数 | `boolean \| ScrollIntoViewOptions` | `true` |
+| `validate-on-rule-change` | `rules` 变化后是否立即触发一次校验                 | `boolean`                       | `true`  |
 
 ### 事件
 

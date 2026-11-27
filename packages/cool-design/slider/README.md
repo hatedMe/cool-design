@@ -23,7 +23,7 @@
 
 | 参数                 | 说明                                                         | 类型                                   | 默认值       |
 | -------------------- | ------------------------------------------------------------ | -------------------------------------- | ------------ |
-| modelValue           | 绑定值，`range` 模式为数组                                   | `number` / `[number, number]`          | `0`          |
+| model-value           | 绑定值，`range` 模式为数组                                   | `number` / `[number, number]`          | `0`          |
 | min                  | 最小值                                                       | `number`                               | `0`          |
 | max                  | 最大值                                                       | `number`                               | `100`        |
 | step                 | 步长，设为 `mark` 时按刻度取值                               | `number` / `mark`                      | `1`          |
@@ -47,7 +47,7 @@
 | size                 | 尺寸：`large` / `default` / `small`                          | `string`                               | 继承 FormItem、Form 或 ConfigProvider |
 | debounce | 数字输入更新的防抖延迟，单位毫秒，`0` 为即时更新 | `number` | `0` |
 | validate-event       | 值变化时触发表单校验                                         | `boolean`                              | `true`       |
-| ariaLabel           | 无障碍名称（兼容属性，推荐标准 `aria-label`）               | `string`                               | —            |
+| aria-label           | 无障碍名称（兼容属性，推荐标准 `aria-label`）               | `string`                               | —            |
 
 ### 事件
 

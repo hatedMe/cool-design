@@ -15,7 +15,7 @@ RadioButton 是 Radio 的按钮样式变体，支持独立受控使用，也可�
 
 | 参数       | 说明                 | 类型                                   | 默认值 |
 | ---------- | -------------------- | -------------------------------------- | ------ |
-| modelValue | 当前选中值           | `string` / `number` / `boolean`        | —      |
+| model-value | 当前选中值           | `string` / `number` / `boolean`        | —      |
 | value      | 当前选项值           | `string` / `number` / `boolean`        | —      |
 | label      | value 未传时的兼容值 | `string` / `number` / `boolean`        | —      |
 | disabled   | 是否禁用             | `boolean`                              | `false` |

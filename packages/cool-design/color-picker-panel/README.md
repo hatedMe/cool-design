@@ -16,15 +16,15 @@
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| `modelValue` | 当前颜色 | `string` | `''` |
+| `model-value` | 当前颜色 | `string` | `''` |
 | `border` | 显示边框 | `boolean` | `true` |
 | `disabled` | 禁用编辑 | `boolean` | `false` |
-| `showAlpha` | 编辑透明度 | `boolean` | `false` |
-| `colorFormat` | 输出颜色格式 | `ColorFormat` | 有透明度时 `rgb`，其余 `hex` |
+| `show-alpha` | 编辑透明度 | `boolean` | `false` |
+| `color-format` | 输出颜色格式 | `ColorFormat` | 有透明度时 `rgb`，其余 `hex` |
 | `predefine` | 预设颜色 | `string[]` | `[]` |
-| `validateEvent` | 触发表单校验 | `boolean` | `true` |
-| `hueSliderClass` | 色相滑块类名 | `string` | — |
-| `hueSliderStyle` | 色相滑块样式 | `StyleValue` | — |
+| `validate-event` | 触发表单校验 | `boolean` | `true` |
+| `hue-slider-class` | 色相滑块类名 | `string` | — |
+| `hue-slider-style` | 色相滑块样式 | `StyleValue` | — |
 
 ### 事件
 

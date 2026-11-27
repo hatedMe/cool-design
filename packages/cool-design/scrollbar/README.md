@@ -33,16 +33,16 @@
 | 参数         | 说明                                       | 类型                   | 默认值 |
 | ------------ | ------------------------------------------ | ---------------------- | ------ |
 | `height`     | 滚动区域高度                               | `string` / `number`    | —      |
-| `maxHeight`  | 滚动区域最大高度                           | `string` / `number`    | —      |
+| `max-height`  | 滚动区域最大高度                           | `string` / `number`    | —      |
 | `native`     | 使用原生滚动条（不渲染自绘条）             | `boolean`              | `false` |
-| `wrapStyle`  | 滚动容器样式                               | `string` / `object`    | —      |
-| `wrapClass`  | 滚动容器类名                               | `string` / `object` / `array` | — |
-| `viewStyle`  | 内容视图样式                               | `string` / `object`    | —      |
-| `viewClass`  | 内容视图类名                               | `string` / `object` / `array` | — |
+| `wrap-style`  | 滚动容器样式                               | `string` / `object`    | —      |
+| `wrap-class`  | 滚动容器类名                               | `string` / `object` / `array` | — |
+| `view-style`  | 内容视图样式                               | `string` / `object`    | —      |
+| `view-class`  | 内容视图类名                               | `string` / `object` / `array` | — |
 | `noresize`   | 不监听内容尺寸变化（不使用 ResizeObserver） | `boolean`             | `false` |
 | `tag`        | 内容视图渲染标签                           | `string`               | `div`  |
 | `always`     | 滚动条常显（默认悬停显示）                 | `boolean`              | `false` |
-| `minSize`    | 滚动条最小长度，单位 px                    | `number`               | `20`   |
+| `min-size`    | 滚动条最小长度，单位 px                    | `number`               | `20`   |
 | `distance`   | 到边缘的触发距离，单位 px                  | `number`               | `0`    |
 | `tabindex`   | 实际滚动元素的键盘焦点顺序                 | `string` / `number`    | —      |
 

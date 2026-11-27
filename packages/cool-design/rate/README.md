@@ -52,27 +52,27 @@ import Rate from 'cool-design/rate';
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| modelValue | 当前评分 | `number` | `0` |
+| model-value | 当前评分 | `number` | `0` |
 | max | 最大评分 | `number` | `5` |
 | size | 尺寸 | `RateSize`（`large` / `default` / `small`） | `default` |
 | disabled | 禁用交互 | `boolean` | `false` |
-| allowHalf | 允许半星 | `boolean` | `false` |
-| lowThreshold | 低分阈值 | `number` | `2` |
-| highThreshold | 高分阈值 | `number` | `4` |
+| allow-half | 允许半星 | `boolean` | `false` |
+| low-threshold | 低分阈值 | `number` | `2` |
+| high-threshold | 高分阈值 | `number` | `4` |
 | colors | 评分颜色 | `string` / `string[]` / `RateThresholdMap<string>` | — |
-| voidColor | 空评分颜色 | `string` | — |
-| disabledVoidColor | 禁用时空评分颜色 | `string` | — |
+| void-color | 空评分颜色 | `string` | — |
+| disabled-void-color | 禁用时空评分颜色 | `string` | — |
 | icons | 评分图标 | `RateIconMap` | `icon-collection_fill` |
-| voidIcon | 空评分图标 | `RateIcon` | `icon-collection_fill` |
-| disabledVoidIcon | 禁用时空评分图标 | `RateIcon` | `icon-browse_fill` |
-| showText | 显示辅助文字 | `boolean` | `false` |
-| showScore | 显示分数 | `boolean` | `false` |
-| textColor | 文本颜色 | `string` | — |
+| void-icon | 空评分图标 | `RateIcon` | `icon-collection_fill` |
+| disabled-void-icon | 禁用时空评分图标 | `RateIcon` | `icon-browse_fill` |
+| show-text | 显示辅助文字 | `boolean` | `false` |
+| show-score | 显示分数 | `boolean` | `false` |
+| text-color | 文本颜色 | `string` | — |
 | texts | 辅助文字列表 | `string[]` | `['极差', '失望', '一般', '满意', '惊喜']` |
-| scoreTemplate | 分数模板，`{value}` 替换为评分 | `string` | `{value}` |
+| score-template | 分数模板，`{value}` 替换为评分 | `string` | `{value}` |
 | clearable | 允许再次点击清零 | `boolean` | `false` |
 | id | 根元素 ID | `string` | — |
-| ariaLabel | 无障碍标签 | `string` | — |
+| aria-label | 无障碍标签 | `string` | — |
 | label | 弃用的无障碍标签别名（同时保留 `title`） | `string` | — |
 
 ### 事件

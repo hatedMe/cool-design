@@ -14,8 +14,8 @@
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| `disableWidth` | 禁用宽度测量结果，该轴输出 `0` | `boolean` | `false` |
-| `disableHeight` | 禁用高度测量结果，该轴输出 `0` | `boolean` | `false` |
+| `disable-width` | 禁用宽度测量结果，该轴输出 `0` | `boolean` | `false` |
+| `disable-height` | 禁用高度测量结果，该轴输出 `0` | `boolean` | `false` |
 
 ### 事件
 

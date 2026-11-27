@@ -35,7 +35,7 @@
 | `marker`          | 是否显示侧边标记线                         | `boolean`                       | `true`   |
 | `type`            | 样式类型：`default` / `underline`          | `string`                        | `default` |
 | `direction`       | 排列方向：`vertical` / `horizontal`        | `string`                        | `vertical` |
-| `selectScrollTop` | 滚动到顶部时是否选中第一个链接             | `boolean`                       | `false`  |
+| `select-scroll-top` | 滚动到顶部时是否选中第一个链接             | `boolean`                       | `false`  |
 
 ### Anchor 事件
 

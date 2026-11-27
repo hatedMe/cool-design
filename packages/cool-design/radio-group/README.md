@@ -19,13 +19,13 @@ RadioGroup 管理一组 Radio 的受控值、原生名称和整体禁用状态�
 
 | 参数       | 说明           | 类型                      | 默认值 |
 | ---------- | -------------- | ------------------------- | ------ |
-| modelValue | 当前选中值     | `string` / `number` / `boolean` | —      |
+| model-value | 当前选中值     | `string` / `number` / `boolean` | —      |
 | name       | 统一的原生名称 | `string`                   | —      |
 | disabled   | 禁用整个组     | `boolean`                  | `false` |
 | size       | 统一尺寸       | `small` / `default` / `large` | —  |
 | fill       | 选中按钮背景色（仅按钮形态生效） | `string` | — |
 | text-color | 选中按钮文字色（仅按钮形态生效） | `string` | — |
-| validateEvent | 值变化时触发表单校验 | `boolean` | `true` |
+| validate-event | 值变化时触发表单校验 | `boolean` | `true` |
 
 ### 事件
 

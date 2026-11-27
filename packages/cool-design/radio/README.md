@@ -21,7 +21,7 @@ Radio 用于在互斥选项中选择一个值；RadioGroup 用于管理同一组
 
 | 参数       | 说明                                       | 类型                                   | 默认值 |
 | ---------- | ------------------------------------------ | -------------------------------------- | ------ |
-| modelValue | 当前选中值                                 | `string` / `number` / `boolean`        | —      |
+| model-value | 当前选中值                                 | `string` / `number` / `boolean`        | —      |
 | value      | 当前选项值，未传时使用 `label`             | `string` / `number` / `boolean`        | —      |
 | label      | 兼容选项值                                 | `string` / `number` / `boolean`        | —      |
 | disabled   | 禁用选项                                   | `boolean`                              | `false` |
@@ -48,7 +48,7 @@ Radio 用于在互斥选项中选择一个值；RadioGroup 用于管理同一组
 
 | 参数         | 说明                                   | 类型                                   | 默认值     |
 | ------------ | -------------------------------------- | -------------------------------------- | ---------- |
-| modelValue   | 当前选中值                             | `string` / `number` / `boolean`        | —          |
+| model-value   | 当前选中值                             | `string` / `number` / `boolean`        | —          |
 | name         | 统一的原生名称                         | `string`                               | —          |
 | disabled     | 禁用整个组                             | `boolean`                              | `false`    |
 | size         | 尺寸：`small` / `default` / `large`    | `string`                               | 继承全局尺寸 |
