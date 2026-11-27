@@ -105,9 +105,11 @@ export default defineComponent({
     };
     watch(() => panel.value?.popperRef.contentRef, (element, _, onCleanup) => {
       if (!element) return;
+      const unregister = menu?.registerPopup(element);
       element.addEventListener('mouseenter', hold);
       element.addEventListener('mouseleave', leave);
       onCleanup(() => {
+        unregister?.();
         element.removeEventListener('mouseenter', hold);
         element.removeEventListener('mouseleave', leave);
       });
@@ -191,7 +193,7 @@ export default defineComponent({
               onDismiss={dismiss}
               trigger={[]}
               triggerKeys={[]}
-              closeOnOutside
+              closeOnOutside={false}
               contentRole='menu'
               persistent={popper.value?.persistent}
               effect={popper.value?.effect}

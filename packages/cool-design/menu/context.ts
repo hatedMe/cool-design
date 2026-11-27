@@ -1,4 +1,4 @@
-import type { CSSProperties, InjectionKey, PropType, Ref, StyleValue, VNode } from 'vue';
+import type { Component, CSSProperties, InjectionKey, PropType, Ref, StyleValue, VNode } from 'vue';
 
 export type MenuMode = 'horizontal' | 'vertical';
 export type MenuTrigger = 'hover' | 'click';
@@ -30,6 +30,8 @@ export interface MenuItemData {
 }
 
 export interface MenuContext {
+  readonly ellipsisIcon?: string | Component;
+  registerPopup(element: HTMLElement): () => void;
   activeIndex: Ref<string>;
   opened: Ref<string[]>;
   mode: MenuMode;

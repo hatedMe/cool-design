@@ -1,7 +1,7 @@
 import {
   Comment, Fragment, Teleport, computed, defineComponent, h, inject, isVNode,
   nextTick, normalizeClass, normalizeStyle, onBeforeUnmount, onMounted, onUpdated, provide, ref,
-  shallowReactive, shallowRef, type VNode
+  shallowReactive, shallowRef, watch, type VNode
 } from 'vue';
 import { useNamespace } from '../../hooks/use-namespace';
 import Tooltip, { type TooltipInstance } from '../tooltip';
@@ -154,6 +154,9 @@ export default defineComponent({
       await panel.value?.updatePopper();
       panel.value?.popperRef.contentRef?.querySelector<HTMLElement>('button:not(:disabled)')?.focus({ preventScroll: true });
     };
+    watch(() => panel.value?.popperRef.contentRef, (element, _, cleanup) => {
+      if (element) cleanup(menu.registerPopup(element));
+    }, { flush: 'post' });
     const hasMore = computed(() => Number.isFinite(cutoff.value));
     return () => {
       let count = 0;
@@ -180,13 +183,13 @@ export default defineComponent({
         {entries}
         {hasMore.value && <li role="none" onMouseenter={() => hover(true)} onMouseleave={() => hover(false)}>
           <Tooltip ref={panel} trigger={[]} triggerKeys={[]} visible={open.value}
-            onUpdate:visible={() => undefined} onDismiss={close} closeOnOutside contentRole="menu" persistent={popper.persistent} effect={popper.effect}
+            onUpdate:visible={() => undefined} onDismiss={close} closeOnOutside={false} contentRole="menu" persistent={popper.persistent} effect={popper.effect}
             placement="bottom-start" offset={popper.offset} teleported={popper.teleported ?? true}
             popperClass={normalizeClass([sub.e('popup'), sub.em('popup', popper.effect), popper.popperClass])}
             popperStyle={normalizeStyle([menu.themeStyle, popper.popperStyle])} showArrow={false}>
             {{
               default: () => <button ref={more} type="button" aria-label="更多" aria-haspopup="menu" aria-expanded={open.value}
-                onClick={() => { clear(); open.value = !open.value; }} onKeydown={keyboard}>…</button>,
+                onClick={() => { clear(); open.value = !open.value; }} onKeydown={keyboard}>{typeof menu.ellipsisIcon === 'string' ? <i class={menu.ellipsisIcon} aria-hidden='true' /> : menu.ellipsisIcon ? h(menu.ellipsisIcon) : '…'}</button>,
               content: () => <ul role="presentation" class={sub.e('children')} onMouseenter={clear} onMouseleave={() => hover(false)}>
                 {Array.from({ length: Math.max(0, count - cutoff.value) }, (_, offset) => {
                   const index = cutoff.value + offset;

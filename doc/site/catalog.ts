@@ -330,6 +330,7 @@ export const pages: Page[] = [
     'Menu 菜单',
     '导航组件',
     [
+      ['compatibility', '外部点击收起', '开启配置后点击菜单外部收起子菜单。'],
       ['basic', '页面导航', '使用菜单项切换页面区域。'],
       ['element', '子组件用法', '使用 MenuItem/SubMenu/MenuItemGroup 构建导航。']
     ],

@@ -1,4 +1,4 @@
-import { computed, defineComponent, getCurrentInstance, onBeforeUnmount, provide, ref, watch, type CSSProperties, type PropType, type Ref } from 'vue';
+import { computed, defineComponent, getCurrentInstance, onMounted, onBeforeUnmount, provide, ref, watch, type Component, type CSSProperties, type PropType, type Ref } from 'vue';
 import { useNamespace } from '../../hooks/use-namespace';
 import {
   menuKey, menuPopperProps,
@@ -32,6 +32,8 @@ export default defineComponent({
     activeTextColor: { type: String, default: '' },
     router: Boolean,
     ellipsis: { type: Boolean, default: true },
+    ellipsisIcon: [String, Object, Function] as PropType<string | Component>,
+    closeOnClickOutside: Boolean,
     ...menuPopperProps,
     popperOffset: { type: Number, default: 6 },
     popperEffect: { type: String, default: 'light' },
@@ -49,6 +51,16 @@ export default defineComponent({
   },
   setup(props, { emit, slots, expose }) {
     const ns = useNamespace('menu');
+    const root = ref<HTMLElement>();
+    const popups = new Set<HTMLElement>();
+    const onOutside = (event: PointerEvent) => {
+      const target = event.target;
+      if (!props.closeOnClickOutside || !(target instanceof Node) || root.value?.contains(target) || [...popups].some(element => element.contains(target))) return;
+      [...opened.value].forEach(index => handleClose(index, [...paths].find(path => path.value[path.value.length - 1] === index)?.value ?? [index]));
+      overflow.value?.close();
+    };
+    onMounted(() => document.addEventListener('pointerdown', onOutside));
+    onBeforeUnmount(() => document.removeEventListener('pointerdown', onOutside));
     const overflow = ref<{ handleResize(): void; close(): void }>();
     const instance = getCurrentInstance();
     const internalActive = ref(props.modelValue ?? props.defaultActive ?? '');
@@ -182,6 +194,8 @@ export default defineComponent({
     expose({ open, close, updateActiveIndex, handleResize });
 
     provide(menuKey, {
+      get ellipsisIcon() { return props.ellipsisIcon; },
+      registerPopup(element: HTMLElement) { popups.add(element); return () => { popups.delete(element); }; },
       activeIndex,
       opened,
       get mode() {
@@ -270,6 +284,7 @@ export default defineComponent({
       const listClass = { [ns.e('list')]: true, 'no-transition': !props.collapseTransition };
       return (
         <nav
+          ref={root}
           class={{
             [ns.b()]: true,
             [`is-${props.mode}`]: true,
