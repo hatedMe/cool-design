@@ -708,6 +708,7 @@ export const pages: Page[] = [
     ['basic', '声明式步骤', '在 Tour 内声明步骤。']
   ]),
   component('tour', 'Tour 漫游式引导', '数据展示', [
+    ['compatibility', '兼容接口演示', '展示本次补齐的组件参数与交互。'],
     ['basic', '基础用法', '分步骤聚焦页面元素的引导。']
   ]),
   component('segmented', 'Segmented 分段控制器', '数据展示', [

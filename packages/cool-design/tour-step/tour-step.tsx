@@ -1,4 +1,4 @@
-import { defineComponent, type PropType } from 'vue';
+import { defineComponent, type CSSProperties, type PropType } from 'vue';
 import type { TourPlacement, TourStep, TourTarget, TourType } from '../tour/types';
 
 export default defineComponent({
@@ -11,6 +11,7 @@ export default defineComponent({
     placement: String as PropType<TourPlacement>,
     mask: { type: [Boolean, Object] as PropType<TourStep['mask']>, default: undefined },
     closeIcon: [String, Object],
+    contentStyle: Object as PropType<CSSProperties>,
     showArrow: { type: Boolean, default: undefined },
     showClose: { type: Boolean, default: undefined },
     scrollIntoViewOptions: [Boolean, Object] as PropType<boolean | ScrollIntoViewOptions>,

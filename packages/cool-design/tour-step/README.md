@@ -42,3 +42,9 @@
 | --- | --- |
 | `default` | 步骤内容 |
 | `header` | 步骤标题 |
+
+### 内容样式
+
+| 属性 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| content-style | 当前步骤内容面板样式，优先于 Tour 的 content-style | `CSSProperties` | — |

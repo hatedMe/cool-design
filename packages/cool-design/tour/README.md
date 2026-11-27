@@ -78,3 +78,7 @@
 | `next-btn`  | 自定义下一步按钮内容                       | `{ current: number }`           |
 
 在默认插槽放置 `TourStep` 可声明步骤，存在声明式步骤时以这些步骤为准。`gap` 支持数字或 `{ offset?: number | [number, number]; radius?: number }`。`append-to` 指定浮层挂载容器，`close-on-press-escape` 控制 Escape，`target-area-clickable` 控制聚光区域能否接收指针事件。`indicators({ current, total })` 自定义步骤指示。
+
+### 内容样式
+
+Tour 与 TourStep 支持 `content-style`（`CSSProperties`，默认未设置）；配置式步骤使用 `contentStyle`。步骤提供该值时优先使用步骤样式，否则使用 Tour 的全局样式；切换步骤不保留上一项样式。

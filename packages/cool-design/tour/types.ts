@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'vue';
 export type TourPlacement =
   | 'center'
   | 'top'
@@ -16,6 +17,7 @@ export type TourPlacement =
 export type TourTarget = string | HTMLElement | (() => HTMLElement | null) | null;
 
 export interface TourStep {
+  contentStyle?: CSSProperties;
   target?: TourTarget;
   title?: string;
   type?: TourType;

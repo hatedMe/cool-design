@@ -11,6 +11,7 @@ import {
   nextTick,
   ref,
   watch,
+  type CSSProperties,
   type PropType
 } from 'vue';
 import { useFloating, useFloatingTheme, type Placement } from '../../../src/utils/use-floating';
@@ -37,6 +38,7 @@ export default defineComponent({
     placement: { type: String as PropType<TourPlacement>, default: 'bottom' },
     showClose: { type: Boolean, default: true },
     closeIcon: [String, Object],
+    contentStyle: Object as PropType<CSSProperties>,
     nextButtonText: String,
     prevButtonText: String,
     zIndex: { type: Number, default: 2000 },
@@ -271,7 +273,8 @@ export default defineComponent({
                     zIndex: props.zIndex + 1
                   }
                 : [position.style.value, { zIndex: props.zIndex + 1 }],
-              maskStyle ?? {}
+              maskStyle ?? {},
+              currentStep.contentStyle ?? props.contentStyle ?? {}
             ]}
             tabindex={-1}
             role='dialog'
