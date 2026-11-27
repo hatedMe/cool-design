@@ -34,7 +34,7 @@ Popper、PopperTrigger、PopperContent、PopperArrow 组成底层定位组件族
 
 | 属性 | 类型 | 默认值 |
 | --- | --- | --- |
-| placement | Popper `Placement` | `bottom` |
+| placement | `Placement` | `bottom` |
 | strategy | `absolute` / `fixed` | `absolute` |
 | offset / boundaries-padding / arrow-offset | `number` | `12` / `0` / `5` |
 | fallback-placements | `Placement[]` | — |
@@ -44,7 +44,7 @@ Popper、PopperTrigger、PopperContent、PopperArrow 组成底层定位组件族
 | effect | `string` | `dark` |
 | id / aria-label | `string` | — |
 | style / popper-style | `StyleValue` | — |
-| class-name / popper-class | Vue class 值 | — |
+| class-name / popper-class | `string` / `array` / `object` / `boolean` | — |
 | reference-el / trigger-target-el | `HTMLElement` | — |
 | z-index | `number` | 当前配置层级 |
 
