@@ -780,6 +780,7 @@ export const pages: Page[] = [
     ['sizes', '尺寸', '使用 small、default、large 控制选择器高度。']
   ]),
   component('select-v2', 'SelectV2 虚拟化选择器', '表单组件', [
+    ['dynamic-height', '兼容接口演示', '展示本次补齐的组件参数与交互。'],
     ['basic', '基础用法', '大数据量选项的窗口化渲染选择器。'],
     ['grouped', '分组与多选', '分组 options 与多选过滤。']
   ]),

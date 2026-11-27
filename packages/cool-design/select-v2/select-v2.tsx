@@ -1,9 +1,9 @@
-import { computed, defineComponent, h, inject, nextTick, onBeforeUnmount, ref, watch, type Component, type CSSProperties, type PropType } from 'vue';
+import { computed, defineComponent, h, inject, nextTick, onBeforeUnmount, onMounted, ref, shallowReactive, watch, withDirectives, type ObjectDirective, type Component, type CSSProperties, type PropType } from 'vue';
 import { Teleport } from 'vue';
 import { useEmptyValues } from '../../hooks/use-empty-values';
 import { useComposition } from '../../hooks/use-composition';
 import { getFieldValue, formKey, useField } from '../form/context';
-import { useConfig, type Size } from '../config-provider/context';
+import { useConfig, useLocale, type Size } from '../config-provider/context';
 import { useId } from '../../hooks/use-id';
 import { useNamespace } from '../../hooks/use-namespace';
 import Tooltip from '../tooltip';
@@ -42,12 +42,15 @@ export default defineComponent({
     valueOnClear: { type: [String, Number, Boolean, Function], default: undefined },
     disabled: Boolean,
     loading: Boolean,
-    placeholder: { type: String, default: '请选择' },
-    noDataText: { type: String, default: '暂无数据' },
-    noMatchText: { type: String, default: '无匹配数据' },
+    placeholder: String,
+    noDataText: String,
+    noMatchText: String,
     size: String as PropType<Size>,
     height: { type: Number, default: 240 },
     itemHeight: { type: Number, default: 34 },
+    estimatedOptionHeight: Number,
+    fitInputWidth: { type: [Boolean, Number], default: true },
+    scrollbarAlwaysOn: Boolean,
     automaticDropdown: Boolean,
     name: String,
     validateEvent: { type: Boolean, default: true },
@@ -74,6 +77,7 @@ export default defineComponent({
     const field = useField();
     const form = inject(formKey, undefined);
     const config = useConfig();
+    const { t } = useLocale();
     const ns = useNamespace('select-v2');
     const controlNs = useNamespace('control');
     const { getValueOnClear, isEmptyValue } = useEmptyValues({
@@ -227,12 +231,80 @@ export default defineComponent({
       )
     );
 
+    const measuredHeights = shallowReactive(new Map<number, number>());
+    const renderedRows = new Map<HTMLElement, number>();
+    const dropdownWidth = ref<number>();
+    let sizeObserver: ResizeObserver | undefined;
+    const dynamic = computed(() => props.estimatedOptionHeight !== undefined);
+    const rowSize = (index: number) => dynamic.value
+      ? measuredHeights.get(index) ?? Math.max(1, props.estimatedOptionHeight ?? props.itemHeight)
+      : Math.max(1, props.itemHeight);
+    const offsets = computed(() => {
+      const result = [0];
+      visibleRows.value.forEach((_, index) => result.push(result[index] + rowSize(index)));
+      return result;
+    });
+    const measure = () => {
+      if (dynamic.value) renderedRows.forEach((index, element) => {
+        const height = element.getBoundingClientRect().height;
+        if (height > 0 && measuredHeights.get(index) !== height) measuredHeights.set(index, height);
+      });
+      const width = root.value?.getBoundingClientRect().width;
+      if (typeof props.fitInputWidth === 'number') dropdownWidth.value = props.fitInputWidth;
+      else if (props.fitInputWidth) dropdownWidth.value = width;
+      else if (root.value) {
+        const probe = root.value.ownerDocument.createElement('span');
+        probe.className = ns.e('option');
+        probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;width:max-content';
+        probe.textContent = flatOptions.value.reduce((label, row) => {
+          const text = optionLabel(row.option);
+          return text.length > label.length ? text : label;
+        }, '');
+        root.value.append(probe);
+        dropdownWidth.value = Math.max(width ?? 0, probe.getBoundingClientRect().width + 20);
+        probe.remove();
+      }
+    };
+    const measureRow: ObjectDirective<HTMLElement, number> = {
+      mounted(element, binding) {
+        renderedRows.set(element, binding.value);
+        sizeObserver?.observe(element);
+        measure();
+      },
+      updated(element, binding) { renderedRows.set(element, binding.value); measure(); },
+      unmounted(element) { renderedRows.delete(element); sizeObserver?.unobserve(element); }
+    };
+    onMounted(() => {
+      if (typeof ResizeObserver !== 'undefined') {
+        sizeObserver = new ResizeObserver(measure);
+        if (root.value) sizeObserver.observe(root.value);
+        renderedRows.forEach((_, element) => sizeObserver?.observe(element));
+      }
+      measure();
+    });
+    onBeforeUnmount(() => sizeObserver?.disconnect());
+    watch([visibleRows, () => props.estimatedOptionHeight, () => props.itemHeight], () => {
+      measuredHeights.clear();
+      scrollTop.value = 0;
+      if (dropdown.value) dropdown.value.scrollTop = 0;
+      nextTick(measure);
+    });
+    watch([open, () => props.fitInputWidth], () => nextTick(measure));
     const windowRows = computed(() => {
       const height = dropdown.value?.clientHeight || props.height;
-      const top = scrollTop.value - (listRef.value?.offsetTop ?? 0);
-      const count = Math.ceil(height / props.itemHeight) + 4;
-      const start = Math.max(0, Math.floor(top / props.itemHeight) - 2);
-      return { start, items: visibleRows.value.slice(start, start + count) };
+      const top = Math.max(0, scrollTop.value - (listRef.value?.offsetTop ?? 0));
+      const positions = offsets.value;
+      let low = 0;
+      let high = visibleRows.value.length;
+      while (low < high) {
+        const middle = (low + high) >>> 1;
+        if (positions[middle + 1] <= top) low = middle + 1;
+        else high = middle;
+      }
+      const start = Math.max(0, low - 2);
+      let end = low;
+      while (end < visibleRows.value.length && positions[end] < top + height) end++;
+      return { start, items: visibleRows.value.slice(start, end + 2) };
     });
 
     const setOpen = (value: boolean) => {
@@ -267,10 +339,10 @@ export default defineComponent({
       const view = dropdown.value;
       if (!view || !visibleRows.value.length || !Number.isFinite(index) || index < 0) return;
       const contentTop = listRef.value?.offsetTop ?? (parseFloat(getComputedStyle(view).paddingTop) || 0);
-      const target = Math.min(Math.floor(index), visibleRows.value.length - 1) * props.itemHeight + contentTop;
+      const target = offsets.value[Math.min(Math.floor(index), visibleRows.value.length - 1)] + contentTop;
       if (target < view.scrollTop) view.scrollTop = target;
-      else if (target + props.itemHeight > view.scrollTop + view.clientHeight)
-        view.scrollTop = target + props.itemHeight - view.clientHeight;
+      else if (target + rowSize(Math.floor(index)) > view.scrollTop + view.clientHeight)
+        view.scrollTop = target + rowSize(Math.min(Math.floor(index), visibleRows.value.length - 1)) - view.clientHeight;
       scrollTop.value = view.scrollTop;
     };
     const syncScrollToHighlighted = () => scrollTo(highlighted.value);
@@ -462,6 +534,7 @@ export default defineComponent({
             onFocusin={onFocusIn}
             onFocusout={onFocusOut}
             onKeydown={onKeydown}>
+            {slots.prefix && <span class={ns.e('prefix')}>{slots.prefix()}</span>}
             {props.multiple && slots.tag
               ? slots.tag({ data: selectedOptions.value.map((option, index) => option ?? { [valueKey.value]: selectedValues.value[index], [labelKey.value]: selectedLabels.value[index] }), deleteTag, selectDisabled: isDisabled() })
               : shown.map((option, index) =>
@@ -515,7 +588,7 @@ export default defineComponent({
               ref={input}
               class={ns.e('input')}
               value={query.value}
-              placeholder={selectedOptions.value.length ? '' : props.placeholder}
+              placeholder={selectedOptions.value.length ? '' : (props.placeholder ?? t('el.select.placeholder', '请选择'))}
               readonly={!props.filterable}
               disabled={isDisabled()}
               role='combobox'
@@ -566,7 +639,7 @@ export default defineComponent({
             const panel = (
               <div
                 ref={dropdown}
-                class={[ns.e('dropdown'), ns.em('dropdown', props.effect), panelTheme.value.scopeClass, props.popperClass]}
+                class={[ns.e('dropdown'), ns.em('dropdown', props.effect), panelTheme.value.scopeClass, props.popperClass, props.scrollbarAlwaysOn && 'is-scrollbar-always-on']}
                 id={listId.value}
                 onFocusin={onFocusIn}
                 onFocusout={onFocusOut}
@@ -574,39 +647,39 @@ export default defineComponent({
                 aria-hidden={kept ? 'true' : undefined}
                 data-theme={panelTheme.value.theme}
                 data-placement={position.placement.value}
-                style={[panelTheme.value.style ?? {}, position.style.value, { maxHeight: `${props.height}px` }, props.popperStyle ?? {}, kept ? { display: 'none' } : {}]}
+                style={[panelTheme.value.style ?? {}, position.style.value, { maxHeight: `${props.height}px`, width: dropdownWidth.value !== undefined ? `${dropdownWidth.value}px` : undefined }, props.popperStyle ?? {}, kept ? { display: 'none' } : {}]}
                 onScroll={onScroll}>
                 {props.showArrow && <span class={ns.e('arrow')} style={position.arrowStyle.value} aria-hidden='true' />}
                 {slots.header && <div onClick={(event: MouseEvent) => event.stopPropagation()}>{slots.header()}</div>}
-                {props.loading && <div class={ns.e('empty')}>{slots.loading?.() ?? slots.empty?.() ?? (props.loadingText || '加载中…')}</div>}
+                {props.loading && <div class={ns.e('empty')}>{slots.loading?.() ?? slots.empty?.() ?? (props.loadingText ?? t('el.select.loading', '加载中…'))}</div>}
                 {!props.loading && !visibleRows.value.length && (
-                  <div class={ns.e('empty')}>{slots.empty?.() ?? (query.value && rows.value.length ? props.noMatchText : props.noDataText)}</div>
+                  <div class={ns.e('empty')}>{slots.empty?.() ?? (query.value ? (props.noMatchText ?? t('el.select.noMatch', '无匹配数据')) : (props.noDataText ?? t('el.select.noData', '暂无数据')))}</div>
                 )}
                 {!props.loading && visibleRows.value.length > 0 && (
                   <div
                     ref={listRef}
                     class={ns.e('list')}
-                    style={{ height: `${visibleRows.value.length * props.itemHeight}px`, position: 'relative' }}>
-                    <div style={{ transform: `translateY(${windowRows.value.start * props.itemHeight}px)` }}>
+                    style={{ height: `${offsets.value[visibleRows.value.length]}px`, position: 'relative' }}>
+                    <div style={{ transform: `translateY(${offsets.value[windowRows.value.start]}px)` }}>
                       {windowRows.value.items.map((row, index) => {
                         const rowIndex = windowRows.value.start + index;
                         if (row.type === 'group') {
                           return (
-                            <div class={ns.e('group')} key={`group-${rowIndex}`} style={{ height: `${props.itemHeight}px` }}>
+                            withDirectives(<div class={ns.e('group')} key={`group-${rowIndex}`} style={{ height: dynamic.value ? undefined : `${props.itemHeight}px` }}>
                               {row.label}
-                            </div>
+                            </div>, [[measureRow, rowIndex]])
                           );
                         }
                         const option = row.option;
                         const selected = selectedValues.value.some((value) => sameValue(value, option[valueKey.value]));
-                        return (
+                        return withDirectives(
                           <div
                             key={rowIndex}
                             id={`${listId.value}-${rowIndex}`}
                             role='option'
                             aria-selected={selected}
                             aria-disabled={Boolean(option[disabledKey.value]) || undefined}
-                            style={{ height: `${props.itemHeight}px` }}
+                            style={{ height: dynamic.value ? undefined : `${props.itemHeight}px` }}
                             class={[
                               ns.e('option'),
                               {
@@ -618,7 +691,7 @@ export default defineComponent({
                             onMousedown={(event: MouseEvent) => event.preventDefault()}
                             onClick={() => choose(row)}>
                             {slots.default?.({ item: option, index: rowIndex }) ?? optionLabel(option)}
-                          </div>
+                          </div>, [[measureRow, rowIndex]]
                         );
                       })}
                     </div>

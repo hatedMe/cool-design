@@ -143,3 +143,11 @@
   border: inherit;
   pointer-events: none;
 }
+
+.#{config.$namespace}-select-v2__dropdown.is-scrollbar-always-on {
+  overflow-y: scroll;
+}
+.#{config.$namespace}-select-v2__prefix {
+  display: inline-flex;
+  align-items: center;
+}

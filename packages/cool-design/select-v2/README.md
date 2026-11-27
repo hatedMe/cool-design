@@ -107,3 +107,13 @@
 原先使用 `label` 插槽渲染下拉选项的代码可迁移到默认插槽。多选 `tag` 插槽一次接收整个选项数组。
 
 原生输入框承担 `combobox` 角色，支持 `aria-label` 和 `aria-labelledby`。对象值的 `valueKey` 支持直接字段和嵌套路径（如 `meta.id`、`meta[0]["record.id"]`）。
+
+### 兼容参数补充
+
+| 属性 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| estimated-option-height | 启用动态高度，以该值估算未测量选项；内容尺寸变化后重新测量 | `number` | — |
+| fit-input-width | 跟随输入宽度、根据标签内容计算宽度或指定像素宽度 | `boolean` / `number` | `true` |
+| scrollbar-always-on | 始终显示下拉滚动条 | `boolean` | `false` |
+
+`prefix` 插槽用于输入框前缀，不替换已选标签。默认 placeholder、加载、空数据和无匹配文案继承 ConfigProvider locale；显式文案属性优先，语言切换实时更新。
