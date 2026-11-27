@@ -68,6 +68,9 @@
 | z-index | 浮层层级 | `number` | 自动生成 |
 | virtual-triggering | 是否启用虚拟触发 | `boolean` | `false` |
 | virtual-ref | 真实触发元素或提供 `getBoundingClientRect()` 的对象，可附带 `contextElement` 以跟随滚动祖先 | `TooltipVirtualRef` | — |
+| aria-label | 提示的无障碍名称 | `string` | — |
+| trigger-class | 触发包装元素类名（本库扩展） | `string` | — |
+| hover-on-focus | hover 模式也响应键盘聚焦（本库扩展） | `boolean` | `true` |
 
 `eager`、`arrow-class`、`content-role`、`close-on-outside` 和 `can-open` 是本库扩展。原先组合使用 `persistent` 与 `eager` 的调用会继续预挂载。`arrow-class` 定制箭头，`content-role` 覆盖默认 `tooltip` 角色，`close-on-outside` 指定外部点击响应，`can-open(reference)` 可拒绝触发器和 `onOpen()` 发起的打开请求。
 
