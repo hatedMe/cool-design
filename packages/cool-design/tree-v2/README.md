@@ -81,3 +81,7 @@
 | `getNode(keyOrData)`              | 获取节点（`TreeV2Node`）               |
 | `expandNode(node)` / `collapseNode(node)` | 展开/收起指定节点             |
 | `scrollTo(offset)` / `scrollToNode(key)` | 滚动到位置/节点               |
+
+### 外部拖放事件
+
+`node-drop(data, node, event)` 在外部元素拖入节点并释放时触发，参数分别为原始数据、`TreeV2Node` 和 `DragEvent`。不提供内部节点拖拽排序。

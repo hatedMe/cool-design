@@ -46,7 +46,7 @@ const TreeV2 = defineComponent({
     scrollbarAlwaysOn: Boolean,
     height: { type: Number, default: 200 }
   },
-  emits: ['node-click', 'node-contextmenu', 'check-change', 'check', 'current-change', 'node-expand', 'node-collapse'],
+  emits: ['node-click', 'node-contextmenu', 'check-change', 'check', 'current-change', 'node-expand', 'node-collapse', 'node-drop'],
 
   setup(props, { emit, slots: providedSlots, expose }) {
     const slots: TreeV2Slots = providedSlots;
@@ -453,6 +453,8 @@ const TreeV2 = defineComponent({
                           'is-disabled': disabled
                         }
                       ]}
+                      onDragover={(event: DragEvent) => event.preventDefault()}
+                      onDrop={(event: DragEvent) => { event.preventDefault(); event.stopPropagation(); emit('node-drop', node.data, toPublicNode(node), event); }}
                       onClick={(event: MouseEvent) => handleRowClick(node, event)}
                       onContextmenu={(event: MouseEvent) => emit('node-contextmenu', event, node.data, toPublicNode(node))}>
                       <span style={{ width: `${(node.level - 1) * props.indent}px`, flex: '0 0 auto' }} />
