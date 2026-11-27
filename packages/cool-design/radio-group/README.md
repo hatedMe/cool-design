@@ -33,3 +33,9 @@ RadioGroup 管理一组 Radio 的受控值、原生名称和整体禁用状态�
 | ----------------- | ---------------- |
 | update:modelValue | 选项变化时更新值 |
 | change            | 选项变化时触发   |
+
+### 插槽
+
+| 名称 | 说明 |
+| --- | --- |
+| default | Radio / RadioButton 子项 |

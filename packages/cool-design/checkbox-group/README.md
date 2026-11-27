@@ -39,3 +39,9 @@ CheckboxGroup 管理一组 Checkbox 的数组值，并支持 `min`、`max`、整
 | ----------------- | -------------- | ------------- |
 | update:modelValue | 已选值数组变化 | `values`      |
 | change            | 用户改变选中项 | `values`      |
+
+### 插槽
+
+| 名称 | 说明 |
+| --- | --- |
+| default | Checkbox / CheckboxButton 子项 |

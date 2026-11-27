@@ -94,3 +94,7 @@ const time = ref(null);
 本组件不包含 TimeSelect 的 `start` / `end` / `step` API，也不支持 `selectableRange`。
 
 `empty-values` 和 `value-on-clear` 继承 ConfigProvider。单值和范围默认清空为 `null`，工厂每次清空调用一次。需要保留旧的范围清空值时，显式传入 `:value-on-clear="[null, null]"`。设置 `is-range` 后，清空仍保留两个输入框。
+
+### 插槽
+
+当前共享 TimePicker 实现未消费自定义插槽；请使用 `prefix-icon` / `clear-icon` 配置图标。尚不支持原版自定义插槽协议，不应将 DatePicker 的插槽列表直接视为本组件能力。
