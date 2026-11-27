@@ -153,3 +153,7 @@
 `options` 属性也可直接提供数组；分组数组默认使用 `options` 字段，可通过 `props` 映射。
 
 实例的只读属性 `selectedLabel` 返回当前单选标签（`string`）或按模型顺序排列的多选标签（`string[]`）。远程返回值扩展会忽略过期结果。回调直接更新外部选项时，由外部请求管理更新顺序。需要立即搜索时设置 `:debounce="0"`。
+
+### 兼容参数
+
+`show-arrow`（`boolean`，默认 `true`）控制下拉面板箭头；`suffix-transition`（`boolean`，默认 `true`）控制后缀图标过渡，该参数已弃用，推荐通过样式定制。

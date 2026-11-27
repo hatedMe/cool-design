@@ -117,6 +117,8 @@ export default defineComponent({
     popperOptions: { type: Object as PropType<FloatingOptions>, default: undefined },
     popperClass: { type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>, default: undefined },
     popperStyle: { type: [String, Array, Object] as PropType<string | CSSProperties | CSSProperties[]>, default: undefined },
+    showArrow: { type: Boolean, default: true },
+    suffixTransition: { type: Boolean, default: true },
     effect: { type: String as PropType<'light' | 'dark'>, default: 'light' }
   },
   emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear', 'visible-change', 'remove-tag', 'popup-scroll', 'end-reached'],
@@ -553,7 +555,7 @@ export default defineComponent({
               if (!isDisabled() && !(event as InputEvent).isComposing) loadRemote((event.target as HTMLInputElement).value);
             }} onCompositionend={(event: CompositionEvent) => { if (!isDisabled()) loadRemote((event.target as HTMLInputElement).value); }} />}
             {props.clearable && selectedValues.value.length > 0 && <button type='button' aria-label='清空' onClick={(event) => { event.stopPropagation(); clear(); }}><Icon icon={props.clearIcon} aria-hidden='true' /></button>}
-            {slots.suffix?.() ?? ((!props.remote || !props.filterable || props.remoteShowSuffix) && (props.suffixIcon ? <Icon icon={props.suffixIcon} aria-hidden='true' /> : <span class={ns.e('suffix-caret')} aria-hidden='true' />))}
+            {slots.suffix?.() ?? ((!props.remote || !props.filterable || props.remoteShowSuffix) && (props.suffixIcon ? <Icon class={[ns.e('suffix-icon'), !props.suffixTransition && 'no-transition']} icon={props.suffixIcon} aria-hidden='true' /> : <span class={[ns.e('suffix-caret'), !props.suffixTransition && 'no-transition']} aria-hidden='true' />))}
           </div>}
           <select
             ref={select}
@@ -595,6 +597,7 @@ export default defineComponent({
                 onScroll={onPopupScroll}
                 onMousedown={(event) => event.stopPropagation()}>
                 {slots.header?.()}
+                {props.showArrow && <span class={ns.e('arrow')} style={position.arrowStyle.value} aria-hidden='true' />}
                 {slots.dropdown ? slots.dropdown() : <>
                 {loading.value && <div class={ns.e('empty')}>{slots.empty ? slots.empty() : loadingText.value}</div>}
                 {!loading.value && !visibleRecords.length && <div class={ns.e('empty')}>{slots.empty ? slots.empty() : (query.value ? noMatchText.value : noDataText.value)}</div>}
