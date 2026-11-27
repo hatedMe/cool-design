@@ -6,7 +6,7 @@ afterEach(() => { document.body.innerHTML = ''; });
 
 test('Overlay 仅在完整遮罩点击时发送事件，并支持 mask=false', async () => {
   expect(UI.ElOverlay).toBeDefined();
-  const wrapper = mount(UI.ElOverlay, { props: { zIndex: 2200, overlayClass: 'custom-mask' }, slots: { default: () => h('button', 'child') } });
+  const wrapper = mount(UI.ElOverlay, { props: { zIndex: '2200', overlayClass: 'custom-mask' }, slots: { default: () => h('button', 'child') } });
   expect(wrapper.classes()).toContain('custom-mask');
   expect(wrapper.attributes('style')).toContain('2200');
   await wrapper.get('button').trigger('mousedown'); await wrapper.trigger('mouseup'); await wrapper.trigger('click');

@@ -1,4 +1,4 @@
-import { defineComponent, type PropType } from 'vue';
+import { defineComponent, type CSSProperties, type PropType } from 'vue';
 import { useNamespace } from '../../hooks/use-namespace';
 
 export default defineComponent({
@@ -16,7 +16,7 @@ export default defineComponent({
     let up = false;
     return () => <div
       class={[props.mask && ns.b(), props.overlayClass]}
-      style={{ zIndex: props.zIndex, ...(!props.mask ? { position: 'fixed' as const, inset: '0px' } : {}) }}
+      style={{ zIndex: props.zIndex, ...(!props.mask ? { position: 'fixed', inset: '0px' } : {}) } as CSSProperties}
       onMousedown={(event: MouseEvent) => { down = event.target === event.currentTarget; }}
       onMouseup={(event: MouseEvent) => { up = event.target === event.currentTarget; }}
       onClick={(event: MouseEvent) => {
