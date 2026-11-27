@@ -1,0 +1,151 @@
+// Baseline: https://unpkg.com/element-plus@2.14.8/es/index.mjs
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { createApp } from 'vue';
+import { fileURLToPath } from 'node:url';
+const expected = [
+  "ElAffix",
+  "ElAlert",
+  "ElAnchor",
+  "ElAnchorLink",
+  "ElAside",
+  "ElAutoResizer",
+  "ElAutocomplete",
+  "ElAvatar",
+  "ElAvatarGroup",
+  "ElBacktop",
+  "ElBadge",
+  "ElBreadcrumb",
+  "ElBreadcrumbItem",
+  "ElButton",
+  "ElButtonGroup",
+  "ElCalendar",
+  "ElCard",
+  "ElCarousel",
+  "ElCarouselItem",
+  "ElCascader",
+  "ElCascaderPanel",
+  "ElCheckTag",
+  "ElCheckbox",
+  "ElCheckboxButton",
+  "ElCheckboxGroup",
+  "ElCol",
+  "ElCollapse",
+  "ElCollapseItem",
+  "ElCollapseTransition",
+  "ElColorPicker",
+  "ElColorPickerPanel",
+  "ElConfigProvider",
+  "ElContainer",
+  "ElCountdown",
+  "ElDatePicker",
+  "ElDatePickerPanel",
+  "ElDescriptions",
+  "ElDescriptionsItem",
+  "ElDialog",
+  "ElDivider",
+  "ElDrawer",
+  "ElDropdown",
+  "ElDropdownItem",
+  "ElDropdownMenu",
+  "ElEmpty",
+  "ElFooter",
+  "ElForm",
+  "ElFormItem",
+  "ElHeader",
+  "ElIcon",
+  "ElImage",
+  "ElImageViewer",
+  "ElInfiniteScroll",
+  "ElInput",
+  "ElInputNumber",
+  "ElInputOtp",
+  "ElInputTag",
+  "ElLink",
+  "ElLoading",
+  "ElLoadingDirective",
+  "ElLoadingService",
+  "ElMain",
+  "ElMention",
+  "ElMenu",
+  "ElMenuItem",
+  "ElMenuItemGroup",
+  "ElMessage",
+  "ElMessageBox",
+  "ElNotification",
+  "ElOption",
+  "ElOptionGroup",
+  "ElOverlay",
+  "ElPageHeader",
+  "ElPagination",
+  "ElPopconfirm",
+  "ElPopover",
+  "ElPopoverDirective",
+  "ElPopper",
+  "ElPopperArrow",
+  "ElPopperContent",
+  "ElPopperTrigger",
+  "ElProgress",
+  "ElRadio",
+  "ElRadioButton",
+  "ElRadioGroup",
+  "ElRate",
+  "ElResult",
+  "ElRow",
+  "ElScrollbar",
+  "ElSegmented",
+  "ElSelect",
+  "ElSelectV2",
+  "ElSkeleton",
+  "ElSkeletonItem",
+  "ElSlider",
+  "ElSpace",
+  "ElSplitter",
+  "ElSplitterPanel",
+  "ElStatistic",
+  "ElStep",
+  "ElSteps",
+  "ElSubMenu",
+  "ElSwitch",
+  "ElTabPane",
+  "ElTable",
+  "ElTableColumn",
+  "ElTableV2",
+  "ElTabs",
+  "ElTag",
+  "ElText",
+  "ElTimePicker",
+  "ElTimeSelect",
+  "ElTimeline",
+  "ElTimelineItem",
+  "ElTooltip",
+  "ElTour",
+  "ElTourStep",
+  "ElTransfer",
+  "ElTree",
+  "ElTreeSelect",
+  "ElTreeV2",
+  "ElUpload",
+  "ElWatermark"
+];
+const esm = await import('../es/packages/cool-design/index.js');
+const require = createRequire(import.meta.url);
+const cjs = require('../lib/packages/cool-design/index.cjs');
+const missing = expected.filter(name => !(name in esm) || !(name in cjs));
+assert.deepEqual(missing, [], 'Element Plus 2.14.8 public component exports are missing');
+assert.deepEqual(Object.keys(esm).sort(), Object.keys(cjs).sort(), 'ESM and CJS exports differ');
+const app = createApp({});
+app.use(esm.default);
+for (const name of ['ElCollapseTransition', 'ElOverlay', 'ElPopper', 'ElPopperTrigger', 'ElPopperContent', 'ElPopperArrow']) {
+  assert.equal(app.component(name), esm[name], `Global registration differs: ${name}`);
+}
+assert.equal(typeof esm.ElMessageBox, 'function');
+assert.equal(typeof esm.ElMessageBox.confirm, 'function');
+for (const name of ['collapse-transition', 'overlay', 'popper']) {
+  const entry = await import(`../es/packages/cool-design/${name}/index.js`);
+  assert.ok(entry.default, `Missing subpath default: ${name}`);
+  assert.ok(require(`../lib/packages/cool-design/${name}/index.cjs`).default);
+  const { access } = await import('node:fs/promises');
+  await access(fileURLToPath(new URL(`../es/styles/${name}.css`, import.meta.url)));
+}
+console.log(`Element Plus 2.14.8: ${expected.length}/${expected.length} El exports; ESM/CJS, registrations and new subpaths verified.`);

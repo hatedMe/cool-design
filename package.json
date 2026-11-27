@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite --config vite.docs.config.ts",
     "test": "vitest run",
-    "verify": "pnpm typecheck && pnpm typecheck:docs && pnpm lint && pnpm build && pnpm test && pnpm build:docs",
+    "verify:exports": "node scripts/verify-element-plus-exports.mjs",
+    "verify": "pnpm typecheck && pnpm typecheck:docs && pnpm lint && pnpm build && pnpm verify:exports && pnpm test && pnpm build:docs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
