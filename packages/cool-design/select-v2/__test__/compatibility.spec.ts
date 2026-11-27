@@ -109,3 +109,43 @@ test('越界滚动索引仍将实际高度较大的最后一行完整滚入视�
   expect(panel.scrollTop).toBe(20);
   wrapper.unmount();
 });
+
+test('动态分组可键盘选择，过滤清空及数据替换后重新计算尺寸', async () => {
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+    return { width: 200, height: this.getAttribute('role') === 'option' ? 30 : this.classList.contains('i-select-v2__group') ? 40 : 0 } as DOMRect;
+  });
+  const wrapper = mount(SelectV2, { props: { filterable: true, estimatedOptionHeight: 20, height: 100,
+    options: [{ label: 'group', options: [{ value: 1, label: 'first' }, { value: 2, label: 'second' }] }]
+  } });
+  await wrapper.get('input').trigger('click'); await nextTick();
+  expect(doc().get('.i-select-v2__list').attributes('style')).toContain('100px');
+  await wrapper.get('input').trigger('keydown', { key: 'ArrowDown' });
+  await wrapper.get('input').trigger('keydown', { key: 'Enter' });
+  expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([2]);
+  await wrapper.get('input').trigger('click');
+  await wrapper.get('input').setValue('missing');
+  expect(doc().findAll('[role=option]')).toHaveLength(0);
+  expect(doc().find('.i-select-v2__list').exists()).toBe(false);
+  await wrapper.setProps({ options: [{ label: 'new group', options: [{ value: 3, label: 'new' }] }] });
+  await wrapper.get('input').setValue(''); await nextTick();
+  expect(doc().get('.i-select-v2__list').attributes('style')).toContain('70px');
+  wrapper.unmount();
+});
+
+test('嵌套语言配置与加载、无匹配的显式文案优先级', async () => {
+  const loading = ref(true);
+  const custom = ref<Record<string, string>>({});
+  const wrapper = mount({ setup: () => () => h(ConfigProvider, { locale: zhCn }, () => h(ConfigProvider, { locale: en }, () => h(SelectV2, {
+    modelValue: null, filterable: true, loading: loading.value, options: [{ value: 1, label: 'one' }], ...custom.value
+  }))) }, { attachTo: document.body });
+  await wrapper.get('input').trigger('click');
+  expect(doc().get('.i-select-v2__empty').text()).toBe('Loading');
+  custom.value = { loadingText: '等待中', noMatchText: '未找到' }; await nextTick();
+  expect(doc().get('.i-select-v2__empty').text()).toBe('等待中');
+  loading.value = false; await nextTick();
+  await wrapper.get('input').setValue('missing');
+  expect(doc().get('.i-select-v2__empty').text()).toBe('未找到');
+  custom.value = {}; await nextTick();
+  expect(doc().get('.i-select-v2__empty').text()).toBe('No matching data');
+  wrapper.unmount();
+});
