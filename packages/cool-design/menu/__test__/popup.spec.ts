@@ -1,10 +1,14 @@
 import { defineComponent, h, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { DOMWrapper, mount } from '@vue/test-utils';
-import { expect, test, vi } from 'vitest';
+import { afterEach, expect, test, vi } from 'vitest';
 import { Menu, MenuItem, SubMenu } from '..';
 
 const popup = (name: string) => new DOMWrapper(document.body).find<HTMLElement>(`.${name}`);
 const icon = (text: string) => () => h('span', text);
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 test('水平浮层把继承的字符串样式和更新后的数组样式应用到面板，显式 false 清除继承', async () => {
   const submenuStyle = ref<string | (string | { minWidth: string })[] | false>();
@@ -79,6 +83,7 @@ test.each(['仅重开父级', '鼠标重新进入子级', '显式打开子级'])
 });
 
 test.each(['等待关闭', '仅重开父级', '鼠标重新进入子级'])('父浮层离场卸载后%s，按子级交互处理关闭请求', async (interaction) => {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'requestAnimationFrame', 'cancelAnimationFrame'] });
   let mounted = 0;
   let unmounted = 0;
   const Child = defineComponent({
@@ -107,10 +112,11 @@ test.each(['等待关闭', '仅重开父级', '鼠标重新进入子级'])('父�
   try {
     await nextTick();
     await popup('child-lazy').trigger('mouseleave', { relatedTarget: document.body });
-    await vi.waitFor(() => {
-      expect(popup('parent-lazy').exists()).toBe(false);
-      expect([mounted, unmounted]).toEqual([1, 1]);
-    }, { interval: 10 });
+    await vi.advanceTimersByTimeAsync(20);
+    // 推进离场的两帧，同时保持子级 500ms 关闭期限尚未到达。
+    await vi.advanceTimersByTimeAsync(40);
+    expect(popup('parent-lazy').exists()).toBe(false);
+    expect([mounted, unmounted]).toEqual([1, 1]);
     expect(wrapper.emitted('close')).toEqual([['a', ['a']]]);
     if (interaction !== '等待关闭') {
       wrapper.vm.open('a');
@@ -119,16 +125,18 @@ test.each(['等待关闭', '仅重开父级', '鼠标重新进入子级'])('父�
     }
     if (interaction === '鼠标重新进入子级') {
       await popup('child-lazy').trigger('mouseenter');
-      await new Promise((resolve) => setTimeout(resolve, 510));
+      await vi.advanceTimersByTimeAsync(500);
       expect(wrapper.emitted('close')).toEqual([['a', ['a']]]);
       expect(popup('child-lazy').attributes('aria-hidden')).toBeUndefined();
       return;
     }
 
-    await vi.waitFor(() => {
-      expect(wrapper.emitted('close')).toEqual([['a', ['a']], ['b', ['a', 'b']]]);
-      expect(popup('child-lazy').exists()).toBe(false);
-    });
+    await vi.advanceTimersByTimeAsync(439);
+    expect(wrapper.emitted('close')).toEqual([['a', ['a']]]);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(wrapper.emitted('close')).toEqual([['a', ['a']], ['b', ['a', 'b']]]);
+    await vi.advanceTimersByTimeAsync(40);
+    expect(popup('child-lazy').exists()).toBe(false);
     if (interaction === '等待关闭') {
       wrapper.vm.open('a');
       await nextTick();
@@ -138,6 +146,7 @@ test.each(['等待关闭', '仅重开父级', '鼠标重新进入子级'])('父�
     expect(popup('child-lazy').exists()).toBe(false);
   } finally {
     wrapper.unmount();
+    vi.useRealTimers();
   }
 });
 
