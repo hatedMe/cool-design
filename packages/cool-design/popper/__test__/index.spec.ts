@@ -50,3 +50,19 @@ test('Popper 虚拟触发的监听和原有 ARIA 在引用切换、卸载时恢�
   wrapper.unmount(); second.click(); expect(click).toHaveBeenCalledTimes(2);
   expect(second.hasAttribute('aria-describedby')).toBe(false);
 });
+
+test('普通和虚拟模式切换时移动监听和 ARIA 引用', async () => {
+  const virtual = ref(false);
+  const target = document.createElement('button'); document.body.append(target);
+  const click = vi.fn();
+  const wrapper = mount(UI.Popper, { slots: { default: () => h(UI.PopperTrigger, { virtualTriggering: virtual.value, virtualRef: target, id: 'switch-tip', open: true, onClick: click }, () => h('button', 'normal')) } });
+  const old = wrapper.get('button').element;
+  virtual.value = true; await nextTick();
+  target.click(); expect(click).toHaveBeenCalledTimes(1);
+  old.click(); expect(click).toHaveBeenCalledTimes(1);
+  expect(target.getAttribute('aria-describedby')).toContain('switch-tip');
+  virtual.value = false; await nextTick();
+  target.click(); expect(click).toHaveBeenCalledTimes(1);
+  await wrapper.get('button').trigger('click'); expect(click).toHaveBeenCalledTimes(2);
+  wrapper.unmount();
+});

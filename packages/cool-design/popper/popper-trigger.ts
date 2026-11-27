@@ -22,7 +22,9 @@ export default defineComponent({
     const aria = computed(() => context.role.value === 'tooltip'
       ? { 'aria-describedby': props.open ? props.id : undefined }
       : { 'aria-haspopup': context.role.value, 'aria-expanded': String(props.open), 'aria-controls': props.id });
-    watch(() => props.virtualRef, value => { if (props.virtualTriggering) context.triggerRef.value = value; }, { immediate: true });
+    watch([() => props.virtualRef, () => props.virtualTriggering], ([value, virtual]) => {
+      context.triggerRef.value = virtual ? value : undefined;
+    }, { immediate: true });
     watch([context.triggerRef, aria, () => ({ ...props })], ([element], _, cleanup) => {
       if (typeof HTMLElement === 'undefined' || !(element instanceof HTMLElement)) return;
       const previous = new Map<string, string | null>();
