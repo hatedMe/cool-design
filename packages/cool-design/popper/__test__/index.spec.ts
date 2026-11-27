@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import * as UI from '../../index';
-import { h, nextTick, ref } from 'vue';
+import { h, nextTick, ref, Teleport } from 'vue';
 import { afterEach, expect, test, vi } from 'vitest';
 afterEach(() => { document.body.innerHTML = ''; });
 
@@ -65,4 +65,23 @@ test('普通和虚拟模式切换时移动监听和 ARIA 引用', async () => {
   target.click(); expect(click).toHaveBeenCalledTimes(1);
   await wrapper.get('button').trigger('click'); expect(click).toHaveBeenCalledTimes(2);
   wrapper.unmount();
+});
+
+test('嵌套 Teleport 浮层仅由最上层约束焦点', async () => {
+  const nativeFocus = HTMLElement.prototype.focus;
+  let calls = 0;
+  const focus = vi.spyOn(HTMLElement.prototype, 'focus').mockImplementation(function (this: HTMLElement, options?: FocusOptions) {
+    calls++;
+    if (calls < 10) nativeFocus.call(this, options);
+  });
+  const wrapper = mount(UI.Popper, { attachTo: document.body, slots: { default: () => h(UI.PopperContent, { visible: true, trapping: true }, () => [
+    h('button', { id: 'outer-action' }, 'outer'),
+    h(Teleport, { to: 'body' }, h(UI.Popper, null, () => h(UI.PopperContent, { visible: true, trapping: true }, () => h('button', { id: 'inner-action' }, 'inner'))))
+  ]) } });
+  try {
+    await nextTick(); await nextTick();
+    document.getElementById('inner-action')!.focus();
+    expect(document.activeElement?.id).toBe('inner-action');
+    expect(calls).toBeLessThan(4);
+  } finally { wrapper.unmount(); focus.mockRestore(); }
 });

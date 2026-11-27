@@ -1,5 +1,6 @@
-import { computed, defineComponent, inject, nextTick, onBeforeUnmount, onMounted, provide, shallowRef, watch, type CSSProperties, type PropType, type StyleValue } from 'vue';
+import { computed, defineComponent, inject, nextTick, onBeforeMount, onBeforeUnmount, onMounted, provide, shallowRef, watch, type CSSProperties, type PropType, type StyleValue } from 'vue';
 import { createPopper, type Instance, type Options, type Placement, type State } from '@popperjs/core';
+import { pushOverlay, removeOverlay, isTopFocusOverlay } from '../../../src/utils/overlay-stack';
 import { useNamespace } from '../../hooks/use-namespace';
 import { useZIndex } from '../../hooks/use-z-index';
 import { popperKey, popperContentKey } from './context';
@@ -64,6 +65,17 @@ export default defineComponent({
         { name: 'capture', enabled: true, phase: 'afterWrite', fn({ state }) { styles.value = { ...state.styles }; attributes.value = { ...state.attributes }; } }
       ]
     });
+    const focusToken = Symbol('popper-focus');
+    let ownsFocus = false;
+    let active = false;
+    const releaseFocus = () => { removeOverlay(focusToken); ownsFocus = false; };
+    const syncFocus = () => {
+      const shouldTrap = active && props.visible && (props.trapping || props.focusOnShow);
+      if (shouldTrap && !ownsFocus) { pushOverlay(focusToken, true); ownsFocus = true; }
+      else if (!shouldTrap && ownsFocus) releaseFocus();
+    };
+    onBeforeMount(() => { active = true; syncFocus(); });
+    watch([() => props.visible, () => props.trapping, () => props.focusOnShow], syncFocus, { flush: 'sync' });
     let instance: Instance | undefined;
     let previousFocus: HTMLElement | undefined;
     const focusable = () => [...(element.value?.querySelectorAll<HTMLElement>('button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]') ?? [])]
@@ -92,11 +104,11 @@ export default defineComponent({
         if (visible) {
           previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
           await nextTick();
-          if (props.visible && props.focusOnShow) focusFirst();
+          if (props.visible && props.focusOnShow && isTopFocusOverlay(focusToken)) focusFirst();
         } else if (element.value?.contains(document.activeElement)) previousFocus?.focus({ preventScroll: true });
       }, { immediate: true });
       const trap = (event: FocusEvent) => {
-        if (props.visible && props.trapping && event.target instanceof Node && !element.value?.contains(event.target)) focusFirst();
+        if (ownsFocus && isTopFocusOverlay(focusToken) && props.visible && (props.trapping || props.focusOnShow) && event.target instanceof Node && !element.value?.contains(event.target)) focusFirst();
       };
       document.addEventListener('focusin', trap);
       onBeforeUnmount(() => document.removeEventListener('focusin', trap));
@@ -110,6 +122,7 @@ export default defineComponent({
       cleanup(() => previous.forEach(([key, value]) => value === null ? target.removeAttribute(key) : target.setAttribute(key, value)));
     }, { flush: 'post' });
     onBeforeUnmount(() => {
+      releaseFocus();
       if (element.value?.contains(document.activeElement)) previousFocus?.focus({ preventScroll: true });
       if (context.contentRef.value === element.value) context.contentRef.value = undefined;
     });
@@ -117,7 +130,7 @@ export default defineComponent({
     const onKeydown = (event: KeyboardEvent) => {
       if (!props.visible) return;
       if (event.key === 'Escape') emit('close');
-      if (event.key !== 'Tab' || (!props.loop && !props.trapping)) return;
+      if (event.key !== 'Tab' || (!props.loop && !props.trapping) || (ownsFocus && !isTopFocusOverlay(focusToken))) return;
       const items = focusable();
       const first = items[0];
       const last = items[items.length - 1];
