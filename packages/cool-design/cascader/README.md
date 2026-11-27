@@ -96,3 +96,7 @@
 `CascaderInstance` 的 `cascaderPanelRef`、`contentRef` 和 `presentText` 均为只读，分别提供内嵌 CascaderPanel 实例、下拉面板元素与当前单选显示文本。
 
 `show-checked-strategy` 为 `child` 或 `parent`，默认 `child`。切换策略只改变多选标签，模型仍保留实际选中值。
+
+### 自定义清空图标
+
+`clear-icon`：`string` / `Component`，未设置时使用默认清空符号，不影响 clear 事件。

@@ -8,6 +8,7 @@ import {
   provide,
   ref,
   watch,
+  type Component,
   type CSSProperties,
   type PropType
 } from 'vue';
@@ -19,6 +20,7 @@ import { useConfig, type Size } from '../config-provider/context';
 import { useFloating, useFloatingTheme, type Placement, type FloatingOptions } from '../../../src/utils/use-floating';
 import { createBEM, createNamespace } from '../../../src/utils/create';
 import Tooltip from '../tooltip';
+import Icon from '../icon';
 import type { TagType } from '../tag/tag';
 import { embeddedCascaderPanelKey, useCascaderNodes } from './node';
 import CascaderPanel, { type CascaderPanelInstance } from '../cascader-panel';
@@ -66,6 +68,7 @@ export default defineComponent({
     fitInputWidth: [Boolean, Number],
     maxCollapseTags: { type: Number, default: 1 },
     clearable: Boolean,
+    clearIcon: [String, Object, Function] as PropType<string | Component>,
     emptyValues: Array as PropType<unknown[]>,
     valueOnClear: { type: [String, Number, Boolean, Array, Function], default: undefined },
     disabled: Boolean,
@@ -567,7 +570,7 @@ export default defineComponent({
                   event.stopPropagation();
                   clear();
                 }}>
-                ×
+                {props.clearIcon ? <Icon icon={props.clearIcon} aria-hidden='true' /> : '×'}
               </button>
             )}
             <span class={bem('arrow')} aria-hidden='true'>
