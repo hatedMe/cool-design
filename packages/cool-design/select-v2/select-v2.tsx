@@ -289,7 +289,7 @@ export default defineComponent({
       if (dropdown.value) dropdown.value.scrollTop = 0;
       nextTick(measure);
     });
-    watch([open, () => props.fitInputWidth], () => nextTick(measure));
+    watch([open, () => props.fitInputWidth], measure, { flush: 'post' });
     const windowRows = computed(() => {
       const height = dropdown.value?.clientHeight || props.height;
       const top = Math.max(0, scrollTop.value - (listRef.value?.offsetTop ?? 0));
