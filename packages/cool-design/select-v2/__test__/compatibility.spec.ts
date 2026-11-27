@@ -70,3 +70,28 @@ test('语言切换与显式文案优先级', async () => {
   expect(doc().get('.i-select-v2__empty').text()).toBe('没有选项');
   wrapper.unmount();
 });
+
+test('打开期间改变 height 即时扩展可见窗口', async () => {
+  let height = 68;
+  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockImplementation(function (this: HTMLElement) { return this.getAttribute('role') === 'listbox' ? height : 0; });
+  const wrapper = mount(SelectV2, { props: { height, options: Array.from({ length: 100 }, (_, value) => ({ value, label: String(value) })) } });
+  await wrapper.get('input').trigger('click');
+  const count = doc().findAll('[role=option]').length;
+  height = 300;
+  await wrapper.setProps({ height });
+  expect(doc().findAll('[role=option]').length).toBeGreaterThan(count);
+  wrapper.unmount();
+});
+
+test('内容宽度模式滚动不重复扫描全部标签', async () => {
+  let reads = 0;
+  const options = Array.from({ length: 1000 }, (_, value) => ({ value, get label() { reads++; return `选项 ${value}`; } }));
+  const wrapper = mount(SelectV2, { props: { options, fitInputWidth: false } });
+  await wrapper.get('input').trigger('click'); await nextTick();
+  reads = 0;
+  const panel = doc().get('[role=listbox]');
+  (panel.element as HTMLElement).scrollTop = 3400;
+  await panel.trigger('scroll'); await nextTick();
+  expect(reads).toBeLessThan(200);
+  wrapper.unmount();
+});

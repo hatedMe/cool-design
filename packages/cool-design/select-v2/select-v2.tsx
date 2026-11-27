@@ -244,11 +244,18 @@ export default defineComponent({
       visibleRows.value.forEach((_, index) => result.push(result[index] + rowSize(index)));
       return result;
     });
-    const measure = () => {
+    const viewportHeight = ref(0);
+    const longestLabel = computed(() => flatOptions.value.reduce((label, row) => {
+      const text = optionLabel(row.option);
+      return text.length > label.length ? text : label;
+    }, ''));
+    const measureRows = () => {
       if (dynamic.value) renderedRows.forEach((index, element) => {
         const height = element.getBoundingClientRect().height;
         if (height > 0 && measuredHeights.get(index) !== height) measuredHeights.set(index, height);
       });
+    };
+    const measureWidth = () => {
       const width = root.value?.getBoundingClientRect().width;
       if (typeof props.fitInputWidth === 'number') dropdownWidth.value = props.fitInputWidth;
       else if (props.fitInputWidth) dropdownWidth.value = width;
@@ -256,22 +263,24 @@ export default defineComponent({
         const probe = root.value.ownerDocument.createElement('span');
         probe.className = ns.e('option');
         probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;width:max-content';
-        probe.textContent = flatOptions.value.reduce((label, row) => {
-          const text = optionLabel(row.option);
-          return text.length > label.length ? text : label;
-        }, '');
+        probe.textContent = longestLabel.value;
         root.value.append(probe);
         dropdownWidth.value = Math.max(width ?? 0, probe.getBoundingClientRect().width + 20);
         probe.remove();
       }
     };
+    const measure = () => {
+      measureRows();
+      measureWidth();
+      viewportHeight.value = dropdown.value?.clientHeight ?? 0;
+    };
     const measureRow: ObjectDirective<HTMLElement, number> = {
       mounted(element, binding) {
         renderedRows.set(element, binding.value);
         sizeObserver?.observe(element);
-        measure();
+        measureRows();
       },
-      updated(element, binding) { renderedRows.set(element, binding.value); measure(); },
+      updated(element, binding) { renderedRows.set(element, binding.value); measureRows(); },
       unmounted(element) { renderedRows.delete(element); sizeObserver?.unobserve(element); }
     };
     onMounted(() => {
@@ -289,9 +298,13 @@ export default defineComponent({
       if (dropdown.value) dropdown.value.scrollTop = 0;
       nextTick(measure);
     });
-    watch([open, () => props.fitInputWidth], measure, { flush: 'post' });
+    watch([open, () => props.fitInputWidth, () => props.height], measure, { flush: 'post' });
+    watch(dropdown, (element, _, cleanup) => {
+      if (element) { sizeObserver?.observe(element); cleanup(() => sizeObserver?.unobserve(element)); }
+      measure();
+    }, { flush: 'post' });
     const windowRows = computed(() => {
-      const height = dropdown.value?.clientHeight || props.height;
+      const height = Math.min(props.height, viewportHeight.value || props.height);
       const top = Math.max(0, scrollTop.value - (listRef.value?.offsetTop ?? 0));
       const positions = offsets.value;
       let low = 0;
