@@ -891,6 +891,12 @@ export const pages: Page[] = [
   ])
 ];
 
+// Popper 子组件共享组件族的契约与组合演示，保留各自可访问的文档地址。
+const popperPage = pages.find((page) => page.id === 'components/popper')!;
+for (const [id, name] of [['popper-trigger', 'PopperTrigger'], ['popper-content', 'PopperContent'], ['popper-arrow', 'PopperArrow']]) {
+  pages.push({ ...popperPage, id: `components/${id}`, title: `${name} 底层浮层子组件`, imports: [name] });
+}
+
 // 侧边栏按 Element Plus 的主组件组织；子组件文档保留独立地址。
 const componentNavigation: { title: string; ids: string[] }[] = [
   {
@@ -922,7 +928,8 @@ const componentNavigation: { title: string; ids: string[] }[] = [
     title: '反馈组件',
     ids: ['alert', 'dialog', 'drawer', 'loading', 'message', 'message-box', 'notification', 'popconfirm', 'popover', 'tooltip']
   },
-  { title: '其他组件', ids: ['divider', 'watermark', 'popper', 'overlay', 'collapse-transition'] }
+  { title: '其他组件', ids: ['divider', 'watermark'] },
+  { title: '底层组件', ids: ['collapse-transition', 'overlay', 'popper'] }
 ];
 
 export const navigationGroups = [

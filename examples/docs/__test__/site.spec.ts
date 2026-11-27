@@ -84,7 +84,7 @@ describe('PC 组件文档站', () => {
     const wrapper = await open();
     const groups = wrapper.findAll('.docs-nav-group');
     expect(groups.map((group) => group.get('h2').text())).toEqual([
-      '开发指南', '基础组件', '配置组件', '表单组件', '数据展示', '导航组件', '反馈组件', '其他组件'
+      '开发指南', '基础组件', '配置组件', '表单组件', '数据展示', '导航组件', '反馈组件', '其他组件', '底层组件'
     ]);
     const links = (title: string) => groups.find((group) => group.get('h2').text() === title)!
       .findAll('a').map((link) => link.attributes('href'));
@@ -98,6 +98,7 @@ describe('PC 组件文档站', () => {
       'tree', 'tree-v2', 'statistic', 'segmented'
     ].map((id) => `#/components/${id}`));
     expect(links('其他组件')).toEqual(['#/components/divider', '#/components/watermark']);
+    expect(links('底层组件')).toEqual(['#/components/collapse-transition', '#/components/overlay', '#/components/popper']);
     const hrefs = wrapper.findAll('.docs-sidebar a').map((link) => link.attributes('href'));
     for (const id of ['button-group', 'row', 'col', 'header', 'menu-item', 'table-column', 'radio-group', 'form-item', 'directives']) {
       expect(hrefs).not.toContain(`#/components/${id}`);
