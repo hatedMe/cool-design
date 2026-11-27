@@ -207,3 +207,11 @@ const columns: TableColumn[] = [{ key: 'name', title: '姓名' }];
 - [过渡动画](#/guide/transition)：在业务区域加入进入、离开动画。
 
 右上角“业务示例”提供用户管理页面，可查看查询、分页和编辑如何组合使用。
+
+## API 命名约定
+
+组件属性表使用模板中的 kebab-case 名称，例如 `model-value`、`empty-values`、`popper-style`。`model-value` 通常通过 `v-model` 使用；JavaScript / TypeScript 属性对象仍使用 `modelValue`、`emptyValues`、`popperStyle`。
+
+事件保留实际协议，例如 `update:modelValue`。服务选项、列配置、字段映射等 JavaScript 对象字段继续使用 camelCase，例如 `ElMessage({ showClose: true })` 和 `{ dataKey: 'name', cellRenderer }`。
+
+文档以当前实现为准；本库扩展及与 Element Plus 默认值不同的项目会单独说明。未列出的上游 API 不视为已经支持，迁移时请核对具体组件的支持范围。
