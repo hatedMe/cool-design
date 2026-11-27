@@ -26,7 +26,7 @@ Menu 用于页面导航和分组操作，支持水平/垂直模式、折叠、�
 
 浮层沿用根菜单的 `text-color`、`active-text-color` 和 `background-color`，可以用 `popper-style` 覆盖这些样式。设置 `--i-menu-active-color` 可以覆盖面板内的激活色。
 
-在浮层标题上按方向键可展开并聚焦首个可用菜单项。按 `Escape` 关闭当前浮层并将焦点返回标题，点击浮层之外可收起当前浮层。
+在浮层标题上按方向键可展开并聚焦首个可用菜单项。按 `Escape` 关闭当前浮层并将焦点返回标题。只有开启 `close-on-click-outside` 时，点击根菜单及所有子菜单浮层之外才会收起菜单；该选项默认为 `false`。
 
 将 `persistent` 设为 `false` 时，浮层关闭并完成离场后销毁内容。图标按组配置，展开组用于垂直展开菜单和水平一级子菜单，折叠组用于其它浮层子菜单。
 
@@ -70,6 +70,8 @@ Menu 用于页面导航和分组操作，支持水平/垂直模式、折叠、�
 | `text-color` | 文字颜色 | `string` | — |
 | `active-text-color` | 激活文字颜色 | `string` | — |
 | `router` | 开启后点击菜单项通过 vue-router 导航（目标取 `route`/`to`，缺省用 `index`） | `boolean` | `false` |
+| `ellipsis-icon` | 横向溢出菜单图标，字符串为图标类名 | `string` / `Component` | — |
+| `close-on-click-outside` | 点击菜单及其浮层之外时收起所有子菜单 | `boolean` | `false` |
 | `ellipsis` | 水平模式下将放不下的末尾菜单项收进「更多」。关闭后沿用原水平布局 | `boolean` | `true` |
 | `popper-offset` | 浮层与触发器的间距，单位 px | `number` | `6` |
 | `popper-effect` | 浮层主题，内置 `light` / `dark` | `string` | `light` |
@@ -79,6 +81,8 @@ Menu 用于页面导航和分组操作，支持水平/垂直模式、折叠、�
 | `show-timeout` | 悬停展开延时，单位毫秒 | `number` | `300` |
 | `hide-timeout` | 悬停收起延时，单位毫秒 | `number` | `300` |
 | `persistent` | 从首次渲染起挂载浮层内容，关闭时保留内容 | `boolean` | `true` |
+
+当前 `popper-effect` 默认为 `light`，Element Plus `2.14.8` 默认为 `dark`；迁移时如需原版默认观感，请显式设置 `popper-effect="dark"`。
 
 `MenuPopperClass` 接受字符串、布尔值、类名对象或这些值组成的嵌套数组。可在子菜单设置 `false` 清除继承的类名或样式。
 
@@ -178,10 +182,3 @@ Menu 用于页面导航和分组操作，支持水平/垂直模式、折叠、�
 | `default` | 分组内菜单项 |
 
 水平菜单可点击「更多」，或在入口按 `Enter`、空格、方向下键进入溢出项。选择事件沿用业务菜单的 `indexPath`。默认插槽中返回多个根节点的自定义组件会作为一组移动，保留组件状态。测量时会将浮层中的原节点同步移回根菜单，再放回浮层。浏览器支持 `moveBefore` 时使用保留状态的移动；较旧浏览器中，自定义元素可能触发重新连接，内嵌 iframe 可能重新载入。
-
-### 兼容参数补充
-
-| 属性 | 说明 | 类型 | 默认值 |
-| --- | --- | --- | --- |
-| ellipsis-icon | 横向溢出菜单图标，字符串为图标类名 | `string` / `Component` | — |
-| close-on-click-outside | 点击菜单及其浮层之外时收起所有子菜单 | `boolean` | `false` |
