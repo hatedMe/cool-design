@@ -18,7 +18,7 @@
 | 属性    | 类型                                                               | 默认    |
 | ------- | ------------------------------------------------------------------ | ------- |
 | tag     | `string`                                                           | `div`   |
-| gutter  | `number`（列间距 px），响应式可传对象                                | `0`     |
+| gutter  | `number`（列间距，单位 `px`；不支持对象形式）                                | `0`     |
 | justify | `start` / `end` / `center` / `space-around` / `space-between` / `space-evenly` | `start` |
 | align   | `top` / `middle` / `bottom` / `center`（`center` 为项目兼容别名）   | —       |
 
