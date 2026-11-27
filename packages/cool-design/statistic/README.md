@@ -41,7 +41,7 @@
 
 | 名称 | 说明 | 类型 |
 | ---- | ---- | ---- |
-| displayValue | 最终展示的格式化字符串 | `ComputedRef<string>` |
+| displayValue | 最终展示的格式化字符串，公开实例读取时已解包，只读 | `string` |
 
 ### 使用说明
 
