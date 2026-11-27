@@ -67,6 +67,19 @@
 | `popper-class`   | 面板自定义 class                           | `string` / `string[]` / `object`           | —        |
 | `popper-style`   | 面板自定义样式                             | `string` / `CSSProperties`                 | —        |
 | `effect`        | 面板主题：`light` / `dark`                 | `string`                                   | `light`  |
+| expand-on-click-node | 非严格模式下点击展开；严格勾选模式不通过点击展开 | `boolean` | 未设置时单选 `true`、多选 `false` |
+| check-descendants | 懒加载场景下勾选后代节点，透传 Tree | `boolean` | `false` |
+| highlight-current | 高亮当前节点 | `boolean` | 未设置时为 `!multiple` |
+| empty-text | 树为空时的文案 | `string` | `暂无数据` |
+| draggable | 开启树内部节点拖拽 | `boolean` | `false` |
+| allow-drag / allow-drop | 节点拖拽、放置许可回调，参数见 Tree | `TreeAllowDrag` / `TreeAllowDrop` | — |
+| render-content | 节点渲染回调，参数见 Tree | `TreeRenderContent` | — |
+| tag-type | 多选标签类型 | `SelectTagType` | `info` |
+| remote-method | 远程查询回调，调用方更新 data | `(query: string) => void` | — |
+| fit-input-width | 设置下拉面板最小宽度与输入框相同 | `boolean` | `false` |
+| loading-text | 加载文案，透传 Select | `string` | 继承 Select locale |
+| aria-label | 输入控件无障碍名称 | `string` | — |
+| tabindex | 输入控件的焦点顺序 | `string` / `number` | — |
 
 `TreeSelectNode` 支持任意业务字段；默认结构为 `{ value: string | number; label: string; children?: TreeSelectNode[]; disabled?: boolean }`，使用其他结构时应配置 `node-key` 和 `props`。
 
