@@ -62,6 +62,11 @@ export default defineComponent({
     fixedData: Array as PropType<object[]>,
     width: { type: [String, Number] as PropType<string | number>, default: '100%' },
     height: { type: Number, default: 400 },
+    maxHeight: Number,
+    indentSize: { type: Number, default: 12 },
+    hScrollbarSize: { type: Number, default: 6 },
+    vScrollbarSize: { type: Number, default: 6 },
+    scrollbarAlwaysOn: Boolean,
     headerHeight: { type: [Number, Array] as PropType<number | number[]>, default: 50 },
     footerHeight: { type: Number, default: 0 },
     rowHeight: { type: [Number, Function] as PropType<TableV2RowHeight>, default: 50 },
@@ -268,7 +273,7 @@ export default defineComponent({
       + fixedRows.value.reduce((sum, row) => sum + row.height, 0));
     const scrollHeight = ref(0);
     const bodyViewportHeight = computed(() => Math.max(0,
-      (scrollHeight.value || props.height) - pinnedHeight.value - Math.max(0, props.footerHeight)
+      (scrollHeight.value || tableHeight.value) - pinnedHeight.value - Math.max(0, props.footerHeight)
     ));
     const syncViewport = () => {
       scrollHeight.value = scrollEl.value?.clientHeight ?? 0;
@@ -281,6 +286,8 @@ export default defineComponent({
     let scrollDirectionTop = 0;
     let wasAtEnd = false;
     const totalBodyHeight = computed(() => rowTops.value[rowTops.value.length - 1] ?? 0);
+    const tableHeight = computed(() => props.maxHeight === undefined ? props.height : Math.min(props.maxHeight,
+      pinnedHeight.value + totalBodyHeight.value + Math.max(0, props.footerHeight)));
     const onScroll = (event: Event) => {
       const el = event.target as HTMLDivElement;
       syncViewport();
@@ -653,7 +660,7 @@ export default defineComponent({
             const treeControls = (
               <>
                 {isExpandCell && level > 0 && (
-                  <span class={ns.e('indent')} style={{ width: toPx(level * 16) }} aria-hidden='true' />
+                  <span class={ns.e('indent')} style={{ width: toPx(level * props.indentSize) }} aria-hidden='true' />
                 )}
                 {isExpandCell && (
                   showToggle ? (
@@ -694,11 +701,11 @@ export default defineComponent({
     return () => (
       <div
         class={ns.b()}
-        style={{ width: toPx(props.width), height: toPx(props.height) }}
+        style={{ width: toPx(props.width), height: toPx(tableHeight.value), [ns.cssVarName('table-v2-h-scrollbar-size')]: toPx(props.hScrollbarSize), [ns.cssVarName('table-v2-v-scrollbar-size')]: toPx(props.vScrollbarSize) }}
         role='grid'
         aria-rowcount={flatRows.value.length + fixedRows.value.length}
         aria-colcount={props.columns.length}>
-        <div class={[ns.e('scroll'), { 'is-dynamic': estimatedHeight.value !== undefined }]} ref={scrollEl} onScroll={onScroll}>
+        <div class={[ns.e('scroll'), { 'is-dynamic': estimatedHeight.value !== undefined, 'is-scrollbar-always-on': props.scrollbarAlwaysOn }]} ref={scrollEl} onScroll={onScroll}>
           <div class={ns.e('header')} role='rowgroup'>
             {headerHeights.value.map(renderHeader)}
             {fixedRows.value.map((row) => renderRow(row, row.height))}

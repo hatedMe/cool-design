@@ -828,6 +828,7 @@ export const pages: Page[] = [
     ['basic', '自动测量虚拟表格', '由外部容器约束尺寸。']
   ]),
   component('table-v2', 'TableV2 虚拟表格', '数据展示', [
+    ['compatibility', '兼容接口演示', '展示本次补齐的组件参数与交互。'],
     ['basic', '万行数据流畅滚动', '虚拟滚动只渲染可视行；列级 fixed 或 fixedColumns 可固定首尾列。']
   ]),
   component('table-column', 'TableColumn 表格列', '数据展示', [

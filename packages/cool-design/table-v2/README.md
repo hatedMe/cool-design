@@ -178,3 +178,13 @@ function handleExpandedRows(rows: object[], keys: TableV2Key[]) {
 | headerCellRenderer | 自定义表头单元格 | `(params: TableV2HeaderCellRendererParams) => VNode` |
 
 `TableV2` 和表格公共类型均可从 `cool-design/table-v2` 或 `cool-design` 导入。
+
+### 尺寸和滚动条
+
+| 属性 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| max-height | 最大高度，设置后按内容收缩并受此上限限制 | `number` | — |
+| indent-size | 树形数据每层缩进像素 | `number` | `12` |
+| h-scrollbar-size | 横向滚动条厚度 | `number` | `6` |
+| v-scrollbar-size | 纵向滚动条厚度 | `number` | `6` |
+| scrollbar-always-on | 始终显示滚动条 | `boolean` | `false` |

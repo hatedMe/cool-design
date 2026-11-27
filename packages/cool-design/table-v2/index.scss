@@ -119,3 +119,15 @@
 .#{config.$namespace}-table-v2__expand-icon.is-expanded {
   transform: rotate(90deg);
 }
+
+.#{config.$namespace}-table-v2__scroll {
+  &::-webkit-scrollbar {
+    width: var(--#{config.$namespace}-table-v2-v-scrollbar-size, 6px);
+    height: var(--#{config.$namespace}-table-v2-h-scrollbar-size, 6px);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--#{config.$namespace}-text-muted, #909399);
+    border-radius: 4px;
+  }
+  &.is-scrollbar-always-on { overflow: scroll; }
+}
