@@ -1,3 +1,4 @@
+import { CollapseTransition } from './collapse-transition';
 import Container from './container';
 import Header from './header';
 import Aside from './aside';
@@ -257,6 +258,7 @@ export {
   CollapseItem
 };
 const components = [
+  CollapseTransition,
   TableColumn,
   Container,
   Header,
@@ -627,3 +629,6 @@ export type { AutoResizerSize } from './auto-resizer';
 export type { AvatarGroupInstance, AvatarGroupProps, AvatarGroupSlots } from './avatar-group';
 
 export type { ColorPickerPanelInstance } from './color-picker-panel';
+
+export { CollapseTransition };
+export { CollapseTransition as ElCollapseTransition };

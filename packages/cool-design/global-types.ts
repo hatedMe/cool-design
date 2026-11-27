@@ -7,6 +7,9 @@ import type { msgbox, alert, confirm, prompt } from './message-box';
 import type { AppContext } from 'vue';
 
 export interface RegisteredComponents {
+  ElCollapseTransition: typeof components.CollapseTransition;
+  ICollapseTransition: typeof components.CollapseTransition;
+
   ElTableColumn: typeof import('./index')['ElTableColumn'];
   ElContainer: typeof import('./index')['ElContainer'];
   ElHeader: typeof import('./index')['ElHeader'];

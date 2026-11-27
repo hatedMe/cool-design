@@ -1,0 +1,5 @@
+@use '../style/mixins/config';
+.#{config.$namespace}-collapse-transition-enter-active,
+.#{config.$namespace}-collapse-transition-leave-active {
+  transition: max-height 0.3s ease-in-out, padding-top 0.3s ease-in-out, padding-bottom 0.3s ease-in-out;
+}
