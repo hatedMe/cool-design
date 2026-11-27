@@ -15,9 +15,9 @@
 
 阴影：`always` / `hover` / `never`。
 
-### API
+## API
 
-#### 属性
+### 属性
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -30,7 +30,7 @@
 | `shadow` | 阴影显示时机：`always` / `hover` / `never` | `string` | `always` |
 | `border` | 是否显示边框 | `boolean` | `true` |
 
-#### 插槽
+### 插槽
 
 | 名称 | 说明 |
 | --- | --- |

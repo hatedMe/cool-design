@@ -16,9 +16,9 @@
 
 指示器触发方式：`hover` / `click`。箭头显示策略：`always` / `hover` / `never`。指示器位置：默认内侧 / `outside` / `none`。类型：默认 / `card`。方向：`horizontal` / `vertical`。
 
-### API
+## API
 
-#### Carousel 属性
+### Carousel 属性
 
 | 参数                 | 说明                                       | 类型      | 默认值       |
 | -------------------- | ------------------------------------------ | --------- | ------------ |
@@ -36,19 +36,19 @@
 | `pause-on-hover`     | 悬停时是否暂停自动播放                     | `boolean` | `true`       |
 | `motion-blur`        | 是否启用动感过渡                           | `boolean` | `false`      |
 
-#### Carousel 事件
+### Carousel 事件
 
 | 事件名   | 说明       | 回调参数                        |
 | -------- | ---------- | ------------------------------- |
 | `change` | 激活项变化 | `current: number, prev: number` |
 
-#### Carousel 插槽
+### Carousel 插槽
 
 | 名称      | 说明                  |
 | --------- | --------------------- |
 | `default` | `CarouselItem` 子组件 |
 
-#### Carousel Exposes
+### Carousel Exposes
 
 | 方法                           | 说明                 |
 | ------------------------------ | -------------------- |
@@ -57,14 +57,14 @@
 | `prev()`                       | 上一张               |
 | `next()`                       | 下一张               |
 
-#### CarouselItem 属性
+### CarouselItem 属性
 
 | 参数    | 说明                             | 类型                | 默认值    |
 | ------- | -------------------------------- | ------------------- | --------- |
 | `name`  | 幻灯片名称，用于 `setActiveItem` | `string` / `number` | 索引      |
 | `label` | 幻灯片无障碍标签                 | `string` / `number` | `第 n 张` |
 
-#### CarouselItem 插槽
+### CarouselItem 插槽
 
 | 名称      | 说明       |
 | --------- | ---------- |

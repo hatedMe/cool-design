@@ -30,9 +30,9 @@
 </Popover>
 ```
 
-### API
+## API
 
-#### 属性
+### 属性
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -65,7 +65,7 @@
 | `virtual-triggering` | 是否启用虚拟触发 | `boolean` | `false` |
 | `virtual-ref` | 虚拟触发元素，或提供 `getBoundingClientRect()` 的定位对象。对象可用 `contextElement` 指定裁剪和滚动上下文 | `PopoverVirtualRef` | — |
 
-#### 事件
+### 事件
 
 | 事件名 | 说明 |
 | --- | --- |
@@ -77,7 +77,7 @@
 | `visible-change` | 显示状态变化 |
 | `before-enter` / `after-enter` / `before-leave` / `after-leave` | 进入和离场过渡的前后事件 |
 
-#### 插槽
+### 插槽
 
 | 名称 | 说明 |
 | --- | --- |
@@ -85,7 +85,7 @@
 | `default` | 有 `reference` 或启用虚拟触发时为浮层内容，可使用 `{ hide: () => void }`。普通模式中省略 `reference` 时沿用旧的触发器用法 |
 | `content` | 浮层内容（兼容），优先级低于默认插槽 |
 
-#### Exposes
+### Exposes
 
 | 方法 | 说明 |
 | --- | --- |

@@ -34,9 +34,9 @@
 
 `popper-options` 的 `placement` 和 `strategy` 优先于组件属性。`modifiers` 按 `name` 合并，支持内置 modifier 的 `enabled`、`options`、`data` 以及自定义 `phase`、`requires`、`requiresIfExists`、`fn`、`effect`。`effect` 返回的清理函数在选项更新和实例销毁时执行。`onFirstUpdate(state)` 在每个定位实例完成首次更新后执行。[Popper v2 选项与实例](https://popper.js.org/docs/v2/constructors/) [Popper v2 Modifiers](https://popper.js.org/docs/v2/modifiers/)
 
-### API
+## API
 
-#### 属性
+### 属性
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -71,7 +71,7 @@
 
 `eager`、`arrow-class`、`content-role`、`close-on-outside` 和 `can-open` 是本库扩展。原先组合使用 `persistent` 与 `eager` 的调用会继续预挂载。`arrow-class` 定制箭头，`content-role` 覆盖默认 `tooltip` 角色，`close-on-outside` 指定外部点击响应，`can-open(reference)` 可拒绝触发器和 `onOpen()` 发起的打开请求。
 
-#### 事件
+### 事件
 
 | 事件名 | 说明 |
 | --- | --- |
@@ -84,14 +84,14 @@
 | close | 可见状态切换为关闭，参数为 `false` |
 | visible-change | 可见状态变化，参数为 `boolean` |
 
-#### 插槽
+### 插槽
 
 | 名称 | 说明 |
 | --- | --- |
 | default | 触发元素 |
 | content | 自定义提示内容，优先级高于 `content` |
 
-#### Exposes
+### Exposes
 
 | 方法 | 说明 |
 | --- | --- |

@@ -15,9 +15,9 @@
 
 设置 `accordion` 同时只展开一项。使用 `before-collapse` 拦截切换，返回 `false` 或 `Promise<false>` 可阻止。
 
-### API
+## API
 
-#### Collapse 属性
+### Collapse 属性
 
 | 参数                      | 说明                                              | 类型                                                  | 默认值  |
 | ------------------------- | ------------------------------------------------- | ----------------------------------------------------- | ------- |
@@ -26,27 +26,27 @@
 | `expand-icon-position`    | 展开图标位置：`left` / `right`                    | `string`                                              | `right` |
 | `before-collapse`         | 切换前拦截，参数为切换后的激活数组与当前项 `name` | `(next, name) => boolean \| Promise<boolean> \| void` | —       |
 
-#### Collapse 事件
+### Collapse 事件
 
 | 事件名              | 说明       | 回调参数                       |
 | ------------------- | ---------- | ------------------------------ |
 | `update:modelValue` | 激活项变化 | 手风琴：`name`，否则：`name[]` |
 | `change`            | 激活项变化 | 同上                           |
 
-#### Collapse 插槽
+### Collapse 插槽
 
 | 名称      | 说明                  |
 | --------- | --------------------- |
 | `default` | `CollapseItem` 子组件 |
 
-#### Collapse Exposes
+### Collapse Exposes
 
 | 方法                    | 说明                         |
 | ----------------------- | ---------------------------- |
 | `activeNames`           | 当前激活 `name` 数组（只读） |
 | `setActiveNames(names)` | 设置激活项                   |
 
-#### CollapseItem 属性
+### CollapseItem 属性
 
 | 参数       | 说明                                           | 类型                   | 默认值  |
 | ---------- | ---------------------------------------------- | ---------------------- | ------- |
@@ -55,7 +55,7 @@
 | `disabled` | 是否禁用                                       | `boolean`              | `false` |
 | `icon`     | 自定义展开图标（图标类名或组件），替换默认箭头 | `string` / `Component` | —       |
 
-#### CollapseItem 插槽
+### CollapseItem 插槽
 
 | 名称      | 说明                                   | 作用域 |
 | --------- | -------------------------------------- | ------ |
@@ -63,7 +63,7 @@
 | `default` | 面板内容                               | — |
 | `icon`    | 自定义展开图标，优先级高于 `icon` 属性 | `{ isActive: boolean }` |
 
-#### CollapseItem Exposes
+### CollapseItem Exposes
 
 | 名称       | 说明                     |
 | ---------- | ------------------------ |

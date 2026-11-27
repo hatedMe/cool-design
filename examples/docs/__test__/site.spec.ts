@@ -24,6 +24,11 @@ afterEach(() => {
 });
 
 describe('PC 组件文档站', () => {
+  it.each(['collapse', 'carousel', 'card', 'dialog', 'popover', 'popconfirm', 'tooltip'])('%s 页面独立展示 API 区域', async (name) => {
+    const wrapper = await open(`#/components/${name}`);
+    expect(wrapper.get('#api').text()).toContain('Attributes');
+  });
+
   it('开发指南按安装、快速上手、自定义主题、过渡动画、排版规范排列', async () => {
     const wrapper = await open('#/guide/install');
     const guide = wrapper.findAll('.docs-nav-group').find((group) => group.get('h2').text() === '开发指南')!;
