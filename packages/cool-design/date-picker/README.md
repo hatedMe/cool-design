@@ -77,6 +77,8 @@ DatePicker 用于选择日期、月份、年份、周、多个日期和日期范
 | popper-style        | 弹层自定义样式                                                 | `string` / `CSSProperties`             | —              |
 | popper-options      | 浮层参数覆盖                                                   | `object`                               | —              |
 | fallback-placements | 候选位置                                                       | `string[]`                             | —              |
+| arrow-control | 日期时间模式使用箭头选择时间 | `boolean` | `false` |
+| disabled-hours / disabled-minutes / disabled-seconds | 日期时间模式不可选时间回调 | `(...args: number[]) => number[]` | — |
 
 范围选择已定起点、未定终点时，鼠标悬停的日期区间会实时预览高亮。
 
