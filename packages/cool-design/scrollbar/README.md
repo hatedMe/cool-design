@@ -74,3 +74,14 @@
 | 属性 | 说明 | 类型 |
 | --- | --- | --- |
 | `wrapRef` | 读取实际滚动元素 | `HTMLElement \| null \| undefined` |
+
+### 边缘遮罩与无障碍属性
+
+| 属性 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| mask | 显示所有可滚动边缘或指定方向渐变遮罩 | `boolean` / `'top'` / `'bottom'` / `'left'` / `'right'` | `false` |
+| role | 内容 view 的角色 | `string` | — |
+| aria-label | 内容 view 的无障碍名称 | `string` | — |
+| aria-orientation | 内容 view 的方向 | `'horizontal'` / `'vertical'` | — |
+
+遮罩不拦截点击和滚动，支持 native 模式。可通过 `--i-scrollbar-top-mask-color`、`--i-scrollbar-bottom-mask-color`、`--i-scrollbar-left-mask-color`、`--i-scrollbar-right-mask-color` 分别指定颜色；变量前缀跟随构建 namespace。

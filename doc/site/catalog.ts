@@ -181,6 +181,7 @@ export const pages: Page[] = [
     ['basic', '基础用法', '语义色、尺寸与多行省略的行内文本。']
   ]),
   component('scrollbar', 'Scrollbar 滚动条', '基础组件', [
+    ['compatibility', '兼容接口演示', '展示本次补齐的组件参数与交互。'],
     ['basic', '基础用法', '自绘滚动条的滚动容器。']
   ]),
   component('splitter', 'Splitter 分割面板', '基础组件', [

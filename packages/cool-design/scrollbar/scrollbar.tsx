@@ -26,6 +26,10 @@ const edgeTolerance = 0.03;
 export default defineComponent({
   name: 'i-scrollbar',
   props: {
+    mask: { type: [Boolean, String] as PropType<boolean | ScrollbarDirection>, default: false },
+    role: String,
+    ariaLabel: String,
+    ariaOrientation: String as PropType<'horizontal' | 'vertical'>,
     height: [String, Number] as PropType<string | number>,
     maxHeight: [String, Number] as PropType<string | number>,
     native: Boolean,
@@ -52,6 +56,7 @@ export default defineComponent({
     const view = ref<HTMLElement>();
     const thumbY = ref<HTMLElement>();
     const thumbX = ref<HTMLElement>();
+    const masks = ref({ top: false, bottom: false, left: false, right: false });
     const thumbYStyle = ref<Record<string, string>>({ height: '0px', transform: 'translateY(0px)' });
     const thumbXStyle = ref<Record<string, string>>({ width: '0px', transform: 'translateX(0px)' });
     let resizeObserver: ResizeObserver | undefined;
@@ -70,7 +75,14 @@ export default defineComponent({
 
     const updateThumbs = () => {
       const element = wrap.value;
-      if (!element || props.native) return;
+      if (!element) return;
+      masks.value = {
+        top: element.scrollTop > 0,
+        bottom: element.scrollHeight - element.clientHeight - element.scrollTop > edgeTolerance,
+        left: element.scrollLeft > 0,
+        right: element.scrollWidth - element.clientWidth - element.scrollLeft > edgeTolerance
+      };
+      if (props.native) return;
       const clientHeight = element.clientHeight;
       const scrollHeight = element.scrollHeight;
       const trackY = thumbY.value?.parentElement?.clientHeight ?? clientHeight;
@@ -208,7 +220,7 @@ export default defineComponent({
       resizeObserver?.disconnect();
       onDragEnd();
     });
-    watch(() => [props.height, props.maxHeight, props.distance], update, { flush: 'post' });
+    watch(() => [props.height, props.maxHeight, props.distance, props.mask], update, { flush: 'post' });
 
     expose({ handleScroll, scrollTo, setScrollTop, setScrollLeft, update, wrapRef: wrap });
 
@@ -226,10 +238,13 @@ export default defineComponent({
           onScroll={handleScroll}>
           {h(
             props.tag,
-            { ref: view, class: [ns.e('view'), props.viewClass], style: props.viewStyle },
+            { ref: view, class: [ns.e('view'), props.viewClass], style: props.viewStyle, role: props.role, 'aria-label': props.ariaLabel, 'aria-orientation': props.ariaOrientation },
             slots.default?.()
           )}
         </div>
+        {props.mask && (Object.keys(masks.value) as ScrollbarDirection[]).filter((edge) =>
+          masks.value[edge] && (props.mask === true || props.mask === edge)).map((edge) =>
+          <div key={edge} class={[ns.e('mask'), ns.em('mask', edge)]} aria-hidden='true' />)}
         {!props.native && (
           <>
             <div class={[ns.e('bar'), 'is-vertical']}>
