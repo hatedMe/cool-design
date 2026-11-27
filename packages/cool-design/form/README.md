@@ -57,10 +57,10 @@ Form 与 FormItem 组合 Input、Select、Checkbox、Switch 等控件，使用 `
 
 | 方法                    | 说明                                 | 返回值             |
 | ----------------------- | ------------------------------------ | ------------------ |
-| `validate(callback?)`   | 校验全部字段，通过时 resolve `true`。失败时 reject 并携带 `invalidFields`（`prop → 错误对象数组`），同路径错误按字段登记顺序合并，并聚焦首个无效字段。校验期间模型或字段登记变化时，以空映射拒绝 | `Promise<boolean>` |
+| `validate(callback?)`   | 校验全部字段，通过时 resolve `true`；失败时有 callback 则回调 `(false, invalidFields)` 并 resolve `false`，无 callback 则 reject 并携带 `invalidFields`（`prop → 错误对象数组`），同路径错误按字段登记顺序合并，并聚焦首个无效字段。校验期间模型或字段登记变化时，以空映射拒绝 | `Promise<boolean>` |
 | `resetFields(props?)`   | 恢复指定字段的初值                   | `void`             |
 | `clearValidate(props?)` | 清除指定字段的错误并使旧异步结果失效           | `void`             |
-| `validateField(props?, callback?)` | 校验指定字段                         | `Promise<boolean>` |
+| `validateField(props?, callback?)` | 校验指定字段，成功/失败的 Promise 与回调规则同 validate | `Promise<boolean>` |
 | `scrollToField(props?)` | 滚动到指定字段。省略参数时滚动到第一个字段，传入空数组时不滚动   | `void`             |
 | `getField(prop)` | 获取路径匹配的首个字段 | `FormFieldContext \| undefined` |
 | `setInitialValues(model)` | 更新已有字段的重置初值 | `void` |
