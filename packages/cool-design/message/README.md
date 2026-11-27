@@ -108,3 +108,7 @@ ElMessage('你好', getCurrentInstance()?.appContext ?? null);
 | `handle.close()` | 关闭单条，幂等 | `() => void` |
 
 `error` 类型使用 `role="alert"`，其余使用 `role="status"`。计时结束、关闭按钮或句柄关闭均触发 `onClose` 一次。
+
+### 插槽
+
+声明式 Message 当前不消费自定义插槽，请通过 `message` 属性提供 `string` 或 `VNode`。服务模式使用同名 `message` 选项。
