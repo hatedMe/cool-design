@@ -7,6 +7,9 @@ import type { msgbox, alert, confirm, prompt } from './message-box';
 import type { AppContext } from 'vue';
 
 export interface RegisteredComponents {
+  ElOverlay: typeof components.Overlay;
+  IOverlay: typeof components.Overlay;
+
   ElCollapseTransition: typeof components.CollapseTransition;
   ICollapseTransition: typeof components.CollapseTransition;
 

@@ -1,3 +1,4 @@
+import { Overlay } from './overlay';
 import { CollapseTransition } from './collapse-transition';
 import Container from './container';
 import Header from './header';
@@ -258,6 +259,7 @@ export {
   CollapseItem
 };
 const components = [
+  Overlay,
   CollapseTransition,
   TableColumn,
   Container,
@@ -632,3 +634,6 @@ export type { ColorPickerPanelInstance } from './color-picker-panel';
 
 export { CollapseTransition };
 export { CollapseTransition as ElCollapseTransition };
+
+export { Overlay };
+export { Overlay as ElOverlay };
