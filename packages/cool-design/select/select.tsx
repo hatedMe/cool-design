@@ -596,8 +596,9 @@ export default defineComponent({
                 {...(props.teleported ? focusListeners : {})}
                 onScroll={onPopupScroll}
                 onMousedown={(event) => event.stopPropagation()}>
-                {slots.header?.()}
                 {props.showArrow && <span class={ns.e('arrow')} style={position.arrowStyle.value} aria-hidden='true' />}
+                <div class={ns.e('scroll')} onScroll={(event: Event) => { event.stopPropagation(); onPopupScroll(event); }}>
+                {slots.header?.()}
                 {slots.dropdown ? slots.dropdown() : <>
                 {loading.value && <div class={ns.e('empty')}>{slots.empty ? slots.empty() : loadingText.value}</div>}
                 {!loading.value && !visibleRecords.length && <div class={ns.e('empty')}>{slots.empty ? slots.empty() : (query.value ? noMatchText.value : noDataText.value)}</div>}
@@ -608,6 +609,7 @@ export default defineComponent({
                 ])}
                 </>}
                 {slots.footer?.()}
+                </div>
               </div>
             );
             return props.teleported ? <Teleport to={position.target.value}>{panel}</Teleport> : panel;

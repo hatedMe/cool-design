@@ -82,8 +82,8 @@
   position: fixed;
   z-index: 2000;
   max-height: 280px;
-  overflow: auto;
-  padding: 4px 0;
+  overflow: visible;
+  padding: 0;
   border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
   border-radius: 4px;
   background: var(--#{config.$namespace}-bg, #fff);
@@ -143,3 +143,9 @@
 }
 .#{config.$namespace}-select.is-open .#{config.$namespace}-select__suffix-caret,
 .#{config.$namespace}-select.is-open .#{config.$namespace}-select__suffix-icon { transform: rotate(180deg); }
+
+.#{config.$namespace}-select__scroll { max-height: inherit; overflow: auto; padding: 4px 0; box-sizing: border-box; }
+.#{config.$namespace}-select__dropdown[data-placement^='top'] > .#{config.$namespace}-select__arrow { bottom: -4px; transform: translateX(-50%) rotate(45deg); }
+.#{config.$namespace}-select__dropdown[data-placement^='bottom'] > .#{config.$namespace}-select__arrow { top: -4px; transform: translateX(-50%) rotate(45deg); }
+.#{config.$namespace}-select__dropdown[data-placement^='left'] > .#{config.$namespace}-select__arrow { right: -4px; transform: translateY(-50%) rotate(45deg); }
+.#{config.$namespace}-select__dropdown[data-placement^='right'] > .#{config.$namespace}-select__arrow { left: -4px; transform: translateY(-50%) rotate(45deg); }
