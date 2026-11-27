@@ -1,0 +1,60 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-result {
+  padding: 32px 16px;
+  color: var(--#{config.$namespace}-text-secondary);
+  text-align: center;
+}
+
+.#{config.$namespace}-result__icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.#{config.$namespace}-result__svg {
+  display: block;
+}
+
+.#{config.$namespace}-result__code {
+  color: var(--#{config.$namespace}-text-muted, #a8abb2);
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.#{config.$namespace}-result--success .#{config.$namespace}-result__icon {
+  color: var(--#{config.$namespace}-success, #67c23a);
+}
+
+.#{config.$namespace}-result--warning .#{config.$namespace}-result__icon {
+  color: var(--#{config.$namespace}-warning, #e6a23c);
+}
+
+.#{config.$namespace}-result--info .#{config.$namespace}-result__icon {
+  color: var(--#{config.$namespace}-info, #909399);
+}
+
+.#{config.$namespace}-result--error .#{config.$namespace}-result__icon {
+  color: var(--#{config.$namespace}-danger, #f56c6c);
+}
+
+.#{config.$namespace}-result__title {
+  margin: 0 0 8px;
+  color: var(--#{config.$namespace}-text);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.#{config.$namespace}-result__sub-title {
+  margin: 0;
+  font-size: 14px;
+}
+
+.#{config.$namespace}-result__extra {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}

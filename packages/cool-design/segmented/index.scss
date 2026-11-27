@@ -1,0 +1,49 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--#{config.$namespace}-radius, 4px);
+  background: #f0f2f5;
+}
+.#{config.$namespace}-segmented__item {
+  padding: 4px 12px;
+  border: 0;
+  border-radius: calc(var(--#{config.$namespace}-radius, 4px) - 1px);
+  background: transparent;
+  color: var(--#{config.$namespace}-text, #303133);
+  font-size: 14px;
+  cursor: pointer;
+}
+.#{config.$namespace}-segmented__item.is-selected {
+  background: var(--#{config.$namespace}-bg, #fff);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
+}
+.#{config.$namespace}-segmented__item:disabled {
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+  cursor: not-allowed;
+}
+.#{config.$namespace}-segmented--small .#{config.$namespace}-segmented__item {
+  padding: 2px 8px;
+  font-size: 12px;
+}
+.#{config.$namespace}-segmented--large .#{config.$namespace}-segmented__item {
+  padding: 6px 16px;
+  font-size: 16px;
+}
+.#{config.$namespace}-segmented.is-disabled {
+  opacity: 0.5;
+}
+.#{config.$namespace}-segmented--block {
+  display: flex;
+  width: 100%;
+}
+.#{config.$namespace}-segmented--block .#{config.$namespace}-segmented__item {
+  flex: 1;
+  text-align: center;
+}
+
+.#{config.$namespace}-segmented--vertical {
+  flex-direction: column;
+}

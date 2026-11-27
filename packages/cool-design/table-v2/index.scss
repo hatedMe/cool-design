@@ -1,0 +1,133 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-table-v2 {
+  position: relative;
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+  background: var(--#{config.$namespace}-bg);
+  overflow: hidden;
+}
+.#{config.$namespace}-table-v2__scroll {
+  height: 100%;
+  overflow: auto;
+}
+.#{config.$namespace}-table-v2__scroll.is-dynamic {
+  overflow-anchor: none;
+}
+.#{config.$namespace}-table-v2__header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--#{config.$namespace}-bg-subtle);
+  box-shadow: inset 0 -1px var(--#{config.$namespace}-border);
+}
+.#{config.$namespace}-table-v2__row {
+  display: flex;
+  align-items: stretch;
+  box-sizing: border-box;
+}
+.#{config.$namespace}-table-v2__row.is-body {
+  border-bottom: 1px solid var(--#{config.$namespace}-border);
+  background: var(--#{config.$namespace}-bg);
+}
+.#{config.$namespace}-table-v2__row.is-body:hover {
+  background: var(--#{config.$namespace}-bg-subtle);
+}
+.#{config.$namespace}-table-v2__row.is-fixed {
+  border-bottom: 1px solid var(--#{config.$namespace}-border);
+  background: var(--#{config.$namespace}-bg);
+}
+.#{config.$namespace}-table-v2__cell {
+  box-sizing: border-box;
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.#{config.$namespace}-table-v2__cell.is-header {
+  color: var(--#{config.$namespace}-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: default;
+  user-select: none;
+}
+.#{config.$namespace}-table-v2__cell.is-header[aria-sort] {
+  cursor: pointer;
+}
+.#{config.$namespace}-table-v2__measure {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.#{config.$namespace}-table-v2__measure-content {
+  display: flow-root;
+  min-width: 0;
+  flex: 1;
+}
+.#{config.$namespace}-table-v2__body {
+  position: relative;
+}
+.#{config.$namespace}-table-v2__empty {
+  padding: 16px 20px;
+  color: var(--#{config.$namespace}-text-muted);
+  text-align: center;
+}
+.#{config.$namespace}-table-v2__footer {
+  box-sizing: border-box;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  background: var(--#{config.$namespace}-bg-subtle);
+  border-top: 1px solid var(--#{config.$namespace}-border);
+}
+.#{config.$namespace}-table-v2__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+}
+.#{config.$namespace}-table-v2__indent {
+  display: inline-block;
+  flex: none;
+}
+.#{config.$namespace}-table-v2__tree-placeholder {
+  display: inline-block;
+  flex: none;
+  width: 18px;
+}
+.#{config.$namespace}-table-v2__expand-toggle {
+  flex: none;
+  background: none;
+  border: 0;
+  padding: 0 4px;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.#{config.$namespace}-table-v2__expand-icon {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+.#{config.$namespace}-table-v2__expand-icon.is-expanded {
+  transform: rotate(90deg);
+}
+
+.#{config.$namespace}-table-v2__scroll {
+  &::-webkit-scrollbar {
+    width: var(--#{config.$namespace}-table-v2-v-scrollbar-size, 6px);
+    height: var(--#{config.$namespace}-table-v2-h-scrollbar-size, 6px);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--#{config.$namespace}-text-muted, #909399);
+    border-radius: 4px;
+  }
+  &.is-scrollbar-always-on { overflow: scroll; }
+}

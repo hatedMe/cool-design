@@ -1,0 +1,37 @@
+@use '../style/mixins/config';
+
+@import '../style/base.scss';
+
+.#{config.$namespace}-rate {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  color: $warning;
+  cursor: pointer;
+
+  &--large { height: 40px; }
+  &--small { height: 24px; }
+  &--disabled { cursor: not-allowed; opacity: 0.6; }
+
+  &__item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    &:not(:last-child) { margin-right: 8px; }
+    &:hover .#{config.$namespace}-rate__icon { color: var(--#{config.$namespace}-rate-fill-color, var(--el-rate-fill-color, var(--#{config.$namespace}-rate-active-color, $warning))); }
+  }
+
+  &__icon {
+    font-size: 20px;
+    color: var(--#{config.$namespace}-rate-void-color, var(--#{config.$namespace}-rate-disabled-void-color, var(--el-rate-disabled-void-color, var(--el-fill-color, var(--el-rate-void-color, $disable-hover)))));
+    &--filled { color: var(--#{config.$namespace}-rate-fill-color, var(--el-rate-fill-color, $warning)); }
+    -webkit-text-stroke: 0.5px var(--#{config.$namespace}-rate-void-color, var(--#{config.$namespace}-rate-disabled-void-color, var(--el-rate-disabled-void-color, var(--el-fill-color, var(--el-rate-void-color, $disable-hover)))));
+    &--half,
+    &--partial { position: relative; background: linear-gradient(90deg, var(--#{config.$namespace}-rate-fill-color, var(--el-rate-fill-color, var(--#{config.$namespace}-rate-active-color, $warning))) var(--#{config.$namespace}-rate-fill-percent, 50%), var(--#{config.$namespace}-rate-void-color, var(--#{config.$namespace}-rate-disabled-void-color, var(--el-rate-disabled-void-color, var(--el-fill-color, var(--el-rate-void-color, $disable-hover))))) var(--#{config.$namespace}-rate-fill-percent, 50%)); background-clip: text; -webkit-text-fill-color: transparent; }
+  }
+
+  &__text,
+  &__score { margin-left: 8px; color: var(--#{config.$namespace}-rate-text-color, currentColor); }
+  &--large &__icon { font-size: 24px; }
+  &--small &__icon { font-size: 16px; }
+}

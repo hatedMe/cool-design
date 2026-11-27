@@ -1,0 +1,135 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-button {
+  --#{config.$namespace}-button-bg-color: var(--#{config.$namespace}-bg);
+  --#{config.$namespace}-button-text-color: var(--#{config.$namespace}-text);
+  --#{config.$namespace}-button-border-color: var(--#{config.$namespace}-border);
+  --#{config.$namespace}-button-hover-bg-color: var(--#{config.$namespace}-bg-subtle, var(--#{config.$namespace}-bg));
+  --#{config.$namespace}-button-hover-text-color: var(--#{config.$namespace}-primary);
+  --#{config.$namespace}-button-hover-border-color: var(--#{config.$namespace}-primary);
+  height: var(--#{config.$namespace}-control-height, 32px);
+  padding: 0 14px;
+  border: 1px solid var(--#{config.$namespace}-button-border-color);
+  border-radius: var(--#{config.$namespace}-radius);
+  background: var(--#{config.$namespace}-button-bg-color);
+  color: var(--#{config.$namespace}-button-text-color);
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    color 0.15s;
+}
+.#{config.$namespace}-button--primary,
+.#{config.$namespace}-button--success,
+.#{config.$namespace}-button--warning,
+.#{config.$namespace}-button--danger,
+.#{config.$namespace}-button--info {
+  --#{config.$namespace}-button-color-current: var(--#{config.$namespace}-button-color, var(--#{config.$namespace}-primary));
+  --#{config.$namespace}-button-bg-color: var(--#{config.$namespace}-button-color-current);
+  --#{config.$namespace}-button-text-color: var(--#{config.$namespace}-on-primary, #fff);
+  --#{config.$namespace}-button-border-color: var(--#{config.$namespace}-button-color-current);
+  --#{config.$namespace}-button-hover-bg-color: var(--#{config.$namespace}-primary-hover, color-mix(in srgb, var(--#{config.$namespace}-button-color-current), #000 10%));
+  --#{config.$namespace}-button-active-bg-color: color-mix(in srgb, var(--#{config.$namespace}-button-color-current), #000 14%);
+  --#{config.$namespace}-button-hover-text-color: var(--#{config.$namespace}-on-primary, #fff);
+  --#{config.$namespace}-button-hover-border-color: var(--#{config.$namespace}-button-hover-bg-color);
+}
+.#{config.$namespace}-button--success {
+  --#{config.$namespace}-button-color-current: var(--#{config.$namespace}-button-color, var(--#{config.$namespace}-success));
+}
+.#{config.$namespace}-button--warning {
+  --#{config.$namespace}-button-color-current: var(--#{config.$namespace}-button-color, var(--#{config.$namespace}-warning));
+}
+.#{config.$namespace}-button--danger {
+  --#{config.$namespace}-button-color-current: var(--#{config.$namespace}-button-color, var(--#{config.$namespace}-danger));
+}
+.#{config.$namespace}-button--info {
+  --#{config.$namespace}-button-color-current: var(--#{config.$namespace}-button-color, var(--#{config.$namespace}-info, var(--#{config.$namespace}-text-secondary)));
+}
+.#{config.$namespace}-button--success,
+.#{config.$namespace}-button--warning,
+.#{config.$namespace}-button--danger,
+.#{config.$namespace}-button--info {
+  --#{config.$namespace}-button-hover-bg-color: color-mix(in srgb, var(--#{config.$namespace}-button-color-current), #000 10%);
+  --#{config.$namespace}-button-active-bg-color: color-mix(in srgb, var(--#{config.$namespace}-button-color-current), #000 14%);
+}
+.#{config.$namespace}-button[style*='--#{config.$namespace}-button-color'] {
+  --#{config.$namespace}-button-color-current: var(--#{config.$namespace}-button-color);
+  --#{config.$namespace}-button-bg-color: var(--#{config.$namespace}-button-color-current);
+  --#{config.$namespace}-button-text-color: var(--#{config.$namespace}-on-primary, #fff);
+  --#{config.$namespace}-button-border-color: var(--#{config.$namespace}-button-color-current);
+  --#{config.$namespace}-button-hover-bg-color: color-mix(in srgb, var(--#{config.$namespace}-button-color-current), #000 10%);
+  --#{config.$namespace}-button-active-bg-color: color-mix(in srgb, var(--#{config.$namespace}-button-color-current), #000 16%);
+  --#{config.$namespace}-button-hover-text-color: var(--#{config.$namespace}-button-custom-hover-text-color, var(--#{config.$namespace}-button-color-current));
+  --#{config.$namespace}-button-hover-border-color: var(--#{config.$namespace}-button-custom-hover-border-color, var(--#{config.$namespace}-button-color-current));
+}
+.#{config.$namespace}-button:hover:not(:disabled):not(.is-disabled) {
+  border-color: var(--#{config.$namespace}-button-hover-border-color);
+  background: var(--#{config.$namespace}-button-hover-bg-color);
+  color: var(--#{config.$namespace}-button-hover-text-color);
+}
+.#{config.$namespace}-button:active:not(:disabled):not(.is-disabled) {
+  background: var(--#{config.$namespace}-button-active-bg-color, var(--#{config.$namespace}-button-hover-bg-color));
+}
+.#{config.$namespace}-button.is-plain {
+  --#{config.$namespace}-button-bg-color: color-mix(in srgb, var(--#{config.$namespace}-button-color-current, var(--#{config.$namespace}-primary)) 10%, transparent);
+  --#{config.$namespace}-button-text-color: var(--#{config.$namespace}-button-color-current, var(--#{config.$namespace}-primary));
+  --#{config.$namespace}-button-border-color: color-mix(in srgb, var(--#{config.$namespace}-button-color-current, var(--#{config.$namespace}-primary)) 45%, transparent);
+}
+.#{config.$namespace}-button.is-text,
+.#{config.$namespace}-button.is-link {
+  --#{config.$namespace}-button-bg-color: transparent;
+  --#{config.$namespace}-button-border-color: transparent;
+  --#{config.$namespace}-button-text-color: var(--#{config.$namespace}-button-color-current, var(--#{config.$namespace}-primary));
+  --#{config.$namespace}-button-hover-bg-color: transparent;
+  --#{config.$namespace}-button-active-bg-color: transparent;
+}
+.#{config.$namespace}-button.is-text.is-has-bg {
+  --#{config.$namespace}-button-bg-color: color-mix(in srgb, var(--#{config.$namespace}-button-color-current, var(--#{config.$namespace}-primary)) 10%, transparent);
+  --#{config.$namespace}-button-hover-bg-color: color-mix(in srgb, var(--#{config.$namespace}-button-color-current, var(--#{config.$namespace}-primary)) 16%, transparent);
+  --#{config.$namespace}-button-active-bg-color: color-mix(in srgb, var(--#{config.$namespace}-button-color-current, var(--#{config.$namespace}-primary)) 22%, transparent);
+}
+.#{config.$namespace}-button.is-link {
+  padding-inline: 2px;
+}
+.#{config.$namespace}-button.is-round {
+  border-radius: 999px;
+}
+.#{config.$namespace}-button.is-circle {
+  width: var(--#{config.$namespace}-control-height, 32px);
+  padding-inline: 0;
+  border-radius: 50%;
+}
+.#{config.$namespace}-button.is-dashed {
+  border-style: dashed;
+}
+.#{config.$namespace}-button__icon,
+.#{config.$namespace}-button__loading {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-end: 6px;
+}
+.#{config.$namespace}-button__loading {
+  pointer-events: none;
+}
+.#{config.$namespace}-button.is-circle .#{config.$namespace}-button__icon {
+  margin-inline-end: 0;
+}
+.#{config.$namespace}-button:disabled,
+.#{config.$namespace}-button.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.#{config.$namespace}-button:disabled {
+  pointer-events: none;
+}
+.#{config.$namespace}-button--small {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+.#{config.$namespace}-button--large {
+  height: 40px;
+  padding: 0 18px;
+}

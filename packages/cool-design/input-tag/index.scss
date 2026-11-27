@@ -1,0 +1,77 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-input-tag {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 2px 8px;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--#{config.$namespace}-bg-color, #fff);
+}
+.#{config.$namespace}-input-tag.is-disabled {
+  opacity: 0.5;
+}
+.#{config.$namespace}-input-tag__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #f0f2f5;
+  font-size: 12px;
+}
+.#{config.$namespace}-input-tag__tag.is-primary {
+  background: color-mix(in srgb, var(--#{config.$namespace}-primary, #409eff) 15%, transparent);
+}
+.#{config.$namespace}-input-tag__tag.is-success {
+  background: color-mix(in srgb, var(--#{config.$namespace}-success, #67c23a) 15%, transparent);
+}
+.#{config.$namespace}-input-tag__tag.is-warning {
+  background: color-mix(in srgb, var(--#{config.$namespace}-warning, #e6a23c) 15%, transparent);
+}
+.#{config.$namespace}-input-tag__tag.is-danger {
+  background: color-mix(in srgb, var(--#{config.$namespace}-danger, #f56c6c) 15%, transparent);
+}
+.#{config.$namespace}-input-tag__tag.is-dark {
+  background: var(--#{config.$namespace}-text, #303133);
+  color: var(--#{config.$namespace}-bg, #fff);
+}
+.#{config.$namespace}-input-tag__tag.is-plain {
+  background: transparent;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+}
+.#{config.$namespace}-input-tag__remove {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.#{config.$namespace}-input-tag__more {
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+  font-size: 12px;
+}
+.#{config.$namespace}-input-tag__input {
+  flex: 1;
+  min-width: 80px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+}
+.#{config.$namespace}-input-tag__clear {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.#{config.$namespace}-input-tag.#{config.$namespace}-control--small {
+  height: auto;
+  min-height: 28px;
+}
+
+.#{config.$namespace}-input-tag.#{config.$namespace}-control--large {
+  height: auto;
+  min-height: 40px;
+}

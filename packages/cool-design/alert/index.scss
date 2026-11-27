@@ -1,0 +1,96 @@
+@use '../style/mixins/config';
+
+@import '../style/base.scss';
+
+.#{config.$namespace}-alert {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 16px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.2s;
+  &--primary {
+    color: var(--#{config.$namespace}-primary, #2463eb);
+    background-color: var(--#{config.$namespace}-primary-light-9, #ecf1fe);
+  }
+  &--success {
+    color: var(--#{config.$namespace}-success, #16815d);
+    background-color: var(--#{config.$namespace}-success-light-9, #e9f6f0);
+  }
+  &--warning {
+    color: var(--#{config.$namespace}-warning, #b77909);
+    background-color: var(--#{config.$namespace}-warning-light-9, #fdf6ec);
+  }
+  &--info {
+    color: var(--#{config.$namespace}-info, #65748a);
+    background-color: var(--#{config.$namespace}-info-light-9, #f4f4f5);
+  }
+  &--error {
+    color: var(--#{config.$namespace}-danger, #d73d4a);
+    background-color: var(--#{config.$namespace}-danger-light-9, #fef0f0);
+  }
+  &.is-dark {
+    color: #fff;
+    &.#{config.$namespace}-alert--primary {
+      background-color: var(--#{config.$namespace}-primary, #2463eb);
+    }
+    &.#{config.$namespace}-alert--success {
+      background-color: var(--#{config.$namespace}-success, #16815d);
+    }
+    &.#{config.$namespace}-alert--warning {
+      background-color: var(--#{config.$namespace}-warning, #b77909);
+    }
+    &.#{config.$namespace}-alert--info {
+      background-color: var(--#{config.$namespace}-info, #65748a);
+    }
+    &.#{config.$namespace}-alert--error {
+      background-color: var(--#{config.$namespace}-danger, #d73d4a);
+    }
+    .#{config.$namespace}-alert__close {
+      color: #fff;
+    }
+  }
+  &.is-center {
+    justify-content: center;
+    text-align: center;
+  }
+  &__icon {
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+  &__title {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  &.is-with-description &__title {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  &__description {
+    margin: 4px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  &__close {
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0.7;
+    &:hover {
+      opacity: 1;
+    }
+  }
+}

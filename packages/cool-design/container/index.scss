@@ -1,0 +1,15 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-container {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.#{config.$namespace}-container--vertical {
+  flex-direction: column;
+}
+.#{config.$namespace}-container--horizontal {
+  flex-direction: row;
+}

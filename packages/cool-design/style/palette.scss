@@ -1,0 +1,52 @@
+@use './mixins/config';
+
+@use 'sass:color';
+$light: (
+  primary: #2463eb,
+  success: #16815d,
+  warning: #b77909,
+  danger: #d73d4a,
+  info: #65748a
+);
+$dark: (
+  primary: #7aa9ff,
+  success: #64d5a6,
+  warning: #f0bf65,
+  danger: #ff8793,
+  info: #a6b4c9
+);
+@mixin fallback-shades($palette, $background, $foreground) {
+  @each $name, $value in $palette {
+    @each $level in (3, 5, 7, 8, 9) {
+      --#{config.$namespace}-#{$name}-light-#{$level}: #{color.mix($background, $value, $level * 10%)};
+    }
+    --#{config.$namespace}-#{$name}-dark-2: #{color.mix($foreground, $value, 20%)};
+  }
+}
+:root,
+#{config.$theme-scope} {
+  --#{config.$namespace}-info: #65748a;
+  @include fallback-shades($light, #fff, #203047);
+}
+#{config.$theme-scope}[data-theme='dark'] {
+  --#{config.$namespace}-info: #a6b4c9;
+  @include fallback-shades($dark, #1c2738, #e0e8f4);
+}
+@supports (color: color-mix(in srgb, red, blue)) {
+  :root,
+  #{config.$theme-scope},
+  #{config.$theme-scope}[data-theme] {
+    @each $name, $value in $light {
+      @each $level in (3, 5, 7, 8, 9) {
+        --#{config.$namespace}-#{$name}-light-#{$level}: color-mix(in srgb, var(--#{config.$namespace}-#{$name}), var(--#{config.$namespace}-bg) #{$level * 10%});
+      }
+      --#{config.$namespace}-#{$name}-dark-2: color-mix(in srgb, var(--#{config.$namespace}-#{$name}), var(--#{config.$namespace}-text) 20%);
+    }
+  }
+}
+
+:root,
+#{config.$theme-scope},
+#{config.$theme-scope}[data-theme] {
+  --#{config.$namespace}-primary-hover: var(--#{config.$namespace}-primary-dark-2);
+}

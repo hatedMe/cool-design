@@ -1,0 +1,28 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-card {
+  background: var(--#{config.$namespace}-bg);
+  border-radius: var(--#{config.$namespace}-radius-small);
+  overflow: hidden;
+}
+.#{config.$namespace}-card.is-bordered {
+  border: 1px solid var(--#{config.$namespace}-border);
+}
+.#{config.$namespace}-card__header,
+.#{config.$namespace}-card__footer {
+  padding: 16px;
+  border-bottom: 1px solid var(--#{config.$namespace}-border);
+}
+.#{config.$namespace}-card__footer {
+  border-top: 1px solid var(--#{config.$namespace}-border);
+  border-bottom: 0;
+}
+.#{config.$namespace}-card__body {
+  padding: 20px;
+}
+.#{config.$namespace}-card.is-shadow-always {
+  box-shadow: var(--#{config.$namespace}-shadow-small);
+}
+.#{config.$namespace}-card.is-shadow-hover:hover {
+  box-shadow: var(--#{config.$namespace}-shadow-small);
+}

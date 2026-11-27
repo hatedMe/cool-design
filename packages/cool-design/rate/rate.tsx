@@ -1,0 +1,207 @@
+import { useNamespace } from '../../hooks/use-namespace';
+import { computed, defineComponent, inject, ref, watch, type PropType } from 'vue';
+import { fieldDescription, useFieldControl, formKey } from '../form/context';
+import { useConfig } from '../config-provider/context';
+import { createBEM, createNamespace } from '../../../src/utils/create';
+import { Icon } from '../icon';
+import type { RateColor, RateIcon, RateIconMap, RateSize, RateThresholdValue } from './types';
+
+const [name] = createNamespace('rate');
+
+const props = {
+  modelValue: { type: Number, default: 0 },
+  max: { type: Number, default: 5 },
+  size: { type: [String, Number] as PropType<RateSize>, default: undefined },
+  disabled: { type: Boolean, default: undefined },
+  allowHalf: Boolean,
+  lowThreshold: { type: Number, default: 2 },
+  highThreshold: { type: Number, default: 4 },
+  colors: { type: [String, Array, Object] as PropType<RateColor>, default: undefined },
+  voidColor: String,
+  disabledVoidColor: String,
+  icons: { type: [Array, Object] as PropType<RateIconMap>, default: undefined },
+  voidIcon: { type: [String, Object, Function] as PropType<RateIcon>, default: 'icon-collection_fill' },
+  disabledVoidIcon: { type: [String, Object, Function] as PropType<RateIcon>, default: 'icon-browse_fill' },
+  showText: Boolean,
+  showScore: Boolean,
+  textColor: String,
+  texts: { type: Array as PropType<string[]>, default: () => ['极差', '失望', '一般', '满意', '惊喜'] },
+  scoreTemplate: { type: String, default: '{value}' },
+  clearable: Boolean,
+  id: String,
+  ariaLabel: String,
+  label: String
+};
+
+const normalizeValue = (value: number, max: number) => {
+  const normalizedMax = Math.max(0, Number(max) || 0);
+  const numericValue = Number(value);
+  return Math.min(normalizedMax, Math.max(0, Number.isFinite(numericValue) ? numericValue : 0));
+};
+
+const interactionValue = (value: number, allowHalf: boolean) => {
+  const step = allowHalf ? 0.5 : 1;
+  return Math.round(value / step) * step;
+};
+
+export default defineComponent({
+  name,
+  inheritAttrs: false,
+  props,
+  emits: ['update:modelValue', 'change'],
+  setup(props, { attrs, emit, expose }) {
+    const ns = useNamespace('rate');
+    const bem = createBEM(ns.b);
+    const form = inject(formKey, undefined);
+    const field = useFieldControl();
+    const config = useConfig();
+    const isDisabled = computed(() => props.disabled || Boolean(form?.disabled?.()));
+    const effectiveSize = computed(() => props.size ?? field?.size?.() ?? form?.size?.() ?? config.value.size);
+    const currentValue = ref(normalizeValue(props.modelValue, props.max));
+    const hoverValue = ref(0);
+
+    const setCurrentValue = (value: number) => {
+      currentValue.value = normalizeValue(value, props.max);
+    };
+    const resetCurrentValue = () => {
+      hoverValue.value = 0;
+      currentValue.value = normalizeValue(props.modelValue, props.max);
+    };
+    watch(() => [props.modelValue, props.max], resetCurrentValue);
+
+    const commitValue = (next: number, changedFromPreview = false) => {
+      const changed = changedFromPreview || next !== props.modelValue;
+      hoverValue.value = 0;
+      currentValue.value = next;
+      emit('update:modelValue', next);
+      if (changed) emit('change', next);
+    };
+    expose({ setCurrentValue, resetCurrentValue });
+
+    const activeValue = computed(() => isDisabled.value ? currentValue.value : hoverValue.value || currentValue.value);
+    const displayText = computed(() => {
+      const scoreValue = isDisabled.value ? props.modelValue : activeValue.value;
+      const textValue = isDisabled.value ? currentValue.value : activeValue.value;
+      return props.showScore
+        ? props.scoreTemplate.replace(/\{\s*value\s*\}/, String(scoreValue))
+        : textValue > 0 ? props.texts[Math.max(0, Math.ceil(textValue) - 1)] || '' : '';
+    });
+    const resolveThreshold = <T,>(value: T | T[] | Record<number, T | RateThresholdValue<T>> | undefined, score: number, fallback?: T) => {
+      if (Array.isArray(value)) {
+        const segment = score < props.lowThreshold ? 0 : score < props.highThreshold ? 1 : 2;
+        return value[Math.min(segment, value.length - 1)] ?? fallback;
+      }
+      if (value && typeof value === 'object') {
+        const legacyExcluded = (value as Record<string, unknown>).excluded;
+        if (Array.isArray(legacyExcluded) && legacyExcluded.includes(score)) return fallback;
+        const entries = Object.entries(value)
+          .filter(([key]) => key !== 'excluded')
+          .map(([threshold, item]) => [Number(threshold), item] as const)
+          .sort(([a], [b]) => a - b);
+        const itemValue = (item: T | RateThresholdValue<T>): T | undefined => {
+          if (item && typeof item === 'object' && 'value' in item) {
+            const thresholdValue = item as RateThresholdValue<T>;
+            return thresholdValue.excluded ? undefined : thresholdValue.value;
+          }
+          return item as T;
+        };
+        const matched = entries.find(([threshold, item]) => score <= threshold && itemValue(item) !== undefined);
+        return matched ? itemValue(matched[1]) : fallback;
+      }
+      return value ?? fallback;
+    };
+    const activeColor = '#f7ba2a';
+    const getColor = (selected: boolean) => selected
+      ? resolveThreshold(props.colors, activeValue.value, activeColor)
+      : isDisabled.value ? props.disabledVoidColor : props.voidColor;
+    const getIcon = (selected: boolean, half: boolean) => {
+      if (!selected && !half) return isDisabled.value ? props.disabledVoidIcon : props.voidIcon;
+      return resolveThreshold(props.icons, activeValue.value, 'icon-collection_fill');
+    };
+    const getPointerValue = (event: MouseEvent, value: number) => {
+      if (!props.allowHalf) return value;
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      return event.clientX - rect.left < rect.width / 2 ? value - 0.5 : value;
+    };
+    const selectValue = (event: MouseEvent, value: number) => {
+      if (isDisabled.value) return;
+      const normalized = normalizeValue(interactionValue(getPointerValue(event, value), props.allowHalf), props.max);
+      commitValue(props.clearable && normalized === props.modelValue ? 0 : normalized);
+    };
+    const previewValue = (event: MouseEvent, value: number) => {
+      if (isDisabled.value) return;
+      hoverValue.value = normalizeValue(getPointerValue(event, value), props.max);
+    };
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (isDisabled.value) return;
+      const direction = ['ArrowRight', 'ArrowUp'].includes(event.key) ? 1 : ['ArrowLeft', 'ArrowDown'].includes(event.key) ? -1 : 0;
+      if (!direction) return;
+      const from = activeValue.value;
+      const nextValue = normalizeValue(interactionValue(from + direction * (props.allowHalf ? 0.5 : 1), props.allowHalf), props.max);
+      if (nextValue === from) return;
+      event.preventDefault();
+      event.stopPropagation();
+      commitValue(nextValue, hoverValue.value > 0);
+    };
+
+    return () => (
+      <div
+        {...attrs}
+        id={props.id || field?.id}
+        class={[bem(), ns.m(String(effectiveSize.value)), isDisabled.value && bem('', { disabled: true })]}
+        aria-describedby={fieldDescription(field, attrs['aria-describedby'])}
+        role='slider'
+        aria-label={(typeof attrs['aria-label'] === 'string' ? attrs['aria-label'] : undefined) || props.ariaLabel || props.label || (field?.getLabelId?.() ? undefined : 'rating')}
+        aria-labelledby={(typeof attrs['aria-labelledby'] === 'string' ? attrs['aria-labelledby'] : undefined) || (!attrs['aria-label'] && !props.ariaLabel && !props.label ? field?.getLabelId?.() : undefined)}
+        title={props.label}
+        data-role='rate-slider'
+        aria-valuetext={(props.showText || props.showScore) && displayText.value ? displayText.value : undefined}
+        aria-valuenow={activeValue.value}
+        aria-valuemin='0'
+        aria-valuemax={Math.max(0, Number(props.max) || 0)}
+        aria-disabled={isDisabled.value ? 'true' : undefined}
+        {...(!isDisabled.value ? { tabindex: 0 } : {})}
+        onKeydown={handleKeydown}>
+        {Array.from({ length: Math.max(0, Math.ceil(props.max)) }, (_, index) => {
+          const itemValue = index + 1;
+          const selected = activeValue.value === itemValue;
+          const partial = (props.allowHalf || isDisabled.value) && activeValue.value > itemValue - 1 && activeValue.value < itemValue;
+          const partialPercent = Math.round((activeValue.value - (itemValue - 1)) * 100);
+          const half = props.allowHalf && activeValue.value === itemValue - 0.5;
+          const filled = activeValue.value >= itemValue;
+          return (
+            <span
+              class={bem('item')}
+              aria-disabled={isDisabled.value ? 'true' : undefined}
+              data-half={half ? 'true' : undefined}
+              onClick={(event: MouseEvent) => selectValue(event, itemValue)}
+              onMouseenter={(event: MouseEvent) => previewValue(event, itemValue)}
+              onMousemove={(event: MouseEvent) => previewValue(event, itemValue)}
+              onMouseleave={resetCurrentValue}
+              onKeydown={() => undefined}>
+              <Icon
+                class={bem('icon', { filled: filled || selected, half: half || partial, partial: partial && !half })}
+                icon={getIcon(filled || selected, half || partial)}
+                color={props.colors ? getColor(filled || selected || half || partial) : undefined}
+                size={effectiveSize.value}
+                aria-hidden='true'
+                style={{
+                  [ns.cssVarName('rate-fill-percent')]: `${partialPercent}%`,
+                  [ns.cssVarName('rate-active-color')]: props.colors ? getColor(true) : undefined,
+                  [ns.cssVarName('rate-fill-color')]: props.colors ? getColor(true) : `var(--el-rate-fill-color, var(${ns.cssVarName('rate-active-color')}, $warning))`,
+                  [ns.cssVarName('rate-void-color')]: isDisabled.value ? (props.disabledVoidColor || 'var(--el-rate-disabled-void-color, var(--el-fill-color, #c0c4cc))') : props.voidColor,
+                  [ns.cssVarName('rate-disabled-void-color')]: props.disabledVoidColor || 'var(--el-rate-disabled-void-color, var(--el-fill-color, #c0c4cc))',
+                  [ns.cssVarName('rate-text-color')]: props.textColor
+                } as Record<string, string | undefined>}
+              />
+            </span>
+          );
+        })}
+        {props.showScore && <span class={bem('score')} style={{ color: props.textColor }}>{displayText.value}</span>}
+        {!props.showScore && props.showText && <span class={bem('text')} style={{ color: props.textColor }}>{activeValue.value > 0 ? props.texts[Math.max(0, Math.ceil(activeValue.value) - 1)] : ''}</span>}
+      </div>
+    );
+  }
+});
+
+export type { RateProps } from './types';

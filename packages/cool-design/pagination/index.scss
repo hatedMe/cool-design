@@ -1,0 +1,105 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0 0;
+  color: var(--#{config.$namespace}-text-secondary);
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+.#{config.$namespace}-pagination button {
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+  background: var(--#{config.$namespace}-bg);
+  color: var(--#{config.$namespace}-text);
+  height: var(--#{config.$namespace}-control-height);
+  padding: 0 10px;
+  font: inherit;
+  cursor: pointer;
+}
+.#{config.$namespace}-pagination__sizes .#{config.$namespace}-select {
+  min-width: 104px;
+  height: auto;
+  font: inherit;
+}
+.#{config.$namespace}-pagination__sizes .#{config.$namespace}-select > [role='combobox'] {
+  box-sizing: border-box;
+  justify-content: space-between;
+  min-height: var(--#{config.$namespace}-control-height);
+}
+.#{config.$namespace}-pagination__pager {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.#{config.$namespace}-pagination__pager button {
+  min-width: 32px;
+  padding: 0 8px;
+}
+.#{config.$namespace}-pagination__pager button.is-active {
+  border-color: var(--#{config.$namespace}-primary);
+  background: var(--#{config.$namespace}-primary);
+  color: var(--#{config.$namespace}-on-primary);
+}
+.#{config.$namespace}-pagination__ellipsis {
+  padding: 0 4px;
+}
+.#{config.$namespace}-pagination__spacer {
+  flex: 1 1 auto;
+}
+.#{config.$namespace}-pagination__jumper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.#{config.$namespace}-pagination__jumper input {
+  width: 48px;
+  height: var(--#{config.$namespace}-control-height);
+  padding: 0 8px;
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+  background: var(--#{config.$namespace}-bg);
+  color: var(--#{config.$namespace}-text);
+  font: inherit;
+  text-align: center;
+}
+.#{config.$namespace}-pagination__prev svg,
+.#{config.$namespace}-pagination__next svg {
+  display: block;
+}
+.#{config.$namespace}-pagination.is-small {
+  font-size: 12px;
+}
+.#{config.$namespace}-pagination.is-small button,
+.#{config.$namespace}-pagination.is-small .#{config.$namespace}-pagination__jumper input {
+  height: 26px;
+}
+.#{config.$namespace}-pagination.is-small .#{config.$namespace}-pagination__sizes .#{config.$namespace}-select > [role='combobox'] {
+  min-height: 26px;
+}
+.#{config.$namespace}-pagination--large button,
+.#{config.$namespace}-pagination--large .#{config.$namespace}-pagination__jumper input {
+  height: 40px;
+}
+.#{config.$namespace}-pagination--large .#{config.$namespace}-pagination__sizes .#{config.$namespace}-select > [role='combobox'] {
+  min-height: 40px;
+}
+.#{config.$namespace}-pagination.is-small .#{config.$namespace}-pagination__pager button {
+  min-width: 26px;
+  padding: 0 6px;
+}
+.#{config.$namespace}-pagination.is-background .#{config.$namespace}-pagination__pager button {
+  border: 0;
+  background: var(--#{config.$namespace}-bg-subtle);
+}
+.#{config.$namespace}-pagination.is-background .#{config.$namespace}-pagination__pager button.is-active {
+  background: var(--#{config.$namespace}-primary);
+}
+.#{config.$namespace}-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

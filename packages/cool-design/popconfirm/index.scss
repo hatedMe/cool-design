@@ -1,0 +1,42 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-popconfirm__trigger {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+.#{config.$namespace}-popconfirm {
+  box-sizing: border-box;
+  width: 260px;
+  max-height: calc(100vh - 16px);
+  background: var(--#{config.$namespace}-bg);
+  color: var(--#{config.$namespace}-text);
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+  box-shadow: var(--#{config.$namespace}-shadow);
+  font-size: var(--#{config.$namespace}-font-size);
+}
+.#{config.$namespace}-popconfirm.#{config.$namespace}-tooltip {
+  max-width: calc(100vw - 16px);
+  padding: 16px;
+}
+.#{config.$namespace}-popconfirm .#{config.$namespace}-tooltip__content {
+  max-height: calc(100vh - 50px);
+}
+.#{config.$namespace}-popconfirm--dark {
+  background: #303133;
+  color: #fff;
+  border-color: #303133;
+}
+.#{config.$namespace}-popconfirm__title {
+  margin: 0 0 16px;
+  overflow-wrap: anywhere;
+}
+.#{config.$namespace}-popconfirm__icon {
+  margin-right: 4px;
+}
+.#{config.$namespace}-popconfirm__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

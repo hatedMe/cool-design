@@ -1,0 +1,116 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-input__outside {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+.#{config.$namespace}-input__prepend,
+.#{config.$namespace}-input__append {
+  flex: none;
+  padding: 0 10px;
+  color: var(--#{config.$namespace}-text-secondary);
+}
+.#{config.$namespace}-input__loading {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: 0 2px;
+  color: var(--#{config.$namespace}-text-secondary);
+}
+.#{config.$namespace}-input__loading-spinner {
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: #{config.$namespace}-input-loading-spin 0.8s linear infinite;
+}
+@keyframes #{config.$namespace}-input-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .#{config.$namespace}-input__loading-spinner {
+    animation: none;
+  }
+}
+.#{config.$namespace}-input,
+.#{config.$namespace}-select {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  width: 100%;
+  height: var(--#{config.$namespace}-control-height);
+  background: var(--#{config.$namespace}-bg);
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+}
+.#{config.$namespace}-input:focus-within,
+.#{config.$namespace}-select:focus-within {
+  border-color: var(--#{config.$namespace}-primary);
+}
+.#{config.$namespace}-input input,
+.#{config.$namespace}-input textarea,
+.#{config.$namespace}-select select {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  border-radius: inherit;
+  padding: 0 10px;
+  background: transparent;
+  color: var(--#{config.$namespace}-text);
+  font: inherit;
+  outline: none;
+}
+.#{config.$namespace}-input textarea {
+  resize: vertical;
+  padding-block: 8px;
+}
+.#{config.$namespace}-input__icon,
+.#{config.$namespace}-input__count {
+  color: var(--#{config.$namespace}-text-secondary);
+  font-size: 12px;
+  flex: none;
+}
+.#{config.$namespace}-input__icon {
+  margin-inline: 8px;
+}
+.#{config.$namespace}-input__count {
+  margin-inline: 4px 8px;
+}
+.#{config.$namespace}-input.is-textarea {
+  height: auto;
+  min-height: calc(var(--#{config.$namespace}-control-height) * 2);
+}
+.#{config.$namespace}-select option {
+  background: var(--#{config.$namespace}-bg);
+  color: var(--#{config.$namespace}-text);
+}
+.#{config.$namespace}-input:has([aria-invalid='true']),
+.#{config.$namespace}-select:has([aria-invalid='true']) {
+  border-color: var(--#{config.$namespace}-danger);
+}
+.#{config.$namespace}-input button,
+.#{config.$namespace}-select button {
+  border: 0;
+  background: transparent;
+  color: var(--#{config.$namespace}-text-secondary);
+  cursor: pointer;
+  padding: 0 8px;
+}
+.#{config.$namespace}-input input:disabled,
+.#{config.$namespace}-select select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.#{config.$namespace}-control--small {
+  height: 28px;
+  font-size: 12px;
+}
+.#{config.$namespace}-control--large {
+  height: 40px;
+}

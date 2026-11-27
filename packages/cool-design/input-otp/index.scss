@@ -1,0 +1,52 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-input-otp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.#{config.$namespace}-input-otp__field {
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--#{config.$namespace}-bg-color, #fff);
+  color: inherit;
+  font: inherit;
+  font-size: 18px;
+  text-align: center;
+  outline: none;
+}
+.#{config.$namespace}-input-otp__field:focus {
+  border-color: var(--#{config.$namespace}-primary, #409eff);
+}
+.#{config.$namespace}-input-otp--filled .#{config.$namespace}-input-otp__field {
+  border-color: transparent;
+  background: var(--#{config.$namespace}-bg-subtle, #f7f9fc);
+}
+.#{config.$namespace}-input-otp--underlined .#{config.$namespace}-input-otp__field {
+  border: 0;
+  border-bottom: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 0;
+}
+.#{config.$namespace}-input-otp--underlined .#{config.$namespace}-input-otp__field:focus {
+  border-bottom-color: var(--#{config.$namespace}-primary, #409eff);
+}
+.#{config.$namespace}-input-otp.is-disabled .#{config.$namespace}-input-otp__field {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.#{config.$namespace}-input-otp.#{config.$namespace}-control--small .#{config.$namespace}-input-otp__field {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+}
+.#{config.$namespace}-input-otp.#{config.$namespace}-control--large .#{config.$namespace}-input-otp__field {
+  width: 48px;
+  height: 48px;
+  font-size: 22px;
+}
+.#{config.$namespace}-input-otp__separator {
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+}

@@ -1,0 +1,5 @@
+$namespace: 'i' !default;
+$icon-font-path: '../icon/fonts' !default;
+$element-separator: '__';
+$modifier-separator: '--';
+$theme-scope: ':is(.#{$namespace}-config-provider, .#{$namespace}-theme-scope)';

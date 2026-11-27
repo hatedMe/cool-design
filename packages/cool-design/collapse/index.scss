@@ -1,0 +1,63 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-collapse {
+  border-top: 1px solid var(--#{config.$namespace}-border);
+  border-bottom: 1px solid var(--#{config.$namespace}-border);
+}
+.#{config.$namespace}-collapse-item__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 1px solid var(--#{config.$namespace}-border);
+  background: none;
+  color: var(--#{config.$namespace}-text);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+.#{config.$namespace}-collapse-item:last-child .#{config.$namespace}-collapse-item__header {
+  border-bottom: 0;
+}
+.#{config.$namespace}-collapse-item.is-active .#{config.$namespace}-collapse-item__header {
+  border-bottom: 1px solid var(--#{config.$namespace}-border);
+}
+.#{config.$namespace}-collapse-item__header:disabled {
+  color: var(--#{config.$namespace}-text-secondary);
+  cursor: not-allowed;
+}
+.#{config.$namespace}-collapse-item__title {
+  flex: 1;
+}
+.#{config.$namespace}-collapse-item__arrow {
+  display: inline-block;
+  color: #909399;
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+.#{config.$namespace}-collapse-item.is-active .#{config.$namespace}-collapse-item__arrow {
+  transform: rotate(90deg);
+}
+.#{config.$namespace}-collapse-item__wrap {
+  overflow: hidden;
+}
+.#{config.$namespace}-collapse-enter-active,
+.#{config.$namespace}-collapse-leave-active {
+  overflow: hidden;
+  transition: height 0.2s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .#{config.$namespace}-collapse-enter-active,
+  .#{config.$namespace}-collapse-leave-active {
+    transition: none;
+  }
+}
+.#{config.$namespace}-collapse-item__content {
+  padding: 12px 0;
+  color: var(--#{config.$namespace}-text);
+  font-size: 14px;
+  line-height: 1.6;
+}

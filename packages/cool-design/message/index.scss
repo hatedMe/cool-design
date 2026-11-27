@@ -1,0 +1,101 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-message-container {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+.#{config.$namespace}-message-container--top {
+  top: 20px;
+}
+.#{config.$namespace}-message-container--bottom {
+  bottom: 20px;
+}
+.#{config.$namespace}-message-container--top-left,
+.#{config.$namespace}-message-container--bottom-left {
+  left: 16px;
+  transform: none;
+  align-items: flex-start;
+}
+.#{config.$namespace}-message-container--top-right,
+.#{config.$namespace}-message-container--bottom-right {
+  left: auto;
+  right: 16px;
+  transform: none;
+  align-items: flex-end;
+}
+.#{config.$namespace}-message-container .#{config.$namespace}-message {
+  position: static;
+  transform: none;
+  pointer-events: auto;
+}
+.#{config.$namespace}-message {
+  position: fixed;
+  z-index: 2100;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 18px;
+  border: 1px solid var(--#{config.$namespace}-success);
+  border-radius: var(--#{config.$namespace}-radius);
+  background: var(--#{config.$namespace}-bg);
+  color: var(--#{config.$namespace}-success);
+  box-shadow: var(--#{config.$namespace}-shadow);
+  max-width: calc(100vw - 32px);
+}
+.#{config.$namespace}-message--primary {
+  border-color: var(--#{config.$namespace}-primary);
+  color: var(--#{config.$namespace}-primary);
+}
+.#{config.$namespace}-message--success {
+  border-color: var(--#{config.$namespace}-success);
+  color: var(--#{config.$namespace}-success);
+}
+.#{config.$namespace}-message--error {
+  border-color: var(--#{config.$namespace}-danger);
+  color: var(--#{config.$namespace}-danger);
+}
+.#{config.$namespace}-message--warning {
+  border-color: var(--#{config.$namespace}-warning);
+  color: var(--#{config.$namespace}-warning);
+}
+.#{config.$namespace}-message--info {
+  border-color: var(--#{config.$namespace}-border);
+  color: var(--#{config.$namespace}-text-secondary);
+}
+.#{config.$namespace}-message button {
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 18px;
+}
+.#{config.$namespace}-message.is-center {
+  justify-content: center;
+  text-align: center;
+}
+.#{config.$namespace}-message__badge {
+  flex: none;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 9px;
+  background: currentColor;
+  color: var(--#{config.$namespace}-bg);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+}
+.#{config.$namespace}-message.is-plain {
+  border-color: color-mix(in srgb, currentColor 40%, var(--#{config.$namespace}-bg));
+  background: color-mix(in srgb, currentColor 10%, var(--#{config.$namespace}-bg));
+}

@@ -19,15 +19,32 @@ An enterprise-class UI components based on Cool Design and Vue.
 </p>
 
 ### Features
+
 - A set of high-quality Vue components out of the box.
 - Multiple components
 - Cool design system
 
+### Components
+
+组件 API �?[Element Plus](https://element-plus.org) 对齐（属�?事件/插槽/实例方法），可参�?EP 文档平滑迁移。当前覆盖：
+
+| 分类 | 组件 |
+| --- | --- |
+| 基础 | Button / ButtonGroup、Border、Color、Text、Typography（排�?token）、Icon、Link、Layout（Row / Col）、Container / Header / Aside / Main / Footer、Space、Scrollbar、Splitter / SplitterPanel、ConfigProvider |
+| 表单 | Form / FormItem、Input、InputNumber、InputTag、InputOtp、Autocomplete、Mention、Select / SelectOption / SelectOptionGroup、SelectV2、Cascader、CascaderPanel、TreeSelect、TimeSelect、TimePicker、DatePicker、DateTimePicker、Calendar、Checkbox / CheckboxButton / CheckboxGroup、Radio / RadioButton / RadioGroup、Switch、Slider、Rate、Transfer、Upload |
+| 数据 | Table、TableV2、Tag、Progress、Tree、TreeV2、Pagination、Descriptions、Empty、Skeleton、Result、Statistic、Countdown、Segmented |
+| 导航 | Affix、Anchor、Backtop、Breadcrumb、Dropdown、Menu、PageHeader、Steps、Tabs |
+| 反馈 | Alert、Dialog、Drawer、Loading、Message、MessageBox、Notification、Popconfirm、Popover、Tooltip、Tour |
+| 其他 | Avatar、Badge、Card、Carousel、Collapse、Divider、Image、Timeline、Watermark |
+
+文档站包含每个组件的 API 说明与可运行示例；破坏性变更见 [CHANGELOG.md](./CHANGELOG.md)�?
+
 ### Browsers
 
-Modern browsers and IE10.
+Modern browsers, no IE support (Vue 3 requirement).
 
-| [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_48x48.png" alt="IE / Edge" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>IE / Edge | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png" alt="Firefox" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Firefox | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png" alt="Chrome" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Chrome | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/safari/safari_48x48.png" alt="Safari" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Safari | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/opera/opera_48x48.png" alt="Opera" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Opera |
-| --- | --- | --- | --- | --- |
-| IE10, Edge | last 2 versions | last 2 versions | last 2 versions | last 2 versions |
+## 兼容导入
 
+根入口支持 `ElButton`、`ElInput`、`ElSelect`、`ElOption` 等 Element Plus 组件名称。全量或单独安装组件后，模板可以使用对应的 `el-*` 标签，原来的 `i-*`、`I*` 和具名导入仍可使用。
+
+`ElMessage`、`ElNotification`、`ElMessageBox` 和 `ElLoading` 提供函数式服务。声明式通知使用 `Notification` 或 `<i-notification>`，声明式消息框使用 `MessageBox` 或 `<i-message-box>`。安装 `ElMessageBox` 后可使用 `$messageBox`、`$msgbox`、`$alert`、`$confirm`、`$prompt`。Loading 支持 `ElLoading.service`、`ElLoadingService` 与 `v-loading`。

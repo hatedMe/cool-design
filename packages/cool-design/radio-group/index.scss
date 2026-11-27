@@ -1,0 +1,7 @@
+@use '../style/mixins/config';
+
+@import '../style/base.scss';
+
+.#{config.$namespace}-radio-group {
+  display: inline-block;
+}

@@ -1,0 +1,92 @@
+import { createVNode, render, type AppContext } from 'vue';
+import { renderService } from '../../../src/utils/service-render';
+import { positionServices } from '../../../src/utils/service-position';
+import Notification from './notification';
+import type { NotificationHandle, NotificationOptions, NotificationPosition, NotificationType } from './types';
+
+/** 支持字符串简写：Notify('消息') 等价于 Notify({ message: '消息' }) */
+type NotifyInput = string | NotificationOptions;
+
+type NotifyFn = {
+  (options?: NotifyInput, appContext?: AppContext | null): NotificationHandle;
+  primary(options?: NotifyInput, appContext?: AppContext | null): NotificationHandle;
+  success(options?: NotifyInput, appContext?: AppContext | null): NotificationHandle;
+  warning(options?: NotifyInput, appContext?: AppContext | null): NotificationHandle;
+  info(options?: NotifyInput, appContext?: AppContext | null): NotificationHandle;
+  error(options?: NotifyInput, appContext?: AppContext | null): NotificationHandle;
+  danger(options?: NotifyInput, appContext?: AppContext | null): NotificationHandle;
+  closeAll(): void;
+  _context?: AppContext | null;
+};
+
+const instances = new Set<{
+  close: () => void;
+  context: AppContext | null;
+  position: NotificationPosition;
+  container: HTMLElement;
+  offset: number;
+}>();
+
+function normalize(input: NotifyInput | undefined, type?: NotificationType): NotificationOptions {
+  const base: NotificationOptions = typeof input === 'string' ? { message: input } : (input ?? {});
+  return type ? { ...base, type } : { ...base };
+}
+
+function notifyFn(input: NotifyInput | undefined, context: AppContext | null, type?: NotificationType): NotificationHandle {
+  if (typeof document === 'undefined') return { close: () => {} };
+  const options = normalize(input, type);
+  const position = options.position ?? 'top-right';
+  const offset = 20 + (options.offset ?? 0);
+  const container = document.createElement('div');
+  container.style[position.endsWith('right') ? 'right' : 'left'] = '20px';
+  document.body.appendChild(container);
+  const reposition = () => positionServices(
+    [...instances].filter((entry) => entry.position === position),
+    position.startsWith('top') ? 'top' : 'bottom',
+    16
+  );
+  const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(reposition);
+  observer?.observe(container);
+  const entry = {
+    context, position, container, offset,
+    close() {
+      if (!instances.delete(entry)) return;
+      observer?.disconnect();
+      render(null, container);
+      container.remove();
+      reposition();
+      options.onClose?.();
+    }
+  };
+  instances.add(entry);
+  renderService(container, context, 'notification', position, options.zIndex, () => createVNode(Notification, {
+    title: options.title,
+    message: options.message,
+    size: options.size,
+    type: options.type,
+    dangerouslyUseHTMLString: options.dangerouslyUseHTMLString,
+    customClass: options.customClass,
+    duration: options.duration ?? 4500,
+    showClose: options.showClose ?? true,
+    onClick: options.onClick,
+    onClose: entry.close
+  }));
+  reposition();
+  return { close: entry.close };
+}
+
+export function createNotifyService(context?: AppContext): NotifyFn {
+  const fn = ((input, appContext = fn._context ?? null) => notifyFn(input, appContext)) as NotifyFn;
+  fn._context = context;
+  (['primary', 'success', 'warning', 'info', 'error', 'danger'] as const).forEach((type) => {
+    fn[type] = (input, appContext = fn._context ?? null) => notifyFn(input, appContext, type);
+  });
+  fn.closeAll = () => {
+    [...instances].forEach((entry) => {
+      if (!context || entry.context === context) entry.close();
+    });
+  };
+  return fn;
+}
+
+export default createNotifyService();

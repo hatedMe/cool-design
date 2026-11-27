@@ -1,0 +1,151 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-select {
+  position: relative;
+  display: inline-block;
+  min-width: 220px;
+  color: var(--#{config.$namespace}-text-color, #303133);
+  font-size: 14px;
+}
+
+.#{config.$namespace}-select > [role='combobox'] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--#{config.$namespace}-bg-color, #fff);
+  cursor: pointer;
+  outline: none;
+}
+
+.#{config.$namespace}-select > [role='combobox']:focus,
+.#{config.$namespace}-select.is-open > [role='combobox'] {
+  border-color: var(--#{config.$namespace}-color-primary, #409eff);
+}
+
+.#{config.$namespace}-select [role='combobox'] input {
+  min-width: 24px;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+}
+
+.#{config.$namespace}-select__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  --#{config.$namespace}-select-tag-color: var(--#{config.$namespace}-info, #909399);
+  background: color-mix(in srgb, var(--#{config.$namespace}-select-tag-color) 15%, transparent);
+}
+.#{config.$namespace}-select__tag--primary { --#{config.$namespace}-select-tag-color: var(--#{config.$namespace}-primary, #409eff); }
+.#{config.$namespace}-select__tag--success { --#{config.$namespace}-select-tag-color: var(--#{config.$namespace}-success, #67c23a); }
+.#{config.$namespace}-select__tag--warning { --#{config.$namespace}-select-tag-color: var(--#{config.$namespace}-warning, #e6a23c); }
+.#{config.$namespace}-select__tag--danger { --#{config.$namespace}-select-tag-color: var(--#{config.$namespace}-danger, #f56c6c); }
+.#{config.$namespace}-select__tag--dark {
+  background: var(--#{config.$namespace}-select-tag-color);
+  color: #fff;
+}
+.#{config.$namespace}-select__tag--plain {
+  border: 1px solid var(--#{config.$namespace}-select-tag-color);
+  background: transparent;
+}
+.#{config.$namespace}-select__group {
+  padding: 6px 12px 2px;
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.#{config.$namespace}-select__tag button,
+.#{config.$namespace}-select [role='combobox'] > button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.#{config.$namespace}-select__native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.#{config.$namespace}-select__dropdown {
+  position: fixed;
+  z-index: 2000;
+  max-height: 280px;
+  overflow: visible;
+  padding: 0;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--#{config.$namespace}-bg, #fff);
+  box-shadow: var(--#{config.$namespace}-shadow-small);
+}
+
+.#{config.$namespace}-select__dropdown--dark {
+  background: #303133;
+  border-color: #303133;
+  color: #fff;
+
+  .#{config.$namespace}-select__option.is-highlighted,
+  .#{config.$namespace}-select__option:hover {
+    background: rgb(255 255 255 / 12%);
+  }
+}
+
+.#{config.$namespace}-select__option {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.#{config.$namespace}-select__option.is-highlighted,
+.#{config.$namespace}-select__option:hover {
+  background: #f5f7fa;
+}
+
+.#{config.$namespace}-select__option.is-selected {
+  color: var(--#{config.$namespace}-color-primary, #409eff);
+  font-weight: 600;
+}
+
+.#{config.$namespace}-select__option.is-disabled {
+  color: #c0c4cc;
+  cursor: not-allowed;
+}
+
+.#{config.$namespace}-select__empty {
+  padding: 10px 12px;
+  color: #909399;
+  text-align: center;
+}
+
+.#{config.$namespace}-select.is-disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.#{config.$namespace}-select__suffix-caret::before { content: '⌄'; }
+
+.#{config.$namespace}-select__arrow { position: absolute; width: 8px; height: 8px; transform: translate(-50%, -50%) rotate(45deg); background: inherit; border: inherit; pointer-events: none; }
+.#{config.$namespace}-select__suffix-caret,
+.#{config.$namespace}-select__suffix-icon {
+  display: inline-block;
+  transition: transform 0.3s;
+  &.no-transition { transition: none; }
+}
+.#{config.$namespace}-select.is-open .#{config.$namespace}-select__suffix-caret,
+.#{config.$namespace}-select.is-open .#{config.$namespace}-select__suffix-icon { transform: rotate(180deg); }
+
+.#{config.$namespace}-select__scroll { max-height: inherit; overflow: auto; padding: 4px 0; box-sizing: border-box; }
+.#{config.$namespace}-select__dropdown[data-placement^='top'] > .#{config.$namespace}-select__arrow { bottom: -4px; transform: translateX(-50%) rotate(45deg); }
+.#{config.$namespace}-select__dropdown[data-placement^='bottom'] > .#{config.$namespace}-select__arrow { top: -4px; transform: translateX(-50%) rotate(45deg); }
+.#{config.$namespace}-select__dropdown[data-placement^='left'] > .#{config.$namespace}-select__arrow { right: -4px; transform: translateY(-50%) rotate(45deg); }
+.#{config.$namespace}-select__dropdown[data-placement^='right'] > .#{config.$namespace}-select__arrow { left: -4px; transform: translateY(-50%) rotate(45deg); }

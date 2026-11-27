@@ -1,0 +1,24 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-backtop {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: #409eff;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 12%);
+  cursor: pointer;
+}
+.#{config.$namespace}-backtop:hover {
+  background: #ecf5ff;
+}
+.#{config.$namespace}-backtop__icon {
+  font-size: 20px;
+  line-height: 1;
+}

@@ -1,0 +1,100 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-steps {
+  display: flex;
+}
+.#{config.$namespace}-steps__item {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  cursor: pointer;
+}
+.#{config.$namespace}-steps__item:focus-visible {
+  outline: 2px solid var(--#{config.$namespace}-primary);
+  outline-offset: 2px;
+}
+.#{config.$namespace}-steps__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.#{config.$namespace}-steps__head i,
+.#{config.$namespace}-steps__icon {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--#{config.$namespace}-text-muted);
+  color: var(--#{config.$namespace}-on-primary);
+  font-style: normal;
+  font-size: 12px;
+}
+.#{config.$namespace}-steps__line {
+  flex: 1;
+  min-width: 20px;
+  height: 2px;
+  margin-top: 11px;
+  background: var(--#{config.$namespace}-border-color-light);
+}
+.#{config.$namespace}-steps__item.is-finish .#{config.$namespace}-steps__icon,
+.#{config.$namespace}-steps__item.is-finish .#{config.$namespace}-steps__head i,
+.#{config.$namespace}-steps__item.is-process .#{config.$namespace}-steps__icon,
+.#{config.$namespace}-steps__item.is-process .#{config.$namespace}-steps__head i {
+  background: var(--#{config.$namespace}-primary);
+}
+.#{config.$namespace}-steps__item.is-success .#{config.$namespace}-steps__icon {
+  background: var(--#{config.$namespace}-success);
+}
+.#{config.$namespace}-steps__item.is-error .#{config.$namespace}-steps__icon {
+  background: var(--#{config.$namespace}-danger);
+}
+.#{config.$namespace}-steps__item.is-finish .#{config.$namespace}-steps__line {
+  background: var(--#{config.$namespace}-primary);
+}
+.#{config.$namespace}-steps__item p,
+.#{config.$namespace}-steps__description {
+  margin: 4px 0;
+  color: var(--#{config.$namespace}-text-muted);
+  font-size: 12px;
+}
+.#{config.$namespace}-steps__title {
+  font-size: 14px;
+  font-weight: 500;
+}
+.#{config.$namespace}-steps.is-vertical {
+  flex-direction: column;
+  gap: 16px;
+}
+.#{config.$namespace}-steps.is-vertical .#{config.$namespace}-steps__item {
+  flex-direction: row;
+}
+.#{config.$namespace}-steps.is-vertical .#{config.$namespace}-steps__head {
+  flex-direction: column;
+  align-items: center;
+}
+.#{config.$namespace}-steps.is-vertical .#{config.$namespace}-steps__line {
+  width: 2px;
+  min-height: 20px;
+  height: 100%;
+  margin-top: 8px;
+  margin-left: 0;
+}
+.#{config.$namespace}-steps.is-center .#{config.$namespace}-steps__item {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.#{config.$namespace}-steps.is-center .#{config.$namespace}-steps__head {
+  width: 100%;
+}
+.#{config.$namespace}-steps.is-simple .#{config.$namespace}-steps__item {
+  align-items: center;
+}
+.#{config.$namespace}-steps.is-simple .#{config.$namespace}-steps__main {
+  display: flex;
+}
+.#{config.$namespace}-steps__item.is-last .#{config.$namespace}-steps__line {
+  display: none;
+}

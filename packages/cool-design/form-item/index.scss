@@ -1,0 +1,73 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-form-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.#{config.$namespace}-form-item__label {
+  display: flex;
+  align-items: center;
+  width: var(--#{config.$namespace}-form-item-label-width, auto);
+  margin-right: 12px;
+  line-height: 32px;
+  font-weight: 500;
+  text-align: right;
+}
+.#{config.$namespace}-form-item__required {
+  margin: 0 4px;
+  color: var(--#{config.$namespace}-danger);
+}
+.#{config.$namespace}-form-item__content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.#{config.$namespace}-form-item__status-icon {
+  margin-left: 6px;
+  font-size: 12px;
+}
+.#{config.$namespace}-form-item__status-icon.is-success {
+  color: var(--#{config.$namespace}-success);
+}
+.#{config.$namespace}-form-item__status-icon.is-error {
+  color: var(--#{config.$namespace}-danger);
+}
+.#{config.$namespace}-form-item__error {
+  color: var(--#{config.$namespace}-danger);
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 5px;
+}
+.#{config.$namespace}-form-item__error.is-inline-message {
+  display: inline-block;
+  margin: 0 0 0 8px;
+  vertical-align: middle;
+}
+.#{config.$namespace}-form-item--label-left .#{config.$namespace}-form-item__label {
+  text-align: left;
+}
+.#{config.$namespace}-form-item--label-top {
+  display: block;
+}
+.#{config.$namespace}-form-item--label-top .#{config.$namespace}-form-item__label {
+  width: auto;
+  margin-right: 0;
+  margin-bottom: 7px;
+  line-height: 1.5;
+  text-align: left;
+}
+.#{config.$namespace}-form-item--inline {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  vertical-align: top;
+}
+.#{config.$namespace}-form-item--inline > .#{config.$namespace}-form-item__label {
+  flex-shrink: 0;
+}
+.#{config.$namespace}-form-item--inline:not(:last-child) {
+  margin-right: 32px;
+}
+.#{config.$namespace}-form-item--inline.#{config.$namespace}-form-item--label-top {
+  flex-direction: column;
+}

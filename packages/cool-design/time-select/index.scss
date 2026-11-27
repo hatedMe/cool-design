@@ -1,0 +1,87 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-time-select {
+  position: relative;
+  display: inline-block;
+  min-width: 180px;
+}
+.#{config.$namespace}-time-select__control {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 28px 4px 30px;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--#{config.$namespace}-bg-color, #fff);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.#{config.$namespace}-time-select.is-open .#{config.$namespace}-time-select__control {
+  border-color: var(--#{config.$namespace}-color-primary, #409eff);
+}
+.#{config.$namespace}-time-select.is-disabled .#{config.$namespace}-time-select__control {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.#{config.$namespace}-time-select__control:not([readonly]) {
+  cursor: text;
+}
+.#{config.$namespace}-time-select__control::placeholder {
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+}
+.#{config.$namespace}-time-select__prefix,
+.#{config.$namespace}-time-select__clear {
+  position: absolute;
+  top: 50%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  transform: translateY(-50%);
+}
+.#{config.$namespace}-time-select__prefix {
+  left: 8px;
+  pointer-events: none;
+}
+.#{config.$namespace}-time-select__clear {
+  right: 8px;
+  cursor: pointer;
+}
+.#{config.$namespace}-time-select__dropdown {
+  position: fixed;
+  z-index: 2000;
+  max-height: 280px;
+  overflow: auto;
+  padding: 4px 0;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--#{config.$namespace}-bg, #fff);
+  box-shadow: var(--#{config.$namespace}-shadow-small);
+}
+
+.#{config.$namespace}-time-select__dropdown--dark {
+  background: #303133;
+  border-color: #303133;
+  color: #fff;
+}
+.#{config.$namespace}-time-select__option {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.#{config.$namespace}-time-select__option:hover,
+.#{config.$namespace}-time-select__option.is-selected,
+.#{config.$namespace}-time-select__option.is-highlighted {
+  background: #f5f7fa;
+}
+.#{config.$namespace}-time-select__option.is-disabled {
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+  cursor: not-allowed;
+}
+
+.#{config.$namespace}-time-select.#{config.$namespace}-control--small .#{config.$namespace}-time-select__control {
+  min-height: 28px;
+}
+.#{config.$namespace}-time-select.#{config.$namespace}-control--large .#{config.$namespace}-time-select__control {
+  min-height: 40px;
+}

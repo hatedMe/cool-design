@@ -1,0 +1,7 @@
+@use '../style/mixins/config';
+.#{config.$namespace}-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--#{config.$namespace}-overlay-color, rgb(0 0 0 / 50%));
+  overflow: auto;
+}

@@ -1,0 +1,48 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-message-box__message {
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.#{config.$namespace}-message-box--success .#{config.$namespace}-message-box__message {
+  color: var(--#{config.$namespace}-success);
+}
+.#{config.$namespace}-message-box--warning .#{config.$namespace}-message-box__message {
+  color: var(--#{config.$namespace}-warning);
+}
+.#{config.$namespace}-message-box--info .#{config.$namespace}-message-box__message {
+  color: var(--#{config.$namespace}-info, var(--#{config.$namespace}-text-secondary));
+}
+.#{config.$namespace}-message-box--error .#{config.$namespace}-message-box__message {
+  color: var(--#{config.$namespace}-danger);
+}
+.#{config.$namespace}-message-box.is-center .#{config.$namespace}-message-box__message {
+  text-align: center;
+}
+.#{config.$namespace}-message-box__input {
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius, 6px);
+  background: var(--#{config.$namespace}-bg);
+  color: var(--#{config.$namespace}-text);
+  font-size: 14px;
+  box-sizing: border-box;
+  &:focus {
+    outline: none;
+    border-color: var(--#{config.$namespace}-primary);
+  }
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+textarea.#{config.$namespace}-message-box__input {
+  min-height: 80px;
+  resize: vertical;
+}
+.#{config.$namespace}-message-box__error {
+  color: var(--#{config.$namespace}-danger);
+  margin: 12px 0 0;
+}

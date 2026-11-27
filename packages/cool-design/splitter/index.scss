@@ -1,0 +1,74 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-splitter {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.#{config.$namespace}-splitter--vertical {
+  flex-direction: column;
+}
+.#{config.$namespace}-splitter__panel {
+  overflow: auto;
+}
+.#{config.$namespace}-splitter__divider {
+  position: relative;
+  flex: 0 0 5px;
+  background: var(--#{config.$namespace}-border-color, #dcdfe6);
+  cursor: col-resize;
+}
+.#{config.$namespace}-splitter--vertical > .#{config.$namespace}-splitter__divider {
+  cursor: row-resize;
+}
+.#{config.$namespace}-splitter__divider:hover,
+.#{config.$namespace}-splitter__divider:active {
+  background: var(--#{config.$namespace}-primary, #409eff);
+}
+.#{config.$namespace}-splitter__collapse {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 3px;
+  background: var(--#{config.$namespace}-bg, #fff);
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+.#{config.$namespace}-splitter__collapse.is-start,
+.#{config.$namespace}-splitter__collapse.is-end.is-collapsed {
+  right: auto;
+  left: -18px;
+}
+.#{config.$namespace}-splitter__collapse.is-end,
+.#{config.$namespace}-splitter__collapse.is-start.is-collapsed {
+  right: -18px;
+  left: auto;
+}
+.#{config.$namespace}-splitter--vertical
+  > .#{config.$namespace}-splitter__divider
+  > .#{config.$namespace}-splitter__collapse {
+  width: 28px;
+  height: 14px;
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+
+  &.is-start,
+  &.is-end.is-collapsed {
+    top: -18px;
+    bottom: auto;
+  }
+
+  &.is-end,
+  &.is-start.is-collapsed {
+    top: auto;
+    bottom: -18px;
+  }
+}

@@ -1,0 +1,8 @@
+node_modules
+dist
+es
+lib
+coverage
+.superpowers
+.git
+*.timestamp-*.mjs

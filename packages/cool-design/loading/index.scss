@@ -1,0 +1,104 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-loading {
+  position: relative;
+  min-width: 0;
+}
+.#{config.$namespace}-loading-service > .#{config.$namespace}-loading {
+  height: 100%;
+}
+.#{config.$namespace}-loading__status {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  color: var(--#{config.$namespace}-primary);
+  font-size: var(--#{config.$namespace}-font-size);
+}
+.#{config.$namespace}-loading--overlay[aria-busy='true'] {
+  min-height: 96px;
+}
+.#{config.$namespace}-loading--overlay > .#{config.$namespace}-loading__status {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: var(--#{config.$namespace}-loading-background, var(--#{config.$namespace}-bg));
+  opacity: 0.92;
+}
+.#{config.$namespace}-loading--fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: var(--#{config.$namespace}-loading-background, var(--#{config.$namespace}-bg));
+}
+.#{config.$namespace}-loading--fullscreen > .#{config.$namespace}-loading__status {
+  position: fixed;
+  inset: 0;
+}
+.#{config.$namespace}-loading--overlay[aria-busy='true'] > .#{config.$namespace}-loading__content {
+  pointer-events: none;
+  user-select: none;
+}
+.#{config.$namespace}-loading__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: #{config.$namespace}-loading-spin 0.8s linear infinite;
+}
+@keyframes #{config.$namespace}-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .#{config.$namespace}-loading__spinner {
+    animation: none;
+  }
+}
+.#{config.$namespace}-loading-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: color-mix(in srgb, var(--#{config.$namespace}-bg, #fff) 80%, transparent);
+}
+.#{config.$namespace}-loading-mask.is-fullscreen {
+  position: fixed;
+}
+.#{config.$namespace}-loading-mask__spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: #{config.$namespace}-loading-mask-spin 0.8s linear infinite;
+}
+.#{config.$namespace}-loading-mask__icon {
+  color: var(--#{config.$namespace}-primary);
+  font-size: 24px;
+}
+.#{config.$namespace}-loading-mask__svg {
+  display: inline-flex;
+}
+.#{config.$namespace}-loading-mask__svg svg {
+  display: block;
+}
+.#{config.$namespace}-loading-mask__text {
+  color: var(--#{config.$namespace}-text);
+}
+@keyframes #{config.$namespace}-loading-mask-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .#{config.$namespace}-loading-mask__spinner {
+    animation: none;
+  }
+}

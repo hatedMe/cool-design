@@ -1,0 +1,114 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-tree-select {
+  position: relative;
+  display: inline-block;
+  min-width: 220px;
+  color: var(--#{config.$namespace}-text-color, #303133);
+  font-size: 14px;
+}
+.#{config.$namespace}-tree-select > .#{config.$namespace}-select {
+  border: 0;
+}
+.#{config.$namespace}-tree-select__control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--#{config.$namespace}-bg-color, #fff);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.#{config.$namespace}-tree-select > .#{config.$namespace}-select:has(> .#{config.$namespace}-tree-select__selection) {
+  display: grid;
+}
+.#{config.$namespace}-tree-select__selection,
+.#{config.$namespace}-tree-select__control {
+  grid-area: 1 / 1;
+  align-self: stretch;
+}
+.#{config.$namespace}-tree-select__selection {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 9px;
+  pointer-events: none;
+}
+.#{config.$namespace}-tree-select__selection :is(button, a, input, [tabindex], .#{config.$namespace}-tooltip__trigger) {
+  pointer-events: auto;
+}
+.#{config.$namespace}-tree-select.is-open .#{config.$namespace}-tree-select__control {
+  border-color: var(--#{config.$namespace}-color-primary, #409eff);
+}
+.#{config.$namespace}-tree-select.is-disabled .#{config.$namespace}-tree-select__control {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.#{config.$namespace}-tree-select__placeholder {
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+}
+.#{config.$namespace}-tree-select__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #f0f2f5;
+}
+.#{config.$namespace}-tree-select__tag-close,
+.#{config.$namespace}-tree-select__clear {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.#{config.$namespace}-tree-select__more {
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+}
+.#{config.$namespace}-tree-select__clear {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  padding: 0;
+  transform: translateY(-50%);
+}
+.#{config.$namespace}-tree-select__dropdown {
+  position: fixed;
+  z-index: 2000;
+  max-height: 280px;
+  overflow: auto;
+  padding: 4px 0;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--#{config.$namespace}-bg, #fff);
+  box-shadow: var(--#{config.$namespace}-shadow-small);
+}
+
+.#{config.$namespace}-tree-select__dropdown--dark {
+  background: #303133;
+  border-color: #303133;
+  color: #fff;
+}
+.#{config.$namespace}-tree-select__filter {
+  box-sizing: border-box;
+  width: calc(100% - 16px);
+  margin: 0 8px 4px;
+  padding: 4px 8px;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 4px;
+}
+
+.#{config.$namespace}-tree-select--small .#{config.$namespace}-tree-select__control {
+  min-height: 28px;
+}
+.#{config.$namespace}-tree-select--large .#{config.$namespace}-tree-select__control {
+  min-height: 40px;
+}

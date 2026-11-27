@@ -1,0 +1,68 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-mention {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+.#{config.$namespace}-mention__input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--#{config.$namespace}-bg-color, #fff);
+  color: inherit;
+  font: inherit;
+  resize: vertical;
+}
+.#{config.$namespace}-mention.is-disabled .#{config.$namespace}-mention__input {
+  opacity: 0.5;
+}
+.#{config.$namespace}-mention__clear {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.#{config.$namespace}-tooltip.#{config.$namespace}-mention__dropdown {
+  min-width: 180px;
+  max-width: calc(100vw - 16px);
+  overflow-wrap: normal;
+  max-height: 280px;
+  overflow: visible;
+  padding: 0;
+}
+.#{config.$namespace}-mention__list {
+  max-height: 278px;
+  overflow: auto;
+  padding: 4px 0;
+}
+.#{config.$namespace}-mention__option {
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.#{config.$namespace}-mention__option:hover,
+.#{config.$namespace}-mention__option.is-highlighted {
+  background: #f5f7fa;
+}
+.#{config.$namespace}-mention__option.is-disabled {
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+  cursor: not-allowed;
+}
+.#{config.$namespace}-mention__loading,
+.#{config.$namespace}-mention__empty {
+  padding: 6px 12px;
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+}
+
+.#{config.$namespace}-mention.#{config.$namespace}-control--small input.#{config.$namespace}-mention__input {
+  min-height: 28px;
+}
+.#{config.$namespace}-mention.#{config.$namespace}-control--large input.#{config.$namespace}-mention__input {
+  min-height: 40px;
+}

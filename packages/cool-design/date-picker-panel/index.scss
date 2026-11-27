@@ -1,0 +1,53 @@
+@use '../style/mixins/config';
+@use '../date-picker/index.scss';
+
+.#{config.$namespace}-date-picker-panel {
+  display: inline-block;
+  max-width: 100%;
+  min-width: 280px;
+  padding: 12px;
+  overflow-x: auto;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--#{config.$namespace}-bg-color, #fff);
+
+  &.is-borderless {
+    border-color: transparent;
+  }
+
+  .has-year-navigation {
+    grid-template-columns: 24px 24px minmax(120px, 1fr) 24px 24px;
+  }
+
+  &__shortcuts,
+  &__times,
+  .#{config.$namespace}-date-picker__footer {
+    display: flex;
+    gap: 8px;
+    margin-block: 8px;
+  }
+
+  &__times {
+    justify-content: space-between;
+  }
+
+  &__time {
+    flex: 1 1 0;
+    min-width: 0;
+
+    input {
+      box-sizing: border-box;
+      width: 50%;
+      min-width: 0;
+      padding: 4px;
+      border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+      border-radius: 4px;
+      color: inherit;
+      background: transparent;
+    }
+  }
+
+  .#{config.$namespace}-date-picker__footer {
+    justify-content: flex-end;
+  }
+}

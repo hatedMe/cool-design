@@ -1,0 +1,77 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-tag {
+  --#{config.$namespace}-tag-color: var(--#{config.$namespace}-primary);
+  --#{config.$namespace}-tag-bg-color: color-mix(in srgb, var(--#{config.$namespace}-tag-color) 12%, var(--#{config.$namespace}-bg, #fff));
+  --#{config.$namespace}-tag-border-color: var(--#{config.$namespace}-tag-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 2px 8px;
+  border: 1px solid var(--#{config.$namespace}-tag-border-color);
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--#{config.$namespace}-tag-color);
+  background: var(--#{config.$namespace}-tag-bg-color);
+  vertical-align: middle;
+}
+.#{config.$namespace}-tag--success {
+  --#{config.$namespace}-tag-color: var(--#{config.$namespace}-success);
+}
+.#{config.$namespace}-tag--warning {
+  --#{config.$namespace}-tag-color: var(--#{config.$namespace}-warning);
+}
+.#{config.$namespace}-tag--danger {
+  --#{config.$namespace}-tag-color: var(--#{config.$namespace}-danger);
+}
+.#{config.$namespace}-tag--info {
+  --#{config.$namespace}-tag-color: var(--#{config.$namespace}-text-secondary);
+}
+.#{config.$namespace}-tag--plain {
+  background: var(--#{config.$namespace}-bg);
+}
+.#{config.$namespace}-tag--dark {
+  background: var(--#{config.$namespace}-tag-color);
+  color: var(--#{config.$namespace}-bg);
+}
+.#{config.$namespace}-tag--dark.#{config.$namespace}-tag--primary {
+  color: var(--#{config.$namespace}-on-primary);
+}
+.#{config.$namespace}-tag--small {
+  padding: 0 6px;
+  line-height: 18px;
+}
+.#{config.$namespace}-tag--large {
+  padding: 3px 10px;
+  line-height: 24px;
+  font-size: 14px;
+}
+.#{config.$namespace}-tag--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.#{config.$namespace}-tag--round {
+  border-radius: 999px;
+}
+.#{config.$namespace}-tag--hit {
+  border-color: var(--#{config.$namespace}-tag-color);
+  background: transparent;
+}
+.#{config.$namespace}-tag--disable-transitions,
+.#{config.$namespace}-tag--disable-transitions * {
+  transition: none !important;
+}
+.#{config.$namespace}-tag button {
+  border: 0;
+  border-radius: 3px;
+  padding: 0 2px;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.#{config.$namespace}-tag button:disabled {
+  cursor: not-allowed;
+}

@@ -1,0 +1,23 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-countdown {
+  display: inline-block;
+}
+.#{config.$namespace}-countdown__title {
+  margin-bottom: 4px;
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+  font-size: 12px;
+}
+.#{config.$namespace}-countdown__content {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  color: var(--#{config.$namespace}-text, #303133);
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.#{config.$namespace}-countdown__prefix,
+.#{config.$namespace}-countdown__suffix {
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+  font-size: 12px;
+}

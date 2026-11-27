@@ -1,0 +1,68 @@
+@use './mixins/config';
+
+:root,
+#{config.$theme-scope} {
+  --#{config.$namespace}-on-primary: #fff;
+  --#{config.$namespace}-primary: #2463eb;
+  --#{config.$namespace}-primary-hover: #1d4ed8;
+  --#{config.$namespace}-success: #16815d;
+  --#{config.$namespace}-warning: #b77909;
+  --#{config.$namespace}-danger: #d73d4a;
+  --#{config.$namespace}-text: #203047;
+  --#{config.$namespace}-text-secondary: #65748a;
+  --#{config.$namespace}-text-muted: #8794a6;
+  --#{config.$namespace}-bg: #fff;
+  --#{config.$namespace}-bg-page: #f3f6fa;
+  --#{config.$namespace}-bg-subtle: #f7f9fc;
+  --#{config.$namespace}-border: #dce3ed;
+  --#{config.$namespace}-radius: 6px;
+  --#{config.$namespace}-shadow: 0 12px 40px rgb(26 43 68 / 16%);
+  --#{config.$namespace}-control-height: 32px;
+  --#{config.$namespace}-space: 8px;
+  --#{config.$namespace}-font-size: 14px;
+  --#{config.$namespace}-font-size-extra-small: 12px;
+  --#{config.$namespace}-font-size-small: 13px;
+  --#{config.$namespace}-font-size-base: 14px;
+  --#{config.$namespace}-font-size-medium: 16px;
+  --#{config.$namespace}-font-size-large: 18px;
+  --#{config.$namespace}-font-size-extra-large: 20px;
+  --#{config.$namespace}-line-height-tight: 1;
+  --#{config.$namespace}-line-height-compact: 1.3;
+  --#{config.$namespace}-line-height-normal: 1.5;
+  --#{config.$namespace}-line-height-loose: 1.7;
+  --#{config.$namespace}-font-family:
+    Inter, 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial,
+    sans-serif;
+}
+#{config.$theme-scope}[data-theme='light'] {
+  color-scheme: light;
+}
+#{config.$theme-scope}[data-theme='dark'] {
+  color-scheme: dark;
+  --#{config.$namespace}-on-primary: #13213b;
+  --#{config.$namespace}-primary: #7aa9ff;
+  --#{config.$namespace}-primary-hover: #a0c1ff;
+  --#{config.$namespace}-success: #64d5a6;
+  --#{config.$namespace}-warning: #f0bf65;
+  --#{config.$namespace}-danger: #ff8793;
+  --#{config.$namespace}-text: #e0e8f4;
+  --#{config.$namespace}-text-secondary: #a6b4c9;
+  --#{config.$namespace}-text-muted: #8190a6;
+  --#{config.$namespace}-bg: #1c2738;
+  --#{config.$namespace}-bg-page: #131c2b;
+  --#{config.$namespace}-bg-subtle: #233147;
+  --#{config.$namespace}-border: #36445a;
+}
+#{config.$theme-scope} {
+  color: var(--#{config.$namespace}-text);
+  font: var(--#{config.$namespace}-font-size) / var(--#{config.$namespace}-line-height-normal) var(--#{config.$namespace}-font-family);
+}
+#{config.$theme-scope} *,
+#{config.$theme-scope} *::before,
+#{config.$theme-scope} *::after {
+  box-sizing: border-box;
+}
+#{config.$theme-scope} :focus-visible {
+  outline: 2px solid var(--#{config.$namespace}-primary);
+  outline-offset: 3px;
+}

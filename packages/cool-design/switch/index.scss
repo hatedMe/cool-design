@@ -1,0 +1,99 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  cursor: pointer;
+}
+.#{config.$namespace}-switch--large {
+  font-size: 16px;
+  --#{config.$namespace}-switch-height: 24px;
+  --#{config.$namespace}-switch-action-size: 18px;
+  --#{config.$namespace}-switch-radius: 12px;
+}
+.#{config.$namespace}-switch--small {
+  font-size: 12px;
+  --#{config.$namespace}-switch-width: 28px;
+  --#{config.$namespace}-switch-height: 16px;
+  --#{config.$namespace}-switch-action-size: 10px;
+  --#{config.$namespace}-switch-radius: 8px;
+}
+.#{config.$namespace}-switch__active,
+.#{config.$namespace}-switch__inactive {
+  color: var(--#{config.$namespace}-text-secondary);
+  margin: 0 6px;
+}
+.#{config.$namespace}-switch__active,
+.#{config.$namespace}-switch__inactive {
+  opacity: 0.5;
+}
+.#{config.$namespace}-switch__active.is-active,
+.#{config.$namespace}-switch__inactive.is-active {
+  opacity: 1;
+}
+.#{config.$namespace}-switch input {
+  position: absolute;
+  opacity: 0;
+  width: var(--#{config.$namespace}-switch-width, 36px);
+  height: var(--#{config.$namespace}-switch-height, 20px);
+  margin: 0;
+}
+.#{config.$namespace}-switch__track {
+  width: var(--#{config.$namespace}-switch-width, 36px);
+  height: var(--#{config.$namespace}-switch-height, 20px);
+  box-sizing: border-box;
+  border-radius: var(--#{config.$namespace}-switch-radius, 10px);
+  background: var(--#{config.$namespace}-switch-off-color, var(--#{config.$namespace}-switch-off, var(--#{config.$namespace}-border)));
+  border: 1px solid var(--#{config.$namespace}-switch-border-color, var(--#{config.$namespace}-switch-border, transparent));
+  padding: 3px;
+  pointer-events: none;
+  position: relative;
+}
+.#{config.$namespace}-switch__prompt {
+  position: absolute;
+  inset: 0 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  line-height: 14px;
+}
+.#{config.$namespace}-switch__action {
+  position: relative;
+  z-index: 1;
+  width: var(--#{config.$namespace}-switch-action-size, 14px);
+  height: var(--#{config.$namespace}-switch-action-size, 14px);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--#{config.$namespace}-bg);
+}
+.#{config.$namespace}-switch__action-icon {
+  font-size: 10px;
+}
+.#{config.$namespace}-switch__loading {
+  position: absolute;
+  inset: 5px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: #{config.$namespace}-switch-spin 0.8s linear infinite;
+}
+@keyframes #{config.$namespace}-switch-spin {
+  to { transform: rotate(360deg); }
+}
+.#{config.$namespace}-switch input:checked ~ .#{config.$namespace}-switch__track {
+  background: var(--#{config.$namespace}-switch-on-color, var(--#{config.$namespace}-switch-on, var(--#{config.$namespace}-primary)));
+}
+.#{config.$namespace}-switch__track.is-active .#{config.$namespace}-switch__action {
+  transform: translateX(calc(var(--#{config.$namespace}-switch-width, 36px) - var(--#{config.$namespace}-switch-action-size, 14px) - 8px));
+}
+.#{config.$namespace}-switch input:focus-visible ~ .#{config.$namespace}-switch__track {
+  outline: 2px solid var(--#{config.$namespace}-primary);
+  outline-offset: 3px;
+}
+.#{config.$namespace}-switch input:disabled ~ .#{config.$namespace}-switch__track {
+  opacity: 0.5;
+}

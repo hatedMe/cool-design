@@ -1,0 +1,22 @@
+@use '../style/mixins/config';
+.#{config.$namespace}-popper {
+  padding: 8px 12px;
+  border: 1px solid var(--#{config.$namespace}-border, #dcdfe6);
+  border-radius: 4px;
+  background: var(--#{config.$namespace}-bg, #fff);
+  color: var(--#{config.$namespace}-text, #303133);
+  &.is-dark { background: #303133; color: #fff; border-color: #303133; }
+  &.is-pure { padding: 0; }
+}
+.#{config.$namespace}-popper__arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  visibility: hidden;
+  &::before { content: ''; position: absolute; inset: 0; visibility: visible; background: inherit; transform: rotate(45deg); }
+}
+.#{config.$namespace}-popper > .#{config.$namespace}-popper__arrow { background: inherit; }
+.#{config.$namespace}-popper[data-popper-placement^='top'] > .#{config.$namespace}-popper__arrow { bottom: -4px; }
+.#{config.$namespace}-popper[data-popper-placement^='bottom'] > .#{config.$namespace}-popper__arrow { top: -4px; }
+.#{config.$namespace}-popper[data-popper-placement^='left'] > .#{config.$namespace}-popper__arrow { right: -4px; }
+.#{config.$namespace}-popper[data-popper-placement^='right'] > .#{config.$namespace}-popper__arrow { left: -4px; }

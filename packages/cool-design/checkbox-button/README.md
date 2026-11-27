@@ -1,0 +1,43 @@
+# CheckboxButton 复选框按钮
+
+### 介绍
+
+用于按钮样式的复选项，支持独立使用，也可以放在 CheckboxGroup 中。
+
+## API
+
+### 属性
+
+| 参数                 | 说明                       | 类型                         | 默认值 |
+| -------------------- | -------------------------- | ---------------------------- | ------ |
+| model-value / v-model | 是否选中或绑定模型值       | `string` / `number` / `boolean` | —  |
+| value                | 分组中的选项值             | `string` / `number` / `boolean` / `object` | — |
+| label                | 选项文本                   | `string`                     | —      |
+| true-value            | 选中时的模型值             | `string` / `number` / `boolean` | `true` |
+| false-value           | 未选中时的模型值           | `string` / `number` / `boolean` | `false` |
+| disabled             | 是否禁用                   | `boolean`                    | `false` |
+| size                 | 尺寸：`small` / `default` / `large` | `string`             | —      |
+| true-label / false-label | 兼容旧版选中/未选中值别名，未设置对应 true-value / false-value 时采用 | `string` / `number` / `boolean` | — |
+
+### 事件
+
+| 事件名            | 说明         | 回调参数             |
+| ----------------- | ------------ | -------------------- |
+| update:modelValue | 模型值变化   | `value: string \| number \| boolean` |
+| change            | 用户改变选中 | `value: string \| number \| boolean` |
+
+### 插槽
+
+| 名称    | 说明     |
+| ------- | -------- |
+| default | 按钮文本 |
+
+## 使用说明
+
+CheckboxButton 可独立使用，也可作为 CheckboxGroup 的子项；在 Group 中使用 `value` 作为数组成员。
+
+```vue
+<CheckboxGroup v-model="selected">
+  <CheckboxButton value="email">邮件通知</CheckboxButton>
+</CheckboxGroup>
+```

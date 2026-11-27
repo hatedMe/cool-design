@@ -1,0 +1,40 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: var(--#{config.$namespace}-text-secondary);
+  font-size: var(--#{config.$namespace}-font-size);
+}
+.#{config.$namespace}-divider::before,
+.#{config.$namespace}-divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1px var(--#{config.$namespace}-divider-border-style, solid) var(--#{config.$namespace}-border);
+}
+.#{config.$namespace}-divider--left::before,
+.#{config.$namespace}-divider--right::after {
+  flex: 0 0 24px;
+}
+.#{config.$namespace}-divider--vertical {
+  display: inline-block;
+  vertical-align: middle;
+  height: 1em;
+  margin: 0 8px;
+  border-left: 1px var(--#{config.$namespace}-divider-border-style, solid) var(--#{config.$namespace}-border);
+}
+.#{config.$namespace}-divider--vertical::before,
+.#{config.$namespace}-divider--vertical::after {
+  display: none;
+}
+.#{config.$namespace}-divider__text {
+  white-space: nowrap;
+  font-size: inherit;
+}
+.#{config.$namespace}-divider__text.is-left,
+.#{config.$namespace}-divider__text.is-center,
+.#{config.$namespace}-divider__text.is-right {
+  display: inline-block;
+}

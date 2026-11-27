@@ -1,0 +1,105 @@
+# Transfer 穿梭框
+
+### 介绍
+
+Transfer 用于在两个列表之间移动和管理选项，支持搜索过滤、禁用项、字段映射、目标排序和自定义插槽。`modelValue` 为右侧列表的数据 `key` 集合，组件内部以 `key` 稳定映射左右列表并去重。
+
+## 基础用法
+
+```vue
+<Transfer v-model="value" :data="data" filterable :titles="['左侧列表', '右侧列表']" />
+```
+
+`data` 中每一项至少包含 `key`；`disabled` 为 `true` 的选项不可选中、不可移动。
+
+## 按钮文案与计数格式
+
+```vue
+<Transfer
+  v-model="value"
+  :data="data"
+  :button-texts="['到左边', '到右边']"
+  :format="{ noChecked: '共 ${total} 项', hasChecked: '已选 ${checked}/${total}' }"
+/>
+```
+
+`format` 同时支持 `${checked}` / `${total}` 与 `{checked}` / `{total}` 两种占位写法。
+
+## 字段映射与目标排序
+
+```vue
+<Transfer v-model="value" :data="cities" :props="{ key: 'id', label: 'name' }" target-order="push" />
+```
+
+`targetOrder` 为 `original` 时右侧按原始数据顺序展示，为 `push` / `unshift` 时按 `modelValue` 顺序展示。
+
+## 自定义条目与底部
+
+```vue
+<Transfer v-model="value" :data="data">
+  <template #default="{ option }">
+    <span>{{ option.label }}</span>
+  </template>
+  <template #left-footer>
+    <span>左侧底部</span>
+  </template>
+</Transfer>
+```
+
+## API
+
+### 属性
+
+| 参数 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| model-value | 右侧列表的 `key` 集合 | `(string \| number)[]` | `[]` |
+| data | 候选数据 | `TransferItem[]` | `[]` |
+| titles | 左右面板标题 | `string[]` | `['列表 1', '列表 2']` |
+| button-texts | 左右移动按钮文案 | `string[]` | `[]` |
+| filterable | 是否可搜索 | `boolean` | `false` |
+| filter-placeholder | 搜索框占位文案 | `string` | `请输入搜索内容` |
+| filter-method | 自定义搜索方法 | `(query: string, item: TransferItem) => boolean` | — |
+| render-content | 按显式形参数量调用；双参接收 Vue 的 h 和选项，单参接收原选项 | `(h: typeof import('vue').h, option: TransferItem) => unknown` / `(option: TransferItem) => unknown` | — |
+| target-order | 右侧列表排序策略 | `original` / `push` / `unshift` | `original` |
+| format | 计数文案模板 | `{ noChecked?: string; hasChecked?: string }` | `${total}` / `${checked}/${total}` |
+| props | 字段映射 | `{ label?: string; key?: string; disabled?: string }` | `{}` |
+| left-default-checked | 左侧默认选中，替换数组同步可选键 | `(string \| number)[]` | `[]` |
+| right-default-checked | 右侧默认选中，替换数组同步可选键 | `(string \| number)[]` | `[]` |
+| disabled | 是否禁用；表单内继承 Form 的禁用状态 | `boolean` | `false` |
+| no-data-text | 无数据文案 | `string` | `无数据` |
+| no-match-text | 无匹配数据文案 | `string` | `无匹配数据` |
+| validate-event | 移动选项后是否触发表单校验 | `boolean` | `true` |
+
+仅使用 h、默认参数或剩余参数的双参渲染器请包装为 `(h, option) => render(h, option)`。严格模式下既有内联单参可能需要显式标注 `option: TransferItem`，或使用类型为 `TransferRenderContent` 的命名函数。父层传入的默认键集合变化时，按当前面板可选项同步。默认键相同或仅顺序变化时保留用户勾选；数据项移出面板时仅清理已移出的键。同步不触发勾选事件。
+
+`props` 字段映射支持：`label`、`key`、`disabled`；`format` 支持 `noChecked` 和 `hasChecked`。置于 `FormItem` 内时自动继承禁用状态、绑定字段 `id` / `aria-describedby`，`change` 事件联动表单校验。
+
+### 事件
+
+| 事件名 | 说明 | 回调参数 |
+| --- | --- | --- |
+| update:modelValue | 右侧 `key` 集合更新 | `value: (string \| number)[]` |
+| change | 移动选项后触发 | `value: (string \| number)[]`、`direction: 'left' \| 'right'`、`movedKeys: (string \| number)[]` |
+| left-check-change | 左侧勾选变化；移动后额外通知的 changedKeys 为空 | `(keys: TransferKey[], changedKeys: TransferKey[])` |
+| right-check-change | 右侧勾选变化；移动后额外通知的 changedKeys 为空 | `(keys: TransferKey[], changedKeys: TransferKey[])` |
+
+### 插槽
+
+| 插槽名 | 说明 | 参数 |
+| --- | --- | --- |
+| default | 自定义数据项（兼容通用字段） | `{ option: TransferItem }` |
+| item | 自定义数据项（`default` 别名） | `{ option: TransferItem }` |
+| left-footer | 左侧面板底部 | — |
+| right-footer | 右侧面板底部 | — |
+| left-empty | 左侧空态 | — |
+| right-empty | 右侧空态 | — |
+
+### 暴露方法
+
+| 方法名 | 说明 | 参数 |
+| --- | --- | --- |
+| clearQuery | 清空搜索框 | `which?: 'left' \| 'right' \| 0 \| 1`，不传则清空两侧 |
+
+`leftPanel` 和 `rightPanel` 为实际面板实例，读取或写入各自的 `query: string` 会同步筛选框和结果。`clearQuery()` 清空两侧查询，也可添加 `'left'` 或 `'right'` 参数清空单侧。
+
+启用 `virtual-scroll` 仅渲染可见区域附近的选项，筛选、全选和移动仍覆盖完整列表。`item-size` 指定固定行高（`number`，默认 `30` 像素）。

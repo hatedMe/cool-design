@@ -1,0 +1,154 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-select-v2 {
+  position: relative;
+  display: inline-block;
+  min-width: 220px;
+}
+.#{config.$namespace}-select-v2__control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--#{config.$namespace}-bg-color, #fff);
+  cursor: pointer;
+}
+.#{config.$namespace}-select-v2.is-open .#{config.$namespace}-select-v2__control {
+  border-color: var(--#{config.$namespace}-color-primary, #409eff);
+}
+.#{config.$namespace}-select-v2.is-disabled .#{config.$namespace}-select-v2__control {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.#{config.$namespace}-select-v2__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #f0f2f5;
+  font-size: 12px;
+}
+.#{config.$namespace}-select-v2__tag.is-primary {
+  background: color-mix(in srgb, var(--#{config.$namespace}-primary, #409eff) 15%, transparent);
+}
+.#{config.$namespace}-select-v2__tag.is-success {
+  background: color-mix(in srgb, var(--#{config.$namespace}-success, #67c23a) 15%, transparent);
+}
+.#{config.$namespace}-select-v2__tag.is-warning {
+  background: color-mix(in srgb, var(--#{config.$namespace}-warning, #e6a23c) 15%, transparent);
+}
+.#{config.$namespace}-select-v2__tag.is-danger {
+  background: color-mix(in srgb, var(--#{config.$namespace}-danger, #f56c6c) 15%, transparent);
+}
+.#{config.$namespace}-select-v2__tag.is-info {
+  background: color-mix(in srgb, var(--#{config.$namespace}-info, #909399) 15%, transparent);
+}
+.#{config.$namespace}-select-v2__tag button,
+.#{config.$namespace}-select-v2__control > button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.#{config.$namespace}-select-v2__more {
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+  font-size: 12px;
+}
+.#{config.$namespace}-select-v2__input {
+  flex: 1;
+  min-width: 24px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+}
+.#{config.$namespace}-select-v2__dropdown {
+  box-sizing: border-box;
+  position: fixed;
+  z-index: 2000;
+  overflow: auto;
+  padding: 4px 0;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--#{config.$namespace}-bg, #fff);
+  box-shadow: var(--#{config.$namespace}-shadow-small);
+}
+
+.#{config.$namespace}-select-v2__dropdown--dark {
+  background: #303133;
+  border-color: #303133;
+  color: #fff;
+
+  .#{config.$namespace}-select-v2__option.is-highlighted,
+  .#{config.$namespace}-select-v2__option:hover {
+    background: rgb(255 255 255 / 12%);
+  }
+}
+.#{config.$namespace}-select-v2__group {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+  font-size: 12px;
+  font-weight: 500;
+  box-sizing: border-box;
+}
+.#{config.$namespace}-select-v2__option {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.#{config.$namespace}-select-v2__option:hover,
+.#{config.$namespace}-select-v2__option.is-highlighted {
+  background: #f5f7fa;
+}
+.#{config.$namespace}-select-v2__option.is-selected {
+  color: var(--#{config.$namespace}-primary, #409eff);
+  font-weight: 500;
+}
+.#{config.$namespace}-select-v2__option.is-disabled {
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+  cursor: not-allowed;
+}
+.#{config.$namespace}-select-v2__empty {
+  padding: 8px 12px;
+  color: var(--#{config.$namespace}-text-secondary, #909399);
+}
+
+.#{config.$namespace}-select-v2.#{config.$namespace}-control--small .#{config.$namespace}-select-v2__control {
+  min-height: 28px;
+}
+.#{config.$namespace}-select-v2.#{config.$namespace}-control--large .#{config.$namespace}-select-v2__control {
+  min-height: 40px;
+}
+
+.#{config.$namespace}-select-v2__tag.is-dark {
+  background: var(--#{config.$namespace}-text, #303133);
+  color: var(--#{config.$namespace}-bg, #fff);
+}
+.#{config.$namespace}-select-v2__tag.is-plain {
+  background: transparent;
+  border: 1px solid currentColor;
+}
+.#{config.$namespace}-select-v2__arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: inherit;
+  border: inherit;
+  pointer-events: none;
+}
+
+.#{config.$namespace}-select-v2__dropdown.is-scrollbar-always-on {
+  overflow-y: scroll;
+}
+.#{config.$namespace}-select-v2__prefix {
+  display: inline-flex;
+  align-items: center;
+}

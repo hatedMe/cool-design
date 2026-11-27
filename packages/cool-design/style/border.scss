@@ -1,0 +1,38 @@
+@use './mixins/config';
+
+:root,
+#{config.$theme-scope} {
+  --#{config.$namespace}-border-width: 1px;
+  --#{config.$namespace}-border-style: solid;
+  --#{config.$namespace}-border-color: var(--#{config.$namespace}-border);
+  --#{config.$namespace}-border-color-light: #e8edf4;
+  --#{config.$namespace}-border-color-lighter: #f0f3f8;
+  --#{config.$namespace}-border-color-strong: #b6c3d5;
+  --#{config.$namespace}-border-base: var(--#{config.$namespace}-border-width) var(--#{config.$namespace}-border-style) var(--#{config.$namespace}-border-color);
+  --#{config.$namespace}-radius-none: 0;
+  --#{config.$namespace}-radius-small: 4px;
+  --#{config.$namespace}-radius-base: var(--#{config.$namespace}-radius);
+  --#{config.$namespace}-radius-large: 10px;
+  --#{config.$namespace}-radius-round: 20px;
+  --#{config.$namespace}-radius-circle: 50%;
+  --#{config.$namespace}-shadow-color: rgb(26 43 68 / 16%);
+  --#{config.$namespace}-shadow-small: 0 2px 8px var(--#{config.$namespace}-shadow-color);
+  --#{config.$namespace}-shadow-base: var(--#{config.$namespace}-shadow);
+  --#{config.$namespace}-shadow-large: 0 20px 56px var(--#{config.$namespace}-shadow-color);
+  --#{config.$namespace}-shadow-inset: inset 0 1px 3px var(--#{config.$namespace}-shadow-color);
+}
+#{config.$theme-scope}[data-theme='dark'] {
+  --#{config.$namespace}-border-color-light: #2c3a4e;
+  --#{config.$namespace}-border-color-lighter: #263347;
+  --#{config.$namespace}-border-color-strong: #586a82;
+  --#{config.$namespace}-shadow-color: rgb(0 0 0 / 48%);
+}
+@supports (color: color-mix(in srgb, red, blue)) {
+  :root,
+  #{config.$theme-scope},
+  #{config.$theme-scope}[data-theme] {
+    --#{config.$namespace}-border-color-light: color-mix(in srgb, var(--#{config.$namespace}-border), var(--#{config.$namespace}-bg) 40%);
+    --#{config.$namespace}-border-color-lighter: color-mix(in srgb, var(--#{config.$namespace}-border), var(--#{config.$namespace}-bg) 70%);
+    --#{config.$namespace}-border-color-strong: color-mix(in srgb, var(--#{config.$namespace}-border), var(--#{config.$namespace}-text) 20%);
+  }
+}

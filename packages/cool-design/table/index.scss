@@ -1,0 +1,227 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-table {
+  position: relative;
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+  background: var(--#{config.$namespace}-bg);
+  overflow: hidden;
+}
+.#{config.$namespace}-table__scroll {
+  overflow: auto;
+}
+.#{config.$namespace}-table__scroll.has-always-scrollbar {
+  scrollbar-gutter: stable;
+}
+.#{config.$namespace}-table__scroll.has-custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--#{config.$namespace}-border) transparent;
+}
+.#{config.$namespace}-table__scroll.has-custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.#{config.$namespace}-table__scroll.has-custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--#{config.$namespace}-border);
+  border-radius: 4px;
+}
+.#{config.$namespace}-table__scroll.has-custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.#{config.$namespace}-table.is-resizing,
+.#{config.$namespace}-table.is-resizing * {
+  user-select: none;
+}
+.#{config.$namespace}-table.is-flexible table {
+  width: auto;
+}
+.#{config.$namespace}-table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+.#{config.$namespace}-table th,
+.#{config.$namespace}-table td {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--#{config.$namespace}-border);
+  background: var(--#{config.$namespace}-bg);
+}
+.#{config.$namespace}-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--#{config.$namespace}-bg-subtle);
+  color: var(--#{config.$namespace}-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 2 !important;
+}
+.#{config.$namespace}-table th[style*='sticky'] {
+  z-index: 3 !important;
+}
+.#{config.$namespace}-table th button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.#{config.$namespace}-table th button:focus-visible {
+  outline: 2px solid var(--#{config.$namespace}-primary);
+  outline-offset: 2px;
+}
+.#{config.$namespace}-table .#{config.$namespace}-table__selection {
+  position: sticky;
+  left: 0;
+  width: 48px;
+  min-width: 48px;
+  padding: 12px;
+  z-index: 1;
+}
+.#{config.$namespace}-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.#{config.$namespace}-table tbody tr:hover td,
+.#{config.$namespace}-table__selected td {
+  background: var(--#{config.$namespace}-bg-subtle);
+}
+.#{config.$namespace}-table.is-striped tbody tr:nth-child(even) td {
+  background: var(--#{config.$namespace}-bg-subtle);
+}
+.#{config.$namespace}-table.is-bordered th,
+.#{config.$namespace}-table.is-bordered td {
+  border-right: 1px solid var(--#{config.$namespace}-border);
+}
+.#{config.$namespace}-table .#{config.$namespace}-table__empty {
+  text-align: center;
+  padding: 16px 20px;
+  color: var(--#{config.$namespace}-text-muted);
+}
+.#{config.$namespace}-table:not(.is-fit) table {
+  width: max-content;
+  min-width: 100%;
+}
+.#{config.$namespace}-table.is-large th,
+.#{config.$namespace}-table.is-large td {
+  padding: 15px 20px;
+}
+.#{config.$namespace}-table.is-small th,
+.#{config.$namespace}-table.is-small td {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+.#{config.$namespace}-table tr.is-current td {
+  background: var(--#{config.$namespace}-bg-subtle);
+  box-shadow: inset 2px 0 0 var(--#{config.$namespace}-primary);
+}
+.#{config.$namespace}-table td .#{config.$namespace}-tooltip__trigger:has(> .#{config.$namespace}-table__cell-text) {
+  max-width: 100%;
+}
+.#{config.$namespace}-table__cell-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.#{config.$namespace}-table__editor {
+  width: 100%;
+  height: var(--#{config.$namespace}-control-height);
+  padding: 0 8px;
+  color: var(--#{config.$namespace}-text);
+  background: var(--#{config.$namespace}-bg);
+  border: 1px solid var(--#{config.$namespace}-primary);
+  border-radius: var(--#{config.$namespace}-radius);
+  outline: none;
+}
+.#{config.$namespace}-table thead th .#{config.$namespace}-table__resize-handle {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 5;
+}
+.#{config.$namespace}-table thead th .#{config.$namespace}-table__resize-handle:hover,
+.#{config.$namespace}-table thead th .#{config.$namespace}-table__resize-handle:focus-visible {
+  background: var(--#{config.$namespace}-primary);
+  outline: none;
+}
+.#{config.$namespace}-table thead th .#{config.$namespace}-table__resize-handle:active {
+  background: var(--#{config.$namespace}-primary-hover);
+}
+.#{config.$namespace}-table__expand-toggle {
+  background: none;
+  border: 0;
+  padding: 0 4px;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.#{config.$namespace}-table__expand-icon {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+.#{config.$namespace}-table__expand-icon.is-expanded {
+  transform: rotate(90deg);
+}
+.#{config.$namespace}-table__expand-toggle:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.#{config.$namespace}-table__indent {
+  display: inline-block;
+}
+.#{config.$namespace}-table__tree-placeholder {
+  display: inline-block;
+  width: 18px;
+}
+.#{config.$namespace}-table__expanded-row td {
+  background: var(--#{config.$namespace}-bg-subtle);
+}
+.#{config.$namespace}-table__summary td {
+  background: var(--#{config.$namespace}-bg-subtle);
+  font-weight: 500;
+}
+.#{config.$namespace}-table__filter-trigger {
+  margin-left: 6px;
+  color: var(--#{config.$namespace}-text-muted);
+  vertical-align: middle;
+}
+.#{config.$namespace}-table__filter-trigger.is-active {
+  color: var(--#{config.$namespace}-primary);
+}
+.#{config.$namespace}-table__filter-panel {
+  min-width: 140px;
+  padding: 8px 12px;
+  background: var(--#{config.$namespace}-bg);
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+  box-shadow: var(--#{config.$namespace}-shadow);
+  font-weight: 400;
+}
+.#{config.$namespace}-table__filter-panel .#{config.$namespace}-checkbox {
+  display: flex;
+  margin: 4px 0;
+}
+.#{config.$namespace}-table__filter-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 4px 0;
+}
+.#{config.$namespace}-table__filter-option.is-active {
+  color: var(--#{config.$namespace}-primary);
+}
+.#{config.$namespace}-table__filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--#{config.$namespace}-border);
+}
+.#{config.$namespace}-table__filter-actions .is-primary {
+  color: var(--#{config.$namespace}-primary);
+}

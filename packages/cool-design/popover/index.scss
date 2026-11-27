@@ -1,0 +1,36 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-popover__trigger {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+.#{config.$namespace}-popover {
+  box-sizing: border-box;
+  min-width: 150px;
+  max-height: calc(100vh - 16px);
+  overflow-wrap: anywhere;
+  border: 1px solid var(--#{config.$namespace}-border);
+  border-radius: var(--#{config.$namespace}-radius);
+  background: var(--#{config.$namespace}-bg);
+  color: var(--#{config.$namespace}-text);
+  font-size: var(--#{config.$namespace}-font-size);
+  box-shadow: var(--#{config.$namespace}-shadow);
+}
+.#{config.$namespace}-popover.#{config.$namespace}-tooltip {
+  max-width: calc(100vw - 16px);
+  padding: 12px;
+}
+.#{config.$namespace}-popover--dark {
+  background: #303133;
+  color: #fff;
+  border: 1px solid #303133;
+}
+.#{config.$namespace}-popover__title {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.#{config.$namespace}-popover .#{config.$namespace}-tooltip__content {
+  max-height: calc(100vh - 42px);
+}

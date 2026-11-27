@@ -1,0 +1,64 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-link {
+  --#{config.$namespace}-link-color: var(--#{config.$namespace}-text);
+  --#{config.$namespace}-link-hover-color: var(--#{config.$namespace}-primary-hover);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  vertical-align: middle;
+  line-height: 1.5;
+  font-size: var(--#{config.$namespace}-font-size, 14px);
+  font-weight: 500;
+  color: var(--#{config.$namespace}-link-color);
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.#{config.$namespace}-link--primary {
+  --#{config.$namespace}-link-color: var(--#{config.$namespace}-primary);
+  --#{config.$namespace}-link-hover-color: var(--#{config.$namespace}-primary-dark-2);
+}
+.#{config.$namespace}-link--success {
+  --#{config.$namespace}-link-color: var(--#{config.$namespace}-success);
+  --#{config.$namespace}-link-hover-color: var(--#{config.$namespace}-success-dark-2);
+}
+.#{config.$namespace}-link--warning {
+  --#{config.$namespace}-link-color: var(--#{config.$namespace}-warning);
+  --#{config.$namespace}-link-hover-color: var(--#{config.$namespace}-warning-dark-2);
+}
+.#{config.$namespace}-link--danger {
+  --#{config.$namespace}-link-color: var(--#{config.$namespace}-danger);
+  --#{config.$namespace}-link-hover-color: var(--#{config.$namespace}-danger-dark-2);
+}
+.#{config.$namespace}-link--info {
+  --#{config.$namespace}-link-color: var(--#{config.$namespace}-info);
+  --#{config.$namespace}-link-hover-color: var(--#{config.$namespace}-info-dark-2);
+}
+.#{config.$namespace}-link--small {
+  font-size: 12px;
+}
+.#{config.$namespace}-link--large {
+  font-size: 16px;
+}
+.#{config.$namespace}-link--underline-always,
+.#{config.$namespace}-link--underline-hover:hover:not(.#{config.$namespace}-link--disabled) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.#{config.$namespace}-link:hover:not(.#{config.$namespace}-link--disabled) {
+  color: var(--#{config.$namespace}-link-hover-color);
+}
+.#{config.$namespace}-link--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.#{config.$namespace}-link--disabled:hover {
+  color: var(--#{config.$namespace}-link-color);
+}
+.#{config.$namespace}-link:focus-visible {
+  outline: 2px solid var(--#{config.$namespace}-primary);
+  outline-offset: 3px;
+  border-radius: 2px;
+}

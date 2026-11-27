@@ -1,0 +1,9 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-footer {
+  height: 60px;
+  flex-shrink: 0;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0 var(--#{config.$namespace}-footer-padding, 20px);
+}

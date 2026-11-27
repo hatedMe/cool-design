@@ -1,0 +1,121 @@
+@use '../style/mixins/config';
+@use '../tooltip/index';
+
+$transition: #{config.$namespace}-zoom-in-top;
+@if config.$namespace == 'i' {
+  $transition: el-zoom-in-top;
+}
+
+.#{config.$namespace}-dropdown {
+  position: relative;
+  display: inline-block;
+}
+.#{config.$namespace}-dropdown__trigger {
+  cursor: pointer;
+  display: inline-block;
+}
+.#{config.$namespace}-dropdown__trigger:focus-visible,
+.#{config.$namespace}-dropdown__button:focus-visible,
+.#{config.$namespace}-dropdown__item-button:focus-visible {
+  outline: 2px solid var(--#{config.$namespace}-primary);
+  outline-offset: 1px;
+}
+.#{config.$namespace}-dropdown.is-disabled .#{config.$namespace}-dropdown__trigger,
+.#{config.$namespace}-dropdown.is-disabled .#{config.$namespace}-dropdown__button {
+  color: var(--#{config.$namespace}-text-muted);
+  cursor: not-allowed;
+}
+.#{config.$namespace}-tooltip.#{config.$namespace}-dropdown__popper {
+  min-width: 120px;
+  max-width: calc(100vw - 16px);
+  padding: 0;
+}
+.#{config.$namespace}-dropdown__popper .#{config.$namespace}-tooltip__content {
+  max-height: none;
+  overflow: visible;
+}
+.#{config.$namespace}-dropdown__scroll {
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+}
+.#{config.$namespace}-dropdown__menu {
+  min-width: 120px;
+  padding: 5px 0;
+  margin: 0;
+  list-style: none;
+}
+.#{config.$namespace}-dropdown__menu button,
+.#{config.$namespace}-dropdown__item-button {
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.#{config.$namespace}-dropdown__item-button:hover {
+  background: var(--#{config.$namespace}-bg-subtle);
+  color: var(--#{config.$namespace}-primary);
+}
+.#{config.$namespace}-dropdown__item.is-disabled .#{config.$namespace}-dropdown__item-button {
+  color: var(--#{config.$namespace}-text-muted);
+  cursor: not-allowed;
+}
+.#{config.$namespace}-dropdown__menu .is-divided,
+.#{config.$namespace}-dropdown__item.is-divided {
+  border-top: 1px solid var(--#{config.$namespace}-border);
+  margin-top: 5px;
+  padding-top: 5px;
+}
+.#{config.$namespace}-dropdown__item-icon {
+  display: inline-flex;
+}
+.#{config.$namespace}-dropdown__popper--dark .#{config.$namespace}-dropdown__menu {
+  background: #303133;
+  border-color: #303133;
+  color: #fff;
+
+  button:hover {
+    background: rgb(255 255 255 / 12%);
+    color: #fff;
+  }
+}
+.#{config.$namespace}-dropdown.is-split-button {
+  display: inline-flex;
+}
+.#{config.$namespace}-dropdown__button {
+  padding: 8px 12px;
+  border: 1px solid var(--#{config.$namespace}-border);
+  background: var(--#{config.$namespace}-bg);
+  cursor: pointer;
+}
+.#{config.$namespace}-dropdown.is-split-button .#{config.$namespace}-dropdown__trigger {
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.#{config.$namespace}-dropdown__popper.#{$transition}-enter-active,
+.#{config.$namespace}-dropdown__popper.#{$transition}-leave-active {
+  transition: opacity 0.2s ease, scale 0.2s ease;
+  transform-origin: center top;
+}
+.#{config.$namespace}-dropdown__popper.#{$transition}-enter-from,
+.#{config.$namespace}-dropdown__popper.#{$transition}-leave-to {
+  opacity: 0;
+  scale: 1 0;
+}
+.#{config.$namespace}-dropdown--large .#{config.$namespace}-dropdown__button,
+.#{config.$namespace}-dropdown--large .#{config.$namespace}-dropdown__trigger {
+  padding: 12px 16px;
+  font-size: 16px;
+}
+.#{config.$namespace}-dropdown--small .#{config.$namespace}-dropdown__button,
+.#{config.$namespace}-dropdown--small .#{config.$namespace}-dropdown__trigger {
+  padding: 5px 8px;
+  font-size: 12px;
+}

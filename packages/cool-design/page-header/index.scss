@@ -1,0 +1,77 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 0;
+}
+.#{config.$namespace}-page-header__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.#{config.$namespace}-page-header__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.#{config.$namespace}-page-header__back {
+  border: 0;
+  background: transparent;
+  color: var(--#{config.$namespace}-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  padding: 4px 8px;
+}
+.#{config.$namespace}-page-header__back:hover {
+  color: var(--#{config.$namespace}-primary);
+}
+.#{config.$namespace}-page-header__back:focus-visible {
+  outline: 2px solid var(--#{config.$namespace}-primary);
+  outline-offset: 1px;
+}
+.#{config.$namespace}-page-header__icon {
+  display: inline-flex;
+  align-items: center;
+}
+.#{config.$namespace}-page-header__title {
+  white-space: nowrap;
+}
+.#{config.$namespace}-page-header__divider {
+  width: 1px;
+  height: 16px;
+  background: var(--#{config.$namespace}-border);
+}
+.#{config.$namespace}-page-header__main,
+.#{config.$namespace}-page-header__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.#{config.$namespace}-page-header__main strong,
+.#{config.$namespace}-page-header__content {
+  font-size: 18px;
+  color: var(--#{config.$namespace}-text);
+}
+.#{config.$namespace}-page-header__main span {
+  color: var(--#{config.$namespace}-text-muted);
+}
+.#{config.$namespace}-page-header__extra {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.#{config.$namespace}-page-header__breadcrumb {
+  font-size: 14px;
+}
+.#{config.$namespace}-page-header__detail {
+  font-size: 14px;
+  color: var(--#{config.$namespace}-text-secondary);
+}

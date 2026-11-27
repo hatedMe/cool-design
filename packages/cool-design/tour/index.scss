@@ -1,0 +1,86 @@
+@use "../style/mixins/config";
+
+.#{config.$namespace}-tour {
+  position: fixed;
+  width: 320px;
+  padding: 16px;
+  border-radius: var(--#{config.$namespace}-radius, 4px);
+  background: var(--#{config.$namespace}-bg, #fff);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+  color: var(--#{config.$namespace}-text, #303133);
+  font-size: 14px;
+}
+.#{config.$namespace}-tour--primary .#{config.$namespace}-tour__next {
+  background: var(--#{config.$namespace}-primary, #409eff);
+  color: #fff;
+}
+.#{config.$namespace}-tour__mask {
+  position: fixed;
+  inset: 0;
+}
+.#{config.$namespace}-tour__spotlight {
+  position: fixed;
+  border-radius: var(--#{config.$namespace}-radius, 4px);
+}
+.#{config.$namespace}-tour__arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  transform: rotate(45deg);
+}
+.#{config.$namespace}-tour__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: 0;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+}
+.#{config.$namespace}-tour__title {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.#{config.$namespace}-tour__description {
+  color: var(--#{config.$namespace}-text-secondary, #606266);
+  line-height: 1.6;
+}
+.#{config.$namespace}-tour__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+.#{config.$namespace}-tour__indicator {
+  margin-right: auto;
+  color: var(--#{config.$namespace}-text-secondary, #606266);
+}
+.#{config.$namespace}-tour__prev,
+.#{config.$namespace}-tour__next {
+  padding: 5px 12px;
+  border: 1px solid var(--#{config.$namespace}-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--#{config.$namespace}-bg, #fff);
+  cursor: pointer;
+}
+.#{config.$namespace}-tour__next {
+  background: var(--#{config.$namespace}-text, #303133);
+  color: var(--#{config.$namespace}-bg, #fff);
+}
+
+.#{config.$namespace}-tour__indicators {
+  display: inline-flex;
+  gap: 5px;
+}
+.#{config.$namespace}-tour__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--#{config.$namespace}-border, #dcdfe6);
+}
+.#{config.$namespace}-tour__dot.is-active {
+  background: var(--#{config.$namespace}-primary, #409eff);
+}

@@ -1,0 +1,57 @@
+@use '../style/mixins/config';
+
+.#{config.$namespace}-scrollbar {
+  position: relative;
+  overflow: hidden;
+}
+.#{config.$namespace}-scrollbar__wrap {
+  overflow: auto;
+}
+.#{config.$namespace}-scrollbar__view {
+  min-width: fit-content;
+}
+.#{config.$namespace}-scrollbar__bar {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.#{config.$namespace}-scrollbar:hover .#{config.$namespace}-scrollbar__bar,
+.#{config.$namespace}-scrollbar.is-always .#{config.$namespace}-scrollbar__bar {
+  opacity: 1;
+}
+.#{config.$namespace}-scrollbar__bar.is-vertical {
+  top: 2px;
+  bottom: 2px;
+  width: 6px;
+}
+.#{config.$namespace}-scrollbar__bar.is-horizontal {
+  right: 2px;
+  left: 2px;
+  height: 6px;
+}
+.#{config.$namespace}-scrollbar__thumb {
+  border-radius: 4px;
+  background: rgb(0 0 0 / 25%);
+  cursor: pointer;
+}
+.#{config.$namespace}-scrollbar__bar.is-vertical .#{config.$namespace}-scrollbar__thumb {
+  width: 100%;
+}
+.#{config.$namespace}-scrollbar__bar.is-horizontal .#{config.$namespace}-scrollbar__thumb {
+  height: 100%;
+}
+
+.#{config.$namespace}-scrollbar__mask {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  &--top, &--bottom { left: 0; right: 0; height: var(--#{config.$namespace}-scrollbar-mask-height, 24px); }
+  &--left, &--right { top: 0; bottom: 0; width: var(--#{config.$namespace}-scrollbar-mask-width, 24px); }
+  &--top { top: 0; background: linear-gradient(to bottom, var(--#{config.$namespace}-scrollbar-top-mask-color, var(--#{config.$namespace}-bg, #fff)), transparent); }
+  &--bottom { bottom: 0; background: linear-gradient(to top, var(--#{config.$namespace}-scrollbar-bottom-mask-color, var(--#{config.$namespace}-bg, #fff)), transparent); }
+  &--left { left: 0; background: linear-gradient(to right, var(--#{config.$namespace}-scrollbar-left-mask-color, var(--#{config.$namespace}-bg, #fff)), transparent); }
+  &--right { right: 0; background: linear-gradient(to left, var(--#{config.$namespace}-scrollbar-right-mask-color, var(--#{config.$namespace}-bg, #fff)), transparent); }
+}
