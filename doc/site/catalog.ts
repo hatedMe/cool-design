@@ -70,6 +70,7 @@ function component(
 }
 
 export const pages: Page[] = [
+  component('popper', 'Popper 底层浮层', '其他组件', [['basic', '基础用法', '展示底层组件公共协议。']]),
   component('overlay', 'Overlay 遮罩', '其他组件', [['basic', '基础用法', '展示底层组件公共协议。']]),
   component('collapse-transition', 'CollapseTransition 折叠过渡', '其他组件', [['basic', '基础用法', '展示底层组件公共协议。']]),
   ...[
@@ -921,7 +922,7 @@ const componentNavigation: { title: string; ids: string[] }[] = [
     title: '反馈组件',
     ids: ['alert', 'dialog', 'drawer', 'loading', 'message', 'message-box', 'notification', 'popconfirm', 'popover', 'tooltip']
   },
-  { title: '其他组件', ids: ['divider', 'watermark', 'overlay', 'collapse-transition'] }
+  { title: '其他组件', ids: ['divider', 'watermark', 'popper', 'overlay', 'collapse-transition'] }
 ];
 
 export const navigationGroups = [

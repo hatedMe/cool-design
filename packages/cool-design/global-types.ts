@@ -7,6 +7,15 @@ import type { msgbox, alert, confirm, prompt } from './message-box';
 import type { AppContext } from 'vue';
 
 export interface RegisteredComponents {
+  ElPopper: typeof components.Popper;
+  IPopper: typeof components.Popper;
+  ElPopperTrigger: typeof components.PopperTrigger;
+  IPopperTrigger: typeof components.PopperTrigger;
+  ElPopperContent: typeof components.PopperContent;
+  IPopperContent: typeof components.PopperContent;
+  ElPopperArrow: typeof components.PopperArrow;
+  IPopperArrow: typeof components.PopperArrow;
+
   ElOverlay: typeof components.Overlay;
   IOverlay: typeof components.Overlay;
 

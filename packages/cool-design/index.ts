@@ -1,3 +1,4 @@
+import { Popper, PopperTrigger, PopperContent, PopperArrow } from './popper';
 import { Overlay } from './overlay';
 import { CollapseTransition } from './collapse-transition';
 import Container from './container';
@@ -259,6 +260,7 @@ export {
   CollapseItem
 };
 const components = [
+  Popper, PopperTrigger, PopperContent, PopperArrow,
   Overlay,
   CollapseTransition,
   TableColumn,
@@ -637,3 +639,7 @@ export { CollapseTransition as ElCollapseTransition };
 
 export { Overlay };
 export { Overlay as ElOverlay };
+
+export { Popper, PopperTrigger, PopperContent, PopperArrow };
+export { Popper as ElPopper, PopperTrigger as ElPopperTrigger, PopperContent as ElPopperContent, PopperArrow as ElPopperArrow };
+export type { PopperInstance, PopperContentInstance, PopperReference } from './popper';
